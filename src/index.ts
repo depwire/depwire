@@ -172,7 +172,7 @@ program
       
       // Start visualization server
       const port = parseInt(options.port, 10);
-      startVizServer(vizData, port, options.open);
+      startVizServer(vizData, graph, projectRoot, port, options.open);
     } catch (err) {
       console.error('Error starting visualization:', err);
       process.exit(1);
