@@ -9,6 +9,7 @@ import { exportToJSON, importFromJSON } from './graph/serializer.js';
 import { getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
 import { prepareVizData } from './viz/data.js';
 import { startVizServer } from './viz/server.js';
+import { startMcpServer } from './mcp/server.js';
 
 const program = new Command();
 
@@ -171,6 +172,33 @@ program
       startVizServer(vizData, port, options.open);
     } catch (err) {
       console.error('Error starting visualization:', err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mcp')
+  .description('Start MCP server for AI coding tools')
+  .argument('<directory>', 'Project directory to analyze')
+  .action(async (directory: string) => {
+    try {
+      const projectRoot = resolve(directory);
+      
+      // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
+      console.error(`Parsing project: ${projectRoot}`);
+      
+      // Parse all TypeScript files
+      const parsedFiles = parseProject(projectRoot);
+      console.error(`Parsed ${parsedFiles.length} files`);
+      
+      // Build the graph
+      const graph = buildGraph(parsedFiles);
+      console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+      
+      // Start MCP server (communicates via stdin/stdout)
+      await startMcpServer(graph, projectRoot);
+    } catch (err) {
+      console.error('Error starting MCP server:', err);
       process.exit(1);
     }
   });
