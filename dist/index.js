@@ -801,6 +801,23 @@ function getImpact(graph, symbolId) {
     affectedFiles: Array.from(fileSet).sort()
   };
 }
+function getCrossFileEdges(graph) {
+  const crossFileEdges = [];
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceAttrs = graph.getNodeAttributes(source);
+    const targetAttrs = graph.getNodeAttributes(target);
+    if (sourceAttrs.filePath !== targetAttrs.filePath) {
+      crossFileEdges.push({
+        source,
+        target,
+        sourceFile: sourceAttrs.filePath,
+        targetFile: targetAttrs.filePath,
+        kind: attrs.kind
+      });
+    }
+  });
+  return crossFileEdges;
+}
 function getFileSummary(graph) {
   const fileMap = /* @__PURE__ */ new Map();
   graph.forEachNode((node, attrs) => {
@@ -876,6 +893,89 @@ function getArchitectureSummary(graph) {
     mostConnectedFiles: fileConnections.slice(0, 5),
     orphanFiles
   };
+}
+
+// src/viz/data.ts
+import { basename } from "path";
+function prepareVizData(graph, projectRoot) {
+  const fileSummary = getFileSummary(graph);
+  const crossFileEdges = getCrossFileEdges(graph);
+  const files = fileSummary.map((f) => ({
+    path: f.filePath,
+    directory: f.filePath.includes("/") ? f.filePath.substring(0, f.filePath.lastIndexOf("/")) : ".",
+    symbolCount: f.symbolCount,
+    incomingCount: f.incomingRefs,
+    outgoingCount: f.outgoingRefs
+  }));
+  files.sort((a, b) => {
+    if (a.directory !== b.directory) {
+      return a.directory.localeCompare(b.directory);
+    }
+    return a.path.localeCompare(b.path);
+  });
+  const arcMap = /* @__PURE__ */ new Map();
+  for (const edge of crossFileEdges) {
+    const key = `${edge.sourceFile}::${edge.targetFile}`;
+    if (arcMap.has(key)) {
+      const arc = arcMap.get(key);
+      arc.edgeCount++;
+      if (!arc.edgeKinds.includes(edge.kind)) {
+        arc.edgeKinds.push(edge.kind);
+      }
+    } else {
+      arcMap.set(key, {
+        sourceFile: edge.sourceFile,
+        targetFile: edge.targetFile,
+        edgeCount: 1,
+        edgeKinds: [edge.kind]
+      });
+    }
+  }
+  const arcs = Array.from(arcMap.values());
+  const projectName = basename(projectRoot);
+  return {
+    files,
+    arcs,
+    stats: {
+      totalFiles: files.length,
+      totalSymbols: graph.order,
+      totalEdges: graph.size,
+      totalCrossFileEdges: arcs.reduce((sum, arc) => sum + arc.edgeCount, 0)
+    },
+    projectName
+  };
+}
+
+// src/viz/server.ts
+import express from "express";
+import open from "open";
+import { fileURLToPath } from "url";
+import { dirname as dirname2, join as join4 } from "path";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = dirname2(__filename);
+function startVizServer(vizData, port = 3333, shouldOpen = true) {
+  const app = express();
+  const publicDir = join4(__dirname, "viz", "public");
+  app.use(express.static(publicDir));
+  app.get("/api/graph", (req, res) => {
+    res.json(vizData);
+  });
+  const server = app.listen(port, () => {
+    const url = `http://localhost:${port}`;
+    console.log(`
+CodeGraph visualization running at ${url}`);
+    console.log("Press Ctrl+C to stop\n");
+    if (shouldOpen) {
+      open(url);
+    }
+  });
+  process.on("SIGINT", () => {
+    console.log("\nShutting down visualization server...");
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+  return server;
 }
 
 // src/index.ts
@@ -962,6 +1062,22 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
     }
   } catch (err) {
     console.error("Error querying symbol:", err);
+    process.exit(1);
+  }
+});
+program.command("viz").description("Launch interactive arc diagram visualization").argument("<directory>", "Project directory to visualize").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").action(async (directory, options) => {
+  try {
+    const projectRoot = resolve2(directory);
+    console.log(`Parsing project: ${projectRoot}`);
+    const parsedFiles = parseProject(projectRoot);
+    console.log(`Parsed ${parsedFiles.length} files`);
+    const graph = buildGraph(parsedFiles);
+    const vizData = prepareVizData(graph, projectRoot);
+    console.log(`Found ${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} cross-file edges`);
+    const port = parseInt(options.port, 10);
+    startVizServer(vizData, port, options.open);
+  } catch (err) {
+    console.error("Error starting visualization:", err);
     process.exit(1);
   }
 });

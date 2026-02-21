@@ -7,6 +7,8 @@ import { parseProject } from './parser/index.js';
 import { buildGraph } from './graph/index.js';
 import { exportToJSON, importFromJSON } from './graph/serializer.js';
 import { getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
+import { prepareVizData } from './viz/data.js';
+import { startVizServer } from './viz/server.js';
 
 const program = new Command();
 
@@ -137,6 +139,38 @@ program
       }
     } catch (err) {
       console.error('Error querying symbol:', err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('viz')
+  .description('Launch interactive arc diagram visualization')
+  .argument('<directory>', 'Project directory to visualize')
+  .option('-p, --port <number>', 'Server port', '3333')
+  .option('--no-open', 'Don\'t auto-open browser')
+  .action(async (directory: string, options: { port: string; open: boolean }) => {
+    try {
+      const projectRoot = resolve(directory);
+      
+      console.log(`Parsing project: ${projectRoot}`);
+      
+      // Parse all TypeScript files
+      const parsedFiles = parseProject(projectRoot);
+      console.log(`Parsed ${parsedFiles.length} files`);
+      
+      // Build the graph
+      const graph = buildGraph(parsedFiles);
+      
+      // Prepare visualization data
+      const vizData = prepareVizData(graph, projectRoot);
+      console.log(`Found ${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} cross-file edges`);
+      
+      // Start visualization server
+      const port = parseInt(options.port, 10);
+      startVizServer(vizData, port, options.open);
+    } catch (err) {
+      console.error('Error starting visualization:', err);
       process.exit(1);
     }
   });
