@@ -1,0 +1,6188 @@
+{
+  "projectRoot": "/Users/atefataya/Developer/code-graph/create-t3-app/cli/src",
+  "files": [
+    "cli/index.ts",
+    "consts.ts",
+    "helpers/createProject.ts",
+    "helpers/format.ts",
+    "helpers/git.ts",
+    "helpers/installDependencies.ts",
+    "helpers/installPackages.ts",
+    "helpers/logNextSteps.ts",
+    "helpers/scaffoldProject.ts",
+    "helpers/selectBoilerplate.ts",
+    "helpers/setImportAlias.ts",
+    "index.ts",
+    "installers/betterAuth.ts",
+    "installers/biome.ts",
+    "installers/dbContainer.ts",
+    "installers/dependencyVersionMap.ts",
+    "installers/drizzle.ts",
+    "installers/envVars.ts",
+    "installers/eslint.ts",
+    "installers/index.ts",
+    "installers/nextAuth.ts",
+    "installers/prisma.ts",
+    "installers/tailwind.ts",
+    "installers/trpc.ts",
+    "utils/addPackageDependency.ts",
+    "utils/addPackageScript.ts",
+    "utils/getT3Version.ts",
+    "utils/getUserPkgManager.ts",
+    "utils/isTTYError.ts",
+    "utils/logger.ts",
+    "utils/parseNameAndPath.ts",
+    "utils/removeTrailingSlash.ts",
+    "utils/renderTitle.ts",
+    "utils/renderVersionWarning.ts",
+    "utils/validateAppName.ts",
+    "utils/validateImportAlias.ts"
+  ],
+  "nodes": [
+    {
+      "id": "cli/index.ts::CliFlags",
+      "name": "CliFlags",
+      "kind": "interface",
+      "filePath": "cli/index.ts",
+      "startLine": 18,
+      "endLine": 46,
+      "exported": false
+    },
+    {
+      "id": "cli/index.ts::CliResults",
+      "name": "CliResults",
+      "kind": "interface",
+      "filePath": "cli/index.ts",
+      "startLine": 48,
+      "endLine": 53,
+      "exported": false
+    },
+    {
+      "id": "cli/index.ts::defaultOptions",
+      "name": "defaultOptions",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 55,
+      "endLine": 76,
+      "exported": false
+    },
+    {
+      "id": "cli/index.ts::runCli",
+      "name": "runCli",
+      "kind": "function",
+      "filePath": "cli/index.ts",
+      "startLine": 78,
+      "endLine": 433,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::runCli.cliResults",
+      "name": "cliResults",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 79,
+      "endLine": 79,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::runCli.program",
+      "name": "program",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 81,
+      "endLine": 185,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::runCli.cliProvidedName",
+      "name": "cliProvidedName",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 196,
+      "endLine": 196,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::runCli.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 261,
+      "endLine": 261,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::runCli.project",
+      "name": "project",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 263,
+      "endLine": 384,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::runCli.packages",
+      "name": "packages",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 386,
+      "endLine": 386,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::runCli.shouldContinue",
+      "name": "shouldContinue",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 416,
+      "endLine": 419,
+      "exported": true,
+      "scope": "runCli"
+    },
+    {
+      "id": "cli/index.ts::cliResults",
+      "name": "cliResults",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 79,
+      "endLine": 79,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::program",
+      "name": "program",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 81,
+      "endLine": 185,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::cliProvidedName",
+      "name": "cliProvidedName",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 196,
+      "endLine": 196,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 261,
+      "endLine": 261,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::project",
+      "name": "project",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 263,
+      "endLine": 384,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::packages",
+      "name": "packages",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 386,
+      "endLine": 386,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::shouldContinue",
+      "name": "shouldContinue",
+      "kind": "variable",
+      "filePath": "cli/index.ts",
+      "startLine": 416,
+      "endLine": 419,
+      "exported": true
+    },
+    {
+      "id": "consts.ts::__filename",
+      "name": "__filename",
+      "kind": "variable",
+      "filePath": "consts.ts",
+      "startLine": 6,
+      "endLine": 6,
+      "exported": false
+    },
+    {
+      "id": "consts.ts::distPath",
+      "name": "distPath",
+      "kind": "variable",
+      "filePath": "consts.ts",
+      "startLine": 7,
+      "endLine": 7,
+      "exported": false
+    },
+    {
+      "id": "consts.ts::PKG_ROOT",
+      "name": "PKG_ROOT",
+      "kind": "variable",
+      "filePath": "consts.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true
+    },
+    {
+      "id": "consts.ts::TITLE_TEXT",
+      "name": "TITLE_TEXT",
+      "kind": "variable",
+      "filePath": "consts.ts",
+      "startLine": 12,
+      "endLine": 16,
+      "exported": true
+    },
+    {
+      "id": "consts.ts::DEFAULT_APP_NAME",
+      "name": "DEFAULT_APP_NAME",
+      "kind": "variable",
+      "filePath": "consts.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true
+    },
+    {
+      "id": "consts.ts::CREATE_T3_APP",
+      "name": "CREATE_T3_APP",
+      "kind": "variable",
+      "filePath": "consts.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true
+    },
+    {
+      "id": "helpers/createProject.ts::CreateProjectOptions",
+      "name": "CreateProjectOptions",
+      "kind": "interface",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 19,
+      "endLine": 27,
+      "exported": false
+    },
+    {
+      "id": "helpers/createProject.ts::createProject",
+      "name": "createProject",
+      "kind": "function",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 29,
+      "endLine": 94,
+      "exported": true
+    },
+    {
+      "id": "helpers/createProject.ts::createProject.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 37,
+      "endLine": 37,
+      "exported": true,
+      "scope": "createProject"
+    },
+    {
+      "id": "helpers/createProject.ts::createProject.projectDir",
+      "name": "projectDir",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 38,
+      "endLine": 38,
+      "exported": true,
+      "scope": "createProject"
+    },
+    {
+      "id": "helpers/createProject.ts::createProject.indexModuleCss",
+      "name": "indexModuleCss",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 80,
+      "endLine": 83,
+      "exported": true,
+      "scope": "createProject"
+    },
+    {
+      "id": "helpers/createProject.ts::createProject.indexModuleCssDest",
+      "name": "indexModuleCssDest",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 84,
+      "endLine": 89,
+      "exported": true,
+      "scope": "createProject"
+    },
+    {
+      "id": "helpers/createProject.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 37,
+      "endLine": 37,
+      "exported": true
+    },
+    {
+      "id": "helpers/createProject.ts::projectDir",
+      "name": "projectDir",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 38,
+      "endLine": 38,
+      "exported": true
+    },
+    {
+      "id": "helpers/createProject.ts::indexModuleCss",
+      "name": "indexModuleCss",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 80,
+      "endLine": 83,
+      "exported": true
+    },
+    {
+      "id": "helpers/createProject.ts::indexModuleCssDest",
+      "name": "indexModuleCssDest",
+      "kind": "variable",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 84,
+      "endLine": 89,
+      "exported": true
+    },
+    {
+      "id": "helpers/format.ts::formatProject",
+      "name": "formatProject",
+      "kind": "function",
+      "filePath": "helpers/format.ts",
+      "startLine": 9,
+      "endLine": 33,
+      "exported": true
+    },
+    {
+      "id": "helpers/format.ts::formatProject.spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/format.ts",
+      "startLine": 21,
+      "endLine": 21,
+      "exported": true,
+      "scope": "formatProject"
+    },
+    {
+      "id": "helpers/format.ts::spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/format.ts",
+      "startLine": 21,
+      "endLine": 21,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::isGitInstalled",
+      "name": "isGitInstalled",
+      "kind": "function",
+      "filePath": "helpers/git.ts",
+      "startLine": 11,
+      "endLine": 18,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::isRootGitRepo",
+      "name": "isRootGitRepo",
+      "kind": "function",
+      "filePath": "helpers/git.ts",
+      "startLine": 21,
+      "endLine": 23,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::isInsideGitRepo",
+      "name": "isInsideGitRepo",
+      "kind": "function",
+      "filePath": "helpers/git.ts",
+      "startLine": 26,
+      "endLine": 38,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::getGitVersion",
+      "name": "getGitVersion",
+      "kind": "function",
+      "filePath": "helpers/git.ts",
+      "startLine": 40,
+      "endLine": 46,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::getGitVersion.stdout",
+      "name": "stdout",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 41,
+      "endLine": 41,
+      "exported": false,
+      "scope": "getGitVersion"
+    },
+    {
+      "id": "helpers/git.ts::getGitVersion.gitVersionTag",
+      "name": "gitVersionTag",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 42,
+      "endLine": 42,
+      "exported": false,
+      "scope": "getGitVersion"
+    },
+    {
+      "id": "helpers/git.ts::getGitVersion.major",
+      "name": "major",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 43,
+      "endLine": 43,
+      "exported": false,
+      "scope": "getGitVersion"
+    },
+    {
+      "id": "helpers/git.ts::getGitVersion.minor",
+      "name": "minor",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 44,
+      "endLine": 44,
+      "exported": false,
+      "scope": "getGitVersion"
+    },
+    {
+      "id": "helpers/git.ts::stdout",
+      "name": "stdout",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 41,
+      "endLine": 41,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::gitVersionTag",
+      "name": "gitVersionTag",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 42,
+      "endLine": 42,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::major",
+      "name": "major",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 43,
+      "endLine": 43,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::minor",
+      "name": "minor",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 44,
+      "endLine": 44,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::getDefaultBranch",
+      "name": "getDefaultBranch",
+      "kind": "function",
+      "filePath": "helpers/git.ts",
+      "startLine": 49,
+      "endLine": 55,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::getDefaultBranch.stdout",
+      "name": "stdout",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 50,
+      "endLine": 52,
+      "exported": false,
+      "scope": "getDefaultBranch"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit",
+      "name": "initializeGit",
+      "kind": "function",
+      "filePath": "helpers/git.ts",
+      "startLine": 58,
+      "endLine": 136,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 66,
+      "endLine": 66,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.isRoot",
+      "name": "isRoot",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 68,
+      "endLine": 68,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.isInside",
+      "name": "isInside",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 69,
+      "endLine": 69,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.dirName",
+      "name": "dirName",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 70,
+      "endLine": 70,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.overwriteGit",
+      "name": "overwriteGit",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 75,
+      "endLine": 80,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.initializeChildGitRepo",
+      "name": "initializeChildGitRepo",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 91,
+      "endLine": 96,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.branchName",
+      "name": "branchName",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 105,
+      "endLine": 105,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::initializeGit.{ major, minor }",
+      "name": "{ major, minor }",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 108,
+      "endLine": 108,
+      "exported": true,
+      "scope": "initializeGit"
+    },
+    {
+      "id": "helpers/git.ts::spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 66,
+      "endLine": 66,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::isRoot",
+      "name": "isRoot",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 68,
+      "endLine": 68,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::isInside",
+      "name": "isInside",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 69,
+      "endLine": 69,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::dirName",
+      "name": "dirName",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 70,
+      "endLine": 70,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::overwriteGit",
+      "name": "overwriteGit",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 75,
+      "endLine": 80,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::initializeChildGitRepo",
+      "name": "initializeChildGitRepo",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 91,
+      "endLine": 96,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::branchName",
+      "name": "branchName",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 105,
+      "endLine": 105,
+      "exported": true
+    },
+    {
+      "id": "helpers/git.ts::{ major, minor }",
+      "name": "{ major, minor }",
+      "kind": "variable",
+      "filePath": "helpers/git.ts",
+      "startLine": 108,
+      "endLine": 108,
+      "exported": true
+    },
+    {
+      "id": "helpers/installDependencies.ts::execWithSpinner",
+      "name": "execWithSpinner",
+      "kind": "function",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 11,
+      "endLine": 35,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::execWithSpinner.{ onDataHandle, args = [\"install\"], stdout = \"pipe\" }",
+      "name": "{ onDataHandle, args = [\"install\"], stdout = \"pipe\" }",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": false,
+      "scope": "execWithSpinner"
+    },
+    {
+      "id": "helpers/installDependencies.ts::execWithSpinner.spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 22,
+      "endLine": 22,
+      "exported": false,
+      "scope": "execWithSpinner"
+    },
+    {
+      "id": "helpers/installDependencies.ts::execWithSpinner.subprocess",
+      "name": "subprocess",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": false,
+      "scope": "execWithSpinner"
+    },
+    {
+      "id": "helpers/installDependencies.ts::{ onDataHandle, args = [\"install\"], stdout = \"pipe\" }",
+      "name": "{ onDataHandle, args = [\"install\"], stdout = \"pipe\" }",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 22,
+      "endLine": 22,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::subprocess",
+      "name": "subprocess",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::runInstallCommand",
+      "name": "runInstallCommand",
+      "kind": "function",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 37,
+      "endLine": 73,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::runInstallCommand.text",
+      "name": "text",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 54,
+      "endLine": 54,
+      "exported": false,
+      "scope": "runInstallCommand"
+    },
+    {
+      "id": "helpers/installDependencies.ts::text",
+      "name": "text",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 54,
+      "endLine": 54,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::installDependencies",
+      "name": "installDependencies",
+      "kind": "function",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 75,
+      "endLine": 90,
+      "exported": true
+    },
+    {
+      "id": "helpers/installDependencies.ts::installDependencies.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 81,
+      "endLine": 81,
+      "exported": true,
+      "scope": "installDependencies"
+    },
+    {
+      "id": "helpers/installDependencies.ts::installDependencies.installSpinner",
+      "name": "installSpinner",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 83,
+      "endLine": 83,
+      "exported": true,
+      "scope": "installDependencies"
+    },
+    {
+      "id": "helpers/installDependencies.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 81,
+      "endLine": 81,
+      "exported": true
+    },
+    {
+      "id": "helpers/installDependencies.ts::installSpinner",
+      "name": "installSpinner",
+      "kind": "variable",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 83,
+      "endLine": 83,
+      "exported": true
+    },
+    {
+      "id": "helpers/installPackages.ts::InstallPackagesOptions",
+      "name": "InstallPackagesOptions",
+      "kind": "type_alias",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 10,
+      "endLine": 12,
+      "exported": false
+    },
+    {
+      "id": "helpers/installPackages.ts::installPackages",
+      "name": "installPackages",
+      "kind": "function",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 14,
+      "endLine": 31,
+      "exported": true
+    },
+    {
+      "id": "helpers/installPackages.ts::installPackages.{ packages }",
+      "name": "{ packages }",
+      "kind": "variable",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true,
+      "scope": "installPackages"
+    },
+    {
+      "id": "helpers/installPackages.ts::installPackages.spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true,
+      "scope": "installPackages"
+    },
+    {
+      "id": "helpers/installPackages.ts::{ packages }",
+      "name": "{ packages }",
+      "kind": "variable",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true
+    },
+    {
+      "id": "helpers/installPackages.ts::spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "helpers/logNextSteps.ts::logNextSteps",
+      "name": "logNextSteps",
+      "kind": "function",
+      "filePath": "helpers/logNextSteps.ts",
+      "startLine": 8,
+      "endLine": 66,
+      "exported": true
+    },
+    {
+      "id": "helpers/logNextSteps.ts::logNextSteps.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "helpers/logNextSteps.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true,
+      "scope": "logNextSteps"
+    },
+    {
+      "id": "helpers/logNextSteps.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "helpers/logNextSteps.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldProject",
+      "name": "scaffoldProject",
+      "kind": "function",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 12,
+      "endLine": 99,
+      "exported": true
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldProject.srcDir",
+      "name": "srcDir",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true,
+      "scope": "scaffoldProject"
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldProject.spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 26,
+      "endLine": 26,
+      "exported": true,
+      "scope": "scaffoldProject"
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldProject.overwriteDir",
+      "name": "overwriteDir",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 36,
+      "endLine": 55,
+      "exported": true,
+      "scope": "scaffoldProject"
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldProject.confirmOverwriteDir",
+      "name": "confirmOverwriteDir",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 62,
+      "endLine": 69,
+      "exported": true,
+      "scope": "scaffoldProject"
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldProject.scaffoldedName",
+      "name": "scaffoldedName",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 93,
+      "endLine": 94,
+      "exported": true,
+      "scope": "scaffoldProject"
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::srcDir",
+      "name": "srcDir",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::spinner",
+      "name": "spinner",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 26,
+      "endLine": 26,
+      "exported": true
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::overwriteDir",
+      "name": "overwriteDir",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 36,
+      "endLine": 55,
+      "exported": true
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::confirmOverwriteDir",
+      "name": "confirmOverwriteDir",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 62,
+      "endLine": 69,
+      "exported": true
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::scaffoldedName",
+      "name": "scaffoldedName",
+      "kind": "variable",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 93,
+      "endLine": 94,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::SelectBoilerplateProps",
+      "name": "SelectBoilerplateProps",
+      "kind": "type_alias",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 7,
+      "endLine": 9,
+      "exported": false
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile",
+      "name": "selectAppFile",
+      "kind": "function",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 11,
+      "endLine": 46,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.appFileDir",
+      "name": "appFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.usingTw",
+      "name": "usingTw",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.usingTRPC",
+      "name": "usingTRPC",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.usingAuth",
+      "name": "usingAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 19,
+      "endLine": 19,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.appFile",
+      "name": "appFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 22,
+      "endLine": 22,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.appSrc",
+      "name": "appSrc",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 43,
+      "endLine": 43,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectAppFile.appDest",
+      "name": "appDest",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 44,
+      "endLine": 44,
+      "exported": true,
+      "scope": "selectAppFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::appFileDir",
+      "name": "appFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::usingTw",
+      "name": "usingTw",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::usingTRPC",
+      "name": "usingTRPC",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::usingAuth",
+      "name": "usingAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 19,
+      "endLine": 19,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::appFile",
+      "name": "appFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 22,
+      "endLine": 22,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::appSrc",
+      "name": "appSrc",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 43,
+      "endLine": 43,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::appDest",
+      "name": "appDest",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 44,
+      "endLine": 44,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile",
+      "name": "selectLayoutFile",
+      "kind": "function",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 49,
+      "endLine": 69,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile.layoutFileDir",
+      "name": "layoutFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true,
+      "scope": "selectLayoutFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile.usingTw",
+      "name": "usingTw",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 55,
+      "endLine": 55,
+      "exported": true,
+      "scope": "selectLayoutFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile.usingTRPC",
+      "name": "usingTRPC",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 56,
+      "endLine": 56,
+      "exported": true,
+      "scope": "selectLayoutFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile.layoutFile",
+      "name": "layoutFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 57,
+      "endLine": 57,
+      "exported": true,
+      "scope": "selectLayoutFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile.appSrc",
+      "name": "appSrc",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 66,
+      "endLine": 66,
+      "exported": true,
+      "scope": "selectLayoutFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectLayoutFile.appDest",
+      "name": "appDest",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 67,
+      "endLine": 67,
+      "exported": true,
+      "scope": "selectLayoutFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::layoutFileDir",
+      "name": "layoutFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::layoutFile",
+      "name": "layoutFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 57,
+      "endLine": 57,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile",
+      "name": "selectIndexFile",
+      "kind": "function",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 72,
+      "endLine": 108,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.indexFileDir",
+      "name": "indexFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 76,
+      "endLine": 76,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.usingTRPC",
+      "name": "usingTRPC",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 78,
+      "endLine": 78,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.usingTw",
+      "name": "usingTw",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 79,
+      "endLine": 79,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 80,
+      "endLine": 80,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.usingNextAuth",
+      "name": "usingNextAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 81,
+      "endLine": 81,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.usingAuth",
+      "name": "usingAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 82,
+      "endLine": 82,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.indexFile",
+      "name": "indexFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 84,
+      "endLine": 84,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.indexSrc",
+      "name": "indexSrc",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 105,
+      "endLine": 105,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectIndexFile.indexDest",
+      "name": "indexDest",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 106,
+      "endLine": 106,
+      "exported": true,
+      "scope": "selectIndexFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::indexFileDir",
+      "name": "indexFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 76,
+      "endLine": 76,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::usingNextAuth",
+      "name": "usingNextAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 81,
+      "endLine": 81,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::indexFile",
+      "name": "indexFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 84,
+      "endLine": 84,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::indexSrc",
+      "name": "indexSrc",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 105,
+      "endLine": 105,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::indexDest",
+      "name": "indexDest",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 106,
+      "endLine": 106,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile",
+      "name": "selectPageFile",
+      "kind": "function",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 111,
+      "endLine": 146,
+      "exported": true
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.indexFileDir",
+      "name": "indexFileDir",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 115,
+      "endLine": 115,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.usingTRPC",
+      "name": "usingTRPC",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 117,
+      "endLine": 117,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.usingTw",
+      "name": "usingTw",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 118,
+      "endLine": 118,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.usingAuth",
+      "name": "usingAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 119,
+      "endLine": 119,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 120,
+      "endLine": 120,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.indexFile",
+      "name": "indexFile",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 122,
+      "endLine": 122,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.indexSrc",
+      "name": "indexSrc",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 143,
+      "endLine": 143,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::selectPageFile.indexDest",
+      "name": "indexDest",
+      "kind": "variable",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 144,
+      "endLine": 144,
+      "exported": true,
+      "scope": "selectPageFile"
+    },
+    {
+      "id": "helpers/setImportAlias.ts::replaceTextInFiles",
+      "name": "replaceTextInFiles",
+      "kind": "function",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 4,
+      "endLine": 21,
+      "exported": false
+    },
+    {
+      "id": "helpers/setImportAlias.ts::replaceTextInFiles.files",
+      "name": "files",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 9,
+      "endLine": 9,
+      "exported": false,
+      "scope": "replaceTextInFiles"
+    },
+    {
+      "id": "helpers/setImportAlias.ts::replaceTextInFiles.filePath",
+      "name": "filePath",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 12,
+      "endLine": 12,
+      "exported": false,
+      "scope": "replaceTextInFiles"
+    },
+    {
+      "id": "helpers/setImportAlias.ts::replaceTextInFiles.data",
+      "name": "data",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": false,
+      "scope": "replaceTextInFiles"
+    },
+    {
+      "id": "helpers/setImportAlias.ts::replaceTextInFiles.updatedData",
+      "name": "updatedData",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": false,
+      "scope": "replaceTextInFiles"
+    },
+    {
+      "id": "helpers/setImportAlias.ts::files",
+      "name": "files",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 9,
+      "endLine": 9,
+      "exported": false
+    },
+    {
+      "id": "helpers/setImportAlias.ts::filePath",
+      "name": "filePath",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 12,
+      "endLine": 12,
+      "exported": false
+    },
+    {
+      "id": "helpers/setImportAlias.ts::data",
+      "name": "data",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": false
+    },
+    {
+      "id": "helpers/setImportAlias.ts::updatedData",
+      "name": "updatedData",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": false
+    },
+    {
+      "id": "helpers/setImportAlias.ts::setImportAlias",
+      "name": "setImportAlias",
+      "kind": "function",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 23,
+      "endLine": 30,
+      "exported": true
+    },
+    {
+      "id": "helpers/setImportAlias.ts::setImportAlias.normalizedImportAlias",
+      "name": "normalizedImportAlias",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 24,
+      "endLine": 26,
+      "exported": true,
+      "scope": "setImportAlias"
+    },
+    {
+      "id": "helpers/setImportAlias.ts::normalizedImportAlias",
+      "name": "normalizedImportAlias",
+      "kind": "variable",
+      "filePath": "helpers/setImportAlias.ts",
+      "startLine": 24,
+      "endLine": 26,
+      "exported": true
+    },
+    {
+      "id": "index.ts::CT3APackageJSON",
+      "name": "CT3APackageJSON",
+      "kind": "type_alias",
+      "filePath": "index.ts",
+      "startLine": 25,
+      "endLine": 29,
+      "exported": false
+    },
+    {
+      "id": "index.ts::main",
+      "name": "main",
+      "kind": "function",
+      "filePath": "index.ts",
+      "startLine": 31,
+      "endLine": 116,
+      "exported": false
+    },
+    {
+      "id": "index.ts::main.npmVersion",
+      "name": "npmVersion",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 32,
+      "endLine": 32,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 33,
+      "endLine": 33,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.{\n    appName,\n    packages,\n    flags: { noGit, noInstall, importAlias, appRouter },\n    databaseProvider,\n  }",
+      "name": "{\n    appName,\n    packages,\n    flags: { noGit, noInstall, importAlias, appRouter },\n    databaseProvider,\n  }",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 39,
+      "endLine": 44,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.usePackages",
+      "name": "usePackages",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 46,
+      "endLine": 46,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.[scopedAppName, appDir]",
+      "name": "[scopedAppName, appDir]",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 49,
+      "endLine": 49,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.projectDir",
+      "name": "projectDir",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 51,
+      "endLine": 59,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.pkgJson",
+      "name": "pkgJson",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 62,
+      "endLine": 64,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::main.{ stdout }",
+      "name": "{ stdout }",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 70,
+      "endLine": 72,
+      "exported": false,
+      "scope": "main"
+    },
+    {
+      "id": "index.ts::npmVersion",
+      "name": "npmVersion",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 32,
+      "endLine": 32,
+      "exported": false
+    },
+    {
+      "id": "index.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 33,
+      "endLine": 33,
+      "exported": false
+    },
+    {
+      "id": "index.ts::{\n    appName,\n    packages,\n    flags: { noGit, noInstall, importAlias, appRouter },\n    databaseProvider,\n  }",
+      "name": "{\n    appName,\n    packages,\n    flags: { noGit, noInstall, importAlias, appRouter },\n    databaseProvider,\n  }",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 39,
+      "endLine": 44,
+      "exported": false
+    },
+    {
+      "id": "index.ts::usePackages",
+      "name": "usePackages",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 46,
+      "endLine": 46,
+      "exported": false
+    },
+    {
+      "id": "index.ts::[scopedAppName, appDir]",
+      "name": "[scopedAppName, appDir]",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 49,
+      "endLine": 49,
+      "exported": false
+    },
+    {
+      "id": "index.ts::projectDir",
+      "name": "projectDir",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 51,
+      "endLine": 59,
+      "exported": false
+    },
+    {
+      "id": "index.ts::pkgJson",
+      "name": "pkgJson",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 62,
+      "endLine": 64,
+      "exported": false
+    },
+    {
+      "id": "index.ts::{ stdout }",
+      "name": "{ stdout }",
+      "kind": "variable",
+      "filePath": "index.ts",
+      "startLine": 70,
+      "endLine": 72,
+      "exported": false
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller",
+      "name": "betterAuthInstaller",
+      "kind": "function",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 9,
+      "endLine": 134,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.deps",
+      "name": "deps",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 28,
+      "endLine": 28,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.isAppRouter",
+      "name": "isAppRouter",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 30,
+      "endLine": 30,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.apiHandlerFile",
+      "name": "apiHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 32,
+      "endLine": 34,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.apiHandlerSrc",
+      "name": "apiHandlerSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 36,
+      "endLine": 36,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.apiHandlerDest",
+      "name": "apiHandlerDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 37,
+      "endLine": 37,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.authConfigSrc",
+      "name": "authConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 39,
+      "endLine": 47,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.authConfigDest",
+      "name": "authConfigDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 48,
+      "endLine": 51,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.authIndexSrc",
+      "name": "authIndexSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.authIndexDest",
+      "name": "authIndexDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 54,
+      "endLine": 57,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.betterAuthClientSrc",
+      "name": "betterAuthClientSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 60,
+      "endLine": 63,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.betterAuthClientDest",
+      "name": "betterAuthClientDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 64,
+      "endLine": 67,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.betterAuthServerSrc",
+      "name": "betterAuthServerSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 68,
+      "endLine": 71,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.betterAuthServerDest",
+      "name": "betterAuthServerDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 72,
+      "endLine": 75,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.content",
+      "name": "content",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 86,
+      "endLine": 86,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.providerForDrizzle",
+      "name": "providerForDrizzle",
+      "kind": "function",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 89,
+      "endLine": 101,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.providerForPrisma",
+      "name": "providerForPrisma",
+      "kind": "function",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 103,
+      "endLine": 115,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.providerValue",
+      "name": "providerValue",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 117,
+      "endLine": 121,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthInstaller.updated",
+      "name": "updated",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 124,
+      "endLine": 127,
+      "exported": true,
+      "scope": "betterAuthInstaller"
+    },
+    {
+      "id": "installers/betterAuth.ts::usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::deps",
+      "name": "deps",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 28,
+      "endLine": 28,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::isAppRouter",
+      "name": "isAppRouter",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 30,
+      "endLine": 30,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::apiHandlerFile",
+      "name": "apiHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 32,
+      "endLine": 34,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::apiHandlerSrc",
+      "name": "apiHandlerSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 36,
+      "endLine": 36,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::apiHandlerDest",
+      "name": "apiHandlerDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 37,
+      "endLine": 37,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::authConfigSrc",
+      "name": "authConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 39,
+      "endLine": 47,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::authConfigDest",
+      "name": "authConfigDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 48,
+      "endLine": 51,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::authIndexSrc",
+      "name": "authIndexSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::authIndexDest",
+      "name": "authIndexDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 54,
+      "endLine": 57,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthClientSrc",
+      "name": "betterAuthClientSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 60,
+      "endLine": 63,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthClientDest",
+      "name": "betterAuthClientDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 64,
+      "endLine": 67,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthServerSrc",
+      "name": "betterAuthServerSrc",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 68,
+      "endLine": 71,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::betterAuthServerDest",
+      "name": "betterAuthServerDest",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 72,
+      "endLine": 75,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::content",
+      "name": "content",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 86,
+      "endLine": 86,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::providerForDrizzle",
+      "name": "providerForDrizzle",
+      "kind": "function",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 89,
+      "endLine": 101,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::providerForPrisma",
+      "name": "providerForPrisma",
+      "kind": "function",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 103,
+      "endLine": 115,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::providerValue",
+      "name": "providerValue",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 117,
+      "endLine": 121,
+      "exported": true
+    },
+    {
+      "id": "installers/betterAuth.ts::updated",
+      "name": "updated",
+      "kind": "variable",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 124,
+      "endLine": 127,
+      "exported": true
+    },
+    {
+      "id": "installers/biome.ts::biomeInstaller",
+      "name": "biomeInstaller",
+      "kind": "function",
+      "filePath": "installers/biome.ts",
+      "startLine": 9,
+      "endLine": 30,
+      "exported": true
+    },
+    {
+      "id": "installers/biome.ts::biomeInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/biome.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true,
+      "scope": "biomeInstaller"
+    },
+    {
+      "id": "installers/biome.ts::biomeInstaller.biomeConfigSrc",
+      "name": "biomeConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/biome.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true,
+      "scope": "biomeInstaller"
+    },
+    {
+      "id": "installers/biome.ts::biomeInstaller.biomeConfigDest",
+      "name": "biomeConfigDest",
+      "kind": "variable",
+      "filePath": "installers/biome.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true,
+      "scope": "biomeInstaller"
+    },
+    {
+      "id": "installers/biome.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/biome.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true
+    },
+    {
+      "id": "installers/biome.ts::biomeConfigSrc",
+      "name": "biomeConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/biome.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true
+    },
+    {
+      "id": "installers/biome.ts::biomeConfigDest",
+      "name": "biomeConfigDest",
+      "kind": "variable",
+      "filePath": "installers/biome.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true
+    },
+    {
+      "id": "installers/dbContainer.ts::sanitizeName",
+      "name": "sanitizeName",
+      "kind": "function",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 9,
+      "endLine": 13,
+      "exported": false
+    },
+    {
+      "id": "installers/dbContainer.ts::dbContainerInstaller",
+      "name": "dbContainerInstaller",
+      "kind": "function",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 15,
+      "endLine": 38,
+      "exported": true
+    },
+    {
+      "id": "installers/dbContainer.ts::dbContainerInstaller.scriptSrc",
+      "name": "scriptSrc",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 20,
+      "endLine": 23,
+      "exported": true,
+      "scope": "dbContainerInstaller"
+    },
+    {
+      "id": "installers/dbContainer.ts::dbContainerInstaller.scriptText",
+      "name": "scriptText",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 24,
+      "endLine": 24,
+      "exported": true,
+      "scope": "dbContainerInstaller"
+    },
+    {
+      "id": "installers/dbContainer.ts::dbContainerInstaller.scriptDest",
+      "name": "scriptDest",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true,
+      "scope": "dbContainerInstaller"
+    },
+    {
+      "id": "installers/dbContainer.ts::dbContainerInstaller.[projectNameParsed]",
+      "name": "[projectNameParsed]",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 27,
+      "endLine": 28,
+      "exported": true,
+      "scope": "dbContainerInstaller"
+    },
+    {
+      "id": "installers/dbContainer.ts::dbContainerInstaller.sanitizedProjectName",
+      "name": "sanitizedProjectName",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true,
+      "scope": "dbContainerInstaller"
+    },
+    {
+      "id": "installers/dbContainer.ts::scriptSrc",
+      "name": "scriptSrc",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 20,
+      "endLine": 23,
+      "exported": true
+    },
+    {
+      "id": "installers/dbContainer.ts::scriptText",
+      "name": "scriptText",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 24,
+      "endLine": 24,
+      "exported": true
+    },
+    {
+      "id": "installers/dbContainer.ts::scriptDest",
+      "name": "scriptDest",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "installers/dbContainer.ts::[projectNameParsed]",
+      "name": "[projectNameParsed]",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 27,
+      "endLine": 28,
+      "exported": true
+    },
+    {
+      "id": "installers/dbContainer.ts::sanitizedProjectName",
+      "name": "sanitizedProjectName",
+      "kind": "variable",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true
+    },
+    {
+      "id": "installers/dependencyVersionMap.ts::dependencyVersionMap",
+      "name": "dependencyVersionMap",
+      "kind": "variable",
+      "filePath": "installers/dependencyVersionMap.ts",
+      "startLine": 5,
+      "endLine": 52,
+      "exported": true
+    },
+    {
+      "id": "installers/dependencyVersionMap.ts::AvailableDependencies",
+      "name": "AvailableDependencies",
+      "kind": "type_alias",
+      "filePath": "installers/dependencyVersionMap.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller",
+      "name": "drizzleInstaller",
+      "kind": "function",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 9,
+      "endLine": 90,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 36,
+      "endLine": 36,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.configFile",
+      "name": "configFile",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 38,
+      "endLine": 43,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.configDest",
+      "name": "configDest",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 44,
+      "endLine": 44,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.schemaBaseName",
+      "name": "schemaBaseName",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 46,
+      "endLine": 50,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.schemaSrc",
+      "name": "schemaSrc",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 51,
+      "endLine": 55,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.schemaDest",
+      "name": "schemaDest",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 56,
+      "endLine": 56,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.schemaContent",
+      "name": "schemaContent",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 59,
+      "endLine": 59,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.configContent",
+      "name": "configContent",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 65,
+      "endLine": 65,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.clientSrc",
+      "name": "clientSrc",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 69,
+      "endLine": 72,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::drizzleInstaller.clientDest",
+      "name": "clientDest",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 73,
+      "endLine": 73,
+      "exported": true,
+      "scope": "drizzleInstaller"
+    },
+    {
+      "id": "installers/drizzle.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 36,
+      "endLine": 36,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::configFile",
+      "name": "configFile",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 38,
+      "endLine": 43,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::configDest",
+      "name": "configDest",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 44,
+      "endLine": 44,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::schemaBaseName",
+      "name": "schemaBaseName",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 46,
+      "endLine": 50,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::schemaSrc",
+      "name": "schemaSrc",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 51,
+      "endLine": 55,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::schemaDest",
+      "name": "schemaDest",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 56,
+      "endLine": 56,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::schemaContent",
+      "name": "schemaContent",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 59,
+      "endLine": 59,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::configContent",
+      "name": "configContent",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 65,
+      "endLine": 65,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::clientSrc",
+      "name": "clientSrc",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 69,
+      "endLine": 72,
+      "exported": true
+    },
+    {
+      "id": "installers/drizzle.ts::clientDest",
+      "name": "clientDest",
+      "kind": "variable",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 73,
+      "endLine": 73,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller",
+      "name": "envVariablesInstaller",
+      "kind": "function",
+      "filePath": "installers/envVars.ts",
+      "startLine": 8,
+      "endLine": 78,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.usingNextAuth",
+      "name": "usingNextAuth",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 14,
+      "endLine": 14,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.usingDb",
+      "name": "usingDb",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 19,
+      "endLine": 19,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.usingPlanetScale",
+      "name": "usingPlanetScale",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.envContent",
+      "name": "envContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 22,
+      "endLine": 29,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.envFile",
+      "name": "envFile",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.envSchemaSrc",
+      "name": "envSchemaSrc",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 48,
+      "endLine": 52,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.envSchemaDest",
+      "name": "envSchemaDest",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.envDest",
+      "name": "envDest",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 57,
+      "endLine": 57,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.envExampleDest",
+      "name": "envExampleDest",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 58,
+      "endLine": 58,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller._exampleEnvContent",
+      "name": "_exampleEnvContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 60,
+      "endLine": 60,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller.secret",
+      "name": "secret",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 63,
+      "endLine": 65,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::envVariablesInstaller._envContent",
+      "name": "_envContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 66,
+      "endLine": 74,
+      "exported": true,
+      "scope": "envVariablesInstaller"
+    },
+    {
+      "id": "installers/envVars.ts::usingNextAuth",
+      "name": "usingNextAuth",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 14,
+      "endLine": 14,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::usingDb",
+      "name": "usingDb",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 19,
+      "endLine": 19,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::usingPlanetScale",
+      "name": "usingPlanetScale",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envContent",
+      "name": "envContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 22,
+      "endLine": 29,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envFile",
+      "name": "envFile",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envSchemaSrc",
+      "name": "envSchemaSrc",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 48,
+      "endLine": 52,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envSchemaDest",
+      "name": "envSchemaDest",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 53,
+      "endLine": 53,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envDest",
+      "name": "envDest",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 57,
+      "endLine": 57,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::envExampleDest",
+      "name": "envExampleDest",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 58,
+      "endLine": 58,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::_exampleEnvContent",
+      "name": "_exampleEnvContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 60,
+      "endLine": 60,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::secret",
+      "name": "secret",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 63,
+      "endLine": 65,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::_envContent",
+      "name": "_envContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 66,
+      "endLine": 74,
+      "exported": true
+    },
+    {
+      "id": "installers/envVars.ts::getEnvContent",
+      "name": "getEnvContent",
+      "kind": "function",
+      "filePath": "installers/envVars.ts",
+      "startLine": 80,
+      "endLine": 155,
+      "exported": false
+    },
+    {
+      "id": "installers/envVars.ts::getEnvContent.content",
+      "name": "content",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 88,
+      "endLine": 93,
+      "exported": false,
+      "scope": "getEnvContent"
+    },
+    {
+      "id": "installers/envVars.ts::content",
+      "name": "content",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 88,
+      "endLine": 93,
+      "exported": false
+    },
+    {
+      "id": "installers/envVars.ts::exampleEnvContent",
+      "name": "exampleEnvContent",
+      "kind": "variable",
+      "filePath": "installers/envVars.ts",
+      "startLine": 157,
+      "endLine": 167,
+      "exported": false
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller",
+      "name": "dynamicEslintInstaller",
+      "kind": "function",
+      "filePath": "installers/eslint.ts",
+      "startLine": 12,
+      "endLine": 73,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.devPackages",
+      "name": "devPackages",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 13,
+      "endLine": 19,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 33,
+      "endLine": 33,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.prettierSrc",
+      "name": "prettierSrc",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 36,
+      "endLine": 36,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.prettierDest",
+      "name": "prettierDest",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 42,
+      "endLine": 42,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 47,
+      "endLine": 47,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.pnpmSrc",
+      "name": "pnpmSrc",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 49,
+      "endLine": 49,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 65,
+      "endLine": 65,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.eslintConfigSrc",
+      "name": "eslintConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 66,
+      "endLine": 69,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::dynamicEslintInstaller.eslintConfigDest",
+      "name": "eslintConfigDest",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 70,
+      "endLine": 70,
+      "exported": true,
+      "scope": "dynamicEslintInstaller"
+    },
+    {
+      "id": "installers/eslint.ts::devPackages",
+      "name": "devPackages",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 13,
+      "endLine": 19,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 33,
+      "endLine": 33,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::prettierSrc",
+      "name": "prettierSrc",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 36,
+      "endLine": 36,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::prettierDest",
+      "name": "prettierDest",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 42,
+      "endLine": 42,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 47,
+      "endLine": 47,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::pnpmSrc",
+      "name": "pnpmSrc",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 49,
+      "endLine": 49,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 65,
+      "endLine": 65,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::eslintConfigSrc",
+      "name": "eslintConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 66,
+      "endLine": 69,
+      "exported": true
+    },
+    {
+      "id": "installers/eslint.ts::eslintConfigDest",
+      "name": "eslintConfigDest",
+      "kind": "variable",
+      "filePath": "installers/eslint.ts",
+      "startLine": 70,
+      "endLine": 70,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::availablePackages",
+      "name": "availablePackages",
+      "kind": "variable",
+      "filePath": "installers/index.ts",
+      "startLine": 15,
+      "endLine": 26,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::AvailablePackages",
+      "name": "AvailablePackages",
+      "kind": "type_alias",
+      "filePath": "installers/index.ts",
+      "startLine": 27,
+      "endLine": 27,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::databaseProviders",
+      "name": "databaseProviders",
+      "kind": "variable",
+      "filePath": "installers/index.ts",
+      "startLine": 29,
+      "endLine": 34,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::DatabaseProvider",
+      "name": "DatabaseProvider",
+      "kind": "type_alias",
+      "filePath": "installers/index.ts",
+      "startLine": 35,
+      "endLine": 35,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::InstallerOptions",
+      "name": "InstallerOptions",
+      "kind": "interface",
+      "filePath": "installers/index.ts",
+      "startLine": 37,
+      "endLine": 46,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::Installer",
+      "name": "Installer",
+      "kind": "type_alias",
+      "filePath": "installers/index.ts",
+      "startLine": 48,
+      "endLine": 48,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::PkgInstallerMap",
+      "name": "PkgInstallerMap",
+      "kind": "type_alias",
+      "filePath": "installers/index.ts",
+      "startLine": 50,
+      "endLine": 56,
+      "exported": true
+    },
+    {
+      "id": "installers/index.ts::buildPkgInstallerMap",
+      "name": "buildPkgInstallerMap",
+      "kind": "function",
+      "filePath": "installers/index.ts",
+      "startLine": 58,
+      "endLine": 102,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller",
+      "name": "nextAuthInstaller",
+      "kind": "function",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 9,
+      "endLine": 47,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 11,
+      "endLine": 11,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.deps",
+      "name": "deps",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 13,
+      "endLine": 13,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.apiHandlerFile",
+      "name": "apiHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.apiHandlerSrc",
+      "name": "apiHandlerSrc",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 27,
+      "endLine": 27,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.apiHandlerDest",
+      "name": "apiHandlerDest",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 28,
+      "endLine": 28,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.authConfigSrc",
+      "name": "authConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 30,
+      "endLine": 38,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.authConfigDest",
+      "name": "authConfigDest",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 39,
+      "endLine": 39,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.authIndexSrc",
+      "name": "authIndexSrc",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 41,
+      "endLine": 41,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::nextAuthInstaller.authIndexDest",
+      "name": "authIndexDest",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 42,
+      "endLine": 42,
+      "exported": true,
+      "scope": "nextAuthInstaller"
+    },
+    {
+      "id": "installers/nextAuth.ts::usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 11,
+      "endLine": 11,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::deps",
+      "name": "deps",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 13,
+      "endLine": 13,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::apiHandlerFile",
+      "name": "apiHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::apiHandlerSrc",
+      "name": "apiHandlerSrc",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 27,
+      "endLine": 27,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::apiHandlerDest",
+      "name": "apiHandlerDest",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 28,
+      "endLine": 28,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::authConfigSrc",
+      "name": "authConfigSrc",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 30,
+      "endLine": 38,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::authConfigDest",
+      "name": "authConfigDest",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 39,
+      "endLine": 39,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::authIndexSrc",
+      "name": "authIndexSrc",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 41,
+      "endLine": 41,
+      "exported": true
+    },
+    {
+      "id": "installers/nextAuth.ts::authIndexDest",
+      "name": "authIndexDest",
+      "kind": "variable",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 42,
+      "endLine": 42,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller",
+      "name": "prismaInstaller",
+      "kind": "function",
+      "filePath": "installers/prisma.ts",
+      "startLine": 9,
+      "endLine": 85,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.schemaBaseName",
+      "name": "schemaBaseName",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 33,
+      "endLine": 37,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.schemaSrc",
+      "name": "schemaSrc",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 38,
+      "endLine": 44,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.schemaText",
+      "name": "schemaText",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 45,
+      "endLine": 45,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.schemaDest",
+      "name": "schemaDest",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 61,
+      "endLine": 61,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.clientSrc",
+      "name": "clientSrc",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 65,
+      "endLine": 70,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::prismaInstaller.clientDest",
+      "name": "clientDest",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 71,
+      "endLine": 71,
+      "exported": true,
+      "scope": "prismaInstaller"
+    },
+    {
+      "id": "installers/prisma.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::schemaBaseName",
+      "name": "schemaBaseName",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 33,
+      "endLine": 37,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::schemaSrc",
+      "name": "schemaSrc",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 38,
+      "endLine": 44,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::schemaText",
+      "name": "schemaText",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 45,
+      "endLine": 45,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::schemaDest",
+      "name": "schemaDest",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 61,
+      "endLine": 61,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::clientSrc",
+      "name": "clientSrc",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 65,
+      "endLine": 70,
+      "exported": true
+    },
+    {
+      "id": "installers/prisma.ts::clientDest",
+      "name": "clientDest",
+      "kind": "variable",
+      "filePath": "installers/prisma.ts",
+      "startLine": 71,
+      "endLine": 71,
+      "exported": true
+    },
+    {
+      "id": "installers/tailwind.ts::tailwindInstaller",
+      "name": "tailwindInstaller",
+      "kind": "function",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 8,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "installers/tailwind.ts::tailwindInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true,
+      "scope": "tailwindInstaller"
+    },
+    {
+      "id": "installers/tailwind.ts::tailwindInstaller.postcssCfgSrc",
+      "name": "postcssCfgSrc",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true,
+      "scope": "tailwindInstaller"
+    },
+    {
+      "id": "installers/tailwind.ts::tailwindInstaller.postcssCfgDest",
+      "name": "postcssCfgDest",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true,
+      "scope": "tailwindInstaller"
+    },
+    {
+      "id": "installers/tailwind.ts::tailwindInstaller.cssSrc",
+      "name": "cssSrc",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true,
+      "scope": "tailwindInstaller"
+    },
+    {
+      "id": "installers/tailwind.ts::tailwindInstaller.cssDest",
+      "name": "cssDest",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 21,
+      "endLine": 21,
+      "exported": true,
+      "scope": "tailwindInstaller"
+    },
+    {
+      "id": "installers/tailwind.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": true
+    },
+    {
+      "id": "installers/tailwind.ts::postcssCfgSrc",
+      "name": "postcssCfgSrc",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true
+    },
+    {
+      "id": "installers/tailwind.ts::postcssCfgDest",
+      "name": "postcssCfgDest",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 18,
+      "endLine": 18,
+      "exported": true
+    },
+    {
+      "id": "installers/tailwind.ts::cssSrc",
+      "name": "cssSrc",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "installers/tailwind.ts::cssDest",
+      "name": "cssDest",
+      "kind": "variable",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 21,
+      "endLine": 21,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller",
+      "name": "trpcInstaller",
+      "kind": "function",
+      "filePath": "installers/trpc.ts",
+      "startLine": 8,
+      "endLine": 134,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.usingAuth",
+      "name": "usingAuth",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 26,
+      "endLine": 26,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 27,
+      "endLine": 27,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 28,
+      "endLine": 28,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.usingDb",
+      "name": "usingDb",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 29,
+      "endLine": 29,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.apiHandlerFile",
+      "name": "apiHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 33,
+      "endLine": 33,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.routeHandlerFile",
+      "name": "routeHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 34,
+      "endLine": 34,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.srcToUse",
+      "name": "srcToUse",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 35,
+      "endLine": 35,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.apiHandlerSrc",
+      "name": "apiHandlerSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 37,
+      "endLine": 37,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.apiHandlerDest",
+      "name": "apiHandlerDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 38,
+      "endLine": 38,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.trpcFile",
+      "name": "trpcFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 40,
+      "endLine": 47,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.trpcSrc",
+      "name": "trpcSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 48,
+      "endLine": 53,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.trpcDest",
+      "name": "trpcDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 54,
+      "endLine": 54,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.rootRouterSrc",
+      "name": "rootRouterSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 56,
+      "endLine": 56,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.rootRouterDest",
+      "name": "rootRouterDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 57,
+      "endLine": 57,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.exampleRouterFile",
+      "name": "exampleRouterFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 59,
+      "endLine": 70,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.exampleRouterSrc",
+      "name": "exampleRouterSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 72,
+      "endLine": 76,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.exampleRouterDest",
+      "name": "exampleRouterDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 77,
+      "endLine": 80,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.copySrcDest",
+      "name": "copySrcDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 82,
+      "endLine": 87,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.trpcDir",
+      "name": "trpcDir",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 96,
+      "endLine": 96,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.utilsSrc",
+      "name": "utilsSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 126,
+      "endLine": 126,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::trpcInstaller.utilsDest",
+      "name": "utilsDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 127,
+      "endLine": 127,
+      "exported": true,
+      "scope": "trpcInstaller"
+    },
+    {
+      "id": "installers/trpc.ts::usingAuth",
+      "name": "usingAuth",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::usingBetterAuth",
+      "name": "usingBetterAuth",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 26,
+      "endLine": 26,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::usingPrisma",
+      "name": "usingPrisma",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 27,
+      "endLine": 27,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::usingDrizzle",
+      "name": "usingDrizzle",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 28,
+      "endLine": 28,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::usingDb",
+      "name": "usingDb",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 29,
+      "endLine": 29,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::extrasDir",
+      "name": "extrasDir",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::apiHandlerFile",
+      "name": "apiHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 33,
+      "endLine": 33,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::routeHandlerFile",
+      "name": "routeHandlerFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 34,
+      "endLine": 34,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::srcToUse",
+      "name": "srcToUse",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 35,
+      "endLine": 35,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::apiHandlerSrc",
+      "name": "apiHandlerSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 37,
+      "endLine": 37,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::apiHandlerDest",
+      "name": "apiHandlerDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 38,
+      "endLine": 38,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::trpcFile",
+      "name": "trpcFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 40,
+      "endLine": 47,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::trpcSrc",
+      "name": "trpcSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 48,
+      "endLine": 53,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::trpcDest",
+      "name": "trpcDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 54,
+      "endLine": 54,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::rootRouterSrc",
+      "name": "rootRouterSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 56,
+      "endLine": 56,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::rootRouterDest",
+      "name": "rootRouterDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 57,
+      "endLine": 57,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::exampleRouterFile",
+      "name": "exampleRouterFile",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 59,
+      "endLine": 70,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::exampleRouterSrc",
+      "name": "exampleRouterSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 72,
+      "endLine": 76,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::exampleRouterDest",
+      "name": "exampleRouterDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 77,
+      "endLine": 80,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::copySrcDest",
+      "name": "copySrcDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 82,
+      "endLine": 87,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::trpcDir",
+      "name": "trpcDir",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 96,
+      "endLine": 96,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::utilsSrc",
+      "name": "utilsSrc",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 126,
+      "endLine": 126,
+      "exported": true
+    },
+    {
+      "id": "installers/trpc.ts::utilsDest",
+      "name": "utilsDest",
+      "kind": "variable",
+      "filePath": "installers/trpc.ts",
+      "startLine": 127,
+      "endLine": 127,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageDependency.ts::addPackageDependency",
+      "name": "addPackageDependency",
+      "kind": "function",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 11,
+      "endLine": 36,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageDependency.ts::addPackageDependency.{ dependencies, devMode, projectDir }",
+      "name": "{ dependencies, devMode, projectDir }",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true,
+      "scope": "addPackageDependency"
+    },
+    {
+      "id": "utils/addPackageDependency.ts::addPackageDependency.pkgJson",
+      "name": "pkgJson",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 18,
+      "endLine": 20,
+      "exported": true,
+      "scope": "addPackageDependency"
+    },
+    {
+      "id": "utils/addPackageDependency.ts::addPackageDependency.version",
+      "name": "version",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true,
+      "scope": "addPackageDependency"
+    },
+    {
+      "id": "utils/addPackageDependency.ts::addPackageDependency.sortedPkgJson",
+      "name": "sortedPkgJson",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true,
+      "scope": "addPackageDependency"
+    },
+    {
+      "id": "utils/addPackageDependency.ts::{ dependencies, devMode, projectDir }",
+      "name": "{ dependencies, devMode, projectDir }",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 16,
+      "endLine": 16,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageDependency.ts::pkgJson",
+      "name": "pkgJson",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 18,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageDependency.ts::version",
+      "name": "version",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageDependency.ts::sortedPkgJson",
+      "name": "sortedPkgJson",
+      "kind": "variable",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 31,
+      "endLine": 31,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageScript.ts::addPackageScript",
+      "name": "addPackageScript",
+      "kind": "function",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 6,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageScript.ts::addPackageScript.{ scripts, projectDir }",
+      "name": "{ scripts, projectDir }",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": true,
+      "scope": "addPackageScript"
+    },
+    {
+      "id": "utils/addPackageScript.ts::addPackageScript.packageJsonPath",
+      "name": "packageJsonPath",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 12,
+      "endLine": 12,
+      "exported": true,
+      "scope": "addPackageScript"
+    },
+    {
+      "id": "utils/addPackageScript.ts::addPackageScript.packageJsonContent",
+      "name": "packageJsonContent",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 13,
+      "endLine": 13,
+      "exported": true,
+      "scope": "addPackageScript"
+    },
+    {
+      "id": "utils/addPackageScript.ts::addPackageScript.sortedPkgJson",
+      "name": "sortedPkgJson",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true,
+      "scope": "addPackageScript"
+    },
+    {
+      "id": "utils/addPackageScript.ts::{ scripts, projectDir }",
+      "name": "{ scripts, projectDir }",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageScript.ts::packageJsonPath",
+      "name": "packageJsonPath",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 12,
+      "endLine": 12,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageScript.ts::packageJsonContent",
+      "name": "packageJsonContent",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 13,
+      "endLine": 13,
+      "exported": true
+    },
+    {
+      "id": "utils/addPackageScript.ts::sortedPkgJson",
+      "name": "sortedPkgJson",
+      "kind": "variable",
+      "filePath": "utils/addPackageScript.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "utils/getT3Version.ts::getVersion",
+      "name": "getVersion",
+      "kind": "function",
+      "filePath": "utils/getT3Version.ts",
+      "startLine": 7,
+      "endLine": 13,
+      "exported": true
+    },
+    {
+      "id": "utils/getT3Version.ts::getVersion.packageJsonPath",
+      "name": "packageJsonPath",
+      "kind": "variable",
+      "filePath": "utils/getT3Version.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true,
+      "scope": "getVersion"
+    },
+    {
+      "id": "utils/getT3Version.ts::getVersion.packageJsonContent",
+      "name": "packageJsonContent",
+      "kind": "variable",
+      "filePath": "utils/getT3Version.ts",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": true,
+      "scope": "getVersion"
+    },
+    {
+      "id": "utils/getT3Version.ts::packageJsonPath",
+      "name": "packageJsonPath",
+      "kind": "variable",
+      "filePath": "utils/getT3Version.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true
+    },
+    {
+      "id": "utils/getT3Version.ts::packageJsonContent",
+      "name": "packageJsonContent",
+      "kind": "variable",
+      "filePath": "utils/getT3Version.ts",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": true
+    },
+    {
+      "id": "utils/getUserPkgManager.ts::PackageManager",
+      "name": "PackageManager",
+      "kind": "type_alias",
+      "filePath": "utils/getUserPkgManager.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": true
+    },
+    {
+      "id": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "name": "getUserPkgManager",
+      "kind": "function",
+      "filePath": "utils/getUserPkgManager.ts",
+      "startLine": 3,
+      "endLine": 21,
+      "exported": true
+    },
+    {
+      "id": "utils/getUserPkgManager.ts::getUserPkgManager.userAgent",
+      "name": "userAgent",
+      "kind": "variable",
+      "filePath": "utils/getUserPkgManager.ts",
+      "startLine": 5,
+      "endLine": 5,
+      "exported": true,
+      "scope": "getUserPkgManager"
+    },
+    {
+      "id": "utils/getUserPkgManager.ts::userAgent",
+      "name": "userAgent",
+      "kind": "variable",
+      "filePath": "utils/getUserPkgManager.ts",
+      "startLine": 5,
+      "endLine": 5,
+      "exported": true
+    },
+    {
+      "id": "utils/isTTYError.ts::IsTTYError",
+      "name": "IsTTYError",
+      "kind": "class",
+      "filePath": "utils/isTTYError.ts",
+      "startLine": 1,
+      "endLine": 5,
+      "exported": true
+    },
+    {
+      "id": "utils/isTTYError.ts::IsTTYError.constructor",
+      "name": "constructor",
+      "kind": "method",
+      "filePath": "utils/isTTYError.ts",
+      "startLine": 2,
+      "endLine": 4,
+      "exported": false,
+      "scope": "IsTTYError"
+    },
+    {
+      "id": "utils/logger.ts::logger",
+      "name": "logger",
+      "kind": "variable",
+      "filePath": "utils/logger.ts",
+      "startLine": 3,
+      "endLine": 16,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath",
+      "name": "parseNameAndPath",
+      "kind": "function",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 20,
+      "endLine": 42,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath.input",
+      "name": "input",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 21,
+      "endLine": 21,
+      "exported": true,
+      "scope": "parseNameAndPath"
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath.paths",
+      "name": "paths",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true,
+      "scope": "parseNameAndPath"
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath.appName",
+      "name": "appName",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true,
+      "scope": "parseNameAndPath"
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath.parsedCwd",
+      "name": "parsedCwd",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 29,
+      "endLine": 29,
+      "exported": true,
+      "scope": "parseNameAndPath"
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath.indexOfDelimiter",
+      "name": "indexOfDelimiter",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 34,
+      "endLine": 34,
+      "exported": true,
+      "scope": "parseNameAndPath"
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parseNameAndPath.path",
+      "name": "path",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 39,
+      "endLine": 39,
+      "exported": true,
+      "scope": "parseNameAndPath"
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::input",
+      "name": "input",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 21,
+      "endLine": 21,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::paths",
+      "name": "paths",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 23,
+      "endLine": 23,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::appName",
+      "name": "appName",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 25,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::parsedCwd",
+      "name": "parsedCwd",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 29,
+      "endLine": 29,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::indexOfDelimiter",
+      "name": "indexOfDelimiter",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 34,
+      "endLine": 34,
+      "exported": true
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::path",
+      "name": "path",
+      "kind": "variable",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 39,
+      "endLine": 39,
+      "exported": true
+    },
+    {
+      "id": "utils/removeTrailingSlash.ts::removeTrailingSlash",
+      "name": "removeTrailingSlash",
+      "kind": "function",
+      "filePath": "utils/removeTrailingSlash.ts",
+      "startLine": 1,
+      "endLine": 7,
+      "exported": true
+    },
+    {
+      "id": "utils/renderTitle.ts::poimandresTheme",
+      "name": "poimandresTheme",
+      "kind": "variable",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 7,
+      "endLine": 14,
+      "exported": false
+    },
+    {
+      "id": "utils/renderTitle.ts::renderTitle",
+      "name": "renderTitle",
+      "kind": "function",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 16,
+      "endLine": 25,
+      "exported": true
+    },
+    {
+      "id": "utils/renderTitle.ts::renderTitle.t3Gradient",
+      "name": "t3Gradient",
+      "kind": "variable",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true,
+      "scope": "renderTitle"
+    },
+    {
+      "id": "utils/renderTitle.ts::renderTitle.pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true,
+      "scope": "renderTitle"
+    },
+    {
+      "id": "utils/renderTitle.ts::t3Gradient",
+      "name": "t3Gradient",
+      "kind": "variable",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "exported": true
+    },
+    {
+      "id": "utils/renderTitle.ts::pkgManager",
+      "name": "pkgManager",
+      "kind": "variable",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": true
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::renderVersionWarning",
+      "name": "renderVersionWarning",
+      "kind": "function",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 7,
+      "endLine": 32,
+      "exported": true
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::renderVersionWarning.currentVersion",
+      "name": "currentVersion",
+      "kind": "variable",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true,
+      "scope": "renderVersionWarning"
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::currentVersion",
+      "name": "currentVersion",
+      "kind": "variable",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::DistTagsBody",
+      "name": "DistTagsBody",
+      "kind": "interface",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 41,
+      "endLine": 43,
+      "exported": false
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::checkForLatestVersion",
+      "name": "checkForLatestVersion",
+      "kind": "function",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 45,
+      "endLine": 69,
+      "exported": false
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::checkForLatestVersion.body",
+      "name": "body",
+      "kind": "variable",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 52,
+      "endLine": 52,
+      "exported": false,
+      "scope": "checkForLatestVersion"
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::body",
+      "name": "body",
+      "kind": "variable",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 52,
+      "endLine": 52,
+      "exported": false
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::getNpmVersion",
+      "name": "getNpmVersion",
+      "kind": "function",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 71,
+      "endLine": 79,
+      "exported": true
+    },
+    {
+      "id": "utils/validateAppName.ts::validationRegExp",
+      "name": "validationRegExp",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 3,
+      "endLine": 4,
+      "exported": false
+    },
+    {
+      "id": "utils/validateAppName.ts::validateAppName",
+      "name": "validateAppName",
+      "kind": "function",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 7,
+      "endLine": 24,
+      "exported": true
+    },
+    {
+      "id": "utils/validateAppName.ts::validateAppName.input",
+      "name": "input",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true,
+      "scope": "validateAppName"
+    },
+    {
+      "id": "utils/validateAppName.ts::validateAppName.paths",
+      "name": "paths",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 9,
+      "endLine": 9,
+      "exported": true,
+      "scope": "validateAppName"
+    },
+    {
+      "id": "utils/validateAppName.ts::validateAppName.indexOfDelimiter",
+      "name": "indexOfDelimiter",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 12,
+      "endLine": 12,
+      "exported": true,
+      "scope": "validateAppName"
+    },
+    {
+      "id": "utils/validateAppName.ts::validateAppName.appName",
+      "name": "appName",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 14,
+      "endLine": 14,
+      "exported": true,
+      "scope": "validateAppName"
+    },
+    {
+      "id": "utils/validateAppName.ts::input",
+      "name": "input",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 8,
+      "endLine": 8,
+      "exported": true
+    },
+    {
+      "id": "utils/validateAppName.ts::paths",
+      "name": "paths",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 9,
+      "endLine": 9,
+      "exported": true
+    },
+    {
+      "id": "utils/validateAppName.ts::indexOfDelimiter",
+      "name": "indexOfDelimiter",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 12,
+      "endLine": 12,
+      "exported": true
+    },
+    {
+      "id": "utils/validateAppName.ts::appName",
+      "name": "appName",
+      "kind": "variable",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 14,
+      "endLine": 14,
+      "exported": true
+    },
+    {
+      "id": "utils/validateImportAlias.ts::validateImportAlias",
+      "name": "validateImportAlias",
+      "kind": "function",
+      "filePath": "utils/validateImportAlias.ts",
+      "startLine": 1,
+      "endLine": 6,
+      "exported": true
+    },
+    {
+      "id": "cli/index.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "cli/index.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/createProject.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/createProject.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/format.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/format.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/git.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/git.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/installDependencies.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/installDependencies.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/installPackages.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/installPackages.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/logNextSteps.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/logNextSteps.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/scaffoldProject.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/scaffoldProject.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "helpers/selectBoilerplate.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "index.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "index.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/betterAuth.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/betterAuth.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/biome.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/biome.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/dbContainer.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/dbContainer.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/drizzle.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/drizzle.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/envVars.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/envVars.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/eslint.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/eslint.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/index.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/index.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/nextAuth.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/nextAuth.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/prisma.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/prisma.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/tailwind.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/tailwind.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "installers/trpc.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "installers/trpc.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/addPackageDependency.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/addPackageDependency.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/getT3Version.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/getT3Version.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/parseNameAndPath.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/parseNameAndPath.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/renderTitle.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/renderTitle.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/renderVersionWarning.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/renderVersionWarning.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/validateAppName.ts::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/validateAppName.ts",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "consts.ts::CREATE_T3_APP",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 5
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "consts.ts::DEFAULT_APP_NAME",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 5
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "installers/index.ts::databaseProviders",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 6
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "installers/index.ts::AvailablePackages",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 6
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "installers/index.ts::DatabaseProvider",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 6
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "utils/getT3Version.ts::getVersion",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 11
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 12
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "utils/isTTYError.ts::IsTTYError",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 13
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 14
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "utils/validateAppName.ts::validateAppName",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 15
+    },
+    {
+      "source": "cli/index.ts::__file__",
+      "target": "utils/validateImportAlias.ts::validateImportAlias",
+      "kind": "imports",
+      "filePath": "cli/index.ts",
+      "line": 16
+    },
+    {
+      "source": "cli/index.ts::runCli",
+      "target": "utils/getT3Version.ts::getVersion",
+      "kind": "calls",
+      "filePath": "cli/index.ts",
+      "line": 174
+    },
+    {
+      "source": "cli/index.ts::runCli",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "cli/index.ts",
+      "line": 261
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 4
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "helpers/installPackages.ts::installPackages",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "helpers/scaffoldProject.ts::scaffoldProject",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 6
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "helpers/selectBoilerplate.ts::selectAppFile",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 7
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "helpers/selectBoilerplate.ts::selectIndexFile",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 7
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "helpers/selectBoilerplate.ts::selectLayoutFile",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 7
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "helpers/selectBoilerplate.ts::selectPageFile",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 7
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "installers/index.ts::DatabaseProvider",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 13
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "installers/index.ts::PkgInstallerMap",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 13
+    },
+    {
+      "source": "helpers/createProject.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "helpers/createProject.ts",
+      "line": 17
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 37
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "helpers/scaffoldProject.ts::scaffoldProject",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 41
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "helpers/installPackages.ts::installPackages",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 52
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "helpers/selectBoilerplate.ts::selectLayoutFile",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 71
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "helpers/selectBoilerplate.ts::selectPageFile",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 72
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "helpers/selectBoilerplate.ts::selectAppFile",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 74
+    },
+    {
+      "source": "helpers/createProject.ts::createProject",
+      "target": "helpers/selectBoilerplate.ts::selectIndexFile",
+      "kind": "calls",
+      "filePath": "helpers/createProject.ts",
+      "line": 75
+    },
+    {
+      "source": "helpers/format.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::PackageManager",
+      "kind": "imports",
+      "filePath": "helpers/format.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/format.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "helpers/format.ts",
+      "line": 6
+    },
+    {
+      "source": "helpers/git.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "helpers/git.ts",
+      "line": 9
+    },
+    {
+      "source": "helpers/git.ts::initializeGit",
+      "target": "helpers/git.ts::isGitInstalled",
+      "kind": "calls",
+      "filePath": "helpers/git.ts",
+      "line": 61
+    },
+    {
+      "source": "helpers/git.ts::initializeGit",
+      "target": "helpers/git.ts::isRootGitRepo",
+      "kind": "calls",
+      "filePath": "helpers/git.ts",
+      "line": 68
+    },
+    {
+      "source": "helpers/git.ts::initializeGit",
+      "target": "helpers/git.ts::isInsideGitRepo",
+      "kind": "calls",
+      "filePath": "helpers/git.ts",
+      "line": 69
+    },
+    {
+      "source": "helpers/git.ts::initializeGit",
+      "target": "helpers/git.ts::getDefaultBranch",
+      "kind": "calls",
+      "filePath": "helpers/git.ts",
+      "line": 105
+    },
+    {
+      "source": "helpers/git.ts::initializeGit",
+      "target": "helpers/git.ts::getGitVersion",
+      "kind": "calls",
+      "filePath": "helpers/git.ts",
+      "line": 108
+    },
+    {
+      "source": "helpers/installDependencies.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "helpers/installDependencies.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/installDependencies.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::PackageManager",
+      "kind": "imports",
+      "filePath": "helpers/installDependencies.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/installDependencies.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "helpers/installDependencies.ts",
+      "line": 9
+    },
+    {
+      "source": "helpers/installDependencies.ts::runInstallCommand",
+      "target": "helpers/installDependencies.ts::execWithSpinner",
+      "kind": "calls",
+      "filePath": "helpers/installDependencies.ts",
+      "line": 71
+    },
+    {
+      "source": "helpers/installDependencies.ts::installDependencies",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "helpers/installDependencies.ts",
+      "line": 81
+    },
+    {
+      "source": "helpers/installDependencies.ts::installDependencies",
+      "target": "helpers/installDependencies.ts::runInstallCommand",
+      "kind": "calls",
+      "filePath": "helpers/installDependencies.ts",
+      "line": 83
+    },
+    {
+      "source": "helpers/installPackages.ts::__file__",
+      "target": "installers/index.ts::InstallerOptions",
+      "kind": "imports",
+      "filePath": "helpers/installPackages.ts",
+      "line": 4
+    },
+    {
+      "source": "helpers/installPackages.ts::__file__",
+      "target": "installers/index.ts::PkgInstallerMap",
+      "kind": "imports",
+      "filePath": "helpers/installPackages.ts",
+      "line": 4
+    },
+    {
+      "source": "helpers/installPackages.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "helpers/installPackages.ts",
+      "line": 8
+    },
+    {
+      "source": "helpers/logNextSteps.ts::__file__",
+      "target": "consts.ts::DEFAULT_APP_NAME",
+      "kind": "imports",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 1
+    },
+    {
+      "source": "helpers/logNextSteps.ts::__file__",
+      "target": "installers/index.ts::InstallerOptions",
+      "kind": "imports",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 2
+    },
+    {
+      "source": "helpers/logNextSteps.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 3
+    },
+    {
+      "source": "helpers/logNextSteps.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 4
+    },
+    {
+      "source": "helpers/logNextSteps.ts::__file__",
+      "target": "helpers/git.ts::isInsideGitRepo",
+      "kind": "imports",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/logNextSteps.ts::__file__",
+      "target": "helpers/git.ts::isRootGitRepo",
+      "kind": "imports",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/logNextSteps.ts::logNextSteps",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 23
+    },
+    {
+      "source": "helpers/logNextSteps.ts::logNextSteps",
+      "target": "helpers/git.ts::isInsideGitRepo",
+      "kind": "calls",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 62
+    },
+    {
+      "source": "helpers/logNextSteps.ts::logNextSteps",
+      "target": "helpers/git.ts::isRootGitRepo",
+      "kind": "calls",
+      "filePath": "helpers/logNextSteps.ts",
+      "line": 62
+    },
+    {
+      "source": "helpers/scaffoldProject.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "helpers/scaffoldProject.ts",
+      "line": 7
+    },
+    {
+      "source": "helpers/scaffoldProject.ts::__file__",
+      "target": "installers/index.ts::InstallerOptions",
+      "kind": "imports",
+      "filePath": "helpers/scaffoldProject.ts",
+      "line": 8
+    },
+    {
+      "source": "helpers/scaffoldProject.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "helpers/scaffoldProject.ts",
+      "line": 9
+    },
+    {
+      "source": "helpers/selectBoilerplate.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "line": 4
+    },
+    {
+      "source": "helpers/selectBoilerplate.ts::__file__",
+      "target": "installers/index.ts::InstallerOptions",
+      "kind": "imports",
+      "filePath": "helpers/selectBoilerplate.ts",
+      "line": 5
+    },
+    {
+      "source": "helpers/setImportAlias.ts::replaceTextInFiles",
+      "target": "helpers/setImportAlias.ts::replaceTextInFiles",
+      "kind": "calls",
+      "filePath": "helpers/setImportAlias.ts",
+      "line": 14
+    },
+    {
+      "source": "helpers/setImportAlias.ts::setImportAlias",
+      "target": "helpers/setImportAlias.ts::replaceTextInFiles",
+      "kind": "calls",
+      "filePath": "helpers/setImportAlias.ts",
+      "line": 29
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "cli/index.ts::runCli",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 7
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "helpers/createProject.ts::createProject",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 8
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "helpers/git.ts::initializeGit",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 9
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "helpers/logNextSteps.ts::logNextSteps",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 10
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "helpers/setImportAlias.ts::setImportAlias",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 11
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "installers/index.ts::buildPkgInstallerMap",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 12
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 13
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 14
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/parseNameAndPath.ts::parseNameAndPath",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 15
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/renderTitle.ts::renderTitle",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 16
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "helpers/format.ts::formatProject",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 17
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "helpers/installDependencies.ts::installDependencies",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 18
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/getT3Version.ts::getVersion",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 19
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/renderVersionWarning.ts::getNpmVersion",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 20
+    },
+    {
+      "source": "index.ts::__file__",
+      "target": "utils/renderVersionWarning.ts::renderVersionWarning",
+      "kind": "imports",
+      "filePath": "index.ts",
+      "line": 20
+    },
+    {
+      "source": "index.ts::main",
+      "target": "utils/renderVersionWarning.ts::getNpmVersion",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 32
+    },
+    {
+      "source": "index.ts::main",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 33
+    },
+    {
+      "source": "index.ts::main",
+      "target": "utils/renderTitle.ts::renderTitle",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 34
+    },
+    {
+      "source": "index.ts::main",
+      "target": "utils/renderVersionWarning.ts::renderVersionWarning",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 36
+    },
+    {
+      "source": "index.ts::main",
+      "target": "cli/index.ts::runCli",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 44
+    },
+    {
+      "source": "index.ts::main",
+      "target": "installers/index.ts::buildPkgInstallerMap",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 46
+    },
+    {
+      "source": "index.ts::main",
+      "target": "utils/parseNameAndPath.ts::parseNameAndPath",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 49
+    },
+    {
+      "source": "index.ts::main",
+      "target": "helpers/createProject.ts::createProject",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 51
+    },
+    {
+      "source": "index.ts::main",
+      "target": "utils/getT3Version.ts::getVersion",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 66
+    },
+    {
+      "source": "index.ts::main",
+      "target": "helpers/setImportAlias.ts::setImportAlias",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 82
+    },
+    {
+      "source": "index.ts::main",
+      "target": "helpers/installDependencies.ts::installDependencies",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 86
+    },
+    {
+      "source": "index.ts::main",
+      "target": "helpers/format.ts::formatProject",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 94
+    },
+    {
+      "source": "index.ts::main",
+      "target": "helpers/git.ts::initializeGit",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 103
+    },
+    {
+      "source": "index.ts::main",
+      "target": "helpers/logNextSteps.ts::logNextSteps",
+      "kind": "calls",
+      "filePath": "index.ts",
+      "line": 106
+    },
+    {
+      "source": "installers/betterAuth.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/betterAuth.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/betterAuth.ts::__file__",
+      "target": "installers/dependencyVersionMap.ts::AvailableDependencies",
+      "kind": "imports",
+      "filePath": "installers/betterAuth.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/betterAuth.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/betterAuth.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/betterAuth.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/betterAuth.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/betterAuth.ts::betterAuthInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/betterAuth.ts",
+      "line": 22
+    },
+    {
+      "source": "installers/betterAuth.ts::betterAuthInstaller",
+      "target": "installers/betterAuth.ts::providerForPrisma",
+      "kind": "calls",
+      "filePath": "installers/betterAuth.ts",
+      "line": 118
+    },
+    {
+      "source": "installers/betterAuth.ts::betterAuthInstaller",
+      "target": "installers/betterAuth.ts::providerForDrizzle",
+      "kind": "calls",
+      "filePath": "installers/betterAuth.ts",
+      "line": 120
+    },
+    {
+      "source": "installers/biome.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/biome.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/biome.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/biome.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/biome.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/biome.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/biome.ts::__file__",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "imports",
+      "filePath": "installers/biome.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/biome.ts::biomeInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/biome.ts",
+      "line": 10
+    },
+    {
+      "source": "installers/biome.ts::biomeInstaller",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "calls",
+      "filePath": "installers/biome.ts",
+      "line": 22
+    },
+    {
+      "source": "installers/dbContainer.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/dbContainer.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/dbContainer.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/dbContainer.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/dbContainer.ts::__file__",
+      "target": "utils/parseNameAndPath.ts::parseNameAndPath",
+      "kind": "imports",
+      "filePath": "installers/dbContainer.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/dbContainer.ts::dbContainerInstaller",
+      "target": "utils/parseNameAndPath.ts::parseNameAndPath",
+      "kind": "calls",
+      "filePath": "installers/dbContainer.ts",
+      "line": 28
+    },
+    {
+      "source": "installers/dbContainer.ts::dbContainerInstaller",
+      "target": "installers/dbContainer.ts::sanitizeName",
+      "kind": "calls",
+      "filePath": "installers/dbContainer.ts",
+      "line": 31
+    },
+    {
+      "source": "installers/drizzle.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/drizzle.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/drizzle.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/drizzle.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/drizzle.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/drizzle.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/drizzle.ts::__file__",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "imports",
+      "filePath": "installers/drizzle.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/drizzle.ts::drizzleInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/drizzle.ts",
+      "line": 20
+    },
+    {
+      "source": "installers/drizzle.ts::drizzleInstaller",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "calls",
+      "filePath": "installers/drizzle.ts",
+      "line": 75
+    },
+    {
+      "source": "installers/envVars.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/envVars.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/envVars.ts::__file__",
+      "target": "installers/index.ts::DatabaseProvider",
+      "kind": "imports",
+      "filePath": "installers/envVars.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/envVars.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/envVars.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/envVars.ts::envVariablesInstaller",
+      "target": "installers/envVars.ts::getEnvContent",
+      "kind": "calls",
+      "filePath": "installers/envVars.ts",
+      "line": 22
+    },
+    {
+      "source": "installers/eslint.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/eslint.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/eslint.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/eslint.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/eslint.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/eslint.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/eslint.ts::__file__",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "imports",
+      "filePath": "installers/eslint.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/eslint.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "installers/eslint.ts",
+      "line": 8
+    },
+    {
+      "source": "installers/eslint.ts::__file__",
+      "target": "installers/dependencyVersionMap.ts::AvailableDependencies",
+      "kind": "imports",
+      "filePath": "installers/eslint.ts",
+      "line": 9
+    },
+    {
+      "source": "installers/eslint.ts::dynamicEslintInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/eslint.ts",
+      "line": 28
+    },
+    {
+      "source": "installers/eslint.ts::dynamicEslintInstaller",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "installers/eslint.ts",
+      "line": 47
+    },
+    {
+      "source": "installers/eslint.ts::dynamicEslintInstaller",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "calls",
+      "filePath": "installers/eslint.ts",
+      "line": 53
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/envVars.ts::envVariablesInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 1
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/nextAuth.ts::nextAuthInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 2
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/prisma.ts::prismaInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 3
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/tailwind.ts::tailwindInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/trpc.ts::trpcInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::PackageManager",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/betterAuth.ts::betterAuthInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/biome.ts::biomeInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 8
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/dbContainer.ts::dbContainerInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 9
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/drizzle.ts::drizzleInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 10
+    },
+    {
+      "source": "installers/index.ts::__file__",
+      "target": "installers/eslint.ts::dynamicEslintInstaller",
+      "kind": "imports",
+      "filePath": "installers/index.ts",
+      "line": 11
+    },
+    {
+      "source": "installers/nextAuth.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/nextAuth.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/nextAuth.ts::__file__",
+      "target": "installers/dependencyVersionMap.ts::AvailableDependencies",
+      "kind": "imports",
+      "filePath": "installers/nextAuth.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/nextAuth.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/nextAuth.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/nextAuth.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/nextAuth.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/nextAuth.ts::nextAuthInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/nextAuth.ts",
+      "line": 17
+    },
+    {
+      "source": "installers/prisma.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/prisma.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/prisma.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/prisma.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/prisma.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/prisma.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/prisma.ts::__file__",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "imports",
+      "filePath": "installers/prisma.ts",
+      "line": 7
+    },
+    {
+      "source": "installers/prisma.ts::prismaInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/prisma.ts",
+      "line": 25
+    },
+    {
+      "source": "installers/prisma.ts::prismaInstaller",
+      "target": "utils/addPackageScript.ts::addPackageScript",
+      "kind": "calls",
+      "filePath": "installers/prisma.ts",
+      "line": 73
+    },
+    {
+      "source": "installers/tailwind.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/tailwind.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/tailwind.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/tailwind.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/tailwind.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/tailwind.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/tailwind.ts::tailwindInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/tailwind.ts",
+      "line": 9
+    },
+    {
+      "source": "installers/trpc.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "installers/trpc.ts",
+      "line": 4
+    },
+    {
+      "source": "installers/trpc.ts::__file__",
+      "target": "installers/index.ts::Installer",
+      "kind": "imports",
+      "filePath": "installers/trpc.ts",
+      "line": 5
+    },
+    {
+      "source": "installers/trpc.ts::__file__",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "imports",
+      "filePath": "installers/trpc.ts",
+      "line": 6
+    },
+    {
+      "source": "installers/trpc.ts::trpcInstaller",
+      "target": "utils/addPackageDependency.ts::addPackageDependency",
+      "kind": "calls",
+      "filePath": "installers/trpc.ts",
+      "line": 120
+    },
+    {
+      "source": "utils/addPackageDependency.ts::__file__",
+      "target": "installers/dependencyVersionMap.ts::dependencyVersionMap",
+      "kind": "imports",
+      "filePath": "utils/addPackageDependency.ts",
+      "line": 6
+    },
+    {
+      "source": "utils/addPackageDependency.ts::__file__",
+      "target": "installers/dependencyVersionMap.ts::AvailableDependencies",
+      "kind": "imports",
+      "filePath": "utils/addPackageDependency.ts",
+      "line": 6
+    },
+    {
+      "source": "utils/getT3Version.ts::__file__",
+      "target": "consts.ts::PKG_ROOT",
+      "kind": "imports",
+      "filePath": "utils/getT3Version.ts",
+      "line": 5
+    },
+    {
+      "source": "utils/parseNameAndPath.ts::__file__",
+      "target": "utils/removeTrailingSlash.ts::removeTrailingSlash",
+      "kind": "imports",
+      "filePath": "utils/parseNameAndPath.ts",
+      "line": 3
+    },
+    {
+      "source": "utils/parseNameAndPath.ts::parseNameAndPath",
+      "target": "utils/removeTrailingSlash.ts::removeTrailingSlash",
+      "kind": "calls",
+      "filePath": "utils/parseNameAndPath.ts",
+      "line": 21
+    },
+    {
+      "source": "utils/renderTitle.ts::__file__",
+      "target": "consts.ts::TITLE_TEXT",
+      "kind": "imports",
+      "filePath": "utils/renderTitle.ts",
+      "line": 3
+    },
+    {
+      "source": "utils/renderTitle.ts::__file__",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "imports",
+      "filePath": "utils/renderTitle.ts",
+      "line": 4
+    },
+    {
+      "source": "utils/renderTitle.ts::renderTitle",
+      "target": "utils/getUserPkgManager.ts::getUserPkgManager",
+      "kind": "calls",
+      "filePath": "utils/renderTitle.ts",
+      "line": 20
+    },
+    {
+      "source": "utils/renderVersionWarning.ts::__file__",
+      "target": "utils/getT3Version.ts::getVersion",
+      "kind": "imports",
+      "filePath": "utils/renderVersionWarning.ts",
+      "line": 4
+    },
+    {
+      "source": "utils/renderVersionWarning.ts::__file__",
+      "target": "utils/logger.ts::logger",
+      "kind": "imports",
+      "filePath": "utils/renderVersionWarning.ts",
+      "line": 5
+    },
+    {
+      "source": "utils/renderVersionWarning.ts::renderVersionWarning",
+      "target": "utils/getT3Version.ts::getVersion",
+      "kind": "calls",
+      "filePath": "utils/renderVersionWarning.ts",
+      "line": 8
+    },
+    {
+      "source": "utils/renderVersionWarning.ts::getNpmVersion",
+      "target": "utils/renderVersionWarning.ts::checkForLatestVersion",
+      "kind": "calls",
+      "filePath": "utils/renderVersionWarning.ts",
+      "line": 73
+    },
+    {
+      "source": "utils/validateAppName.ts::__file__",
+      "target": "utils/removeTrailingSlash.ts::removeTrailingSlash",
+      "kind": "imports",
+      "filePath": "utils/validateAppName.ts",
+      "line": 1
+    },
+    {
+      "source": "utils/validateAppName.ts::validateAppName",
+      "target": "utils/removeTrailingSlash.ts::removeTrailingSlash",
+      "kind": "calls",
+      "filePath": "utils/validateAppName.ts",
+      "line": 8
+    }
+  ],
+  "metadata": {
+    "parsedAt": "2026-02-21T08:36:46.240Z",
+    "fileCount": 36,
+    "nodeCount": 523,
+    "edgeCount": 173
+  }
+}
