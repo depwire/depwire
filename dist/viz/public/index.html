@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeGraph Visualization</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <h1 class="title">
+        <span class="title-icon">📊</span>
+        <span class="title-text">CodeGraph</span>
+        <span class="project-name" id="projectName"></span>
+      </h1>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="header-right">
+      <input type="text" id="searchInput" placeholder="Search files..." class="search-input">
+      <div class="export-dropdown">
+        <button class="export-button" id="exportButton">Export ▼</button>
+        <div class="export-menu" id="exportMenu">
+          <button class="export-option" id="exportSvg">Download SVG</button>
+          <button class="export-option" id="exportPng">Download PNG</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="diagram-container">
+      <svg id="diagram"></svg>
+    </div>
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-content">
+        <p class="detail-hint">Hover over arcs or files to see connection details</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="arc.js"></script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: #16213e;
+  border-bottom: 1px solid #2a2a4a;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  font-size: 28px;
+}
+
+.title-text {
+  background: linear-gradient(135deg, #4a9eff 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.project-name {
+  font-size: 18px;
+  font-weight: 400;
+  color: #a0a0a0;
+}
+
+.stats {
+  font-size: 14px;
+  color: #a0a0a0;
+  display: flex;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  color: #4a9eff;
+  font-weight: 600;
+}
+
+.search-input {
+  background: #0f1729;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #e0e0e0;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #4a9eff;
+}
+
+.search-input::placeholder {
+  color: #6a6a8a;
+}
+
+.export-dropdown {
+  position: relative;
+}
+
+.export-button {
+  background: #4a9eff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.export-button:hover {
+  background: #3a8eef;
+}
+
+.export-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #16213e;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.export-menu.show {
+  display: block;
+}
+
+.export-option {
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  color: #e0e0e0;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.export-option:hover {
+  background: #0f1729;
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.diagram-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+#diagram {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-panel {
+  background: #16213e;
+  border-top: 1px solid #2a2a4a;
+  padding: 16px 24px;
+  min-height: 80px;
+  max-height: 200px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.detail-content {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.detail-hint {
+  color: #6a6a8a;
+  margin: 0;
+}
+
+.detail-title {
+  color: #4a9eff;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.detail-info {
+  color: #e0e0e0;
+  margin: 4px 0;
+}
+
+.detail-label {
+  color: #a0a0a0;
+}
+
+.tooltip {
+  position: absolute;
+  background: #16213e;
+  border: 1px solid #4a9eff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 300px;
+}
+
+.tooltip.show {
+  opacity: 1;
+}
+
+.tooltip-line {
+  margin: 2px 0;
+  color: #e0e0e0;
+}
+
+.tooltip-label {
+  color: #a0a0a0;
+}
+
+.file-bar {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.file-bar.dimmed {
+  opacity: 0.2;
+}
+
+.file-bar.highlighted {
+  filter: brightness(1.5);
+}
+
+.file-label {
+  font-size: 11px;
+  fill: #a0a0a0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.arc {
+  fill: none;
+  stroke-opacity: 0.6;
+  cursor: pointer;
+  transition: stroke-opacity 0.2s, stroke-width 0.2s;
+}
+
+.arc.dimmed {
+  stroke-opacity: 0.1;
+}
+
+.arc.highlighted {
+  stroke-opacity: 1;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1729;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a4a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a5a;
+}
