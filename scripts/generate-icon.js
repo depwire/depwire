@@ -6,71 +6,94 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// SVG icon representing code graph (nodes and arcs)
+// Professional arc diagram icon - 512x512
 const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <!-- Dark background -->
   <rect width="512" height="512" fill="#1a1a2e"/>
   
-  <!-- Connection arcs (rainbow gradient) -->
+  <!-- Gradient definitions for arcs -->
   <defs>
-    <linearGradient id="arc1" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#4a9eff;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="arc2" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="arc3" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ffe66d;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#ff6b9d;stop-opacity:1" />
-    </linearGradient>
+    <radialGradient id="glow-cyan">
+      <stop offset="0%" style="stop-color:#4a9eff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4a9eff;stop-opacity:0" />
+    </radialGradient>
+    <radialGradient id="glow-green">
+      <stop offset="0%" style="stop-color:#00d4aa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00d4aa;stop-opacity:0" />
+    </radialGradient>
+    <radialGradient id="glow-purple">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0" />
+    </radialGradient>
+    <radialGradient id="glow-pink">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Filters for glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
-  <!-- Arc curves connecting nodes -->
-  <path d="M 100 400 Q 256 200, 412 400" stroke="url(#arc1)" stroke-width="3" fill="none" opacity="0.8"/>
-  <path d="M 150 420 Q 256 280, 362 420" stroke="url(#arc2)" stroke-width="2.5" fill="none" opacity="0.7"/>
-  <path d="M 200 430 Q 256 320, 312 430" stroke="url(#arc3)" stroke-width="2" fill="none" opacity="0.6"/>
-  
-  <!-- Small connecting arcs -->
-  <path d="M 180 440 Q 220 390, 260 440" stroke="#4a9eff" stroke-width="1.5" fill="none" opacity="0.5"/>
-  <path d="M 252 440 Q 290 390, 332 440" stroke="#7c3aed" stroke-width="1.5" fill="none" opacity="0.5"/>
-  
-  <!-- Node circles at connection points -->
-  <circle cx="100" cy="400" r="8" fill="#4a9eff" opacity="0.9"/>
-  <circle cx="150" cy="420" r="7" fill="#4ecdc4" opacity="0.9"/>
-  <circle cx="200" cy="430" r="6" fill="#ffe66d" opacity="0.9"/>
-  <circle cx="180" cy="440" r="5" fill="#ff6b9d" opacity="0.9"/>
-  <circle cx="260" cy="440" r="5" fill="#4a9eff" opacity="0.9"/>
-  <circle cx="252" cy="440" r="5" fill="#7c3aed" opacity="0.9"/>
-  <circle cx="312" cy="430" r="6" fill="#ff6b9d" opacity="0.9"/>
-  <circle cx="332" cy="440" r="5" fill="#4ecdc4" opacity="0.9"/>
-  <circle cx="362" cy="420" r="7" fill="#7c3aed" opacity="0.9"/>
-  <circle cx="412" cy="400" r="8" fill="#ffe66d" opacity="0.9"/>
-  
-  <!-- Center symbol: graph icon -->
-  <g transform="translate(256, 150)">
-    <!-- Central node -->
-    <circle cx="0" cy="0" r="20" fill="none" stroke="#4a9eff" stroke-width="3"/>
-    <circle cx="0" cy="0" r="8" fill="#4a9eff"/>
+  <!-- Arc curves connecting nodes (with glow) -->
+  <g filter="url(#glow)">
+    <!-- Long arc: node 1 to node 3 -->
+    <path d="M 100 420 Q 256 240, 312 420" 
+          stroke="#8b5cf6" 
+          stroke-width="3" 
+          fill="none" 
+          opacity="0.85"/>
     
-    <!-- Connected nodes -->
-    <line x1="0" y1="0" x2="-60" y2="-40" stroke="#4ecdc4" stroke-width="2" opacity="0.7"/>
-    <circle cx="-60" cy="-40" r="12" fill="none" stroke="#4ecdc4" stroke-width="2.5"/>
-    <circle cx="-60" cy="-40" r="5" fill="#4ecdc4"/>
+    <!-- Medium arc: node 2 to node 4 -->
+    <path d="M 200 420 Q 256 300, 412 420" 
+          stroke="#00d4aa" 
+          stroke-width="2.5" 
+          fill="none" 
+          opacity="0.8"/>
     
-    <line x1="0" y1="0" x2="60" y2="-40" stroke="#7c3aed" stroke-width="2" opacity="0.7"/>
-    <circle cx="60" cy="-40" r="12" fill="none" stroke="#7c3aed" stroke-width="2.5"/>
-    <circle cx="60" cy="-40" r="5" fill="#7c3aed"/>
-    
-    <line x1="0" y1="0" x2="0" y2="60" stroke="#ffe66d" stroke-width="2" opacity="0.7"/>
-    <circle cx="0" cy="60" r="12" fill="none" stroke="#ffe66d" stroke-width="2.5"/>
-    <circle cx="0" cy="60" r="5" fill="#ffe66d"/>
+    <!-- Short arc: node 1 to node 4 -->
+    <path d="M 100 420 Q 256 200, 412 420" 
+          stroke="#4a9eff" 
+          stroke-width="2.5" 
+          fill="none" 
+          opacity="0.75"/>
   </g>
   
+  <!-- Node circles at bottom -->
+  <!-- Node 1 -->
+  <circle cx="100" cy="420" r="24" fill="url(#glow-cyan)" opacity="0.4"/>
+  <circle cx="100" cy="420" r="16" fill="#4a9eff"/>
+  <circle cx="96" cy="416" r="5" fill="#ffffff" opacity="0.5"/>
+  
+  <!-- Node 2 -->
+  <circle cx="200" cy="420" r="20" fill="url(#glow-green)" opacity="0.4"/>
+  <circle cx="200" cy="420" r="14" fill="#00d4aa"/>
+  <circle cx="196" cy="416" r="4" fill="#ffffff" opacity="0.5"/>
+  
+  <!-- Node 3 -->
+  <circle cx="312" cy="420" r="24" fill="url(#glow-purple)" opacity="0.4"/>
+  <circle cx="312" cy="420" r="16" fill="#8b5cf6"/>
+  <circle cx="308" cy="416" r="5" fill="#ffffff" opacity="0.5"/>
+  
+  <!-- Node 4 -->
+  <circle cx="412" cy="420" r="20" fill="url(#glow-pink)" opacity="0.4"/>
+  <circle cx="412" cy="420" r="14" fill="#ec4899"/>
+  <circle cx="408" cy="416" r="4" fill="#ffffff" opacity="0.5"/>
+  
   <!-- Text label -->
-  <text x="256" y="480" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="600" fill="#4a9eff" text-anchor="middle" opacity="0.9">
+  <text x="256" y="470" 
+        font-family="-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', sans-serif" 
+        font-size="42" 
+        font-weight="600" 
+        fill="#4a9eff" 
+        text-anchor="middle" 
+        opacity="0.95">
     CodeGraph
   </text>
 </svg>`;
@@ -78,9 +101,22 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
 // Write SVG to file
 const svgPath = join(__dirname, '..', 'icon.svg');
 writeFileSync(svgPath, svg, 'utf-8');
-console.log('Generated icon.svg');
+console.log('✅ Generated icon.svg (512x512)');
 
-// For the PNG version, we'd need a library like sharp or puppeteer
-// For now, just output the SVG and let users convert manually if needed
-// The MCPB system should support SVG icons as well
-console.log('To convert to PNG, use: npx @resvg/resvg-js icon.svg icon.png');
+// For PNG conversion, we'll use sharp which is already installed
+try {
+  const sharp = (await import('sharp')).default;
+  const pngBuffer = await sharp(Buffer.from(svg))
+    .resize(512, 512)
+    .png()
+    .toBuffer();
+  
+  const pngPath = join(__dirname, '..', 'icon.png');
+  writeFileSync(pngPath, pngBuffer);
+  console.log('✅ Generated icon.png (512x512)');
+  console.log(`   Size: ${(pngBuffer.length / 1024).toFixed(1)} KB`);
+} catch (error) {
+  console.log('⚠️  Could not generate PNG (sharp not available)');
+  console.log('   SVG created successfully - convert manually if needed');
+}
+

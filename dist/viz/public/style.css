@@ -282,3 +282,45 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #3a3a5a;
 }
+
+/* Notification Toast */
+.notification {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  background: #16213e;
+  border: 1px solid #4a9eff;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  opacity: 0;
+  transform: translateX(400px);
+  transition: all 0.3s ease;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification-success {
+  border-color: #4ade80;
+  background: #16213e;
+}
+
+.notification-info {
+  border-color: #4a9eff;
+  background: #16213e;
+}
+
+.notification-warning {
+  border-color: #fbbf24;
+  background: #16213e;
+}
+
+.notification-error {
+  border-color: #ff4a4a;
+  background: #16213e;
+}

@@ -5,6 +5,7 @@ let g = null;
 let filePositions = new Map();
 let selectedFile = null;
 let selectedArc = null;
+let ws = null;
 
 async function init() {
   try {
@@ -26,6 +27,9 @@ async function init() {
     setupSearch();
     setupExport();
     
+    // Setup WebSocket for live updates
+    setupWebSocket();
+    
     // Handle window resize
     window.addEventListener('resize', () => {
       renderArcDiagram();
@@ -38,10 +42,87 @@ async function init() {
   }
 }
 
+function setupWebSocket() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${window.location.host}`;
+  
+  ws = new WebSocket(wsUrl);
+  
+  ws.onopen = () => {
+    console.log('WebSocket connected — live updates enabled');
+    showNotification('Live updates enabled', 'success');
+  };
+  
+  ws.onmessage = async (event) => {
+    const message = JSON.parse(event.data);
+    
+    if (message.type === 'refresh') {
+      console.log('Graph updated — refreshing visualization...');
+      showNotification('Graph updated', 'info');
+      
+      // Re-fetch graph data
+      try {
+        const response = await fetch('/api/graph');
+        graphData = await response.json();
+        
+        // Update header stats
+        document.getElementById('stats').innerHTML = `
+          <div class="stat-item"><span class="stat-label">Files:</span> <span class="stat-value">${graphData.stats.totalFiles}</span></div>
+          <div class="stat-item"><span class="stat-label">Symbols:</span> <span class="stat-value">${graphData.stats.totalSymbols}</span></div>
+          <div class="stat-item"><span class="stat-label">Edges:</span> <span class="stat-value">${graphData.stats.totalCrossFileEdges}</span></div>
+        `;
+        
+        // Re-render diagram
+        renderArcDiagram();
+      } catch (error) {
+        console.error('Failed to refresh graph data:', error);
+        showNotification('Failed to refresh', 'error');
+      }
+    }
+  };
+  
+  ws.onclose = () => {
+    console.log('WebSocket disconnected — attempting reconnect in 3s...');
+    showNotification('Connection lost — reconnecting...', 'warning');
+    setTimeout(() => {
+      setupWebSocket();
+    }, 3000);
+  };
+  
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  // Fade in
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+  
+  // Fade out and remove
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
+
 function renderArcDiagram() {
   const container = document.querySelector('.diagram-container');
   const width = container.clientWidth;
   const height = container.clientHeight;
+  
+  // Reset state
+  filePositions.clear();
+  selectedFile = null;
+  selectedArc = null;
   
   // Clear existing SVG
   d3.select('#diagram').selectAll('*').remove();
