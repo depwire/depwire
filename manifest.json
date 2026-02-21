@@ -1,0 +1,22 @@
+{
+  "manifest_version": "0.2",
+  "name": "codegraph",
+  "version": "0.1.0",
+  "description": "Code cross-reference visualization and AI context engine for TypeScript. Analyzes codebases to show dependencies, enables AI tools with MCP, and renders beautiful arc diagrams.",
+  "author": {
+    "name": "CodeGraph"
+  },
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/mcpb-entry.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/mcpb-entry.js"
+      ],
+      "env": {}
+    }
+  },
+  "license": "MIT"
+}
