@@ -1,9 +1,9 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { DirectedGraph } from "graphology";
 import { handleToolCall, getToolsList } from "./tools.js";
+import type { CodeGraphState } from "./state.js";
 
-export async function startMcpServer(graph: DirectedGraph, projectRoot: string): Promise<void> {
+export async function startMcpServer(state: CodeGraphState): Promise<void> {
   const server = new Server(
     {
       name: "codegraph",
@@ -29,7 +29,7 @@ export async function startMcpServer(graph: DirectedGraph, projectRoot: string):
   // Handle tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    return await handleToolCall(name, args || {}, graph, projectRoot);
+    return await handleToolCall(name, args || {}, state);
   });
 
   // Connect via stdio
@@ -38,5 +38,9 @@ export async function startMcpServer(graph: DirectedGraph, projectRoot: string):
 
   // Log to stderr only (NEVER stdout)
   console.error("CodeGraph MCP server started");
-  console.error(`Project: ${projectRoot}`);
+  if (state.projectRoot) {
+    console.error(`Project: ${state.projectRoot}`);
+  } else {
+    console.error("No project loaded. Use connect_repo to connect to a codebase.");
+  }
 }

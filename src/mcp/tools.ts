@@ -8,6 +8,9 @@ import {
   getFileSummary,
   getArchitectureSummary,
 } from "../graph/queries.js";
+import type { CodeGraphState } from "./state.js";
+import { isProjectLoaded } from "./state.js";
+import { connectToRepo } from "./connect.js";
 
 interface ToolDefinition {
   name: string;
@@ -21,6 +24,24 @@ interface ToolDefinition {
 
 export function getToolsList(): ToolDefinition[] {
   return [
+    {
+      name: "connect_repo",
+      description: "Connect CodeGraph to a codebase for analysis. Accepts a local directory path or a GitHub repository URL. If a GitHub URL is provided, the repo will be cloned automatically. This replaces the currently loaded project.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          source: {
+            type: "string",
+            description: "Local directory path (e.g., '/Users/me/project') or GitHub URL (e.g., 'https://github.com/vercel/next.js')",
+          },
+          subdirectory: {
+            type: "string",
+            description: "Subdirectory within the repo to analyze (optional, e.g., 'packages/core/src')",
+          },
+        },
+        required: ["source"],
+      },
+    },
     {
       name: "get_symbol_info",
       description: "Look up detailed information about a symbol (function, class, variable, type, etc.) by name. Returns file location, type, line numbers, and export status.",
@@ -136,39 +157,59 @@ export function getToolsList(): ToolDefinition[] {
 export async function handleToolCall(
   name: string,
   args: Record<string, any>,
-  graph: DirectedGraph,
-  projectRoot: string
+  state: CodeGraphState
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   try {
     let result: any;
 
-    switch (name) {
-      case "get_symbol_info":
-        result = handleGetSymbolInfo(args.name, graph);
-        break;
-      case "get_dependencies":
-        result = handleGetDependencies(args.symbol, graph);
-        break;
-      case "get_dependents":
-        result = handleGetDependents(args.symbol, graph);
-        break;
-      case "impact_analysis":
-        result = handleImpactAnalysis(args.symbol, graph);
-        break;
-      case "get_file_context":
-        result = handleGetFileContext(args.filePath, graph);
-        break;
-      case "search_symbols":
-        result = handleSearchSymbols(args.query, args.limit || 20, graph);
-        break;
-      case "get_architecture_summary":
-        result = handleGetArchitectureSummary(graph);
-        break;
-      case "list_files":
-        result = handleListFiles(args.directory, graph);
-        break;
-      default:
-        result = { error: `Unknown tool: ${name}` };
+    // connect_repo and get_architecture_summary can work without a loaded project
+    if (name === "connect_repo") {
+      result = await connectToRepo(args.source, args.subdirectory, state);
+    } else if (name === "get_architecture_summary") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          status: "no_project",
+          message: "No project loaded. Use connect_repo to analyze a codebase.",
+        };
+      } else {
+        result = handleGetArchitectureSummary(state.graph!);
+      }
+    } else {
+      // All other tools require a loaded project
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        const graph = state.graph!;
+
+        switch (name) {
+          case "get_symbol_info":
+            result = handleGetSymbolInfo(args.name, graph);
+            break;
+          case "get_dependencies":
+            result = handleGetDependencies(args.symbol, graph);
+            break;
+          case "get_dependents":
+            result = handleGetDependents(args.symbol, graph);
+            break;
+          case "impact_analysis":
+            result = handleImpactAnalysis(args.symbol, graph);
+            break;
+          case "get_file_context":
+            result = handleGetFileContext(args.filePath, graph);
+            break;
+          case "search_symbols":
+            result = handleSearchSymbols(args.query, args.limit || 20, graph);
+            break;
+          case "list_files":
+            result = handleListFiles(args.directory, graph);
+            break;
+          default:
+            result = { error: `Unknown tool: ${name}` };
+        }
+      }
     }
 
     return {

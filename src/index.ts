@@ -10,6 +10,9 @@ import { getImpact, getArchitectureSummary, searchSymbols } from './graph/querie
 import { prepareVizData } from './viz/data.js';
 import { startVizServer } from './viz/server.js';
 import { startMcpServer } from './mcp/server.js';
+import { createEmptyState } from './mcp/state.js';
+import { watchProject } from './watcher.js';
+import { updateFileInGraph } from './graph/updater.js';
 
 const program = new Command();
 
@@ -179,24 +182,68 @@ program
 program
   .command('mcp')
   .description('Start MCP server for AI coding tools')
-  .argument('<directory>', 'Project directory to analyze')
-  .action(async (directory: string) => {
+  .argument('[directory]', 'Project directory to analyze (optional - use connect_repo tool to connect later)')
+  .action(async (directory?: string) => {
     try {
-      const projectRoot = resolve(directory);
-      
-      // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
-      console.error(`Parsing project: ${projectRoot}`);
-      
-      // Parse all TypeScript files
-      const parsedFiles = parseProject(projectRoot);
-      console.error(`Parsed ${parsedFiles.length} files`);
-      
-      // Build the graph
-      const graph = buildGraph(parsedFiles);
-      console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+      const state = createEmptyState();
+
+      if (directory) {
+        const projectRoot = resolve(directory);
+        
+        // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
+        console.error(`Parsing project: ${projectRoot}`);
+        
+        // Parse all TypeScript files
+        const parsedFiles = parseProject(projectRoot);
+        console.error(`Parsed ${parsedFiles.length} files`);
+        
+        // Build the graph
+        const graph = buildGraph(parsedFiles);
+        console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+        
+        // Set initial state
+        state.graph = graph;
+        state.projectRoot = projectRoot;
+        state.projectName = projectRoot.split('/').pop() || 'project';
+
+        // Start file watcher
+        console.error("Starting file watcher...");
+        state.watcher = watchProject(projectRoot, {
+          onFileChanged: async (filePath: string) => {
+            console.error(`File changed: ${filePath}`);
+            try {
+              await updateFileInGraph(state.graph!, projectRoot, filePath);
+              console.error(`Graph updated for ${filePath}`);
+            } catch (error) {
+              console.error(`Failed to update graph: ${error}`);
+            }
+          },
+          onFileAdded: async (filePath: string) => {
+            console.error(`File added: ${filePath}`);
+            try {
+              await updateFileInGraph(state.graph!, projectRoot, filePath);
+              console.error(`Graph updated for ${filePath}`);
+            } catch (error) {
+              console.error(`Failed to update graph: ${error}`);
+            }
+          },
+          onFileDeleted: (filePath: string) => {
+            console.error(`File deleted: ${filePath}`);
+            try {
+              const fileNodes = state.graph!.filterNodes((node, attrs) => 
+                attrs.filePath === filePath
+              );
+              fileNodes.forEach(node => state.graph!.dropNode(node));
+              console.error(`Removed ${filePath} from graph`);
+            } catch (error) {
+              console.error(`Failed to remove file: ${error}`);
+            }
+          },
+        });
+      }
       
       // Start MCP server (communicates via stdin/stdout)
-      await startMcpServer(graph, projectRoot);
+      await startMcpServer(state);
     } catch (err) {
       console.error('Error starting MCP server:', err);
       process.exit(1);
