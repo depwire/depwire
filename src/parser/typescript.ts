@@ -1,6 +1,6 @@
 import Parser from 'tree-sitter';
 import TypeScript from 'tree-sitter-typescript';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser } from './types.js';
 import { resolveImportPath } from './resolver.js';
 
 const tsParser = new Parser();
@@ -591,3 +591,10 @@ function getCurrentSymbolId(context: Context): string | null {
   if (context.currentScope.length === 0) return null;
   return `${context.filePath}::${context.currentScope.join('.')}`;
 }
+
+// Export as LanguageParser interface
+export const typescriptParser: LanguageParser = {
+  name: 'typescript',
+  extensions: ['.ts', '.tsx'],
+  parseFile: parseTypeScriptFile
+};

@@ -35,8 +35,8 @@ export function startVizServer(
     res.json(vizData);
   });
   
-  const server = app.listen(port, () => {
-    const url = `http://localhost:${port}`;
+  const server = app.listen(port, '127.0.0.1', () => {
+    const url = `http://127.0.0.1:${port}`;
     console.log(`\nCodeGraph visualization running at ${url}`);
     console.log('Press Ctrl+C to stop\n');
     

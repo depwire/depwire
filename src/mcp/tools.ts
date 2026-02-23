@@ -11,6 +11,8 @@ import {
 import type { CodeGraphState } from "./state.js";
 import { isProjectLoaded } from "./state.js";
 import { connectToRepo } from "./connect.js";
+import { prepareVizData } from "../viz/data.js";
+import { generateArcDiagramHTML } from "../viz/generate-html.js";
 
 interface ToolDefinition {
   name: string;
@@ -151,6 +153,23 @@ export function getToolsList(): ToolDefinition[] {
         },
       },
     },
+    {
+      name: "visualize_graph",
+      description: "Render an interactive arc diagram visualization of the current codebase's cross-reference graph. Shows files as bars along the bottom and dependency arcs connecting them, colored by distance. The visualization appears inline in the conversation.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          highlight: {
+            type: "string",
+            description: "File or symbol name to highlight in the visualization (optional)",
+          },
+          maxFiles: {
+            type: "number",
+            description: "Limit to top N most connected files (optional, default: all)",
+          },
+        },
+      },
+    },
   ];
 }
 
@@ -173,6 +192,15 @@ export async function handleToolCall(
         };
       } else {
         result = handleGetArchitectureSummary(state.graph!);
+      }
+    } else if (name === "visualize_graph") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = await handleVisualizeGraph(args.highlight, args.maxFiles, state);
       }
     } else {
       // All other tools require a loaded project
@@ -210,6 +238,27 @@ export async function handleToolCall(
             result = { error: `Unknown tool: ${name}` };
         }
       }
+    }
+
+    // Check if this is an MCP App response (visualize_graph)
+    if (result && typeof result === 'object' && '_mcpAppResponse' in result) {
+      const appResult = result as { text: string; html: string };
+      return {
+        content: [
+          {
+            type: "text",
+            text: appResult.text,
+          },
+          {
+            type: "resource",
+            resource: {
+              uri: "ui://codegraph/arc-diagram",
+              mimeType: "text/html;profile=mcp-app",
+              text: appResult.html,
+            },
+          },
+        ],
+      };
     }
 
     return {
@@ -509,6 +558,9 @@ function handleGetArchitectureSummary(graph: DirectedGraph) {
   // Group by directory
   const dirMap = new Map<string, { fileCount: number; symbolCount: number }>();
   
+  // Count files by language
+  const languageBreakdown: Record<string, number> = {};
+  
   fileSummary.forEach(f => {
     const dir = f.filePath.includes('/') ? dirname(f.filePath) : '.';
     if (!dirMap.has(dir)) {
@@ -517,6 +569,20 @@ function handleGetArchitectureSummary(graph: DirectedGraph) {
     const entry = dirMap.get(dir)!;
     entry.fileCount++;
     entry.symbolCount += f.symbolCount;
+    
+    // Count language
+    const ext = f.filePath.toLowerCase();
+    let lang: string;
+    if (ext.endsWith('.ts') || ext.endsWith('.tsx')) {
+      lang = 'typescript';
+    } else if (ext.endsWith('.py')) {
+      lang = 'python';
+    } else if (ext.endsWith('.js') || ext.endsWith('.jsx') || ext.endsWith('.mjs') || ext.endsWith('.cjs')) {
+      lang = 'javascript';
+    } else {
+      lang = 'other';
+    }
+    languageBreakdown[lang] = (languageBreakdown[lang] || 0) + 1;
   });
   
   const directories = Array.from(dirMap.entries())
@@ -530,6 +596,7 @@ function handleGetArchitectureSummary(graph: DirectedGraph) {
       totalFiles: summary.fileCount,
       totalSymbols: summary.symbolCount,
       totalEdges: summary.edgeCount,
+      languages: languageBreakdown,
     },
     mostConnectedFiles: summary.mostConnectedFiles.slice(0, 10),
     directories: directories.slice(0, 10),
@@ -555,5 +622,38 @@ function handleListFiles(directory: string | undefined, graph: DirectedGraph) {
   return {
     files,
     totalFiles: files.length,
+  };
+}
+
+async function handleVisualizeGraph(
+  highlight: string | undefined,
+  maxFiles: number | undefined,
+  state: CodeGraphState
+): Promise<{ _mcpAppResponse: true; text: string; html: string }> {
+  // Prepare visualization data
+  const vizData = prepareVizData(state.graph!, state.projectRoot);
+  
+  // Generate self-contained HTML
+  const html = generateArcDiagramHTML(vizData, {
+    highlight: highlight || '',
+    maxFiles: maxFiles || 0,
+    width: 1200,
+    height: 600,
+  });
+  
+  const fileCount = maxFiles && maxFiles < vizData.files.length ? maxFiles : vizData.files.length;
+  const arcCount = vizData.arcs.filter(a => {
+    if (!maxFiles || maxFiles >= vizData.files.length) return true;
+    const topFiles = vizData.files
+      .sort((a, b) => (b.incomingCount + b.outgoingCount) - (a.incomingCount + a.outgoingCount))
+      .slice(0, maxFiles)
+      .map(f => f.path);
+    return topFiles.includes(a.sourceFile) && topFiles.includes(a.targetFile);
+  }).length;
+  
+  return {
+    _mcpAppResponse: true,
+    text: `Arc diagram showing ${fileCount} files and ${arcCount} cross-file dependencies.${highlight ? ` Highlighted: ${highlight}` : ''}`,
+    html,
   };
 }

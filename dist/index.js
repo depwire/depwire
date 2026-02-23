@@ -3,15 +3,14 @@ import {
   buildGraph,
   createEmptyState,
   getArchitectureSummary,
-  getCrossFileEdges,
-  getFileSummary,
   getImpact,
   parseProject,
+  prepareVizData,
   searchSymbols,
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-7O7Q34RE.js";
+} from "./chunk-G7DOBD4A.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -84,57 +83,6 @@ function importFromJSON(json) {
   return graph;
 }
 
-// src/viz/data.ts
-import { basename } from "path";
-function prepareVizData(graph, projectRoot) {
-  const fileSummary = getFileSummary(graph);
-  const crossFileEdges = getCrossFileEdges(graph);
-  const files = fileSummary.map((f) => ({
-    path: f.filePath,
-    directory: f.filePath.includes("/") ? f.filePath.substring(0, f.filePath.lastIndexOf("/")) : ".",
-    symbolCount: f.symbolCount,
-    incomingCount: f.incomingRefs,
-    outgoingCount: f.outgoingRefs
-  }));
-  files.sort((a, b) => {
-    if (a.directory !== b.directory) {
-      return a.directory.localeCompare(b.directory);
-    }
-    return a.path.localeCompare(b.path);
-  });
-  const arcMap = /* @__PURE__ */ new Map();
-  for (const edge of crossFileEdges) {
-    const key = `${edge.sourceFile}::${edge.targetFile}`;
-    if (arcMap.has(key)) {
-      const arc = arcMap.get(key);
-      arc.edgeCount++;
-      if (!arc.edgeKinds.includes(edge.kind)) {
-        arc.edgeKinds.push(edge.kind);
-      }
-    } else {
-      arcMap.set(key, {
-        sourceFile: edge.sourceFile,
-        targetFile: edge.targetFile,
-        edgeCount: 1,
-        edgeKinds: [edge.kind]
-      });
-    }
-  }
-  const arcs = Array.from(arcMap.values());
-  const projectName = basename(projectRoot);
-  return {
-    files,
-    arcs,
-    stats: {
-      totalFiles: files.length,
-      totalSymbols: graph.order,
-      totalEdges: graph.size,
-      totalCrossFileEdges: arcs.reduce((sum, arc) => sum + arc.edgeCount, 0)
-    },
-    projectName
-  };
-}
-
 // src/viz/server.ts
 import express from "express";
 import open from "open";
@@ -151,8 +99,8 @@ function startVizServer(initialVizData, graph, projectRoot, port = 3333, shouldO
   app.get("/api/graph", (req, res) => {
     res.json(vizData);
   });
-  const server = app.listen(port, () => {
-    const url = `http://localhost:${port}`;
+  const server = app.listen(port, "127.0.0.1", () => {
+    const url = `http://127.0.0.1:${port}`;
     console.log(`
 CodeGraph visualization running at ${url}`);
     console.log("Press Ctrl+C to stop\n");

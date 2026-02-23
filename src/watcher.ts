@@ -15,6 +15,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   const watcher = chokidar.watch(projectRoot, {
     ignored: [
       '**/node_modules/**',
+      '**/vendor/**',  // Go dependencies
       '**/.git/**',
       '**/dist/**',
       '**/build/**',
@@ -35,8 +36,12 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   console.error('[Watcher] Attaching event listeners...');
 
   watcher.on('change', (absolutePath: string) => {
-    // Only process TypeScript files
-    if (!absolutePath.endsWith('.ts') && !absolutePath.endsWith('.tsx')) return;
+    // Only process TypeScript, JavaScript, Python, and Go files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go'];
+    if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
+    
+    // Skip Go test files
+    if (absolutePath.endsWith('_test.go')) return;
     
     // Convert absolute path to relative path for consistency
     const relativePath = absolutePath.replace(projectRoot + '/', '');
@@ -45,8 +50,12 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('add', (absolutePath: string) => {
-    // Only process TypeScript files
-    if (!absolutePath.endsWith('.ts') && !absolutePath.endsWith('.tsx')) return;
+    // Only process TypeScript, JavaScript, Python, and Go files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go'];
+    if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
+    
+    // Skip Go test files
+    if (absolutePath.endsWith('_test.go')) return;
     
     // Convert absolute path to relative path for consistency
     const relativePath = absolutePath.replace(projectRoot + '/', '');
@@ -55,8 +64,12 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('unlink', (absolutePath: string) => {
-    // Only process TypeScript files
-    if (!absolutePath.endsWith('.ts') && !absolutePath.endsWith('.tsx')) return;
+    // Only process TypeScript, JavaScript, Python, and Go files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go'];
+    if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
+    
+    // Skip Go test files
+    if (absolutePath.endsWith('_test.go')) return;
     
     // Convert absolute path to relative path for consistency
     const relativePath = absolutePath.replace(projectRoot + '/', '');
@@ -73,15 +86,20 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     // Log what we're actually watching
     const watched = watcher.getWatched();
     const dirs = Object.keys(watched);
-    let tsFileCount = 0;
+    let fileCount = 0;
     
-    // Count .ts and .tsx files
+    // Count .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, and .go files (excluding _test.go)
     for (const dir of dirs) {
       const files = watched[dir];
-      tsFileCount += files.filter(f => f.endsWith('.ts') || f.endsWith('.tsx')).length;
+      fileCount += files.filter(f => 
+        f.endsWith('.ts') || f.endsWith('.tsx') || 
+        f.endsWith('.js') || f.endsWith('.jsx') || f.endsWith('.mjs') || f.endsWith('.cjs') ||
+        f.endsWith('.py') ||
+        (f.endsWith('.go') && !f.endsWith('_test.go'))
+      ).length;
     }
     
-    console.error(`[Watcher] Watching ${tsFileCount} TypeScript files in ${dirs.length} directories`);
+    console.error(`[Watcher] Watching ${fileCount} TypeScript/JavaScript/Python/Go files in ${dirs.length} directories`);
   });
 
   watcher.on('all', (event, path) => {
