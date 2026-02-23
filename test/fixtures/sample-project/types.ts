@@ -21,3 +21,9 @@ export interface customer{
 export interface address{
   id: string;
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+}

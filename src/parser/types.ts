@@ -2,13 +2,16 @@ export type SymbolKind =
   | 'function'
   | 'class'
   | 'variable'
+  | 'constant'       // Python: UPPER_CASE module-level variables
   | 'type_alias'
   | 'interface'
   | 'enum'
   | 'import'
   | 'export'
   | 'method'
-  | 'property';
+  | 'property'
+  | 'decorator'      // Python: @decorator definitions
+  | 'module';        // Python: module-level scope
 
 export interface SymbolNode {
   id: string;          // Unique ID: "relative/path.ts::symbolName"
@@ -26,6 +29,8 @@ export type EdgeKind =
   | 'calls'
   | 'extends'
   | 'implements'
+  | 'inherits'       // Python: class inheritance
+  | 'decorates'      // Python: decorator application
   | 'references'
   | 'type_references';
 
@@ -54,4 +59,15 @@ export interface ProjectGraph {
     nodeCount: number;
     edgeCount: number;
   };
+}
+
+export interface LanguageParser {
+  /** Language name */
+  name: string;
+  
+  /** File extensions this parser handles */
+  extensions: string[];
+  
+  /** Parse a single file and return symbols + edges */
+  parseFile(filePath: string, content: string, projectRoot: string): ParsedFile;
 }

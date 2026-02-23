@@ -34,39 +34,44 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/codegraph/codegraph"
+    "url": "https://github.com/codegraph-dev/codegraph"
   },
   "bugs": {
-    "url": "https://github.com/codegraph/codegraph/issues"
+    "url": "https://github.com/codegraph-dev/codegraph/issues"
   },
-  "homepage": "https://github.com/codegraph/codegraph#readme",
+  "homepage": "https://github.com/codegraph-dev/codegraph#readme",
   "files": [
     "dist",
     "README.md",
     "LICENSE",
-    "icon.png",
-    "icon.svg"
+    "icon.png"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
-    "chokidar": "^5.0.0",
-    "commander": "^14.0.3",
-    "express": "^5.2.1",
-    "graphology": "^0.26.0",
-    "graphology-types": "^0.24.8",
-    "open": "^11.0.0",
-    "simple-git": "^3.31.1",
-    "tree-sitter": "^0.21.1",
-    "tree-sitter-typescript": "^0.23.2",
-    "ws": "^8.19.0",
-    "zod": "^4.3.6"
+    "@modelcontextprotocol/sdk": "1.26.0",
+    "chokidar": "5.0.0",
+    "commander": "14.0.3",
+    "express": "5.2.1",
+    "graphology": "0.26.0",
+    "graphology-types": "0.24.8",
+    "open": "11.0.0",
+    "simple-git": "3.31.1",
+    "tree-sitter": "0.21.1",
+    "tree-sitter-go": "0.21.2",
+    "tree-sitter-javascript": "0.21.4",
+    "tree-sitter-python": "0.21.0",
+    "tree-sitter-typescript": "0.23.2",
+    "ws": "8.19.0",
+    "zod": "4.3.6"
   },
   "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.3.0",
-    "@types/ws": "^8.18.1",
-    "sharp": "^0.34.5",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "@types/express": "5.0.6",
+    "@types/node": "25.3.0",
+    "@types/ws": "8.18.1",
+    "sharp": "0.34.5",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3"
   }
 }

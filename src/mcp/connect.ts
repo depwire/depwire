@@ -1,13 +1,42 @@
 import simpleGit from 'simple-git';
 import { existsSync } from 'fs';
-import { join, basename } from 'path';
-import { tmpdir } from 'os';
+import { join, basename, resolve } from 'path';
+import { tmpdir, homedir } from 'os';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
 import { getArchitectureSummary } from '../graph/queries.js';
 import { watchProject } from '../watcher.js';
 import type { CodeGraphState } from './state.js';
 import { updateFileInGraph } from '../graph/updater.js';
+
+function validateProjectPath(source: string): { valid: boolean; error?: string } {
+  const resolved = resolve(source);
+  
+  // Block sensitive system directories
+  const blockedPaths = [
+    '/etc',
+    '/var',
+    '/usr',
+    '/bin',
+    '/sbin',
+    '/boot',
+    '/proc',
+    '/sys',
+    join(homedir(), '.ssh'),
+    join(homedir(), '.gnupg'),
+    join(homedir(), '.aws'),
+    join(homedir(), '.config'),
+    join(homedir(), '.env'),
+  ];
+  
+  for (const blocked of blockedPaths) {
+    if (resolved.startsWith(blocked)) {
+      return { valid: false, error: `Access denied: ${blocked} is a protected path` };
+    }
+  }
+  
+  return { valid: true };
+}
 
 export async function connectToRepo(
   source: string,
@@ -53,7 +82,7 @@ export async function connectToRepo(
       } else {
         console.error(`Cloning ${source} to ${cloneDir}...`);
         try {
-          await git.clone(source, cloneDir, ['--depth', '1']);
+          await git.clone(source, cloneDir, ['--depth', '1', '--no-recurse-submodules', '--single-branch']);
         } catch (error) {
           return {
             error: "Failed to clone repository",
@@ -64,7 +93,15 @@ export async function connectToRepo(
 
       projectRoot = subdirectory ? join(cloneDir, subdirectory) : cloneDir;
     } else {
-      // Local path
+      // Local path - validate it's safe
+      const validation = validateProjectPath(source);
+      if (!validation.valid) {
+        return {
+          error: "Access denied",
+          message: validation.error,
+        };
+      }
+      
       if (!existsSync(source)) {
         return {
           error: "Directory not found",
@@ -74,6 +111,15 @@ export async function connectToRepo(
 
       projectRoot = subdirectory ? join(source, subdirectory) : source;
       projectName = basename(projectRoot);
+    }
+    
+    // Validate final projectRoot path
+    const validation = validateProjectPath(projectRoot);
+    if (!validation.valid) {
+      return {
+        error: "Access denied",
+        message: validation.error,
+      };
     }
 
     // Verify project root exists
@@ -98,8 +144,8 @@ export async function connectToRepo(
 
     if (parsedFiles.length === 0) {
       return {
-        error: "No TypeScript files found",
-        message: `No .ts or .tsx files found in ${projectRoot}`,
+        error: "No source files found",
+        message: `No supported source files (.ts, .tsx, .js, .jsx, .py, .go) found in ${projectRoot}`,
       };
     }
 
@@ -152,6 +198,25 @@ export async function connectToRepo(
     // Get architecture summary
     const summary = getArchitectureSummary(graph);
     const mostConnected = summary.mostConnectedFiles.slice(0, 3);
+    
+    // Count files by language
+    const languageBreakdown: Record<string, number> = {};
+    parsedFiles.forEach(file => {
+      const ext = file.filePath.toLowerCase();
+      let lang: string;
+      if (ext.endsWith('.ts') || ext.endsWith('.tsx')) {
+        lang = 'typescript';
+      } else if (ext.endsWith('.py')) {
+        lang = 'python';
+      } else if (ext.endsWith('.js') || ext.endsWith('.jsx') || ext.endsWith('.mjs') || ext.endsWith('.cjs')) {
+        lang = 'javascript';
+      } else if (ext.endsWith('.go')) {
+        lang = 'go';
+      } else {
+        lang = 'other';
+      }
+      languageBreakdown[lang] = (languageBreakdown[lang] || 0) + 1;
+    });
 
     return {
       connected: true,
@@ -162,6 +227,7 @@ export async function connectToRepo(
         symbols: summary.totalSymbols,
         edges: summary.totalEdges,
         crossFileEdges: summary.crossFileEdges,
+        languages: languageBreakdown,
       },
       mostConnectedFiles: mostConnected.map(f => ({
         path: f.filePath,

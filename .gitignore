@@ -1,0 +1,11 @@
+node_modules/
+dist/
+create-t3-app/
+docs/internal/
+*.mcpb
+codegraph-output.json
+test-output.json
+test-graph.json
+real-test.json
+*.mjs
+*.log

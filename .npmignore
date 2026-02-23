@@ -1,29 +1,14 @@
-# Source files
 src/
 test/
 scripts/
-
-# Build config
-tsconfig.json
-tsup.config.ts
-
-# Development
-node_modules/
-.git/
-.gitignore
-*.log
-
-# MCPB
-*.mcpb
-manifest.json
-
-# Documentation (except README)
+create-t3-app/
 docs/
-screenshots/
-
-# Misc
-.DS_Store
-.vscode/
-.idea/
-*.swp
-*.swo
+.gitignore
+.gitattributes
+tsconfig.json
+*.mcpb
+*.md
+!README.md
+icon.svg
+*.mjs
+*.log

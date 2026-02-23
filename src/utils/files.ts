@@ -18,8 +18,8 @@ export function scanDirectory(
         continue;
       }
       
-      // Skip node_modules and common build directories
-      if (entry === 'node_modules' || entry === 'dist' || entry === 'build') {
+      // Skip node_modules, vendor, and common build directories
+      if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist' || entry === 'build') {
         continue;
       }
       
@@ -39,8 +39,13 @@ export function scanDirectory(
         // Recursively scan subdirectories
         files.push(...scanDirectory(rootDir, fullPath));
       } else if (stats.isFile()) {
-        // Only include .ts and .tsx files, skip .d.ts
-        if ((entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts')) {
+        // Include .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, and .go files (skip .d.ts and _test.go)
+        const isTypeScript = (entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts');
+        const isJavaScript = entry.endsWith('.js') || entry.endsWith('.jsx') || entry.endsWith('.mjs') || entry.endsWith('.cjs');
+        const isPython = entry.endsWith('.py');
+        const isGo = entry.endsWith('.go') && !entry.endsWith('_test.go');
+        
+        if (isTypeScript || isJavaScript || isPython || isGo) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
