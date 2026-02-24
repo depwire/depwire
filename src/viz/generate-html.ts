@@ -53,6 +53,7 @@ export function generateArcDiagramHTML(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Depwire Arc Diagram</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%230d1b2a'/%3E%3Crect x='32' y='24' width='6' height='80' rx='3' fill='%2300d4aa' opacity='.9'/%3E%3Cpath d='M35 28Q96 28 96 64Q96 100 35 100' fill='none' stroke='%2300d4aa' stroke-width='3.5' stroke-linecap='round' opacity='.85'/%3E%3Cpath d='M35 38Q82 38 82 64Q82 90 35 90' fill='none' stroke='%2300b4d8' stroke-width='3' stroke-linecap='round' opacity='.7'/%3E%3Cpath d='M35 48Q68 48 68 64Q68 80 35 80' fill='none' stroke='%2348cae4' stroke-width='2.5' stroke-linecap='round' opacity='.6'/%3E%3Ccircle cx='35' cy='28' r='4' fill='%2300d4aa'/%3E%3Ccircle cx='35' cy='100' r='4' fill='%2300d4aa'/%3E%3Ccircle cx='96' cy='64' r='4' fill='%2348cae4'/%3E%3C/svg%3E">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
