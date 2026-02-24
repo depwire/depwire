@@ -1,6 +1,6 @@
 /**
  * SECURITY: All parser operations are READ-ONLY.
- * CodeGraph never writes to, modifies, or deletes any file in the user's project.
+ * Depwire never writes to, modifies, or deletes any file in the user's project.
  * The only file system writes are to os.tmpdir() for cloned repos.
  */
 
