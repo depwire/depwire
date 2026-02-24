@@ -1,8 +1,8 @@
-# CodeGraph
+# Depwire
 
 **See how your code connects. Give AI tools full codebase context.**
 
-CodeGraph analyzes codebases to build a cross-reference graph showing how every file, function, and import connects. It provides:
+Depwire analyzes codebases to build a cross-reference graph showing how every file, function, and import connects. It provides:
 
 - 🎨 **Beautiful arc diagram visualization** — Interactive Harrison Bible-style graphic
 - 🤖 **MCP server for AI tools** — Cursor, Claude Desktop get full dependency context
@@ -15,8 +15,8 @@ CodeGraph analyzes codebases to build a cross-reference graph showing how every 
 ### CLI Usage
 
 ```bash
-npx codegraph viz ./my-project          # Open visualization
-npx codegraph parse ./my-project        # Export graph as JSON
+npx depwire viz ./my-project          # Open visualization
+npx depwire parse ./my-project        # Export graph as JSON
 ```
 
 ### Claude Desktop
@@ -26,9 +26,9 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ```json
 {
   "mcpServers": {
-    "codegraph": {
+    "depwire": {
       "command": "npx",
-      "args": ["-y", "codegraph", "mcp"]
+      "args": ["-y", "depwire", "mcp"]
     }
   }
 }
@@ -43,7 +43,7 @@ Connect to /path/to/my/project and show me the architecture.
 
 Settings → Features → Experimental → Enable MCP → Add Server:
 - Command: `npx`
-- Args: `-y codegraph mcp /path/to/project`
+- Args: `-y depwire mcp /path/to/project`
 
 ## Available MCP Tools
 
@@ -71,7 +71,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 ## Visualization
 
 ```bash
-codegraph viz ./my-project
+depwire viz ./my-project
 ```
 
 Opens an interactive arc diagram in your browser:
@@ -92,12 +92,12 @@ Opens an interactive arc diagram in your browser:
 ## Installation
 
 ```bash
-npm install -g codegraph
+npm install -g depwire
 ```
 
 Or use directly with `npx`:
 ```bash
-npx codegraph --help
+npx depwire --help
 ```
 
 ## Example Workflows
@@ -105,11 +105,11 @@ npx codegraph --help
 ### Refactoring with AI
 
 ```
-# In Claude Desktop or Cursor with CodeGraph MCP:
+# In Claude Desktop or Cursor with Depwire MCP:
 
 "Connect to /Users/me/my-app and analyze the impact of renaming UserService to UserRepository"
 
-# CodeGraph responds with:
+# Depwire responds with:
 # - All files that import UserService
 # - All call sites
 # - All type references
@@ -121,7 +121,7 @@ npx codegraph --help
 ```
 "Connect to https://github.com/t3-oss/create-t3-app and give me an architecture summary"
 
-# CodeGraph responds with:
+# Depwire responds with:
 # - Language breakdown
 # - Module/package structure
 # - Most-connected files (architectural hubs)
@@ -132,13 +132,13 @@ npx codegraph --help
 
 ```bash
 # Check what your changes affect before committing
-codegraph viz . --open
+depwire viz . --open
 # Review the arc diagram — red arcs show files you touched
 ```
 
 ## Security
 
-CodeGraph is **read-only** — it never writes to, modifies, or executes your code.
+Depwire is **read-only** — it never writes to, modifies, or executes your code.
 
 - Parses source files with tree-sitter (the same parser used by VS Code and Zed)
 - Visualization server binds to localhost only
@@ -158,7 +158,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## Contributing
 
-Contributions welcome! CodeGraph is open source and community-driven.
+Contributions welcome! Depwire is open source and community-driven.
 
 1. Fork the repository
 2. Create a feature branch
