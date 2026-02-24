@@ -262,6 +262,11 @@ export async function handleToolCall(
       };
     }
 
+    // Check if result is already in the correct MCP response format
+    if (result && typeof result === 'object' && 'content' in result && Array.isArray(result.content)) {
+      return result as { content: Array<{ type: string; text: string }> };
+    }
+
     return {
       content: [
         {
