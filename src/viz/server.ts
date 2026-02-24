@@ -25,7 +25,7 @@ export function startVizServer(
 ): { server: any; url: string; alreadyRunning: boolean } {
   // If server is already running, return existing info
   if (activeServer) {
-    console.log(`Visualization server already running at ${activeServer.url}`);
+    console.error(`Visualization server already running at ${activeServer.url}`);
     return {
       server: activeServer.server,
       url: activeServer.url,
@@ -50,8 +50,8 @@ export function startVizServer(
   
   const server = app.listen(port, '127.0.0.1', () => {
     const url = `http://127.0.0.1:${port}`;
-    console.log(`\nDepwire visualization running at ${url}`);
-    console.log('Press Ctrl+C to stop\n');
+    console.error(`\nDepwire visualization running at ${url}`);
+    console.error('Press Ctrl+C to stop\n');
     
     // Store active server info
     activeServer = { server, port, url };
@@ -65,10 +65,10 @@ export function startVizServer(
   const wss = new WebSocketServer({ server });
   
   wss.on('connection', (ws) => {
-    console.log('Browser connected to WebSocket');
+    console.error('Browser connected to WebSocket');
     
     ws.on('close', () => {
-      console.log('Browser disconnected from WebSocket');
+      console.error('Browser disconnected from WebSocket');
     });
   });
   
@@ -82,10 +82,10 @@ export function startVizServer(
   }
   
   // Start file watcher
-  console.log('Starting file watcher...');
+  console.error('Starting file watcher...');
   const watcher = watchProject(projectRoot, {
     onFileChanged: async (filePath: string) => {
-      console.log(`File changed: ${filePath} — re-parsing project...`);
+      console.error(`File changed: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project (simplest and most reliable approach)
         const parsedFiles = parseProject(projectRoot);
@@ -107,13 +107,13 @@ export function startVizServer(
         // Notify browser clients
         broadcastRefresh();
         
-        console.log(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
+        console.error(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
       } catch (error) {
         console.error(`Failed to update graph for ${filePath}:`, error);
       }
     },
     onFileAdded: async (filePath: string) => {
-      console.log(`File added: ${filePath} — re-parsing project...`);
+      console.error(`File added: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project
         const parsedFiles = parseProject(projectRoot);
@@ -134,13 +134,13 @@ export function startVizServer(
         // Notify browser clients
         broadcastRefresh();
         
-        console.log(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
+        console.error(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
       } catch (error) {
         console.error(`Failed to update graph for ${filePath}:`, error);
       }
     },
     onFileDeleted: (filePath: string) => {
-      console.log(`File deleted: ${filePath} — re-parsing project...`);
+      console.error(`File deleted: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project
         const parsedFiles = parseProject(projectRoot);
@@ -161,7 +161,7 @@ export function startVizServer(
         // Notify browser clients
         broadcastRefresh();
         
-        console.log(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
+        console.error(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
       } catch (error) {
         console.error(`Failed to remove ${filePath} from graph:`, error);
       }
@@ -170,7 +170,7 @@ export function startVizServer(
   
   // Graceful shutdown
   process.on('SIGINT', () => {
-    console.log('\nShutting down visualization server...');
+    console.error('\nShutting down visualization server...');
     activeServer = null; // Clear active server state
     watcher.close();
     wss.close();
