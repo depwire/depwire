@@ -13,6 +13,7 @@ import { isProjectLoaded } from "./state.js";
 import { connectToRepo } from "./connect.js";
 import { prepareVizData } from "../viz/data.js";
 import { generateArcDiagramHTML } from "../viz/generate-html.js";
+import { startVizServer } from "../viz/server.js";
 
 interface ToolDefinition {
   name: string;
@@ -629,17 +630,18 @@ async function handleVisualizeGraph(
   highlight: string | undefined,
   maxFiles: number | undefined,
   state: DepwireState
-): Promise<{ _mcpAppResponse: true; text: string; html: string }> {
+): Promise<{ content: Array<{ type: string; text: string }> }> {
   // Prepare visualization data
   const vizData = prepareVizData(state.graph!, state.projectRoot);
   
-  // Generate self-contained HTML
-  const html = generateArcDiagramHTML(vizData, {
-    highlight: highlight || '',
-    maxFiles: maxFiles || 0,
-    width: 1200,
-    height: 600,
-  });
+  // Start the visualization server (or get existing URL if already running)
+  const { url, alreadyRunning } = startVizServer(
+    vizData,
+    state.graph!,
+    state.projectRoot!,
+    3456, // Use different port from CLI default to avoid conflicts
+    false  // Don't auto-open browser from MCP
+  );
   
   const fileCount = maxFiles && maxFiles < vizData.files.length ? maxFiles : vizData.files.length;
   const arcCount = vizData.arcs.filter(a => {
@@ -651,9 +653,25 @@ async function handleVisualizeGraph(
     return topFiles.includes(a.sourceFile) && topFiles.includes(a.targetFile);
   }).length;
   
+  const statusMessage = alreadyRunning 
+    ? "Visualization server is already running."
+    : "Visualization server started.";
+  
+  const message = `${statusMessage}
+
+Interactive arc diagram: ${url}
+
+The diagram shows ${fileCount} files and ${arcCount} cross-file dependencies.${highlight ? ` Highlighted: ${highlight}` : ''}
+
+Features:
+• Hover over arcs to see source → target details
+• Click files to filter connections
+• Search for specific files
+• Export as SVG or PNG
+
+The server will keep running until you end the MCP session or press Ctrl+C.`;
+
   return {
-    _mcpAppResponse: true,
-    text: `Arc diagram showing ${fileCount} files and ${arcCount} cross-file dependencies.${highlight ? ` Highlighted: ${highlight}` : ''}`,
-    html,
+    content: [{ type: "text", text: message }],
   };
 }

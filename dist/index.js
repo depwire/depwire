@@ -8,9 +8,10 @@ import {
   prepareVizData,
   searchSymbols,
   startMcpServer,
+  startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-LUMIKSLN.js";
+} from "./chunk-HSBO6TNM.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -81,116 +82,6 @@ function importFromJSON(json) {
     }
   }
   return graph;
-}
-
-// src/viz/server.ts
-import express from "express";
-import open from "open";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
-import { WebSocketServer } from "ws";
-var __filename = fileURLToPath(import.meta.url);
-var __dirname = dirname(__filename);
-function startVizServer(initialVizData, graph, projectRoot, port = 3333, shouldOpen = true) {
-  const app = express();
-  let vizData = initialVizData;
-  const publicDir = join(__dirname, "viz", "public");
-  app.use(express.static(publicDir));
-  app.get("/api/graph", (req, res) => {
-    res.json(vizData);
-  });
-  const server = app.listen(port, "127.0.0.1", () => {
-    const url = `http://127.0.0.1:${port}`;
-    console.log(`
-Depwire visualization running at ${url}`);
-    console.log("Press Ctrl+C to stop\n");
-    if (shouldOpen) {
-      open(url);
-    }
-  });
-  const wss = new WebSocketServer({ server });
-  wss.on("connection", (ws) => {
-    console.log("Browser connected to WebSocket");
-    ws.on("close", () => {
-      console.log("Browser disconnected from WebSocket");
-    });
-  });
-  function broadcastRefresh() {
-    wss.clients.forEach((client) => {
-      if (client.readyState === 1) {
-        client.send(JSON.stringify({ type: "refresh" }));
-      }
-    });
-  }
-  console.log("Starting file watcher...");
-  const watcher = watchProject(projectRoot, {
-    onFileChanged: async (filePath) => {
-      console.log(`File changed: ${filePath} \u2014 re-parsing project...`);
-      try {
-        const parsedFiles = parseProject(projectRoot);
-        const newGraph = buildGraph(parsedFiles);
-        graph.clear();
-        newGraph.forEachNode((node, attrs) => {
-          graph.addNode(node, attrs);
-        });
-        newGraph.forEachEdge((edge, attrs, source, target) => {
-          graph.addEdge(source, target, attrs);
-        });
-        vizData = prepareVizData(graph, projectRoot);
-        broadcastRefresh();
-        console.log(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
-      } catch (error) {
-        console.error(`Failed to update graph for ${filePath}:`, error);
-      }
-    },
-    onFileAdded: async (filePath) => {
-      console.log(`File added: ${filePath} \u2014 re-parsing project...`);
-      try {
-        const parsedFiles = parseProject(projectRoot);
-        const newGraph = buildGraph(parsedFiles);
-        graph.clear();
-        newGraph.forEachNode((node, attrs) => {
-          graph.addNode(node, attrs);
-        });
-        newGraph.forEachEdge((edge, attrs, source, target) => {
-          graph.addEdge(source, target, attrs);
-        });
-        vizData = prepareVizData(graph, projectRoot);
-        broadcastRefresh();
-        console.log(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
-      } catch (error) {
-        console.error(`Failed to update graph for ${filePath}:`, error);
-      }
-    },
-    onFileDeleted: (filePath) => {
-      console.log(`File deleted: ${filePath} \u2014 re-parsing project...`);
-      try {
-        const parsedFiles = parseProject(projectRoot);
-        const newGraph = buildGraph(parsedFiles);
-        graph.clear();
-        newGraph.forEachNode((node, attrs) => {
-          graph.addNode(node, attrs);
-        });
-        newGraph.forEachEdge((edge, attrs, source, target) => {
-          graph.addEdge(source, target, attrs);
-        });
-        vizData = prepareVizData(graph, projectRoot);
-        broadcastRefresh();
-        console.log(`Graph updated (${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} edges)`);
-      } catch (error) {
-        console.error(`Failed to remove ${filePath} from graph:`, error);
-      }
-    }
-  });
-  process.on("SIGINT", () => {
-    console.log("\nShutting down visualization server...");
-    watcher.close();
-    wss.close();
-    server.close(() => {
-      process.exit(0);
-    });
-  });
-  return server;
 }
 
 // src/index.ts

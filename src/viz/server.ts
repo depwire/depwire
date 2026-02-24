@@ -13,13 +13,26 @@ import { buildGraph } from '../graph/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Module-level state to prevent multiple servers
+let activeServer: { server: any; port: number; url: string } | null = null;
+
 export function startVizServer(
   initialVizData: VizData,
   graph: DirectedGraph,
   projectRoot: string,
   port: number = 3333,
   shouldOpen: boolean = true
-) {
+): { server: any; url: string; alreadyRunning: boolean } {
+  // If server is already running, return existing info
+  if (activeServer) {
+    console.log(`Visualization server already running at ${activeServer.url}`);
+    return {
+      server: activeServer.server,
+      url: activeServer.url,
+      alreadyRunning: true,
+    };
+  }
+  
   const app = express();
   
   // Mutable reference to viz data that updates when graph changes
@@ -39,6 +52,9 @@ export function startVizServer(
     const url = `http://127.0.0.1:${port}`;
     console.log(`\nDepwire visualization running at ${url}`);
     console.log('Press Ctrl+C to stop\n');
+    
+    // Store active server info
+    activeServer = { server, port, url };
     
     if (shouldOpen) {
       open(url);
@@ -155,6 +171,7 @@ export function startVizServer(
   // Graceful shutdown
   process.on('SIGINT', () => {
     console.log('\nShutting down visualization server...');
+    activeServer = null; // Clear active server state
     watcher.close();
     wss.close();
     server.close(() => {
@@ -162,5 +179,6 @@ export function startVizServer(
     });
   });
   
-  return server;
+  const url = `http://127.0.0.1:${port}`;
+  return { server, url, alreadyRunning: false };
 }
