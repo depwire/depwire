@@ -6,7 +6,7 @@ import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
 import { getArchitectureSummary } from '../graph/queries.js';
 import { watchProject } from '../watcher.js';
-import type { CodeGraphState } from './state.js';
+import type { DepwireState } from './state.js';
 import { updateFileInGraph } from '../graph/updater.js';
 
 function validateProjectPath(source: string): { valid: boolean; error?: string } {
@@ -41,7 +41,7 @@ function validateProjectPath(source: string): { valid: boolean; error?: string }
 export async function connectToRepo(
   source: string,
   subdirectory: string | undefined,
-  state: CodeGraphState
+  state: DepwireState
 ): Promise<any> {
   try {
     let projectRoot: string;
@@ -64,7 +64,7 @@ export async function connectToRepo(
       projectName = match[1];
 
       // Create temp directory for cloned repos
-      const reposDir = join(tmpdir(), 'codegraph-repos');
+      const reposDir = join(tmpdir(), 'depwire-repos');
       const cloneDir = join(reposDir, projectName);
 
       console.error(`Connecting to GitHub repo: ${source}`);

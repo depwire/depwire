@@ -37,7 +37,7 @@ export function startVizServer(
   
   const server = app.listen(port, '127.0.0.1', () => {
     const url = `http://127.0.0.1:${port}`;
-    console.log(`\nCodeGraph visualization running at ${url}`);
+    console.log(`\nDepwire visualization running at ${url}`);
     console.log('Press Ctrl+C to stop\n');
     
     if (shouldOpen) {

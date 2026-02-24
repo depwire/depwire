@@ -10,7 +10,7 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-G7DOBD4A.js";
+} from "./chunk-LUMIKSLN.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -102,7 +102,7 @@ function startVizServer(initialVizData, graph, projectRoot, port = 3333, shouldO
   const server = app.listen(port, "127.0.0.1", () => {
     const url = `http://127.0.0.1:${port}`;
     console.log(`
-CodeGraph visualization running at ${url}`);
+Depwire visualization running at ${url}`);
     console.log("Press Ctrl+C to stop\n");
     if (shouldOpen) {
       open(url);
@@ -195,8 +195,8 @@ CodeGraph visualization running at ${url}`);
 
 // src/index.ts
 var program = new Command();
-program.name("codegraph").description("Code cross-reference graph builder for TypeScript projects").version("0.1.0");
-program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("<directory>", "Project directory to parse").option("-o, --output <path>", "Output JSON file path", "codegraph-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").action(async (directory, options) => {
+program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version("0.1.0");
+program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("<directory>", "Project directory to parse").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").action(async (directory, options) => {
   const startTime = Date.now();
   try {
     const projectRoot = resolve(directory);
@@ -235,7 +235,7 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   try {
     const projectRoot = resolve(directory);
-    const cacheFile = "codegraph-output.json";
+    const cacheFile = "depwire-output.json";
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");

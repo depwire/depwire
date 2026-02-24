@@ -1,14 +1,14 @@
 import { DirectedGraph } from 'graphology';
 import type { FSWatcher } from 'chokidar';
 
-export interface CodeGraphState {
+export interface DepwireState {
   graph: DirectedGraph | null;
   projectRoot: string | null;
   projectName: string | null;
   watcher: FSWatcher | null;
 }
 
-export function createEmptyState(): CodeGraphState {
+export function createEmptyState(): DepwireState {
   return {
     graph: null,
     projectRoot: null,
@@ -17,6 +17,6 @@ export function createEmptyState(): CodeGraphState {
   };
 }
 
-export function isProjectLoaded(state: CodeGraphState): boolean {
+export function isProjectLoaded(state: DepwireState): boolean {
   return state.graph !== null && state.projectRoot !== null;
 }

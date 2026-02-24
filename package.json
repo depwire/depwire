@@ -1,10 +1,10 @@
 {
-  "name": "codegraph",
+  "name": "depwire",
   "version": "0.1.0",
   "description": "Code cross-reference visualization and AI context engine for TypeScript. Analyzes codebases to show dependencies, enables AI tools with MCP, and renders beautiful arc diagrams.",
   "type": "module",
   "bin": {
-    "codegraph": "./dist/index.js"
+    "depwire": "./dist/index.js"
   },
   "scripts": {
     "build": "tsup src/index.ts src/mcpb-entry.ts --format esm --dts --clean && npm run copy-static",
@@ -30,16 +30,16 @@
     "arc-diagram",
     "cross-reference"
   ],
-  "author": "CodeGraph",
+  "author": "Depwire",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/codegraph-dev/codegraph"
+    "url": "https://github.com/depwire-dev/depwire"
   },
   "bugs": {
-    "url": "https://github.com/codegraph-dev/codegraph/issues"
+    "url": "https://github.com/depwire-dev/depwire/issues"
   },
-  "homepage": "https://github.com/codegraph-dev/codegraph#readme",
+  "homepage": "https://github.com/depwire-dev/depwire#readme",
   "files": [
     "dist",
     "README.md",

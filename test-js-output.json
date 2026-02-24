@@ -1,0 +1,508 @@
+{
+  "projectRoot": "/Users/atefataya/Developer/code-graph/test/fixtures/javascript-project",
+  "files": [
+    "components/UserCard.jsx",
+    "config.js",
+    "index.js",
+    "models/User.js",
+    "services/userService.js",
+    "utils/logger.js",
+    "utils/validators.js"
+  ],
+  "nodes": [
+    {
+      "id": "components/UserCard.jsx::UserAvatar",
+      "name": "UserAvatar",
+      "kind": "function",
+      "filePath": "components/UserCard.jsx",
+      "startLine": 3,
+      "endLine": 11,
+      "exported": false
+    },
+    {
+      "id": "components/UserCard.jsx::UserCard",
+      "name": "UserCard",
+      "kind": "function",
+      "filePath": "components/UserCard.jsx",
+      "startLine": 13,
+      "endLine": 32,
+      "exported": false
+    },
+    {
+      "id": "config.js::config",
+      "name": "config",
+      "kind": "variable",
+      "filePath": "config.js",
+      "startLine": 3,
+      "endLine": 9,
+      "exported": false
+    },
+    {
+      "id": "index.js::app",
+      "name": "app",
+      "kind": "variable",
+      "filePath": "index.js",
+      "startLine": 6,
+      "endLine": 6,
+      "exported": false
+    },
+    {
+      "id": "index.js::userService",
+      "name": "userService",
+      "kind": "variable",
+      "filePath": "index.js",
+      "startLine": 7,
+      "endLine": 7,
+      "exported": false
+    },
+    {
+      "id": "index.js::users",
+      "name": "users",
+      "kind": "variable",
+      "filePath": "index.js",
+      "startLine": 10,
+      "endLine": 10,
+      "exported": false
+    },
+    {
+      "id": "index.js::name",
+      "name": "name",
+      "kind": "variable",
+      "filePath": "index.js",
+      "startLine": 15,
+      "endLine": 15,
+      "exported": false
+    },
+    {
+      "id": "index.js::user",
+      "name": "user",
+      "kind": "variable",
+      "filePath": "index.js",
+      "startLine": 19,
+      "endLine": 19,
+      "exported": false
+    },
+    {
+      "id": "models/User.js::User",
+      "name": "User",
+      "kind": "class",
+      "filePath": "models/User.js",
+      "startLine": 1,
+      "endLine": 21,
+      "exported": false
+    },
+    {
+      "id": "models/User.js::User.constructor",
+      "name": "constructor",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 2,
+      "endLine": 7,
+      "exported": false,
+      "scope": "User"
+    },
+    {
+      "id": "models/User.js::User.isAdmin",
+      "name": "isAdmin",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 9,
+      "endLine": 11,
+      "exported": false,
+      "scope": "User"
+    },
+    {
+      "id": "models/User.js::User.toJSON",
+      "name": "toJSON",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 13,
+      "endLine": 20,
+      "exported": false,
+      "scope": "User"
+    },
+    {
+      "id": "models/User.js::constructor",
+      "name": "constructor",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 2,
+      "endLine": 7,
+      "exported": false
+    },
+    {
+      "id": "models/User.js::isAdmin",
+      "name": "isAdmin",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 9,
+      "endLine": 11,
+      "exported": false
+    },
+    {
+      "id": "models/User.js::toJSON",
+      "name": "toJSON",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 13,
+      "endLine": 20,
+      "exported": false
+    },
+    {
+      "id": "models/User.js::AdminUser",
+      "name": "AdminUser",
+      "kind": "class",
+      "filePath": "models/User.js",
+      "startLine": 23,
+      "endLine": 33,
+      "exported": false
+    },
+    {
+      "id": "models/User.js::AdminUser.constructor",
+      "name": "constructor",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 24,
+      "endLine": 28,
+      "exported": false,
+      "scope": "AdminUser"
+    },
+    {
+      "id": "models/User.js::AdminUser.hasPermission",
+      "name": "hasPermission",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 30,
+      "endLine": 32,
+      "exported": false,
+      "scope": "AdminUser"
+    },
+    {
+      "id": "models/User.js::hasPermission",
+      "name": "hasPermission",
+      "kind": "method",
+      "filePath": "models/User.js",
+      "startLine": 30,
+      "endLine": 32,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::UserService",
+      "name": "UserService",
+      "kind": "class",
+      "filePath": "services/userService.js",
+      "startLine": 4,
+      "endLine": 31,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::UserService.constructor",
+      "name": "constructor",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 5,
+      "endLine": 8,
+      "exported": false,
+      "scope": "UserService"
+    },
+    {
+      "id": "services/userService.js::UserService.getAll",
+      "name": "getAll",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 10,
+      "endLine": 12,
+      "exported": false,
+      "scope": "UserService"
+    },
+    {
+      "id": "services/userService.js::UserService.getById",
+      "name": "getById",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 14,
+      "endLine": 16,
+      "exported": false,
+      "scope": "UserService"
+    },
+    {
+      "id": "services/userService.js::UserService.create",
+      "name": "create",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 18,
+      "endLine": 23,
+      "exported": false,
+      "scope": "UserService"
+    },
+    {
+      "id": "services/userService.js::UserService.createAdmin",
+      "name": "createAdmin",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 25,
+      "endLine": 30,
+      "exported": false,
+      "scope": "UserService"
+    },
+    {
+      "id": "services/userService.js::constructor",
+      "name": "constructor",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 5,
+      "endLine": 8,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::getAll",
+      "name": "getAll",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 10,
+      "endLine": 12,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::getById",
+      "name": "getById",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 14,
+      "endLine": 16,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::create",
+      "name": "create",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 18,
+      "endLine": 23,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::id",
+      "name": "id",
+      "kind": "variable",
+      "filePath": "services/userService.js",
+      "startLine": 19,
+      "endLine": 19,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::user",
+      "name": "user",
+      "kind": "variable",
+      "filePath": "services/userService.js",
+      "startLine": 20,
+      "endLine": 20,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::createAdmin",
+      "name": "createAdmin",
+      "kind": "method",
+      "filePath": "services/userService.js",
+      "startLine": 25,
+      "endLine": 30,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::admin",
+      "name": "admin",
+      "kind": "variable",
+      "filePath": "services/userService.js",
+      "startLine": 27,
+      "endLine": 27,
+      "exported": false
+    },
+    {
+      "id": "utils/logger.js::LOG_LEVELS",
+      "name": "LOG_LEVELS",
+      "kind": "variable",
+      "filePath": "utils/logger.js",
+      "startLine": 3,
+      "endLine": 8,
+      "exported": false
+    },
+    {
+      "id": "utils/logger.js::createLogger",
+      "name": "createLogger",
+      "kind": "function",
+      "filePath": "utils/logger.js",
+      "startLine": 10,
+      "endLine": 17,
+      "exported": false
+    },
+    {
+      "id": "utils/validators.js::EMAIL_REGEX",
+      "name": "EMAIL_REGEX",
+      "kind": "variable",
+      "filePath": "utils/validators.js",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/validators.js::validateEmail",
+      "name": "validateEmail",
+      "kind": "function",
+      "filePath": "utils/validators.js",
+      "startLine": 3,
+      "endLine": 5,
+      "exported": false
+    },
+    {
+      "id": "utils/validators.js::validateName",
+      "name": "validateName",
+      "kind": "function",
+      "filePath": "utils/validators.js",
+      "startLine": 7,
+      "endLine": 9,
+      "exported": false
+    },
+    {
+      "id": "utils/validators.js::sanitizeInput",
+      "name": "sanitizeInput",
+      "kind": "function",
+      "filePath": "utils/validators.js",
+      "startLine": 11,
+      "endLine": 14,
+      "exported": false
+    },
+    {
+      "id": "index.js::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "index.js",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "services/userService.js::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "services/userService.js",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    },
+    {
+      "id": "utils/logger.js::__file__",
+      "name": "__file__",
+      "kind": "import",
+      "filePath": "utils/logger.js",
+      "startLine": 1,
+      "endLine": 1,
+      "exported": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "components/UserCard.jsx::UserCard",
+      "target": "components/UserCard.jsx::UserAvatar",
+      "kind": "references",
+      "filePath": "components/UserCard.jsx",
+      "line": 17
+    },
+    {
+      "source": "index.js::__file__",
+      "target": "services/userService.js::UserService",
+      "kind": "imports",
+      "filePath": "index.js",
+      "line": 2
+    },
+    {
+      "source": "index.js::__file__",
+      "target": "utils/validators.js::validateEmail",
+      "kind": "imports",
+      "filePath": "index.js",
+      "line": 3
+    },
+    {
+      "source": "index.js::__file__",
+      "target": "config.js::config",
+      "kind": "imports",
+      "filePath": "index.js",
+      "line": 4
+    },
+    {
+      "source": "services/userService.js::__file__",
+      "target": "models/User.js::User",
+      "kind": "imports",
+      "filePath": "services/userService.js",
+      "line": 1
+    },
+    {
+      "source": "services/userService.js::__file__",
+      "target": "models/User.js::AdminUser",
+      "kind": "imports",
+      "filePath": "services/userService.js",
+      "line": 1
+    },
+    {
+      "source": "services/userService.js::__file__",
+      "target": "config.js::config",
+      "kind": "imports",
+      "filePath": "services/userService.js",
+      "line": 2
+    },
+    {
+      "source": "services/userService.js::UserService.create",
+      "target": "models/User.js::User",
+      "kind": "calls",
+      "filePath": "services/userService.js",
+      "line": 20
+    },
+    {
+      "source": "services/userService.js::UserService",
+      "target": "models/User.js::User",
+      "kind": "calls",
+      "filePath": "services/userService.js",
+      "line": 20
+    },
+    {
+      "source": "services/userService.js::UserService.createAdmin",
+      "target": "models/User.js::AdminUser",
+      "kind": "calls",
+      "filePath": "services/userService.js",
+      "line": 27
+    },
+    {
+      "source": "services/userService.js::UserService",
+      "target": "models/User.js::AdminUser",
+      "kind": "calls",
+      "filePath": "services/userService.js",
+      "line": 27
+    },
+    {
+      "source": "services/userService.js::create",
+      "target": "models/User.js::User",
+      "kind": "calls",
+      "filePath": "services/userService.js",
+      "line": 20
+    },
+    {
+      "source": "services/userService.js::createAdmin",
+      "target": "models/User.js::AdminUser",
+      "kind": "calls",
+      "filePath": "services/userService.js",
+      "line": 27
+    },
+    {
+      "source": "utils/logger.js::__file__",
+      "target": "config.js::config",
+      "kind": "imports",
+      "filePath": "utils/logger.js",
+      "line": 1
+    }
+  ],
+  "metadata": {
+    "parsedAt": "2026-02-24T13:21:19.971Z",
+    "fileCount": 7,
+    "nodeCount": 42,
+    "edgeCount": 14
+  }
+}
