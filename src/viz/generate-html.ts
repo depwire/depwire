@@ -52,7 +52,7 @@ export function generateArcDiagramHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeGraph Arc Diagram</title>
+  <title>Depwire Arc Diagram</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -111,7 +111,7 @@ export function generateArcDiagramHTML(
 <body>
   <div id="container">
     <div id="header">
-      <h2>CodeGraph Arc Diagram</h2>
+      <h2>Depwire Arc Diagram</h2>
       <div id="stats"></div>
     </div>
     <div id="canvas-container">

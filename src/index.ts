@@ -17,7 +17,7 @@ import { updateFileInGraph } from './graph/updater.js';
 const program = new Command();
 
 program
-  .name('codegraph')
+  .name('depwire')
   .description('Code cross-reference graph builder for TypeScript projects')
   .version('0.1.0');
 
@@ -25,7 +25,7 @@ program
   .command('parse')
   .description('Parse a TypeScript project and build dependency graph')
   .argument('<directory>', 'Project directory to parse')
-  .option('-o, --output <path>', 'Output JSON file path', 'codegraph-output.json')
+  .option('-o, --output <path>', 'Output JSON file path', 'depwire-output.json')
   .option('--pretty', 'Pretty-print JSON output')
   .option('--stats', 'Print summary statistics')
   .action(async (directory: string, options: { output: string; pretty?: boolean; stats?: boolean }) => {
@@ -90,7 +90,7 @@ program
   .action(async (directory: string, symbolName: string) => {
     try {
       const projectRoot = resolve(directory);
-      const cacheFile = 'codegraph-output.json';
+      const cacheFile = 'depwire-output.json';
       
       let graph;
       

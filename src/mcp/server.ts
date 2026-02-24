@@ -1,12 +1,12 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { handleToolCall, getToolsList } from "./tools.js";
-import type { CodeGraphState } from "./state.js";
+import type { DepwireState } from "./state.js";
 
-export async function startMcpServer(state: CodeGraphState): Promise<void> {
+export async function startMcpServer(state: DepwireState): Promise<void> {
   const server = new Server(
     {
-      name: "codegraph",
+      name: "depwire",
       version: "0.1.0",
     },
     {
@@ -37,7 +37,7 @@ export async function startMcpServer(state: CodeGraphState): Promise<void> {
   await server.connect(transport);
 
   // Log to stderr only (NEVER stdout)
-  console.error("CodeGraph MCP server started");
+  console.error("Depwire MCP server started");
   if (state.projectRoot) {
     console.error(`Project: ${state.projectRoot}`);
   } else {

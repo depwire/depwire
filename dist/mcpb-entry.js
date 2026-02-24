@@ -6,13 +6,13 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-G7DOBD4A.js";
+} from "./chunk-LUMIKSLN.js";
 
 // src/mcpb-entry.ts
 import { resolve } from "path";
 async function main() {
   const state = createEmptyState();
-  const projectPath = process.env.MCPB_CONFIG_PROJECT_PATH || process.env.CODEGRAPH_PROJECT_PATH || "";
+  const projectPath = process.env.MCPB_CONFIG_PROJECT_PATH || process.env.DEPWIRE_PROJECT_PATH || "";
   if (projectPath) {
     try {
       const projectRoot = resolve(projectPath);
