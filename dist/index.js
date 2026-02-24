@@ -10,7 +10,7 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-YO6DOB5X.js";
+} from "./chunk-LUMIKSLN.js";
 
 // src/index.ts
 import { Command } from "commander";

@@ -16,7 +16,7 @@ async function main() {
 
   // Read user config from environment variables
   // Claude Desktop passes user_config values as MCPB_CONFIG_<FIELD_NAME_UPPERCASED>
-  const projectPath = process.env.MCPB_CONFIG_PROJECT_PATH || process.env.CODEGRAPH_PROJECT_PATH || '';
+  const projectPath = process.env.MCPB_CONFIG_PROJECT_PATH || process.env.DEPWIRE_PROJECT_PATH || '';
 
   if (projectPath) {
     try {

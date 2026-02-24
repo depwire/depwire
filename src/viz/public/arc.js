@@ -530,7 +530,7 @@ function exportToSVG() {
   
   const link = document.createElement('a');
   link.href = url;
-  link.download = `codegraph-${graphData.projectName}.svg`;
+  link.download = `depwire-${graphData.projectName}.svg`;
   link.click();
   
   URL.revokeObjectURL(url);
@@ -557,7 +557,7 @@ function exportToPNG() {
       const pngUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = pngUrl;
-      link.download = `codegraph-${graphData.projectName}.png`;
+      link.download = `depwire-${graphData.projectName}.png`;
       link.click();
       
       URL.revokeObjectURL(pngUrl);

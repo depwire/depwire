@@ -28,7 +28,7 @@ export function getToolsList(): ToolDefinition[] {
   return [
     {
       name: "connect_repo",
-      description: "Connect CodeGraph to a codebase for analysis. Accepts a local directory path or a GitHub repository URL. If a GitHub URL is provided, the repo will be cloned automatically. This replaces the currently loaded project.",
+      description: "Connect Depwire to a codebase for analysis. Accepts a local directory path or a GitHub repository URL. If a GitHub URL is provided, the repo will be cloned automatically. This replaces the currently loaded project.",
       inputSchema: {
         type: "object",
         properties: {
@@ -252,7 +252,7 @@ export async function handleToolCall(
           {
             type: "resource",
             resource: {
-              uri: "ui://codegraph/arc-diagram",
+              uri: "ui://depwire/arc-diagram",
               mimeType: "text/html;profile=mcp-app",
               text: appResult.html,
             },
