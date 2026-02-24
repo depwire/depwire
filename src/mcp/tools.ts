@@ -8,7 +8,7 @@ import {
   getFileSummary,
   getArchitectureSummary,
 } from "../graph/queries.js";
-import type { CodeGraphState } from "./state.js";
+import type { DepwireState } from "./state.js";
 import { isProjectLoaded } from "./state.js";
 import { connectToRepo } from "./connect.js";
 import { prepareVizData } from "../viz/data.js";
@@ -176,7 +176,7 @@ export function getToolsList(): ToolDefinition[] {
 export async function handleToolCall(
   name: string,
   args: Record<string, any>,
-  state: CodeGraphState
+  state: DepwireState
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   try {
     let result: any;
@@ -628,7 +628,7 @@ function handleListFiles(directory: string | undefined, graph: DirectedGraph) {
 async function handleVisualizeGraph(
   highlight: string | undefined,
   maxFiles: number | undefined,
-  state: CodeGraphState
+  state: DepwireState
 ): Promise<{ _mcpAppResponse: true; text: string; html: string }> {
   // Prepare visualization data
   const vizData = prepareVizData(state.graph!, state.projectRoot);
