@@ -1,11 +1,23 @@
 node_modules/
 dist/
 create-t3-app/
-docs/internal/
+
+# Internal docs (not published)
+docs/
+
+# Output files from testing
+*-output.json
+
+# MCPB files
 *.mcpb
-codegraph-output.json
+
+# Old specific output files (kept for backward compat)
 test-output.json
 test-graph.json
 real-test.json
+
+# Test scripts
 *.mjs
+
+# Logs
 *.log
