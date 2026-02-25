@@ -15,8 +15,9 @@ import {
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve } from "path";
+import { resolve, dirname, join } from "path";
 import { writeFileSync, readFileSync, existsSync } from "fs";
+import { fileURLToPath } from "url";
 
 // src/graph/serializer.ts
 import { DirectedGraph } from "graphology";
@@ -85,8 +86,12 @@ function importFromJSON(json) {
 }
 
 // src/index.ts
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = dirname(__filename);
+var packageJsonPath = join(__dirname, "../package.json");
+var packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 var program = new Command();
-program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version("0.1.0");
+program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
 program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("<directory>", "Project directory to parse").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   const startTime = Date.now();
   try {

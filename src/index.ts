@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { resolve } from 'path';
+import { resolve, dirname, join } from 'path';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { parseProject } from './parser/index.js';
 import { buildGraph } from './graph/index.js';
 import { exportToJSON, importFromJSON } from './graph/serializer.js';
@@ -14,12 +15,18 @@ import { createEmptyState } from './mcp/state.js';
 import { watchProject } from './watcher.js';
 import { updateFileInGraph } from './graph/updater.js';
 
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJsonPath = join(__dirname, '../package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+
 const program = new Command();
 
 program
   .name('depwire')
   .description('Code cross-reference graph builder for TypeScript projects')
-  .version('0.1.0');
+  .version(packageJson.version);
 
 program
   .command('parse')
