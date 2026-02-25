@@ -6,7 +6,7 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-6IGL7D2V.js";
+} from "./chunk-ZR2SXG47.js";
 
 // src/mcpb-entry.ts
 import { resolve } from "path";

@@ -11,7 +11,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-6IGL7D2V.js";
+} from "./chunk-ZR2SXG47.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -187,7 +187,10 @@ program.command("viz").description("Launch interactive arc diagram visualization
     const vizData = prepareVizData(graph, projectRoot);
     console.log(`Found ${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} cross-file edges`);
     const port = parseInt(options.port, 10);
-    await startVizServer(vizData, graph, projectRoot, port, options.open);
+    await startVizServer(vizData, graph, projectRoot, port, options.open, {
+      exclude: options.exclude,
+      verbose: options.verbose
+    });
   } catch (err) {
     console.error("Error starting visualization:", err);
     process.exit(1);
