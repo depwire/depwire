@@ -11,7 +11,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-2XOJSBSD.js";
+} from "./chunk-4A75NTM6.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -87,12 +87,15 @@ function importFromJSON(json) {
 // src/index.ts
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version("0.1.0");
-program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("<directory>", "Project directory to parse").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").action(async (directory, options) => {
+program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("<directory>", "Project directory to parse").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   const startTime = Date.now();
   try {
     const projectRoot = resolve(directory);
     console.log(`Parsing project: ${projectRoot}`);
-    const parsedFiles = parseProject(projectRoot);
+    const parsedFiles = parseProject(projectRoot, {
+      exclude: options.exclude,
+      verbose: options.verbose
+    });
     console.log(`Parsed ${parsedFiles.length} files`);
     const graph = buildGraph(parsedFiles);
     const projectGraph = exportToJSON(graph, projectRoot);
@@ -171,17 +174,20 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
     process.exit(1);
   }
 });
-program.command("viz").description("Launch interactive arc diagram visualization").argument("<directory>", "Project directory to visualize").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").action(async (directory, options) => {
+program.command("viz").description("Launch interactive arc diagram visualization").argument("<directory>", "Project directory to visualize").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   try {
     const projectRoot = resolve(directory);
     console.log(`Parsing project: ${projectRoot}`);
-    const parsedFiles = parseProject(projectRoot);
+    const parsedFiles = parseProject(projectRoot, {
+      exclude: options.exclude,
+      verbose: options.verbose
+    });
     console.log(`Parsed ${parsedFiles.length} files`);
     const graph = buildGraph(parsedFiles);
     const vizData = prepareVizData(graph, projectRoot);
     console.log(`Found ${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} cross-file edges`);
     const port = parseInt(options.port, 10);
-    startVizServer(vizData, graph, projectRoot, port, options.open);
+    await startVizServer(vizData, graph, projectRoot, port, options.open);
   } catch (err) {
     console.error("Error starting visualization:", err);
     process.exit(1);
