@@ -11,7 +11,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-ZR2SXG47.js";
+} from "./chunk-XUZ2EDB4.js";
 
 // src/index.ts
 import { Command } from "commander";

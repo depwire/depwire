@@ -12,7 +12,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   
   // Watch the directory directly (glob patterns don't work reliably on all systems)
   // We'll filter by extension in the callbacks
-  const watcher = chokidar.watch(projectRoot, {
+  const watcherOptions = {
     ignored: [
       '**/node_modules/**',
       '**/vendor/**',  // Go dependencies
@@ -27,11 +27,17 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     ignoreInitial: true,  // Don't fire events for existing files
     persistent: true,
     followSymlinks: false,
+    usePolling: true,  // Use polling for macOS reliability
+    interval: 1000,    // Poll every second
     awaitWriteFinish: {
       stabilityThreshold: 300,  // Wait 300ms after last change before firing
       pollInterval: 100,
     },
-  });
+  };
+  
+  console.error('[Watcher] DEBUG: chokidar options:', JSON.stringify(watcherOptions, null, 2));
+  
+  const watcher = chokidar.watch(projectRoot, watcherOptions);
 
   console.error('[Watcher] Attaching event listeners...');
 
@@ -103,7 +109,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('all', (event, path) => {
-    console.error(`[Watcher] ALL event: ${event} ${path}`);
+    console.error(`[Watcher] DEBUG: raw chokidar event - ${event} - ${path}`);
   });
 
   return watcher;
