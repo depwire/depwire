@@ -15,8 +15,8 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 ### CLI Usage
 
 ```bash
-npx depwire viz ./my-project          # Open visualization
-npx depwire parse ./my-project        # Export graph as JSON
+npx depwire-cli viz ./my-project          # Open visualization
+npx depwire-cli parse ./my-project        # Export graph as JSON
 ```
 
 ### Claude Desktop
@@ -28,7 +28,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "depwire": {
       "command": "npx",
-      "args": ["-y", "depwire", "mcp"]
+      "args": ["-y", "depwire-cli", "mcp"]
     }
   }
 }
@@ -43,7 +43,7 @@ Connect to /path/to/my/project and show me the architecture.
 
 Settings → Features → Experimental → Enable MCP → Add Server:
 - Command: `npx`
-- Args: `-y depwire mcp /path/to/project`
+- Args: `-y depwire-cli mcp /path/to/project`
 
 ## Available MCP Tools
 
@@ -58,6 +58,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `get_architecture_summary` | High-level project overview |
 | `list_files` | List all files with stats |
 | `get_symbol_info` | Look up any symbol's details |
+| `visualize_graph` | Generate interactive arc diagram visualization |
 
 ## Supported Languages
 
@@ -92,12 +93,12 @@ Opens an interactive arc diagram in your browser:
 ## Installation
 
 ```bash
-npm install -g depwire
+npm install -g depwire-cli
 ```
 
 Or use directly with `npx`:
 ```bash
-npx depwire --help
+npx depwire-cli --help
 ```
 
 ## Example Workflows
@@ -158,12 +159,15 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## Contributing
 
-Contributions welcome! Depwire is open source and community-driven.
+Contributions welcome! Please note:
 
 1. Fork the repository
 2. Create a feature branch
 3. Add tests for new functionality
 4. Submit a pull request
+5. Sign the CLA (handled automatically on your first PR)
+
+All contributors must sign the Contributor License Agreement before their PR can be merged.
 
 ## License
 
@@ -177,7 +181,9 @@ For commercial licensing inquiries: atef@depwire.dev
 
 ## Credits
 
-Built with:
+Built by [ATEF ATAYA LLC](https://depwire.dev)
+
+Powered by:
 - [tree-sitter](https://tree-sitter.github.io/tree-sitter/) — Fast, reliable parsing
 - [graphology](https://graphology.github.io/) — Powerful graph data structure
 - [D3.js](https://d3js.org/) — Data visualization
