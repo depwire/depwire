@@ -22,13 +22,19 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
       '**/coverage/**',
       '**/.next/**',
       '**/.turbo/**',
-      '**/.*',  // Hidden files and directories
+      '**/.DS_Store',      // macOS metadata
+      '**/.env',           // Environment files
+      '**/.env.*',         // Environment variants
+      '**/.eslintcache',   // ESLint cache
+      '**/.vscode/**',     // VS Code settings
+      '**/.idea/**',       // IntelliJ IDEA settings
     ],
     ignoreInitial: true,  // Don't fire events for existing files
     persistent: true,
     followSymlinks: false,
     usePolling: true,  // Use polling for macOS reliability
     interval: 1000,    // Poll every second
+    atomic: true,      // Handle atomic writes (VS Code, Sublime, etc.)
     awaitWriteFinish: {
       stabilityThreshold: 300,  // Wait 300ms after last change before firing
       pollInterval: 100,
