@@ -31,7 +31,7 @@
     "cross-reference"
   ],
   "author": "Depwire",
-  "license": "MIT",
+  "license": "BSL-1.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/depwire-dev/depwire.git"

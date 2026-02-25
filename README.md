@@ -167,7 +167,13 @@ Contributions welcome! Depwire is open source and community-driven.
 
 ## License
 
-MIT — Copyright (c) 2026 ATEF ATAYA LLC
+Depwire is licensed under the [Business Source License 1.1](LICENSE).
+
+- **Use it freely** for personal projects, internal company use, and development
+- **Cannot** be offered as a hosted/managed service to third parties
+- **Converts** to Apache 2.0 on February 25, 2029
+
+For commercial licensing inquiries: atef@depwire.dev
 
 ## Credits
 
