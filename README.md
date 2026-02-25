@@ -12,6 +12,46 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 - 👀 **Live updates** — Graph stays current as you edit code
 - 🌍 **Multi-language** — TypeScript, JavaScript, Python, and Go
 
+## Why Depwire?
+
+AI coding tools are flying blind. Every time Claude, Cursor, or Copilot touches your code, it's guessing about dependencies, imports, and impact. The result: broken refactors, hallucinated imports, and wasted tokens re-scanning files it already saw.
+
+**Lost context = lost money + lost time + bad code.**
+
+**Depwire parsed the entire Hono framework — 305 files, 5,636 symbols, 1,565 dependency edges — in 2.3 seconds.**
+
+Depwire fixes this by giving AI tools a complete dependency graph of your codebase — not a fuzzy embedding, not a keyword search, but a deterministic, tree-sitter-parsed map of every symbol and connection.
+
+### Stop Losing Context
+- **No more "start from scratch" chats** — Depwire is the shared knowledge layer that every AI session inherits. New chat? Your AI already knows the architecture.
+- **Stop burning tokens** — AI tools query the graph instead of scanning hundreds of files blindly
+- **One command, every AI tool** — Claude Desktop, Cursor, VS Code, any MCP-compatible tool gets the same complete picture
+
+### Ship Better Code
+- **Impact analysis for any change** — renaming a function, moving a file, upgrading a dependency, deleting a module — know the full blast radius before you touch anything
+- **Refactor with confidence** — see every downstream consumer, every transitive dependency, 2-3 levels deep
+- **Catch dead code** — find symbols nobody references anymore
+
+### Stay in Flow
+- **Live graph, always current** — edit a file and the dependency map updates in real-time. No re-indexing, no waiting.
+- **Works locally, stays private** — zero cloud accounts, zero data leaving your machine. Just `npm install` and go.
+
+### 10 MCP Tools, Not Just Visualization
+Depwire isn't just a pretty graph. It's a full context engine with 10 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, and more. The AI decides which tool to use based on your question.
+
+## Installation
+
+![Installation](./assets/installation.gif)
+
+```bash
+npm install -g depwire-cli
+```
+
+Or use directly with `npx`:
+```bash
+npx depwire-cli --help
+```
+
 ## Quick Start
 
 ### CLI Usage
@@ -124,19 +164,6 @@ Opens an interactive arc diagram in your browser:
 2. **Graph** — graphology builds an in-memory dependency graph
 3. **MCP** — AI tools query the graph for context-aware answers
 4. **Viz** — D3.js renders the graph as an interactive arc diagram
-
-## Installation
-
-![Installation](./assets/installation.gif)
-
-```bash
-npm install -g depwire-cli
-```
-
-Or use directly with `npx`:
-```bash
-npx depwire-cli --help
-```
 
 ## CLI Reference
 
