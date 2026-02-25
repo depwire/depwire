@@ -182,7 +182,10 @@ program
       
       // Start visualization server
       const port = parseInt(options.port, 10);
-      await startVizServer(vizData, graph, projectRoot, port, options.open);
+      await startVizServer(vizData, graph, projectRoot, port, options.open, {
+        exclude: options.exclude,
+        verbose: options.verbose
+      });
     } catch (err) {
       console.error('Error starting visualization:', err);
       process.exit(1);

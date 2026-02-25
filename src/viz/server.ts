@@ -53,7 +53,8 @@ export async function startVizServer(
   graph: DirectedGraph,
   projectRoot: string,
   port: number = 3333,
-  shouldOpen: boolean = true
+  shouldOpen: boolean = true,
+  options?: { exclude?: string[]; verbose?: boolean }
 ): Promise<{ server: any; url: string; alreadyRunning: boolean }> {
   // If server is already running, return existing info
   if (activeServer) {
@@ -123,7 +124,7 @@ export async function startVizServer(
       console.error(`File changed: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project (simplest and most reliable approach)
-        const parsedFiles = parseProject(projectRoot);
+        const parsedFiles = parseProject(projectRoot, options);
         const newGraph = buildGraph(parsedFiles);
         
         // Replace the graph reference (mutations affect the shared reference)
@@ -151,7 +152,7 @@ export async function startVizServer(
       console.error(`File added: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project
-        const parsedFiles = parseProject(projectRoot);
+        const parsedFiles = parseProject(projectRoot, options);
         const newGraph = buildGraph(parsedFiles);
         
         // Replace graph contents
@@ -178,7 +179,7 @@ export async function startVizServer(
       console.error(`File deleted: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project
-        const parsedFiles = parseProject(projectRoot);
+        const parsedFiles = parseProject(projectRoot, options);
         const newGraph = buildGraph(parsedFiles);
         
         // Replace graph contents
