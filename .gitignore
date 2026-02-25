@@ -2,6 +2,9 @@ node_modules/
 dist/
 create-t3-app/
 
+# macOS
+.DS_Store
+
 # Internal docs (not published)
 docs/
 
