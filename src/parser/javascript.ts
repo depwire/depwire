@@ -24,7 +24,8 @@ export function parseJavaScriptFile(
   sourceCode: string,
   projectRoot: string
 ): ParsedFile {
-  const tree = jsParser.parse(sourceCode);
+  // Use explicit buffer size for large files (tree-sitter default is too small)
+  const tree = jsParser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
   
   const context: Context = {
     filePath,
