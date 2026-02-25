@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depwire - Give Your AI Tools a Map of Your Codebase</title>
+    <meta name="description" content="Stop losing context. Depwire gives Claude, Cursor, and AI tools a persistent dependency graph of your entire codebase — no more hallucinated imports, broken refactors, or wasted tokens.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://depwire.dev/">
+    <meta property="og:title" content="Depwire - Give Your AI Tools a Map of Your Codebase">
+    <meta property="og:description" content="Stop losing context. Depwire gives Claude, Cursor, and AI tools a persistent dependency graph of your entire codebase.">
+    <meta property="og:image" content="https://depwire.dev/assets/depwire-hero.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://depwire.dev/">
+    <meta property="twitter:title" content="Depwire - Give Your AI Tools a Map of Your Codebase">
+    <meta property="twitter:description" content="Stop losing context. Depwire gives Claude, Cursor, and AI tools a persistent dependency graph of your entire codebase.">
+    <meta property="twitter:image" content="https://depwire.dev/assets/depwire-hero.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300d4ff'/%3E%3Cstop offset='100%25' style='stop-color:%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='20' cy='50' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='30' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='70' r='8' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='50' r='8' fill='url(%23g)'/%3E%3Cpath d='M 28 50 Q 39 40 50 30' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 28 50 Q 39 60 50 70' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 30 Q 69 40 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 70 Q 69 60 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #13131a;
+            --bg-tertiary: #1a1a24;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6b6b80;
+            --border: rgba(255, 255, 255, 0.1);
+            --glow-cyan: rgba(0, 212, 255, 0.3);
+            --glow-purple: rgba(168, 85, 247, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Background gradient animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .container-wide {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        /* Header */
+        header {
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+        }
+        
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 6rem;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .hero h2 {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 400;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            line-height: 1.7;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .hero-pivot {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+        
+        .hero-solution {
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            color: var(--text-secondary);
+            max-width: 900px;
+            margin: 0 auto 2.5rem;
+            animation: fadeInUp 0.8s ease-out 0.5s both;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+        
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: var(--text-primary);
+            box-shadow: 0 4px 20px var(--glow-purple);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--glow-purple);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-cyan);
+        }
+        
+        .hero-image {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease-out 0.7s both;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.15), 0 0 60px var(--glow-cyan), 0 0 100px var(--glow-purple);
+        }
+        
+        .hero-caption {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        /* Pain Cards Section */
+        .pain-section {
+            padding: 6rem 0;
+            background: linear-gradient(180deg, transparent, var(--bg-secondary) 50%, transparent);
+        }
+        
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .pain-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .pain-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            transition: all 0.3s;
+        }
+        
+        .pain-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 40px var(--glow-cyan);
+        }
+        
+        .pain-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
+        }
+        
+        .pain-card p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        
+        /* Solution Section */
+        .solution-section {
+            padding: 6rem 0;
+        }
+        
+        .solution-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+        }
+        
+        .pipeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .pipeline-step {
+            text-align: center;
+            position: relative;
+        }
+        
+        .pipeline-step::after {
+            content: '→';
+            position: absolute;
+            right: -2rem;
+            top: 2rem;
+            font-size: 2rem;
+            color: var(--accent-purple);
+            opacity: 0.5;
+        }
+        
+        .pipeline-step:last-child::after {
+            display: none;
+        }
+        
+        .pipeline-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 20px var(--glow-purple);
+        }
+        
+        .pipeline-step h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+        
+        .pipeline-step p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* Features Grid */
+        .features-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-purple);
+            box-shadow: 0 10px 40px var(--glow-purple);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        
+        /* Proof Section */
+        .proof-section {
+            padding: 6rem 0;
+        }
+        
+        .proof-table {
+            max-width: 900px;
+            margin: 3rem auto 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: var(--bg-secondary);
+        }
+        
+        th {
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        td {
+            padding: 1.25rem 1.5rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .proof-tagline {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+        
+        /* Install Section */
+        .install-section {
+            padding: 6rem 0;
+            background: linear-gradient(180deg, transparent, var(--bg-secondary) 50%, transparent);
+        }
+        
+        .code-block-wrapper {
+            max-width: 800px;
+            margin: 3rem auto;
+        }
+        
+        .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .code-block-title {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+        
+        pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
+        
+        .code-comment {
+            color: var(--text-muted);
+        }
+        
+        .code-string {
+            color: #a9dc76;
+        }
+        
+        .code-keyword {
+            color: var(--accent-purple);
+        }
+        
+        /* MCP Tools Table */
+        .mcp-section {
+            padding: 6rem 0;
+        }
+        
+        .mcp-intro {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        .tools-table {
+            max-width: 1000px;
+            margin: 3rem auto 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        
+        /* Comparison Section */
+        .comparison-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+        
+        .comparison-table {
+            max-width: 1000px;
+            margin: 3rem auto 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            overflow-x: auto;
+        }
+        
+        .comparison-table th:first-child {
+            width: 30%;
+        }
+        
+        .check {
+            color: #4ade80;
+            font-size: 1.5rem;
+        }
+        
+        .cross {
+            color: #f87171;
+            font-size: 1.5rem;
+        }
+        
+        /* Email Capture Section */
+        .email-section {
+            padding: 6rem 0;
+            background: linear-gradient(180deg, transparent, var(--bg-secondary) 50%, transparent);
+        }
+        
+        .email-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .email-form {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .email-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .email-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+        
+        .email-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .btn-subscribe {
+            padding: 1rem 2.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: var(--text-primary);
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px var(--glow-purple);
+        }
+        
+        .btn-subscribe:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--glow-purple);
+        }
+        
+        /* Footer */
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .footer-logo-icon {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .footer-company {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .footer-links h4 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent-cyan);
+        }
+        
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .footer-bottom a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        
+        .footer-bottom a:hover {
+            color: var(--accent-cyan);
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        /* Scroll animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container, .container-wide {
+                padding: 0 1.5rem;
+            }
+            
+            .hero {
+                padding: 4rem 0 3rem;
+            }
+            
+            nav {
+                gap: 1rem;
+            }
+            
+            nav a {
+                font-size: 0.9rem;
+            }
+            
+            .pain-section,
+            .solution-section,
+            .features-section,
+            .proof-section,
+            .install-section,
+            .mcp-section,
+            .comparison-section {
+                padding: 4rem 0;
+            }
+            
+            .pipeline {
+                grid-template-columns: 1fr;
+            }
+            
+            .pipeline-step::after {
+                content: '↓';
+                right: auto;
+                top: auto;
+                bottom: -2rem;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            th, td {
+                padding: 1rem;
+            }
+            
+            .email-form {
+                flex-direction: column;
+            }
+            
+            .email-input {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#00d4ff"/>
+                                <stop offset="100%" style="stop-color:#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="20" cy="50" r="8" fill="url(#gradient)"/>
+                        <circle cx="50" cy="30" r="8" fill="url(#gradient)"/>
+                        <circle cx="50" cy="70" r="8" fill="url(#gradient)"/>
+                        <circle cx="80" cy="50" r="8" fill="url(#gradient)"/>
+                        <path d="M 28 50 Q 39 40 50 30" stroke="url(#gradient)" stroke-width="2" fill="none"/>
+                        <path d="M 28 50 Q 39 60 50 70" stroke="url(#gradient)" stroke-width="2" fill="none"/>
+                        <path d="M 58 30 Q 69 40 80 50" stroke="url(#gradient)" stroke-width="2" fill="none"/>
+                        <path d="M 58 70 Q 69 60 80 50" stroke="url(#gradient)" stroke-width="2" fill="none"/>
+                    </svg>
+                    Depwire
+                </a>
+                <nav>
+                    <a href="#install">Install</a>
+                    <a href="https://github.com/depwire/depwire" target="_blank">GitHub</a>
+                    <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Your AI is flying blind</h1>
+            <h2>Every new chat, every new prompt — your AI tool forgets your entire codebase. The result? Hallucinated imports, broken refactors, and thousands of tokens wasted re-scanning files it already saw.</h2>
+            <div class="hero-pivot">Depwire fixes this.</div>
+            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly.</p>
+            <div class="cta-buttons">
+                <a href="#install" class="btn btn-primary">Install in 10 seconds</a>
+                <a href="https://github.com/depwire/depwire" target="_blank" class="btn btn-secondary">View on GitHub</a>
+            </div>
+            <div class="hero-image">
+                <img src="../assets/depwire-hero.png" alt="Depwire arc diagram visualization" loading="lazy">
+                <p class="hero-caption">Depwire visualizing the Hono framework — 305 files, 5,636 symbols, 1,565 edges</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pain Cards Section -->
+    <section class="pain-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">The Real Cost</h2>
+            <div class="pain-cards">
+                <div class="pain-card scroll-reveal">
+                    <h3>Lost Context = Wasted Tokens</h3>
+                    <p>AI tools scan your entire codebase every session. Hundreds of files, thousands of tokens, just to understand what they already knew 5 minutes ago.</p>
+                </div>
+                <div class="pain-card scroll-reveal">
+                    <h3>Blind Refactoring = Broken Code</h3>
+                    <p>Rename a function without knowing every downstream consumer? That's how you ship bugs at 2am. AI tools guess at dependencies — Depwire knows them.</p>
+                </div>
+                <div class="pain-card scroll-reveal">
+                    <h3>New Chat = Starting Over</h3>
+                    <p>Every new conversation with Claude or Cursor starts from zero. No memory of your architecture, no knowledge of what connects to what. You re-explain your codebase every single time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">Give your AI tools a map of your entire codebase</h2>
+            <p class="solution-subtitle scroll-reveal">Depwire parses your code, builds a dependency graph, and serves it to AI tools via MCP. No more guessing.</p>
+            <div class="pipeline">
+                <div class="pipeline-step scroll-reveal">
+                    <div class="pipeline-icon">🔍</div>
+                    <h4>Parse</h4>
+                    <p>tree-sitter extracts every symbol and reference</p>
+                </div>
+                <div class="pipeline-step scroll-reveal">
+                    <div class="pipeline-icon">🕸️</div>
+                    <h4>Graph</h4>
+                    <p>graphology builds an in-memory dependency graph</p>
+                </div>
+                <div class="pipeline-step scroll-reveal">
+                    <div class="pipeline-icon">🤖</div>
+                    <h4>Query</h4>
+                    <p>AI tools query the graph via MCP for context-aware answers</p>
+                </div>
+                <div class="pipeline-step scroll-reveal">
+                    <div class="pipeline-icon">🎨</div>
+                    <h4>Visualize</h4>
+                    <p>D3.js renders interactive arc diagrams in your browser</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">Built for Modern Development</h2>
+            <div class="features-grid">
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Beautiful Visualization</h3>
+                    <p>See your entire architecture at a glance. Interactive arc diagrams that make dependencies visible, not hidden in import statements.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Context Engine</h3>
+                    <p>10 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">💥</div>
+                    <h3>Impact Analysis</h3>
+                    <p>Renaming a function? Moving a file? Upgrading a dependency? Know the full blast radius — 2-3 levels deep — before you change a single line.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Multi-Language</h3>
+                    <p>TypeScript, JavaScript, Python, and Go. Mixed-language monorepos supported. Tree-sitter parsing for deterministic accuracy.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Zero Config</h3>
+                    <p>One command: npm install -g depwire-cli. No databases, no cloud accounts, no Docker. Everything runs locally, everything stays private.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Live Updates</h3>
+                    <p>Edit a file and the graph updates automatically. No re-indexing, no cache invalidation. Always see the current state of your architecture.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Proof Section -->
+    <section class="proof-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">Tested on real-world projects</h2>
+            <div class="proof-table scroll-reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Language</th>
+                            <th>Files</th>
+                            <th>Symbols</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Hono</strong></td>
+                            <td>TypeScript</td>
+                            <td>305</td>
+                            <td>5,636</td>
+                            <td>2.3s</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Excalidraw</strong></td>
+                            <td>TypeScript/React</td>
+                            <td>320</td>
+                            <td>—</td>
+                            <td>&lt; 3s</td>
+                        </tr>
+                        <tr>
+                            <td><strong>FastAPI</strong></td>
+                            <td>Python</td>
+                            <td>47</td>
+                            <td>—</td>
+                            <td>&lt; 1s</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Express</strong></td>
+                            <td>JavaScript</td>
+                            <td>6</td>
+                            <td>—</td>
+                            <td>&lt; 1s</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cobra</strong></td>
+                            <td>Go</td>
+                            <td>19</td>
+                            <td>—</td>
+                            <td>&lt; 1s</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="proof-tagline scroll-reveal">Zero parse errors. Zero configuration. Every project, first try.</p>
+        </div>
+    </section>
+
+    <!-- Install Section -->
+    <section id="install" class="install-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">Install in 10 seconds</h2>
+            <div class="code-block-wrapper">
+                <div class="code-block scroll-reveal">
+                    <div class="code-block-title">NPM Install</div>
+                    <pre><code>npm install -g depwire-cli</code></pre>
+                </div>
+
+                <div class="code-block scroll-reveal">
+                    <div class="code-block-title">CLI Usage</div>
+                    <pre><code><span class="code-comment"># Visualization (opens in browser)</span>
+npx depwire-cli viz ./my-project
+
+<span class="code-comment"># Parse and export as JSON</span>
+npx depwire-cli parse ./my-project
+
+<span class="code-comment"># Exclude test files and node_modules</span>
+npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.test.*"</span> <span class="code-string">"**/node_modules/**"</span></code></pre>
+                </div>
+
+                <div class="code-block scroll-reveal">
+                    <div class="code-block-title">Claude Desktop Config</div>
+                    <pre><code><span class="code-comment">// ~/Library/Application Support/Claude/claude_desktop_config.json</span>
+{
+  <span class="code-string">"mcpServers"</span>: {
+    <span class="code-string">"depwire"</span>: {
+      <span class="code-string">"command"</span>: <span class="code-string">"npx"</span>,
+      <span class="code-string">"args"</span>: [<span class="code-string">"-y"</span>, <span class="code-string">"depwire-cli"</span>, <span class="code-string">"mcp"</span>]
+    }
+  }
+}</code></pre>
+                </div>
+
+                <div class="code-block scroll-reveal">
+                    <div class="code-block-title">Then in chat</div>
+                    <pre><code>Connect to /path/to/my/project and show me the architecture.</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MCP Tools Section -->
+    <section class="mcp-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">10 MCP Tools for AI Assistants</h2>
+            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 10 tools that AI assistants call autonomously based on your questions.</p>
+            <div class="tools-table scroll-reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>What It Does</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>connect_repo</code></td>
+                            <td>Connect to any local project or GitHub repo</td>
+                        </tr>
+                        <tr>
+                            <td><code>impact_analysis</code></td>
+                            <td>What breaks if you change a symbol?</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_file_context</code></td>
+                            <td>Full context — imports, exports, dependents</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_dependencies</code></td>
+                            <td>What does a symbol depend on?</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_dependents</code></td>
+                            <td>What depends on this symbol?</td>
+                        </tr>
+                        <tr>
+                            <td><code>search_symbols</code></td>
+                            <td>Find symbols by name</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_architecture_summary</code></td>
+                            <td>High-level project overview</td>
+                        </tr>
+                        <tr>
+                            <td><code>list_files</code></td>
+                            <td>List all files with stats</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_symbol_info</code></td>
+                            <td>Look up any symbol's details</td>
+                        </tr>
+                        <tr>
+                            <td><code>visualize_graph</code></td>
+                            <td>Generate interactive arc diagram visualization</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section">
+        <div class="container-wide">
+            <h2 class="section-title scroll-reveal">How Depwire Compares</h2>
+            <div class="comparison-table scroll-reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Depwire</th>
+                            <th>LSP</th>
+                            <th>mcp-server-codegraph</th>
+                            <th>Sourcegraph</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Dependency Graph</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Impact Analysis</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td>Partial</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MCP Integration</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span> (3 tools)</td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Visual Graph</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td>Basic</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cross-file Analysis</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td>Limited</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Languages</strong></td>
+                            <td>TS, JS, Python, Go</td>
+                            <td>Language-specific</td>
+                            <td>TypeScript only</td>
+                            <td>All</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Local-first</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zero Config</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Real-time Updates</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td>Delayed</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Email Capture Section -->
+    <section class="email-section">
+        <div class="container">
+            <div class="email-content scroll-reveal">
+                <h2 class="section-title">Stay in the loop</h2>
+                <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 1rem;">Get notified about team features, cloud dashboard, and major releases.</p>
+                <form class="email-form" action="mailto:hello@depwire.dev" method="get">
+                    <input type="email" name="subject" class="email-input" placeholder="your.email@company.com" required style="display:none;" value="Newsletter Subscription">
+                    <input type="email" name="body" class="email-input" placeholder="your.email@company.com" required>
+                    <button type="submit" class="btn-subscribe">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <svg class="footer-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="gradient-footer" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#00d4ff"/>
+                                    <stop offset="100%" style="stop-color:#a855f7"/>
+                                </linearGradient>
+                            </defs>
+                            <circle cx="20" cy="50" r="8" fill="url(#gradient-footer)"/>
+                            <circle cx="50" cy="30" r="8" fill="url(#gradient-footer)"/>
+                            <circle cx="50" cy="70" r="8" fill="url(#gradient-footer)"/>
+                            <circle cx="80" cy="50" r="8" fill="url(#gradient-footer)"/>
+                            <path d="M 28 50 Q 39 40 50 30" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                            <path d="M 28 50 Q 39 60 50 70" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                            <path d="M 58 30 Q 69 40 80 50" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                            <path d="M 58 70 Q 69 60 80 50" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                        </svg>
+                        Depwire
+                    </div>
+                    <p class="footer-company">Built by ATEF ATAYA LLC</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#install">Install</a></li>
+                        <li><a href="https://github.com/depwire/depwire" target="_blank">GitHub</a></li>
+                        <li><a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/depwire/depwire#readme" target="_blank">Documentation</a></li>
+                        <li><a href="https://github.com/depwire/depwire/blob/main/SECURITY.md" target="_blank">Security</a></li>
+                        <li><a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">License</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:atef@depwire.dev">atef@depwire.dev</a></li>
+                        <li><a href="https://github.com/depwire/depwire/issues" target="_blank">Report Issue</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll reveal animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollElements = document.querySelectorAll('.scroll-reveal');
+            scrollElements.forEach(el => observer.observe(el));
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
