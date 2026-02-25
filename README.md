@@ -15,8 +15,23 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 ### CLI Usage
 
 ```bash
-npx depwire-cli viz ./my-project          # Open visualization
-npx depwire-cli parse ./my-project        # Export graph as JSON
+# Visualization (opens in browser)
+npx depwire-cli viz ./my-project
+
+# Parse and export as JSON
+npx depwire-cli parse ./my-project
+
+# Exclude test files and node_modules
+npx depwire-cli parse ./my-project --exclude "**/*.test.*" "**/node_modules/**"
+
+# Show detailed parsing progress
+npx depwire-cli parse ./my-project --verbose
+
+# Export with pretty-printed JSON and statistics
+npx depwire-cli parse ./my-project --pretty --stats
+
+# Custom output file
+npx depwire-cli parse ./my-project -o my-graph.json
 ```
 
 ### Claude Desktop
@@ -72,7 +87,20 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 ## Visualization
 
 ```bash
+# Open visualization on default port (3456)
 depwire viz ./my-project
+
+# Custom port
+depwire viz ./my-project --port 8080
+
+# Exclude test files from visualization
+depwire viz ./my-project --exclude "**/*.test.*"
+
+# Verbose mode with detailed parsing logs
+depwire viz ./my-project --verbose
+
+# Don't auto-open browser
+depwire viz ./my-project --no-open
 ```
 
 Opens an interactive arc diagram in your browser:
@@ -80,8 +108,9 @@ Opens an interactive arc diagram in your browser:
 - Hover to explore connections
 - Click to filter by file
 - Search by filename
-- Live refresh when files change
+- **Live refresh when files change** — Edit code and see the graph update in real-time
 - Export as SVG or PNG
+- **Port collision handling** — Automatically finds an available port if default is in use
 
 ## How It Works
 
@@ -100,6 +129,75 @@ Or use directly with `npx`:
 ```bash
 npx depwire-cli --help
 ```
+
+## CLI Reference
+
+### `depwire parse <directory>`
+
+Parse a project and export the dependency graph as JSON.
+
+**Options:**
+- `-o, --output <path>` — Output file path (default: `depwire-output.json`)
+- `--exclude <patterns...>` — Glob patterns to exclude (e.g., `"**/*.test.*" "dist/**"`)
+- `--verbose` — Show detailed parsing progress (logs each file as it's parsed)
+- `--pretty` — Pretty-print JSON output with indentation
+- `--stats` — Print summary statistics (file count, symbol count, edges, timing)
+
+**Examples:**
+```bash
+# Basic parse
+depwire parse ./src
+
+# Exclude test files and build outputs
+depwire parse ./src --exclude "**/*.test.*" "**/*.spec.*" "dist/**" "build/**"
+
+# Full verbosity with stats
+depwire parse ./src --verbose --stats --pretty -o graph.json
+```
+
+### `depwire viz <directory>`
+
+Start visualization server and open arc diagram in browser.
+
+**Options:**
+- `--port <number>` — Port number (default: 3456, auto-increments if in use)
+- `--exclude <patterns...>` — Glob patterns to exclude
+- `--verbose` — Show detailed parsing progress
+- `--no-open` — Don't automatically open browser
+
+**Examples:**
+```bash
+# Basic visualization
+depwire viz ./src
+
+# Custom port without auto-open
+depwire viz ./src --port 8080 --no-open
+
+# Exclude test files with verbose logging
+depwire viz ./src --exclude "**/*.test.*" --verbose
+```
+
+### `depwire mcp [directory]`
+
+Start MCP server for AI tool integration (Cursor, Claude Desktop).
+
+**Examples:**
+```bash
+# Start MCP server on current directory
+depwire mcp
+
+# Start on specific project
+depwire mcp /path/to/project
+```
+
+### Error Handling
+
+Depwire gracefully handles parse errors:
+- **Malformed files** — Skipped with warning, parsing continues
+- **Large files** — Files over 1MB are automatically skipped
+- **Port collisions** — Auto-increments to next available port (3456 → 3457 → 3458...)
+- **Protected paths** — Blocks access to sensitive directories (.ssh, .aws, /etc)
+
 
 ## Example Workflows
 
