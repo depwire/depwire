@@ -16,13 +16,45 @@ const __dirname = dirname(__filename);
 // Module-level state to prevent multiple servers
 let activeServer: { server: any; port: number; url: string } | null = null;
 
-export function startVizServer(
+async function findAvailablePort(startPort: number, maxAttempts: number = 10): Promise<number> {
+  const net = await import('net');
+  
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const testPort = startPort + attempt;
+    
+    const isAvailable = await new Promise<boolean>((resolve) => {
+      const server = net.createServer();
+      
+      server.once('error', () => {
+        resolve(false);
+      });
+      
+      server.once('listening', () => {
+        server.close();
+        resolve(true);
+      });
+      
+      server.listen(testPort, '127.0.0.1');
+    });
+    
+    if (isAvailable) {
+      if (attempt > 0) {
+        console.error(`Port ${startPort} in use, using port ${testPort} instead`);
+      }
+      return testPort;
+    }
+  }
+  
+  throw new Error(`No available ports found between ${startPort} and ${startPort + maxAttempts - 1}`);
+}
+
+export async function startVizServer(
   initialVizData: VizData,
   graph: DirectedGraph,
   projectRoot: string,
   port: number = 3333,
   shouldOpen: boolean = true
-): { server: any; url: string; alreadyRunning: boolean } {
+): Promise<{ server: any; url: string; alreadyRunning: boolean }> {
   // If server is already running, return existing info
   if (activeServer) {
     console.error(`Visualization server already running at ${activeServer.url}`);
@@ -32,6 +64,9 @@ export function startVizServer(
       alreadyRunning: true,
     };
   }
+  
+  // Find an available port
+  const availablePort = await findAvailablePort(port);
   
   const app = express();
   
@@ -48,13 +83,13 @@ export function startVizServer(
     res.json(vizData);
   });
   
-  const server = app.listen(port, '127.0.0.1', () => {
-    const url = `http://127.0.0.1:${port}`;
+  const server = app.listen(availablePort, '127.0.0.1', () => {
+    const url = `http://127.0.0.1:${availablePort}`;
     console.error(`\nDepwire visualization running at ${url}`);
     console.error('Press Ctrl+C to stop\n');
     
     // Store active server info
-    activeServer = { server, port, url };
+    activeServer = { server, port: availablePort, url };
     
     if (shouldOpen) {
       open(url);
@@ -179,6 +214,6 @@ export function startVizServer(
     });
   });
   
-  const url = `http://127.0.0.1:${port}`;
+  const url = `http://127.0.0.1:${availablePort}`;
   return { server, url, alreadyRunning: false };
 }

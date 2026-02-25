@@ -28,7 +28,9 @@ program
   .option('-o, --output <path>', 'Output JSON file path', 'depwire-output.json')
   .option('--pretty', 'Pretty-print JSON output')
   .option('--stats', 'Print summary statistics')
-  .action(async (directory: string, options: { output: string; pretty?: boolean; stats?: boolean }) => {
+  .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
+  .option('--verbose', 'Show detailed parsing progress')
+  .action(async (directory: string, options: { output: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
     const startTime = Date.now();
     
     try {
@@ -37,7 +39,10 @@ program
       console.log(`Parsing project: ${projectRoot}`);
       
       // Parse all TypeScript files
-      const parsedFiles = parseProject(projectRoot);
+      const parsedFiles = parseProject(projectRoot, {
+        exclude: options.exclude,
+        verbose: options.verbose
+      });
       console.log(`Parsed ${parsedFiles.length} files`);
       
       // Build the graph
@@ -153,14 +158,19 @@ program
   .argument('<directory>', 'Project directory to visualize')
   .option('-p, --port <number>', 'Server port', '3333')
   .option('--no-open', 'Don\'t auto-open browser')
-  .action(async (directory: string, options: { port: string; open: boolean }) => {
+  .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
+  .option('--verbose', 'Show detailed parsing progress')
+  .action(async (directory: string, options: { port: string; open: boolean; exclude?: string[]; verbose?: boolean }) => {
     try {
       const projectRoot = resolve(directory);
       
       console.log(`Parsing project: ${projectRoot}`);
       
       // Parse all TypeScript files
-      const parsedFiles = parseProject(projectRoot);
+      const parsedFiles = parseProject(projectRoot, {
+        exclude: options.exclude,
+        verbose: options.verbose
+      });
       console.log(`Parsed ${parsedFiles.length} files`);
       
       // Build the graph
@@ -172,7 +182,7 @@ program
       
       // Start visualization server
       const port = parseInt(options.port, 10);
-      startVizServer(vizData, graph, projectRoot, port, options.open);
+      await startVizServer(vizData, graph, projectRoot, port, options.open);
     } catch (err) {
       console.error('Error starting visualization:', err);
       process.exit(1);

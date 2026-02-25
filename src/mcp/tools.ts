@@ -640,7 +640,7 @@ async function handleVisualizeGraph(
   const vizData = prepareVizData(state.graph!, state.projectRoot);
   
   // Start the visualization server (or get existing URL if already running)
-  const { url, alreadyRunning } = startVizServer(
+  const { url, alreadyRunning } = await startVizServer(
     vizData,
     state.graph!,
     state.projectRoot!,
