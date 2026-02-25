@@ -41,8 +41,6 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     },
   };
   
-  console.error('[Watcher] DEBUG: chokidar options:', JSON.stringify(watcherOptions, null, 2));
-  
   const watcher = chokidar.watch(projectRoot, watcherOptions);
 
   console.error('[Watcher] Attaching event listeners...');
@@ -112,10 +110,6 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     }
     
     console.error(`[Watcher] Watching ${fileCount} TypeScript/JavaScript/Python/Go files in ${dirs.length} directories`);
-  });
-
-  watcher.on('all', (event, path) => {
-    console.error(`[Watcher] DEBUG: raw chokidar event - ${event} - ${path}`);
   });
 
   return watcher;
