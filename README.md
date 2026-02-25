@@ -1,5 +1,7 @@
 # Depwire
 
+![Depwire - Arc diagram visualization of the Hono framework](./assets/depwire-hero.png)
+
 **See how your code connects. Give AI tools full codebase context.**
 
 Depwire analyzes codebases to build a cross-reference graph showing how every file, function, and import connects. It provides:
