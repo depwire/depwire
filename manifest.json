@@ -1,10 +1,10 @@
 {
   "manifest_version": "0.2",
-  "name": "codegraph",
+  "name": "depwire",
   "version": "0.1.0",
-  "description": "Code cross-reference visualization and AI context engine for TypeScript. Analyzes codebases to show dependencies, enables AI tools with MCP, and renders beautiful arc diagrams.",
+  "description": "Code cross-reference visualization and AI context engine for TypeScript, JavaScript, Python, and Go. Analyzes codebases to show dependencies, enables AI tools with MCP, and renders beautiful arc diagrams.",
   "author": {
-    "name": "CodeGraph"
+    "name": "Depwire"
   },
   "icon": "icon.png",
   "server": {
@@ -18,5 +18,5 @@
       "env": {}
     }
   },
-  "license": "MIT"
+  "license": "BSL-1.1"
 }

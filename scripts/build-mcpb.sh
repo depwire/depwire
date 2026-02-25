@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🔨 Building CodeGraph MCPB bundle..."
+echo "🔨 Building Depwire MCPB bundle..."
 
 # Create clean temp directory
 TEMP_DIR="$(mktemp -d)"
@@ -39,10 +39,10 @@ mcpb pack
 # Copy back to project root
 MCPB_FILE=$(ls *.mcpb 2>/dev/null | head -1)
 if [ -n "$MCPB_FILE" ]; then
-  # Rename to codegraph.mcpb
-  cp "$MCPB_FILE" "$OLDPWD/codegraph.mcpb"
-  echo "✅ Bundle created: codegraph.mcpb"
-  ls -lh "$OLDPWD/codegraph.mcpb"
+  # Rename to depwire.mcpb
+  cp "$MCPB_FILE" "$OLDPWD/depwire.mcpb"
+  echo "✅ Bundle created: depwire.mcpb"
+  ls -lh "$OLDPWD/depwire.mcpb"
 else
   echo "❌ Failed to create MCPB bundle"
   exit 1
