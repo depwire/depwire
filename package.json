@@ -34,12 +34,12 @@
   "license": "BSL-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/depwire-dev/depwire.git"
+    "url": "git+https://github.com/depwire/depwire.git"
   },
   "bugs": {
-    "url": "https://github.com/depwire-dev/depwire/issues"
+    "url": "https://github.com/depwire/depwire/issues"
   },
-  "homepage": "https://github.com/depwire-dev/depwire#readme",
+  "homepage": "https://depwire.dev",
   "files": [
     "dist",
     "README.md",
