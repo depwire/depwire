@@ -24,7 +24,8 @@ export function parseGoFile(
   sourceCode: string,
   projectRoot: string
 ): ParsedFile {
-  const tree = parser.parse(sourceCode);
+  // Use explicit buffer size for large files (tree-sitter default is too small)
+  const tree = parser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
   
   // Read module name from go.mod
   const moduleName = readGoModuleName(projectRoot);
