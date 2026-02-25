@@ -88,6 +88,10 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 
 ## Visualization
 
+![Depwire CLI](./assets/viz-command.gif)
+
+![Interactive Arc Diagram](./assets/graph.gif)
+
 ```bash
 # Open visualization on default port (3456)
 depwire viz ./my-project
@@ -122,6 +126,8 @@ Opens an interactive arc diagram in your browser:
 4. **Viz** — D3.js renders the graph as an interactive arc diagram
 
 ## Installation
+
+![Installation](./assets/installation.gif)
 
 ```bash
 npm install -g depwire-cli
@@ -204,6 +210,8 @@ Depwire gracefully handles parse errors:
 ## Example Workflows
 
 ### Refactoring with AI
+
+![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
 ```
 # In Claude Desktop or Cursor with Depwire MCP:
