@@ -1,10 +1,10 @@
 {
   "name": "depwire-cli",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Code cross-reference visualization and AI context engine for TypeScript. Analyzes codebases to show dependencies, enables AI tools with MCP, and renders beautiful arc diagrams.",
   "type": "module",
   "bin": {
-    "depwire": "./dist/index.js"
+    "depwire": "dist/index.js"
   },
   "scripts": {
     "build": "tsup src/index.ts src/mcpb-entry.ts --format esm --dts --clean && npm run copy-static",
