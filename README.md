@@ -304,6 +304,14 @@ Contributions welcome! Please note:
 
 All contributors must sign the Contributor License Agreement before their PR can be merged.
 
+## Author
+
+**Atef Ataya** — AI architect, author, and creator of Depwire.
+
+- 🎥 [YouTube](https://www.youtube.com/@atefataya) — 600K+ subscribers covering AI agents, MCP, and LLMs
+- 📖 [The Architect's Playbook: 5 Pillars](https://www.amazon.com/dp/B0GCHNW2W8) — Best practices for AI agent architecture
+- 💼 [LinkedIn](https://www.linkedin.com/in/atefataya/)
+
 ## License
 
 Depwire is licensed under the [Business Source License 1.1](LICENSE).
