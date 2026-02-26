@@ -566,6 +566,62 @@
             font-size: 1.5rem;
         }
         
+        /* Author Section */
+        .author-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+        
+        .author-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .author-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .author-title {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .author-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .author-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .author-link:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+        }
+        
+        .author-link-icon {
+            font-size: 1.2rem;
+        }
+        
         /* Email Capture Section */
         .email-section {
             padding: 6rem 0;
@@ -1200,6 +1256,30 @@ npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.tes
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Author Section -->
+    <section class="author-section">
+        <div class="container">
+            <div class="author-content scroll-reveal">
+                <h3 class="author-name">Atef Ataya</h3>
+                <p class="author-title">AI architect and author of The Architect's Playbook: 5 Pillars</p>
+                <div class="author-links">
+                    <a href="https://www.youtube.com/@atefataya" target="_blank" class="author-link">
+                        <span class="author-link-icon">🎥</span>
+                        <span>YouTube (600K+ subscribers)</span>
+                    </a>
+                    <a href="https://www.amazon.com/dp/B0GCHNW2W8" target="_blank" class="author-link">
+                        <span class="author-link-icon">📖</span>
+                        <span>The Architect's Playbook</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/atefataya/" target="_blank" class="author-link">
+                        <span class="author-link-icon">💼</span>
+                        <span>LinkedIn</span>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
