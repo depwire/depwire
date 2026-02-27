@@ -14,6 +14,9 @@ import { startMcpServer } from './mcp/server.js';
 import { createEmptyState } from './mcp/state.js';
 import { watchProject } from './watcher.js';
 import { updateFileInGraph } from './graph/updater.js';
+import { generateDocs } from './docs/index.js';
+import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from 'fs';
+import { createInterface } from 'readline';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -269,5 +272,144 @@ program
       process.exit(1);
     }
   });
+
+program
+  .command('docs')
+  .description('Generate comprehensive codebase documentation')
+  .argument('<directory>', 'Project directory to document')
+  .option('-o, --output <path>', 'Output directory (default: .depwire/ inside project)')
+  .option('--format <type>', 'Output format: markdown | json', 'markdown')
+  .option('--gitignore', 'Add .depwire/ to .gitignore automatically')
+  .option('--no-gitignore', 'Don\'t modify .gitignore')
+  .option('--include <docs>', 'Comma-separated list of docs to generate (default: all)', 'all')
+  .option('--update', 'Regenerate existing docs')
+  .option('--only <docs>', 'Used with --update, regenerate only specific docs')
+  .option('--verbose', 'Show generation progress')
+  .option('--stats', 'Show generation statistics at the end')
+  .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
+  .action(async (directory: string, options: {
+    output?: string;
+    format: 'markdown' | 'json';
+    gitignore?: boolean;
+    include: string;
+    update?: boolean;
+    only?: string;
+    verbose?: boolean;
+    stats?: boolean;
+    exclude?: string[];
+  }) => {
+    const startTime = Date.now();
+    
+    try {
+      const projectRoot = resolve(directory);
+      const outputDir = options.output ? resolve(options.output) : join(projectRoot, '.depwire');
+      
+      // Parse include/only lists - always split by comma
+      const includeList = options.include.split(',').map(s => s.trim());
+      const onlyList = options.only 
+        ? options.only.split(',').map(s => s.trim())
+        : undefined;
+      
+      // Handle .gitignore
+      if (options.gitignore === undefined && !existsSyncNode(outputDir)) {
+        // First run, prompt user
+        const answer = await promptGitignore();
+        if (answer) {
+          addToGitignore(projectRoot, '.depwire/');
+        }
+      } else if (options.gitignore === true) {
+        addToGitignore(projectRoot, '.depwire/');
+      }
+      
+      console.log(`Parsing project: ${projectRoot}`);
+      
+      // Parse all files
+      const parsedFiles = parseProject(projectRoot, {
+        exclude: options.exclude,
+        verbose: options.verbose
+      });
+      console.log(`Parsed ${parsedFiles.length} files`);
+      
+      // Build the graph
+      const graph = buildGraph(parsedFiles);
+      const parseTime = (Date.now() - startTime) / 1000;
+      
+      console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+      
+      // Generate documentation
+      if (options.verbose) {
+        console.log(`\nGenerating documentation to: ${outputDir}`);
+      }
+      
+      const result = await generateDocs(graph, projectRoot, packageJson.version, parseTime, {
+        outputDir,
+        format: options.format,
+        include: includeList,
+        update: options.update || false,
+        only: onlyList,
+        verbose: options.verbose || false,
+        stats: options.stats || false,
+      });
+      
+      if (result.success) {
+        console.log(`\n✅ Documentation generated successfully!`);
+        console.log(`Output directory: ${outputDir}`);
+        console.log(`Generated files: ${result.generated.join(', ')}`);
+        
+        if (result.stats) {
+          console.log(`\n=== Generation Statistics ===`);
+          console.log(`Time: ${(result.stats.totalTime / 1000).toFixed(2)}s`);
+          console.log(`Files generated: ${result.stats.filesGenerated}`);
+        }
+      } else {
+        console.error(`\n❌ Documentation generation completed with errors:`);
+        for (const error of result.errors) {
+          console.error(`  - ${error}`);
+        }
+        process.exit(1);
+      }
+    } catch (err) {
+      console.error('Error generating documentation:', err);
+      process.exit(1);
+    }
+  });
+
+async function promptGitignore(): Promise<boolean> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  
+  return new Promise((resolve) => {
+    rl.question('Add .depwire/ to .gitignore? [Y/n] ', (answer) => {
+      rl.close();
+      const normalized = answer.trim().toLowerCase();
+      resolve(normalized === '' || normalized === 'y' || normalized === 'yes');
+    });
+  });
+}
+
+function addToGitignore(projectRoot: string, pattern: string): void {
+  const gitignorePath = join(projectRoot, '.gitignore');
+  
+  try {
+    let content = '';
+    if (existsSyncNode(gitignorePath)) {
+      content = readFileSyncNode(gitignorePath, 'utf-8');
+    }
+    
+    // Check if pattern already exists
+    if (content.includes(pattern)) {
+      return;
+    }
+    
+    // Add pattern
+    const newContent = content.endsWith('\n') ? `${content}${pattern}\n` : `${content}\n${pattern}\n`;
+    appendFileSync(gitignorePath, content.endsWith('\n') ? `${pattern}\n` : `\n${pattern}\n`, 'utf-8');
+    console.log(`Added ${pattern} to .gitignore`);
+  } catch (err) {
+    console.error(`Warning: Failed to update .gitignore: ${err}`);
+  }
+}
 
 program.parse();

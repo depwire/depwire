@@ -2,6 +2,7 @@
 import {
   buildGraph,
   createEmptyState,
+  generateDocs,
   getArchitectureSummary,
   getImpact,
   parseProject,
@@ -11,7 +12,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-V3SB37U3.js";
+} from "./chunk-7QY73JHM.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -86,6 +87,8 @@ function importFromJSON(json) {
 }
 
 // src/index.ts
+import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from "fs";
+import { createInterface } from "readline";
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = dirname(__filename);
 var packageJsonPath = join(__dirname, "../package.json");
@@ -254,4 +257,101 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     process.exit(1);
   }
 });
+program.command("docs").description("Generate comprehensive codebase documentation").argument("<directory>", "Project directory to document").option("-o, --output <path>", "Output directory (default: .depwire/ inside project)").option("--format <type>", "Output format: markdown | json", "markdown").option("--gitignore", "Add .depwire/ to .gitignore automatically").option("--no-gitignore", "Don't modify .gitignore").option("--include <docs>", "Comma-separated list of docs to generate (default: all)", "all").option("--update", "Regenerate existing docs").option("--only <docs>", "Used with --update, regenerate only specific docs").option("--verbose", "Show generation progress").option("--stats", "Show generation statistics at the end").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').action(async (directory, options) => {
+  const startTime = Date.now();
+  try {
+    const projectRoot = resolve(directory);
+    const outputDir = options.output ? resolve(options.output) : join(projectRoot, ".depwire");
+    const includeList = options.include.split(",").map((s) => s.trim());
+    const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
+    if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
+      const answer = await promptGitignore();
+      if (answer) {
+        addToGitignore(projectRoot, ".depwire/");
+      }
+    } else if (options.gitignore === true) {
+      addToGitignore(projectRoot, ".depwire/");
+    }
+    console.log(`Parsing project: ${projectRoot}`);
+    const parsedFiles = parseProject(projectRoot, {
+      exclude: options.exclude,
+      verbose: options.verbose
+    });
+    console.log(`Parsed ${parsedFiles.length} files`);
+    const graph = buildGraph(parsedFiles);
+    const parseTime = (Date.now() - startTime) / 1e3;
+    console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+    if (options.verbose) {
+      console.log(`
+Generating documentation to: ${outputDir}`);
+    }
+    const result = await generateDocs(graph, projectRoot, packageJson.version, parseTime, {
+      outputDir,
+      format: options.format,
+      include: includeList,
+      update: options.update || false,
+      only: onlyList,
+      verbose: options.verbose || false,
+      stats: options.stats || false
+    });
+    if (result.success) {
+      console.log(`
+\u2705 Documentation generated successfully!`);
+      console.log(`Output directory: ${outputDir}`);
+      console.log(`Generated files: ${result.generated.join(", ")}`);
+      if (result.stats) {
+        console.log(`
+=== Generation Statistics ===`);
+        console.log(`Time: ${(result.stats.totalTime / 1e3).toFixed(2)}s`);
+        console.log(`Files generated: ${result.stats.filesGenerated}`);
+      }
+    } else {
+      console.error(`
+\u274C Documentation generation completed with errors:`);
+      for (const error of result.errors) {
+        console.error(`  - ${error}`);
+      }
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error("Error generating documentation:", err);
+    process.exit(1);
+  }
+});
+async function promptGitignore() {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise((resolve2) => {
+    rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
+      rl.close();
+      const normalized = answer.trim().toLowerCase();
+      resolve2(normalized === "" || normalized === "y" || normalized === "yes");
+    });
+  });
+}
+function addToGitignore(projectRoot, pattern) {
+  const gitignorePath = join(projectRoot, ".gitignore");
+  try {
+    let content = "";
+    if (existsSyncNode(gitignorePath)) {
+      content = readFileSyncNode(gitignorePath, "utf-8");
+    }
+    if (content.includes(pattern)) {
+      return;
+    }
+    const newContent = content.endsWith("\n") ? `${content}${pattern}
+` : `${content}
+${pattern}
+`;
+    appendFileSync(gitignorePath, content.endsWith("\n") ? `${pattern}
+` : `
+${pattern}
+`, "utf-8");
+    console.log(`Added ${pattern} to .gitignore`);
+  } catch (err) {
+    console.error(`Warning: Failed to update .gitignore: ${err}`);
+  }
+}
 program.parse();

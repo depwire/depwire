@@ -1,5 +1,6 @@
 import { DirectedGraph } from "graphology";
-import { dirname } from "path";
+import { dirname, join } from "path";
+import { existsSync, readFileSync } from "fs";
 import {
   searchSymbols,
   getDependencies,
@@ -14,6 +15,10 @@ import { connectToRepo } from "./connect.js";
 import { prepareVizData } from "../viz/data.js";
 import { generateArcDiagramHTML } from "../viz/generate-html.js";
 import { startVizServer } from "../viz/server.js";
+import { parseProject } from "../parser/index.js";
+import { buildGraph } from "../graph/index.js";
+import { generateDocs } from "../docs/index.js";
+import { loadMetadata } from "../docs/metadata.js";
 
 interface ToolDefinition {
   name: string;
@@ -171,6 +176,32 @@ export function getToolsList(): ToolDefinition[] {
         },
       },
     },
+    {
+      name: "get_project_docs",
+      description: "Retrieve auto-generated codebase documentation. Returns architecture overview, code conventions, dependency maps, and onboarding guides. Documentation must be generated first with `depwire docs` command.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          doc_type: {
+            type: "string",
+            description: "Document type to retrieve: 'architecture', 'conventions', 'dependencies', 'onboarding', or 'all' (default: 'all')",
+          },
+        },
+      },
+    },
+    {
+      name: "update_project_docs",
+      description: "Regenerate codebase documentation with the latest changes. If docs don't exist, generates them for the first time. Use this after significant code changes to keep documentation up-to-date.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          doc_type: {
+            type: "string",
+            description: "Document type to update: 'architecture', 'conventions', 'dependencies', 'onboarding', or 'all' (default: 'all')",
+          },
+        },
+      },
+    },
   ];
 }
 
@@ -202,6 +233,24 @@ export async function handleToolCall(
         };
       } else {
         result = await handleVisualizeGraph(args.highlight, args.maxFiles, state);
+      }
+    } else if (name === "get_project_docs") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = await handleGetProjectDocs(args.doc_type || "all", state);
+      }
+    } else if (name === "update_project_docs") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = await handleUpdateProjectDocs(args.doc_type || "all", state);
       }
     } else {
       // All other tools require a loaded project
@@ -680,3 +729,144 @@ The server will keep running until you end the MCP session or press Ctrl+C.`;
     content: [{ type: "text", text: message }],
   };
 }
+
+async function handleGetProjectDocs(
+  docType: string,
+  state: DepwireState
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const docsDir = join(state.projectRoot!, '.depwire');
+  
+  // Check if docs exist
+  if (!existsSync(docsDir)) {
+    const errorMessage = `Project documentation has not been generated yet.
+
+Run \`depwire docs ${state.projectRoot}\` to generate codebase documentation.
+
+Once generated, this tool will return the requested documentation.
+
+Available document types:
+- architecture: High-level structural overview
+- conventions: Auto-detected coding patterns
+- dependencies: Complete dependency mapping
+- onboarding: Guide for new developers`;
+    
+    return {
+      content: [{ type: "text", text: errorMessage }],
+    };
+  }
+  
+  // Load metadata
+  const metadata = loadMetadata(docsDir);
+  if (!metadata) {
+    return {
+      content: [{ type: "text", text: "Documentation directory exists but metadata is missing. Please regenerate with `depwire docs`." }],
+    };
+  }
+  
+  // Determine which docs to return
+  const docsToReturn = docType === 'all' 
+    ? ['architecture', 'conventions', 'dependencies', 'onboarding']
+    : [docType];
+  
+  let output = '';
+  const missing: string[] = [];
+  
+  for (const doc of docsToReturn) {
+    if (!metadata.documents[doc]) {
+      missing.push(doc);
+      continue;
+    }
+    
+    const filePath = join(docsDir, metadata.documents[doc].file);
+    
+    if (!existsSync(filePath)) {
+      missing.push(doc);
+      continue;
+    }
+    
+    const content = readFileSync(filePath, 'utf-8');
+    
+    if (docsToReturn.length > 1) {
+      output += `\n\n---\n\n# ${doc.toUpperCase()}\n\n`;
+    }
+    
+    output += content;
+  }
+  
+  if (missing.length > 0) {
+    output += `\n\n---\n\n**Note:** The following documents are missing: ${missing.join(', ')}. Run \`depwire docs ${state.projectRoot} --update\` to generate them.`;
+  }
+  
+  return {
+    content: [{ type: "text", text: output }],
+  };
+}
+
+async function handleUpdateProjectDocs(
+  docType: string,
+  state: DepwireState
+): Promise<any> {
+  const startTime = Date.now();
+  const docsDir = join(state.projectRoot!, '.depwire');
+  
+  console.error('Regenerating project documentation...');
+  
+  // Re-parse the project
+  const parsedFiles = parseProject(state.projectRoot!);
+  const graph = buildGraph(parsedFiles);
+  const parseTime = (Date.now() - startTime) / 1000;
+  
+  // Update state graph
+  state.graph = graph;
+  
+  // Load package.json to get version
+  const packageJsonPath = join(__dirname, '../../package.json');
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+  
+  // Determine which docs to generate
+  const docsToGenerate = docType === 'all'
+    ? ['architecture', 'conventions', 'dependencies', 'onboarding']
+    : [docType];
+  
+  // Check if docs exist
+  const docsExist = existsSync(docsDir);
+  
+  // Generate docs
+  const result = await generateDocs(graph, state.projectRoot!, packageJson.version, parseTime, {
+    outputDir: docsDir,
+    format: 'markdown',
+    include: docsToGenerate,
+    update: docsExist,
+    only: docsExist ? docsToGenerate : undefined,
+    verbose: false,
+    stats: false,
+  });
+  
+  const elapsed = (Date.now() - startTime) / 1000;
+  
+  if (result.success) {
+    const fileCount = new Set<string>();
+    graph.forEachNode((node, attrs) => {
+      fileCount.add(attrs.filePath);
+    });
+    
+    return {
+      status: 'success',
+      message: `Updated ${result.generated.join(', ')} (${fileCount.size} files, ${graph.order} symbols, ${elapsed.toFixed(1)}s)`,
+      generated: result.generated,
+      stats: {
+        files: fileCount.size,
+        symbols: graph.order,
+        edges: graph.size,
+        time: elapsed,
+      },
+    };
+  } else {
+    return {
+      status: 'error',
+      message: `Failed to update documentation: ${result.errors.join(', ')}`,
+      errors: result.errors,
+    };
+  }
+}
+

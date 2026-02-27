@@ -5,8 +5,8 @@ create-t3-app/
 # macOS
 .DS_Store
 
-# Internal docs (not published)
-docs/
+# Internal docs (not published in repo root)
+/docs/
 
 # Output files from testing
 *-output.json
@@ -26,3 +26,8 @@ real-test.json
 *.log
 .mcpregistry_github_token
 .mcpregistry_registry_token
+
+# Test artifacts
+test-docs/
+.depwire/
+docs/internal/
