@@ -912,7 +912,7 @@
             <h1>Your AI is flying blind</h1>
             <h2>Every new chat, every new prompt — your AI tool forgets your entire codebase. The result? Hallucinated imports, broken refactors, and thousands of tokens wasted re-scanning files it already saw.</h2>
             <div class="hero-pivot">Depwire fixes this.</div>
-            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly.</p>
+            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly. Now with auto-generated documentation — architecture, conventions, dependencies, and onboarding guides from a single command.</p>
             <div class="cta-buttons">
                 <a href="#install" class="btn btn-primary">Install in 10 seconds</a>
                 <a href="https://github.com/depwire/depwire" target="_blank" class="btn btn-secondary">View on GitHub</a>
@@ -988,7 +988,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤖</div>
                     <h3>AI Context Engine</h3>
-                    <p>10 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
+                    <p>12 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">💥</div>
@@ -1010,7 +1010,52 @@
                     <h3>Live Updates</h3>
                     <p>Edit a file and the graph updates automatically. No re-indexing, no cache invalidation. Always see the current state of your architecture.</p>
                 </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">📄</div>
+                    <h3>Auto-Generated Documentation</h3>
+                    <p>One command generates architecture docs, coding conventions, dependency maps, and onboarding guides — all from your dependency graph. Zero manual writing.</p>
+                </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section class="proof-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">Documentation from Your Dependency Graph</h2>
+            <p class="solution-subtitle scroll-reveal">One command. Four comprehensive documents. Generated from your actual code structure, not guesses.</p>
+            
+            <div class="features-grid" style="margin-top: 3rem;">
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🏗️</div>
+                    <h3>ARCHITECTURE.md</h3>
+                    <p>Module structure, entry points, hub files, layer analysis, and circular dependency detection with suggested fixes.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">📐</div>
+                    <h3>CONVENTIONS.md</h3>
+                    <p>Naming patterns, import/export style, and design patterns detected automatically from your actual code.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🔗</div>
+                    <h3>DEPENDENCIES.md</h3>
+                    <p>Module dependency matrix, high-impact symbols, longest dependency chains, and tightly coupled file pairs.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>ONBOARDING.md</h3>
+                    <p>Recommended reading order (Foundation → Core → Entry Points), module map, key concepts, and high-impact file warnings.</p>
+                </div>
+            </div>
+
+            <div class="code-block-wrapper" style="margin-top: 3rem;">
+                <div class="code-block scroll-reveal">
+                    <div class="code-block-title">Generate Documentation</div>
+                    <pre><code>depwire docs ./my-project --verbose --stats</code></pre>
+                </div>
+            </div>
+
+            <p class="proof-tagline scroll-reveal">Tested on Hono (352 files, 6,072 symbols) — generates all 4 documents in under 0.2 seconds.</p>
         </div>
     </section>
 
@@ -1090,6 +1135,9 @@ npx depwire-cli viz ./my-project
 <span class="code-comment"># Parse and export as JSON</span>
 npx depwire-cli parse ./my-project
 
+<span class="code-comment"># Generate codebase documentation</span>
+npx depwire-cli docs ./my-project --verbose --stats
+
 <span class="code-comment"># Exclude test files and node_modules</span>
 npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.test.*"</span> <span class="code-string">"**/node_modules/**"</span></code></pre>
                 </div>
@@ -1118,8 +1166,8 @@ npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.tes
     <!-- MCP Tools Section -->
     <section class="mcp-section">
         <div class="container">
-            <h2 class="section-title scroll-reveal">10 MCP Tools for AI Assistants</h2>
-            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 10 tools that AI assistants call autonomously based on your questions.</p>
+            <h2 class="section-title scroll-reveal">12 MCP Tools for AI Assistants</h2>
+            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 12 tools that AI assistants call autonomously based on your questions.</p>
             <div class="tools-table scroll-reveal">
                 <table>
                     <thead>
@@ -1168,6 +1216,14 @@ npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.tes
                         <tr>
                             <td><code>visualize_graph</code></td>
                             <td>Generate interactive arc diagram visualization</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_project_docs</code></td>
+                            <td>Retrieve auto-generated codebase documentation</td>
+                        </tr>
+                        <tr>
+                            <td><code>update_project_docs</code></td>
+                            <td>Regenerate documentation on demand</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1253,6 +1309,13 @@ npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.tes
                             <td><span class="check">✓</span></td>
                             <td><span class="cross">✗</span></td>
                             <td>Delayed</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Auto-Gen Docs</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
                         </tr>
                     </tbody>
                 </table>
