@@ -8,6 +8,8 @@ import {
   getImpact,
   getFileSummary,
   getArchitectureSummary,
+  findSymbols,
+  type SymbolMatch,
 } from "../graph/queries.js";
 import type { DepwireState } from "./state.js";
 import { isProjectLoaded } from "./state.js";
@@ -52,13 +54,13 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "get_symbol_info",
-      description: "Look up detailed information about a symbol (function, class, variable, type, etc.) by name. Returns file location, type, line numbers, and export status.",
+      description: "Look up detailed information about a symbol (function, class, variable, type, etc.) by name. Pass a symbol name (e.g., 'Router') or a fully qualified ID (e.g., 'src/router.ts::Router') for exact matching. If multiple symbols share the same name, returns all matches for disambiguation.",
       inputSchema: {
         type: "object",
         properties: {
           name: {
             type: "string",
-            description: "The symbol name to look up (e.g., 'UserService', 'handleAuth')",
+            description: "The symbol name to look up (e.g., 'UserService') or full ID (e.g., 'src/services/UserService.ts::UserService')",
           },
         },
         required: ["name"],
@@ -66,13 +68,13 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "get_dependencies",
-      description: "Get all symbols that a given symbol depends on (what does this symbol use/import/call?).",
+      description: "Get all symbols that a given symbol depends on (what does this symbol use/import/call?). Pass a symbol name (e.g., 'Router') or a fully qualified ID (e.g., 'src/router.ts::Router') for exact matching. If multiple symbols share the same name, returns all matches for disambiguation.",
       inputSchema: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "Symbol name or ID to analyze",
+            description: "Symbol name (e.g., 'Router') or full ID (e.g., 'src/router.ts::Router')",
           },
         },
         required: ["symbol"],
@@ -80,13 +82,13 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "get_dependents",
-      description: "Get all symbols that depend on a given symbol (what uses this symbol?).",
+      description: "Get all symbols that depend on a given symbol (what uses this symbol?). Pass a symbol name (e.g., 'Router') or a fully qualified ID (e.g., 'src/router.ts::Router') for exact matching. If multiple symbols share the same name, returns all matches for disambiguation.",
       inputSchema: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "Symbol name or ID to analyze",
+            description: "Symbol name (e.g., 'Router') or full ID (e.g., 'src/router.ts::Router')",
           },
         },
         required: ["symbol"],
@@ -94,13 +96,13 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "impact_analysis",
-      description: "Analyze what would break if a symbol is changed, renamed, or removed. Shows direct dependents, transitive dependents (chain reaction), and all affected files. Use this before making changes to understand the blast radius.",
+      description: "Analyze what would break if a symbol is changed, renamed, or removed. Shows direct dependents, transitive dependents (chain reaction), and all affected files. Pass a symbol name (e.g., 'Router') or a fully qualified ID (e.g., 'src/router.ts::Router') for exact matching. If multiple symbols share the same name, returns all matches for disambiguation. Use this before making changes to understand the blast radius.",
       inputSchema: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "The symbol name or ID to analyze",
+            description: "Symbol name (e.g., 'Router') or full ID (e.g., 'src/router.ts::Router')",
           },
         },
         required: ["symbol"],
@@ -337,15 +339,50 @@ export async function handleToolCall(
   }
 }
 
-function handleGetSymbolInfo(name: string, graph: DirectedGraph) {
-  const matches = searchSymbols(graph, name);
-  
-  // Filter for exact or close matches
-  const exactMatches = matches.filter(m => m.name.toLowerCase() === name.toLowerCase());
-  const results = exactMatches.length > 0 ? exactMatches : matches.slice(0, 10);
+/**
+ * Create a disambiguation response when multiple symbols share the same name
+ */
+function createDisambiguationResponse(matches: SymbolMatch[], queryName: string) {
+  const suggestion = matches.length > 0 ? matches[0].id : '';
   
   return {
-    matches: results.map(m => ({
+    ambiguous: true,
+    message: `Found ${matches.length} symbols named '${queryName}'. Please specify which one by using the full ID (e.g., '${suggestion}').`,
+    matches: matches.map((m, index) => ({
+      id: m.id,
+      kind: m.kind,
+      filePath: m.filePath,
+      line: m.startLine,
+      dependents: m.dependentCount,
+      hint: index === 0 && m.dependentCount > 0 ? 'Most dependents — likely the one you want' : '',
+    })),
+    suggestion: suggestion,
+  };
+}
+
+function handleGetSymbolInfo(name: string, graph: DirectedGraph) {
+  const matches = findSymbols(graph, name);
+  
+  if (matches.length === 0) {
+    // Try fuzzy search as fallback
+    const fuzzyMatches = searchSymbols(graph, name).slice(0, 10);
+    return {
+      error: `Symbol '${name}' not found`,
+      suggestion: fuzzyMatches.length > 0 
+        ? `Did you mean: ${fuzzyMatches.map(m => m.name).join(', ')}?`
+        : 'Try using search_symbols to find available symbols',
+      fuzzyMatches: fuzzyMatches.map(m => ({
+        id: m.id,
+        name: m.name,
+        kind: m.kind,
+        filePath: m.filePath,
+      })),
+    };
+  }
+  
+  // Return all matches (even if just one)
+  return {
+    matches: matches.map(m => ({
       id: m.id,
       name: m.name,
       kind: m.kind,
@@ -354,21 +391,32 @@ function handleGetSymbolInfo(name: string, graph: DirectedGraph) {
       endLine: m.endLine,
       exported: m.exported,
       scope: m.scope,
+      dependents: m.dependentCount,
     })),
-    count: results.length,
+    count: matches.length,
   };
 }
 
 function handleGetDependencies(symbol: string, graph: DirectedGraph) {
-  // Find the symbol
-  const matches = searchSymbols(graph, symbol);
+  const matches = findSymbols(graph, symbol);
+  
   if (matches.length === 0) {
+    // Try fuzzy search as fallback
+    const fuzzyMatches = searchSymbols(graph, symbol).slice(0, 10);
     return {
       error: `Symbol '${symbol}' not found`,
-      suggestion: "Try using search_symbols to find available symbols",
+      suggestion: fuzzyMatches.length > 0 
+        ? `Did you mean: ${fuzzyMatches.map(m => m.name).join(', ')}?`
+        : 'Try using search_symbols to find available symbols',
     };
   }
   
+  // If multiple matches, return disambiguation response
+  if (matches.length > 1) {
+    return createDisambiguationResponse(matches, symbol);
+  }
+  
+  // Single match - proceed with analysis
   const target = matches[0];
   const deps = getDependencies(graph, target.id);
   
@@ -392,21 +440,32 @@ function handleGetDependencies(symbol: string, graph: DirectedGraph) {
   const totalCount = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0);
   
   return {
-    symbol: `${target.filePath}::${target.name}`,
+    symbol: target.id,
     dependencies: grouped,
     totalCount,
   };
 }
 
 function handleGetDependents(symbol: string, graph: DirectedGraph) {
-  const matches = searchSymbols(graph, symbol);
+  const matches = findSymbols(graph, symbol);
+  
   if (matches.length === 0) {
+    // Try fuzzy search as fallback
+    const fuzzyMatches = searchSymbols(graph, symbol).slice(0, 10);
     return {
       error: `Symbol '${symbol}' not found`,
-      suggestion: "Try using search_symbols to find available symbols",
+      suggestion: fuzzyMatches.length > 0 
+        ? `Did you mean: ${fuzzyMatches.map(m => m.name).join(', ')}?`
+        : 'Try using search_symbols to find available symbols',
     };
   }
   
+  // If multiple matches, return disambiguation response
+  if (matches.length > 1) {
+    return createDisambiguationResponse(matches, symbol);
+  }
+  
+  // Single match - proceed with analysis
   const target = matches[0];
   const deps = getDependents(graph, target.id);
   
@@ -430,21 +489,32 @@ function handleGetDependents(symbol: string, graph: DirectedGraph) {
   const totalCount = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0);
   
   return {
-    symbol: `${target.filePath}::${target.name}`,
+    symbol: target.id,
     dependents: grouped,
     totalCount,
   };
 }
 
 function handleImpactAnalysis(symbol: string, graph: DirectedGraph) {
-  const matches = searchSymbols(graph, symbol);
+  const matches = findSymbols(graph, symbol);
+  
   if (matches.length === 0) {
+    // Try fuzzy search as fallback
+    const fuzzyMatches = searchSymbols(graph, symbol).slice(0, 10);
     return {
       error: `Symbol '${symbol}' not found`,
-      suggestion: "Try using search_symbols to find available symbols",
+      suggestion: fuzzyMatches.length > 0 
+        ? `Did you mean: ${fuzzyMatches.map(m => m.name).join(', ')}?`
+        : 'Try using search_symbols to find available symbols',
     };
   }
   
+  // If multiple matches, return disambiguation response
+  if (matches.length > 1) {
+    return createDisambiguationResponse(matches, symbol);
+  }
+  
+  // Single match - proceed with impact analysis
   const target = matches[0];
   const impact = getImpact(graph, target.id);
   
@@ -475,6 +545,7 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph) {
   
   return {
     symbol: {
+      id: target.id,
       name: target.name,
       filePath: target.filePath,
       kind: target.kind,

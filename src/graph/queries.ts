@@ -1,6 +1,70 @@
 import { DirectedGraph } from 'graphology';
 import { SymbolNode, EdgeKind } from '../parser/types.js';
 
+export interface SymbolMatch {
+  id: string;
+  name: string;
+  kind: string;
+  filePath: string;
+  startLine: number;
+  endLine: number;
+  exported: boolean;
+  scope?: string;
+  dependentCount: number;
+}
+
+/**
+ * Find symbols by name or full ID.
+ * - If query contains "::", does exact match on node ID
+ * - Otherwise, finds all nodes where name matches (case-insensitive)
+ * - Results are sorted by dependentCount descending (most impactful first)
+ */
+export function findSymbols(graph: DirectedGraph, query: string): SymbolMatch[] {
+  // If query contains "::", try exact match on node ID first
+  if (query.includes('::')) {
+    if (graph.hasNode(query)) {
+      const attrs = graph.getNodeAttributes(query);
+      return [{
+        id: query,
+        name: attrs.name,
+        kind: attrs.kind,
+        filePath: attrs.filePath,
+        startLine: attrs.startLine,
+        endLine: attrs.endLine,
+        exported: attrs.exported,
+        scope: attrs.scope,
+        dependentCount: graph.inDegree(query),
+      }];
+    }
+    // If exact match fails, continue to name-based search
+  }
+
+  // Find all nodes matching by name (case-insensitive)
+  const queryLower = query.toLowerCase();
+  const results: SymbolMatch[] = [];
+
+  graph.forEachNode((nodeId, attrs) => {
+    if (attrs.name.toLowerCase() === queryLower) {
+      results.push({
+        id: nodeId,
+        name: attrs.name,
+        kind: attrs.kind,
+        filePath: attrs.filePath,
+        startLine: attrs.startLine,
+        endLine: attrs.endLine,
+        exported: attrs.exported,
+        scope: attrs.scope,
+        dependentCount: graph.inDegree(nodeId),
+      });
+    }
+  });
+
+  // Sort by dependentCount descending (most impactful first)
+  results.sort((a, b) => b.dependentCount - a.dependentCount);
+
+  return results;
+}
+
 export function getDependencies(graph: DirectedGraph, symbolId: string): SymbolNode[] {
   if (!graph.hasNode(symbolId)) return [];
   

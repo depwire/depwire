@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.3.1] - 2026-02-28
+
+### Fixed
+- **Symbol disambiguation**: `impact_analysis`, `get_symbol_info`, `get_dependencies`, and `get_dependents` now return all matches when multiple symbols share a name, with file locations and dependent counts for disambiguation
+- **Full ID matching**: All symbol tools now accept fully qualified IDs (e.g., `src/router.ts::Router`) for exact matching
+- Tool descriptions updated to clarify full ID support and disambiguation behavior
+- Improved error messages with fuzzy suggestions when symbols are not found
+
+### Added
+- New `findSymbols()` helper function in `queries.ts` for consistent symbol lookup across all tools
+- `SymbolMatch` interface for standardized symbol metadata
+
+---
+
 ## [0.3.0] - 2026-02-27
 
 ### Added
