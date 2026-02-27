@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.3.0] - 2026-02-27
+
+### Added
+- **`depwire docs` command** — Auto-generate comprehensive codebase documentation from dependency graphs
+- 4 document generators: `ARCHITECTURE.md`, `CONVENTIONS.md`, `DEPENDENCIES.md`, `ONBOARDING.md`
+- 2 new MCP tools: `get_project_docs` and `update_project_docs` (12 tools total)
+- `--output`, `--format`, `--include`, `--update`, `--only`, `--verbose`, `--stats`, `--gitignore` flags for docs command
+- `.depwire/metadata.json` for tracking document freshness and generation stats
+- Tested on Hono (352 files, 6,072 symbols) — generates all docs in <0.2s
+
+### Fixed
+- Onboarding reading order: Foundation/Core/Entry Points sections now properly populated with categorized files
+- Key Concepts clustering: Detects module clusters (parser, graph, mcp, viz, docs) using directory-based grouping
+- Dependency matrix: Filters to top-level src/ directories, shows clean 6×6 grid
+- Absolute paths in generated docs: Now uses `.` instead of full project path in command examples
+
+---
+
 ## [0.2.6] - 2026-02-26
 
 ### Fixed

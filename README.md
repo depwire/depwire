@@ -8,6 +8,7 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 
 - 🎨 **Beautiful arc diagram visualization** — Interactive Harrison Bible-style graphic
 - 🤖 **MCP server for AI tools** — Cursor, Claude Desktop get full dependency context
+- 📄 **Auto-generated documentation** — Architecture, conventions, dependencies, and onboarding docs generated from your dependency graph
 - 🔍 **Impact analysis** — "What breaks if I rename this function?" answered precisely
 - 👀 **Live updates** — Graph stays current as you edit code
 - 🌍 **Multi-language** — TypeScript, JavaScript, Python, and Go
@@ -36,8 +37,8 @@ Depwire fixes this by giving AI tools a complete dependency graph of your codeba
 - **Live graph, always current** — edit a file and the dependency map updates in real-time. No re-indexing, no waiting.
 - **Works locally, stays private** — zero cloud accounts, zero data leaving your machine. Just `npm install` and go.
 
-### 10 MCP Tools, Not Just Visualization
-Depwire isn't just a pretty graph. It's a full context engine with 10 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, and more. The AI decides which tool to use based on your question.
+### 12 MCP Tools, Not Just Visualization
+Depwire isn't just a pretty graph. It's a full context engine with 12 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, and more. The AI decides which tool to use based on your question.
 
 ## Installation
 
@@ -71,6 +72,9 @@ npx depwire-cli parse ./my-project --verbose
 
 # Export with pretty-printed JSON and statistics
 npx depwire-cli parse ./my-project --pretty --stats
+
+# Generate codebase documentation
+npx depwire-cli docs ./my-project --verbose --stats
 
 # Custom output file
 npx depwire-cli parse ./my-project -o my-graph.json
@@ -116,6 +120,8 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `list_files` | List all files with stats |
 | `get_symbol_info` | Look up any symbol's details |
 | `visualize_graph` | Generate interactive arc diagram visualization |
+| `get_project_docs` | Retrieve auto-generated codebase documentation |
+| `update_project_docs` | Regenerate documentation on demand |
 
 ## Supported Languages
 
@@ -224,6 +230,54 @@ depwire mcp
 # Start on specific project
 depwire mcp /path/to/project
 ```
+
+### `depwire docs <directory>`
+
+Generate comprehensive codebase documentation from your dependency graph.
+
+**Options:**
+- `--output <path>` — Output directory (default: `.depwire/` inside project)
+- `--format <type>` — Output format: `markdown` or `json` (default: `markdown`)
+- `--include <docs...>` — Comma-separated list of docs to generate (default: `all`)
+  - Values: `architecture`, `conventions`, `dependencies`, `onboarding`, `all`
+- `--update` — Regenerate existing documentation
+- `--only <docs...>` — Used with `--update`, regenerate only specific docs
+- `--verbose` — Show generation progress
+- `--stats` — Show generation statistics
+- `--gitignore` — Add `.depwire/` to `.gitignore` automatically
+- `--no-gitignore` — Don't modify `.gitignore`
+
+**Examples:**
+```bash
+# Generate all docs (outputs to .depwire/ by default)
+depwire docs ./my-project
+
+# Show generation progress and stats
+depwire docs ./my-project --verbose --stats
+
+# Regenerate existing docs
+depwire docs ./my-project --update
+
+# Generate specific docs only
+depwire docs ./my-project --include architecture,dependencies
+
+# Custom output directory
+depwire docs ./my-project --output ./docs
+
+# Regenerate only conventions doc
+depwire docs ./my-project --update --only conventions
+```
+
+**Generated Documents:**
+
+| Document | What It Contains |
+|----------|------------------|
+| `ARCHITECTURE.md` | Module structure, entry points, hub files, layer analysis, circular dependencies |
+| `CONVENTIONS.md` | Naming patterns, import/export style, detected design patterns |
+| `DEPENDENCIES.md` | Module dependency matrix, high-impact symbols, longest dependency chains |
+| `ONBOARDING.md` | Reading order (Foundation/Core/Entry Points), module map, key concepts, high-impact file warnings |
+
+Documents are stored in `.depwire/` with `metadata.json` tracking generation timestamps for staleness detection.
 
 ### Error Handling
 

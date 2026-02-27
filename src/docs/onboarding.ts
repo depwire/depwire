@@ -544,22 +544,22 @@ function generateDepwireUsage(projectRoot: string): string {
   
   output += '**Visualize the dependency graph:**\n\n';
   output += '```bash\n';
-  output += `depwire viz ${projectRoot}\n`;
+  output += 'depwire viz .\n';
   output += '```\n\n';
   
   output += '**Connect to AI coding tools (MCP):**\n\n';
   output += '```bash\n';
-  output += `depwire mcp ${projectRoot}\n`;
+  output += 'depwire mcp .\n';
   output += '```\n\n';
   
   output += '**Analyze impact of changes:**\n\n';
   output += '```bash\n';
-  output += `depwire query ${projectRoot} <symbol-name>\n`;
+  output += 'depwire query . <symbol-name>\n';
   output += '```\n\n';
   
   output += '**Update documentation:**\n\n';
   output += '```bash\n';
-  output += `depwire docs ${projectRoot} --update\n`;
+  output += 'depwire docs . --update\n';
   output += '```\n\n';
   
   return output;
