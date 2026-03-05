@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.5.0] - 2026-03-05
+
+### Added
+- **7 new document generators (Phase B)** — Brings total to 11 comprehensive documentation files:
+  - `FILES.md` — Complete file catalog with metrics, orphan files, hub files
+  - `API_SURFACE.md` — All exported symbols (public API), most-used exports, unused exports
+  - `ERRORS.md` — Error handling patterns, error-prone files, custom error classes
+  - `TESTS.md` — Test file inventory, test-to-source mapping, untested files, coverage stats
+  - `HISTORY.md` — Git history + graph analysis, file churn, feature timeline, contributors
+  - `CURRENT.md` — Complete codebase snapshot (every file, symbol, and connection)
+  - `STATUS.md` — TODO/FIXME/HACK inventory with priority matrix based on file connections
+- Total generated documents: **11** (was 4 in v0.3.0)
+- `HISTORY.md` gracefully handles projects without git (shows graph-based analysis only)
+- `STATUS.md` scans source files for TODO/FIXME/HACK/XXX/NOTE/OPTIMIZE/DEPRECATED comments
+
+### Changed
+- Updated `depwire docs` command to support all 11 document types
+- Updated README and website to reflect 11 generators
+- Expanded `--include` flag values to include all 7 new document types
+
+---
+
 ## [0.4.0] - 2026-03-05
 
 ### Changed

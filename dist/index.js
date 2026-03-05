@@ -12,7 +12,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-X2DOGIIG.js";
+} from "./chunk-Q733EWFA.js";
 
 // src/index.ts
 import { Command } from "commander";

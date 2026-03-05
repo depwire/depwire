@@ -62,6 +62,13 @@ export function createMetadata(
                      docType === 'conventions' ? 'CONVENTIONS.md' :
                      docType === 'dependencies' ? 'DEPENDENCIES.md' :
                      docType === 'onboarding' ? 'ONBOARDING.md' :
+                     docType === 'files' ? 'FILES.md' :
+                     docType === 'api_surface' ? 'API_SURFACE.md' :
+                     docType === 'errors' ? 'ERRORS.md' :
+                     docType === 'tests' ? 'TESTS.md' :
+                     docType === 'history' ? 'HISTORY.md' :
+                     docType === 'current' ? 'CURRENT.md' :
+                     docType === 'status' ? 'STATUS.md' :
                      `${docType.toUpperCase()}.md`;
     
     documents[docType] = {

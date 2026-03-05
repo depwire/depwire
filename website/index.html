@@ -912,7 +912,7 @@
             <h1>Your AI is flying blind</h1>
             <h2>Every new chat, every new prompt — your AI tool forgets your entire codebase. The result? Hallucinated imports, broken refactors, and thousands of tokens wasted re-scanning files it already saw.</h2>
             <div class="hero-pivot">Depwire fixes this.</div>
-            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly. Now with auto-generated documentation — architecture, conventions, dependencies, and onboarding guides from a single command.</p>
+            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly. Now with 11 auto-generated documents — architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, tests, history, snapshot, and status.</p>
             <div class="cta-buttons">
                 <a href="#install" class="btn btn-primary">Install in 10 seconds</a>
                 <a href="https://github.com/depwire/depwire" target="_blank" class="btn btn-secondary">View on GitHub</a>
@@ -1023,7 +1023,7 @@
     <section class="proof-section">
         <div class="container">
             <h2 class="section-title scroll-reveal">Documentation from Your Dependency Graph</h2>
-            <p class="solution-subtitle scroll-reveal">One command. Four comprehensive documents. Generated from your actual code structure, not guesses.</p>
+            <p class="solution-subtitle scroll-reveal">One command. Eleven comprehensive documents. Generated from your actual code structure, not guesses.</p>
             
             <div class="features-grid" style="margin-top: 3rem;">
                 <div class="feature-card scroll-reveal">
@@ -1046,6 +1046,41 @@
                     <h3>ONBOARDING.md</h3>
                     <p>Recommended reading order (Foundation → Core → Entry Points), module map, key concepts, and high-impact file warnings.</p>
                 </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">📁</div>
+                    <h3>FILES.md</h3>
+                    <p>Complete file catalog with stats, orphan files detection, and hub files that break the most things when changed.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🔌</div>
+                    <h3>API_SURFACE.md</h3>
+                    <p>All exported symbols (public API), most-used exports, unused exports, and barrel file analysis.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>ERRORS.md</h3>
+                    <p>Error handling patterns, error-prone files, custom error classes, and recommendations for improvement.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🧪</div>
+                    <h3>TESTS.md</h3>
+                    <p>Test file inventory, test-to-source mapping, untested files prioritized by risk, and coverage stats.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">📜</div>
+                    <h3>HISTORY.md</h3>
+                    <p>Git history + graph analysis: file churn, feature timeline, contributors, and development hotspots.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">📸</div>
+                    <h3>CURRENT.md</h3>
+                    <p>Complete codebase snapshot — every file, every symbol, every connection. The exhaustive reference.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">✅</div>
+                    <h3>STATUS.md</h3>
+                    <p>TODO/FIXME/HACK inventory with priority matrix. Shows what's implemented vs pending, prioritized by impact.</p>
+                </div>
             </div>
 
             <div class="code-block-wrapper" style="margin-top: 3rem;">
@@ -1055,7 +1090,7 @@
                 </div>
             </div>
 
-            <p class="proof-tagline scroll-reveal">Tested on Hono (352 files, 6,072 symbols) — generates all 4 documents in under 0.2 seconds.</p>
+            <p class="proof-tagline scroll-reveal">Tested on Hono (352 files, 6,072 symbols) — generates all 11 documents in under 0.3 seconds.</p>
         </div>
     </section>
 

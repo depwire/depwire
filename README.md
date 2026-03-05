@@ -8,7 +8,7 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 
 - 🎨 **Beautiful arc diagram visualization** — Interactive Harrison Bible-style graphic
 - 🤖 **MCP server for AI tools** — Cursor, Claude Desktop get full dependency context
-- 📄 **Auto-generated documentation** — Architecture, conventions, dependencies, and onboarding docs generated from your dependency graph
+- 📄 **Auto-generated documentation** — 11 comprehensive documents: architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, test coverage, git history, full snapshot, and TODO/FIXME inventory
 - 🔍 **Impact analysis** — "What breaks if I rename this function?" answered precisely
 - 👀 **Live updates** — Graph stays current as you edit code
 - 🌍 **Multi-language** — TypeScript, JavaScript, Python, and Go
@@ -239,7 +239,7 @@ Generate comprehensive codebase documentation from your dependency graph.
 - `--output <path>` — Output directory (default: `.depwire/` inside project)
 - `--format <type>` — Output format: `markdown` or `json` (default: `markdown`)
 - `--include <docs...>` — Comma-separated list of docs to generate (default: `all`)
-  - Values: `architecture`, `conventions`, `dependencies`, `onboarding`, `all`
+  - Values: `architecture`, `conventions`, `dependencies`, `onboarding`, `files`, `api_surface`, `errors`, `tests`, `history`, `current`, `status`, `all`
 - `--update` — Regenerate existing documentation
 - `--only <docs...>` — Used with `--update`, regenerate only specific docs
 - `--verbose` — Show generation progress
@@ -268,7 +268,7 @@ depwire docs ./my-project --output ./docs
 depwire docs ./my-project --update --only conventions
 ```
 
-**Generated Documents:**
+**Generated Documents (11 total):**
 
 | Document | What It Contains |
 |----------|------------------|
@@ -276,6 +276,13 @@ depwire docs ./my-project --update --only conventions
 | `CONVENTIONS.md` | Naming patterns, import/export style, detected design patterns |
 | `DEPENDENCIES.md` | Module dependency matrix, high-impact symbols, longest dependency chains |
 | `ONBOARDING.md` | Reading order (Foundation/Core/Entry Points), module map, key concepts, high-impact file warnings |
+| `FILES.md` | Complete file catalog with stats, orphan files, hub files |
+| `API_SURFACE.md` | All exported symbols (public API), most-used exports, unused exports |
+| `ERRORS.md` | Error handling patterns, error-prone files, custom error classes |
+| `TESTS.md` | Test file inventory, test-to-source mapping, untested files |
+| `HISTORY.md` | Git history + graph analysis, file churn, feature timeline |
+| `CURRENT.md` | Complete codebase snapshot (every file, symbol, connection) |
+| `STATUS.md` | TODO/FIXME/HACK inventory with priority matrix |
 
 Documents are stored in `.depwire/` with `metadata.json` tracking generation timestamps for staleness detection.
 
