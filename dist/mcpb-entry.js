@@ -6,7 +6,7 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-LOX5NEND.js";
+} from "./chunk-X2DOGIIG.js";
 
 // src/mcpb-entry.ts
 import { resolve } from "path";
@@ -17,7 +17,7 @@ async function main() {
     try {
       const projectRoot = resolve(projectPath);
       console.error(`[MCPB] Parsing project: ${projectRoot}`);
-      const parsedFiles = parseProject(projectRoot);
+      const parsedFiles = await parseProject(projectRoot);
       console.error(`[MCPB] Parsed ${parsedFiles.length} files`);
       const graph = buildGraph(parsedFiles);
       console.error(`[MCPB] Built graph: ${graph.order} symbols, ${graph.size} edges`);

@@ -12,7 +12,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-LOX5NEND.js";
+} from "./chunk-X2DOGIIG.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -100,7 +100,7 @@ program.command("parse").description("Parse a TypeScript project and build depen
   try {
     const projectRoot = resolve(directory);
     console.log(`Parsing project: ${projectRoot}`);
-    const parsedFiles = parseProject(projectRoot, {
+    const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
       verbose: options.verbose
     });
@@ -145,7 +145,7 @@ program.command("query").description("Query impact analysis for a symbol").argum
       graph = importFromJSON(json);
     } else {
       console.log("Parsing project...");
-      const parsedFiles = parseProject(projectRoot);
+      const parsedFiles = await parseProject(projectRoot);
       graph = buildGraph(parsedFiles);
     }
     const matches = searchSymbols(graph, symbolName);
@@ -186,7 +186,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
   try {
     const projectRoot = resolve(directory);
     console.log(`Parsing project: ${projectRoot}`);
-    const parsedFiles = parseProject(projectRoot, {
+    const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
       verbose: options.verbose
     });
@@ -210,7 +210,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     if (directory) {
       const projectRoot = resolve(directory);
       console.error(`Parsing project: ${projectRoot}`);
-      const parsedFiles = parseProject(projectRoot);
+      const parsedFiles = await parseProject(projectRoot);
       console.error(`Parsed ${parsedFiles.length} files`);
       const graph = buildGraph(parsedFiles);
       console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
@@ -273,7 +273,7 @@ program.command("docs").description("Generate comprehensive codebase documentati
       addToGitignore(projectRoot, ".depwire/");
     }
     console.log(`Parsing project: ${projectRoot}`);
-    const parsedFiles = parseProject(projectRoot, {
+    const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
       verbose: options.verbose
     });

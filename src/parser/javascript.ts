@@ -1,12 +1,8 @@
-import Parser from 'tree-sitter';
-import JavaScript from 'tree-sitter-javascript';
+import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { resolveImportPath } from './resolver.js';
 import { existsSync } from 'fs';
 import { join, dirname, extname } from 'path';
-
-const jsParser = new Parser();
-jsParser.setLanguage(JavaScript);
 
 interface Context {
   filePath: string;
@@ -24,8 +20,9 @@ export function parseJavaScriptFile(
   sourceCode: string,
   projectRoot: string
 ): ParsedFile {
+  const parser = getParser('javascript');
   // Use explicit buffer size for large files (tree-sitter default is too small)
-  const tree = jsParser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
+  const tree = parser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
   
   const context: Context = {
     filePath,

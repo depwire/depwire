@@ -1,13 +1,6 @@
-import Parser from 'tree-sitter';
-import TypeScript from 'tree-sitter-typescript';
+import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser } from './types.js';
 import { resolveImportPath } from './resolver.js';
-
-const tsParser = new Parser();
-tsParser.setLanguage(TypeScript.typescript);
-
-const tsxParser = new Parser();
-tsxParser.setLanguage(TypeScript.tsx);
 
 interface Context {
   filePath: string;
@@ -24,7 +17,8 @@ export function parseTypeScriptFile(
   sourceCode: string,
   projectRoot: string
 ): ParsedFile {
-  const parser = filePath.endsWith('.tsx') ? tsxParser : tsParser;
+  const languageType = filePath.endsWith('.tsx') ? 'tsx' : 'typescript';
+  const parser = getParser(languageType);
   // Use explicit buffer size for large files (tree-sitter default is too small)
   const tree = parser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
   
@@ -47,7 +41,7 @@ export function parseTypeScriptFile(
   };
 }
 
-function walkNode(node: Parser.SyntaxNode, context: Context): void {
+function walkNode(node: any, context: Context): void {
   // Process current node
   processNode(node, context);
   

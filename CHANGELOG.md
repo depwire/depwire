@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.4.0] - 2026-03-05
+
+### Changed
+- **BREAKING (internal): Migrated from native tree-sitter to web-tree-sitter (WASM)**
+  - Zero native compilation required — no Python, no node-gyp, no C++ build tools
+  - Fixes installation failure on Windows (and any system without build prerequisites)
+  - Works on all platforms: Windows, macOS, Linux (x64, ARM64)
+  - Parser output is identical — no changes to analysis results
+  - Slight performance difference (~10-30%) — negligible for all practical use cases (26-33ms vs 9-13ms on test fixtures)
+
+### Fixed  
+- Windows installation failure: `npm install -g depwire-cli` now works without Python or Visual Studio Build Tools
+- Installation on systems without Xcode Command Line Tools (macOS)
+- Installation on ARM64 systems (Apple Silicon, ARM Linux)
+- Eliminates all native build dependencies
+
+---
+
 ## [0.3.1] - 2026-02-28
 
 ### Fixed

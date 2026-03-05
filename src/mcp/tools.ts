@@ -883,7 +883,7 @@ async function handleUpdateProjectDocs(
   console.error('Regenerating project documentation...');
   
   // Re-parse the project
-  const parsedFiles = parseProject(state.projectRoot!);
+  const parsedFiles = await parseProject(state.projectRoot!);
   const graph = buildGraph(parsedFiles);
   const parseTime = (Date.now() - startTime) / 1000;
   

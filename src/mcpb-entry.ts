@@ -26,7 +26,7 @@ async function main() {
       console.error(`[MCPB] Parsing project: ${projectRoot}`);
       
       // Parse all TypeScript files
-      const parsedFiles = parseProject(projectRoot);
+      const parsedFiles = await parseProject(projectRoot);
       console.error(`[MCPB] Parsed ${parsedFiles.length} files`);
       
       // Build the graph

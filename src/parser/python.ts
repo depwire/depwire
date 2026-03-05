@@ -1,11 +1,7 @@
-import Parser from 'tree-sitter';
-import Python from 'tree-sitter-python';
+import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname } from 'path';
 import { existsSync } from 'fs';
-
-const pyParser = new Parser();
-pyParser.setLanguage(Python);
 
 interface Context {
   filePath: string;
@@ -23,8 +19,9 @@ export function parsePythonFile(
   sourceCode: string,
   projectRoot: string
 ): ParsedFile {
+  const parser = getParser('python');
   // Use explicit buffer size for large files (tree-sitter default is too small)
-  const tree = pyParser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
+  const tree = parser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
   
   const context: Context = {
     filePath,

@@ -1,11 +1,7 @@
-import Parser from 'tree-sitter';
-import Go from 'tree-sitter-go';
+import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
-
-const parser = new Parser();
-parser.setLanguage(Go);
 
 interface Context {
   filePath: string;
@@ -24,6 +20,7 @@ export function parseGoFile(
   sourceCode: string,
   projectRoot: string
 ): ParsedFile {
+  const parser = getParser('go');
   // Use explicit buffer size for large files (tree-sitter default is too small)
   const tree = parser.parse(sourceCode, null, { bufferSize: 1024 * 1024 });
   

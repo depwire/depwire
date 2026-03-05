@@ -124,7 +124,7 @@ export async function startVizServer(
       console.error(`File changed: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project (simplest and most reliable approach)
-        const parsedFiles = parseProject(projectRoot, options);
+        const parsedFiles = await parseProject(projectRoot, options);
         const newGraph = buildGraph(parsedFiles);
         
         // Replace the graph reference (mutations affect the shared reference)
@@ -152,7 +152,7 @@ export async function startVizServer(
       console.error(`File added: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project
-        const parsedFiles = parseProject(projectRoot, options);
+        const parsedFiles = await parseProject(projectRoot, options);
         const newGraph = buildGraph(parsedFiles);
         
         // Replace graph contents
@@ -175,11 +175,11 @@ export async function startVizServer(
         console.error(`Failed to update graph for ${filePath}:`, error);
       }
     },
-    onFileDeleted: (filePath: string) => {
+    onFileDeleted: async (filePath: string) => {
       console.error(`File deleted: ${filePath} — re-parsing project...`);
       try {
         // Re-parse entire project
-        const parsedFiles = parseProject(projectRoot, options);
+        const parsedFiles = await parseProject(projectRoot, options);
         const newGraph = buildGraph(parsedFiles);
         
         // Replace graph contents

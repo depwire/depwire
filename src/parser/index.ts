@@ -10,6 +10,7 @@ import { scanDirectory } from '../utils/files.js';
 import { getParserForFile } from './detect.js';
 import { ParsedFile } from './types.js';
 import { minimatch } from 'minimatch';
+import { initParser } from './wasm-init.js';
 
 const MAX_FILE_SIZE = 1_000_000; // 1MB — files larger than this are likely generated
 
@@ -26,10 +27,13 @@ function shouldParseFile(fullPath: string): boolean {
   }
 }
 
-export function parseProject(
+export async function parseProject(
   projectRoot: string,
   options?: { exclude?: string[]; verbose?: boolean }
-): ParsedFile[] {
+): Promise<ParsedFile[]> {
+  // Initialize WASM parsers (no-op if already initialized)
+  await initParser();
+  
   const files = scanDirectory(projectRoot);
   const parsedFiles: ParsedFile[] = [];
   let skippedFiles = 0;
