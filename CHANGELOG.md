@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.6.0] - 2026-03-06
+
+### Added
+- **Dependency Health Score** — `depwire health` command scores architecture 0-100 across 6 dimensions
+  - **Coupling (25%):** How tightly connected are modules?
+  - **Cohesion (20%):** Do files in directories relate to each other?
+  - **Circular Dependencies (20%):** Files depending on each other in cycles
+  - **God Files (15%):** Files with abnormally high connection counts
+  - **Orphan Files (10%):** Files with zero connections
+  - **Dependency Depth (10%):** How deep are dependency chains?
+- Letter grades (A-F) per dimension and overall
+- `--json` flag for CI/automation integration
+- `--verbose` flag for detailed per-dimension breakdown
+- Actionable recommendations based on detected issues
+- Health history tracking in `.depwire/health-history.json` (last 50 checks)
+- Score trend display (↑/↓ from previous check)
+- `get_health_score` MCP tool (13 tools total, was 12)
+- `HEALTH.md` document generator (12 documents total, was 11)
+
+### Changed
+- Updated README, website, and documentation to reflect 13 MCP tools
+- Updated documentation count from 11 to 12
+
+---
+
 ## [0.5.0] - 2026-03-05
 
 ### Added

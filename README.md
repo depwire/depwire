@@ -10,7 +10,8 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 
 - 🎨 **Beautiful arc diagram visualization** — Interactive Harrison Bible-style graphic
 - 🤖 **MCP server for AI tools** — Cursor, Claude Desktop get full dependency context
-- 📄 **Auto-generated documentation** — 11 comprehensive documents: architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, test coverage, git history, full snapshot, and TODO/FIXME inventory
+- 📊 **Dependency health score** — 0-100 score across 6 dimensions (coupling, cohesion, circular deps, god files, orphans, depth)
+- 📄 **Auto-generated documentation** — 12 comprehensive documents: architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, test coverage, git history, full snapshot, TODO/FIXME inventory, and health report
 - 🔍 **Impact analysis** — "What breaks if I rename this function?" answered precisely
 - 👀 **Live updates** — Graph stays current as you edit code
 - 🌍 **Multi-language** — TypeScript, JavaScript, Python, and Go
@@ -39,8 +40,8 @@ Depwire fixes this by giving AI tools a complete dependency graph of your codeba
 - **Live graph, always current** — edit a file and the dependency map updates in real-time. No re-indexing, no waiting.
 - **Works locally, stays private** — zero cloud accounts, zero data leaving your machine. Just `npm install` and go.
 
-### 12 MCP Tools, Not Just Visualization
-Depwire isn't just a pretty graph. It's a full context engine with 12 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, and more. The AI decides which tool to use based on your question.
+### 13 MCP Tools, Not Just Visualization
+Depwire isn't just a pretty graph. It's a full context engine with 13 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, health scores, and more. The AI decides which tool to use based on your question.
 
 ## Installation
 
@@ -124,6 +125,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `visualize_graph` | Generate interactive arc diagram visualization |
 | `get_project_docs` | Retrieve auto-generated codebase documentation |
 | `update_project_docs` | Regenerate documentation on demand |
+| `get_health_score` | Get 0-100 dependency health score with recommendations |
 
 ## Supported Languages
 
@@ -241,7 +243,7 @@ Generate comprehensive codebase documentation from your dependency graph.
 - `--output <path>` — Output directory (default: `.depwire/` inside project)
 - `--format <type>` — Output format: `markdown` or `json` (default: `markdown`)
 - `--include <docs...>` — Comma-separated list of docs to generate (default: `all`)
-  - Values: `architecture`, `conventions`, `dependencies`, `onboarding`, `files`, `api_surface`, `errors`, `tests`, `history`, `current`, `status`, `all`
+  - Values: `architecture`, `conventions`, `dependencies`, `onboarding`, `files`, `api_surface`, `errors`, `tests`, `history`, `current`, `status`, `health`, `all`
 - `--update` — Regenerate existing documentation
 - `--only <docs...>` — Used with `--update`, regenerate only specific docs
 - `--verbose` — Show generation progress
@@ -270,7 +272,7 @@ depwire docs ./my-project --output ./docs
 depwire docs ./my-project --update --only conventions
 ```
 
-**Generated Documents (11 total):**
+**Generated Documents (12 total):**
 
 | Document | What It Contains |
 |----------|------------------|
@@ -285,8 +287,45 @@ depwire docs ./my-project --update --only conventions
 | `HISTORY.md` | Git history + graph analysis, file churn, feature timeline |
 | `CURRENT.md` | Complete codebase snapshot (every file, symbol, connection) |
 | `STATUS.md` | TODO/FIXME/HACK inventory with priority matrix |
+| `HEALTH.md` | Dependency health score (0-100) across 6 dimensions with recommendations |
 
 Documents are stored in `.depwire/` with `metadata.json` tracking generation timestamps for staleness detection.
+
+### `depwire health <directory>`
+
+Analyze dependency architecture health and get a 0-100 score across 6 quality dimensions.
+
+**Options:**
+- `--json` — Output as JSON (for CI/automation)
+- `--verbose` — Show detailed per-dimension breakdown
+
+**Dimensions Measured:**
+1. **Coupling (25%)** — How tightly connected are modules? Lower coupling = easier changes
+2. **Cohesion (20%)** — Do files in the same directory relate? Higher cohesion = better organization
+3. **Circular Dependencies (20%)** — Files depending on each other in cycles
+4. **God Files (15%)** — Files with abnormally high connection counts
+5. **Orphan Files (10%)** — Files with zero connections (dead code?)
+6. **Dependency Depth (10%)** — How deep are the dependency chains?
+
+**Examples:**
+```bash
+# Analyze current directory
+depwire health .
+
+# Detailed breakdown
+depwire health . --verbose
+
+# JSON output for CI
+depwire health . --json
+```
+
+**Output:**
+- Overall score (0-100) with letter grade (A-F)
+- Per-dimension scores and grades
+- Actionable recommendations
+- Trend indicator (↑/↓ from last check)
+
+Health history is stored in `.depwire/health-history.json` (last 50 checks).
 
 ### Error Handling
 

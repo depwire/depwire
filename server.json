@@ -2,17 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.atef-ataya/depwire",
   "mcpName": "io.github.atef-ataya/depwire",
-  "description": "Dependency graph + 12 MCP tools for AI coding. TypeScript, Python, JS, Go. Auto-gen docs.",
+  "description": "Dependency graph + 13 MCP tools for AI coding. TypeScript, Python, JS, Go. Auto-gen docs + health score.",
   "repository": {
     "url": "https://github.com/depwire/depwire",
     "source": "github"
   },
-  "version": "0.5.0",
+  "version": "0.6.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "depwire-cli",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "transport": {
         "type": "stdio"
       }

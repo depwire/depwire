@@ -21,6 +21,7 @@ import { parseProject } from "../parser/index.js";
 import { buildGraph } from "../graph/index.js";
 import { generateDocs } from "../docs/index.js";
 import { loadMetadata } from "../docs/metadata.js";
+import { calculateHealthScore } from "../health/index.js";
 
 interface ToolDefinition {
   name: string;
@@ -204,6 +205,14 @@ export function getToolsList(): ToolDefinition[] {
         },
       },
     },
+    {
+      name: "get_health_score",
+      description: "Get a 0-100 health score for the project's dependency architecture. Scores coupling, cohesion, circular dependencies, god files, orphan files, and dependency depth. Returns overall score, per-dimension breakdown, and actionable recommendations.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+      },
+    },
   ];
 }
 
@@ -253,6 +262,15 @@ export async function handleToolCall(
         };
       } else {
         result = await handleUpdateProjectDocs(args.doc_type || "all", state);
+      }
+    } else if (name === "get_health_score") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleGetHealthScore(state);
       }
     } else {
       // All other tools require a loaded project
@@ -939,5 +957,17 @@ async function handleUpdateProjectDocs(
       errors: result.errors,
     };
   }
+}
+
+/**
+ * Handle get_health_score tool call
+ */
+function handleGetHealthScore(state: DepwireState) {
+  const graph = state.graph!;
+  const projectRoot = state.projectRoot!;
+  
+  const report = calculateHealthScore(graph, projectRoot);
+  
+  return report;
 }
 

@@ -69,6 +69,7 @@ export function createMetadata(
                      docType === 'history' ? 'HISTORY.md' :
                      docType === 'current' ? 'CURRENT.md' :
                      docType === 'status' ? 'STATUS.md' :
+                     docType === 'health' ? 'HEALTH.md' :
                      `${docType.toUpperCase()}.md`;
     
     documents[docType] = {

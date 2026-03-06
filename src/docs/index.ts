@@ -16,4 +16,5 @@ export { generateTests } from './tests.js';
 export { generateHistory } from './history.js';
 export { generateCurrent } from './current.js';
 export { generateStatus } from './status.js';
+export { generateHealth } from './health.js';
 export { createMetadata, updateMetadata, loadMetadata, saveMetadata, type ProjectMetadata, type DocMetadata } from './metadata.js';

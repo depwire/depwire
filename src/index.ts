@@ -15,6 +15,8 @@ import { createEmptyState } from './mcp/state.js';
 import { watchProject } from './watcher.js';
 import { updateFileInGraph } from './graph/updater.js';
 import { generateDocs } from './docs/index.js';
+import { calculateHealthScore, getHealthTrend } from './health/index.js';
+import { formatHealthReport } from './health/display.js';
 import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from 'fs';
 import { createInterface } from 'readline';
 
@@ -411,5 +413,42 @@ function addToGitignore(projectRoot: string, pattern: string): void {
     console.error(`Warning: Failed to update .gitignore: ${err}`);
   }
 }
+
+// Health command
+program
+  .command('health <dir>')
+  .description('Analyze dependency architecture health (0-100 score)')
+  .option('--json', 'Output as JSON')
+  .option('--verbose', 'Show detailed breakdown')
+  .action(async (dir: string, options: { json?: boolean; verbose?: boolean }) => {
+    try {
+      const projectRoot = resolve(dir);
+      const startTime = Date.now();
+      
+      // Parse project
+      const parsedFiles = await parseProject(projectRoot);
+      const graph = buildGraph(parsedFiles);
+      const parseTime = Date.now() - startTime;
+      
+      // Calculate health score
+      const report = calculateHealthScore(graph, projectRoot);
+      const trend = getHealthTrend(projectRoot, report.overall);
+      
+      if (options.json) {
+        // JSON output (for CI/automation)
+        console.log(JSON.stringify(report, null, 2));
+      } else {
+        // Human-readable output
+        const formatted = formatHealthReport(report, trend, options.verbose || false);
+        console.log(formatted);
+        
+        const totalTime = Date.now() - startTime;
+        console.log(`Analysis completed in ${(totalTime / 1000).toFixed(2)}s (parse: ${(parseTime / 1000).toFixed(2)}s)\n`);
+      }
+    } catch (err) {
+      console.error('Error analyzing health:', err);
+      process.exit(1);
+    }
+  });
 
 program.parse();

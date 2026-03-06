@@ -12,6 +12,7 @@ import { generateTests } from './tests.js';
 import { generateHistory } from './history.js';
 import { generateCurrent } from './current.js';
 import { generateStatus } from './status.js';
+import { generateHealth } from './health.js';
 import { createMetadata, updateMetadata, saveMetadata, loadMetadata, type ProjectMetadata } from './metadata.js';
 
 export interface GeneratorOptions {
@@ -68,7 +69,7 @@ export async function generateDocs(
     if (docsToGenerate.includes('all')) {
       docsToGenerate = [
         'architecture', 'conventions', 'dependencies', 'onboarding',
-        'files', 'api_surface', 'errors', 'tests', 'history', 'current', 'status'
+        'files', 'api_surface', 'errors', 'tests', 'history', 'current', 'status', 'health'
       ];
     }
     
@@ -214,6 +215,18 @@ export async function generateDocs(
           generated.push('STATUS.md');
         } catch (err) {
           errors.push(`Failed to generate STATUS.md: ${err}`);
+        }
+      }
+      
+      if (docsToGenerate.includes('health')) {
+        try {
+          if (options.verbose) console.log('Generating HEALTH.md...');
+          const content = generateHealth(graph, projectRoot, version);
+          const filePath = join(options.outputDir, 'HEALTH.md');
+          writeFileSync(filePath, content, 'utf-8');
+          generated.push('HEALTH.md');
+        } catch (err) {
+          errors.push(`Failed to generate HEALTH.md: ${err}`);
         }
       }
     } else if (options.format === 'json') {

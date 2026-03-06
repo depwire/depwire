@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import {
   buildGraph,
+  calculateHealthScore,
   createEmptyState,
   generateDocs,
   getArchitectureSummary,
+  getHealthTrend,
   getImpact,
   parseProject,
   prepareVizData,
@@ -12,7 +14,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-Q733EWFA.js";
+} from "./chunk-AFJFZXCI.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -84,6 +86,121 @@ function importFromJSON(json) {
     }
   }
   return graph;
+}
+
+// src/health/display.ts
+function formatHealthReport(report, trend, verbose) {
+  let output = "";
+  output += `
+${bold("Depwire Health Score")}
+
+`;
+  const gradeColor = getGradeColor(report.grade);
+  let overallLine = `${bold("Overall:")} ${report.overall}/100 (${gradeColor(bold(`Grade: ${report.grade}`))})`;
+  if (trend) {
+    const trendColor = trend.startsWith("\u2191") ? green : trend.startsWith("\u2193") ? red : gray;
+    overallLine += ` ${trendColor(trend)} from last check`;
+  }
+  output += overallLine + "\n\n";
+  output += formatDimensionsTable(report.dimensions);
+  output += `
+${bold("Summary:")}
+${report.summary}
+
+`;
+  if (report.recommendations.length > 0) {
+    output += `${yellow(bold("\u26A0\uFE0F  Recommendations:"))}
+`;
+    for (const rec of report.recommendations) {
+      output += `  \u2022 ${rec}
+`;
+    }
+    output += "\n";
+  }
+  if (verbose) {
+    output += `${bold("Dimension Details:")}
+
+`;
+    for (const dim of report.dimensions) {
+      output += `${bold(dim.name)} (${dim.score}/100, Grade: ${getGradeColor(dim.grade)(dim.grade)})
+`;
+      output += `  ${dim.details}
+`;
+      output += `  Metrics: ${JSON.stringify(dim.metrics, null, 2)}
+
+`;
+    }
+  }
+  output += `${gray(`Parsed ${report.projectStats.files} files, ${report.projectStats.symbols} symbols, ${report.projectStats.edges} edges`)}
+`;
+  return output;
+}
+function formatDimensionsTable(dimensions) {
+  const headers = ["Dimension", "Score", "Grade", "Weight"];
+  const widths = [25, 8, 8, 8];
+  let output = "";
+  output += "\u250C" + widths.map((w) => "\u2500".repeat(w)).join("\u252C") + "\u2510\n";
+  output += "\u2502";
+  headers.forEach((h, i) => {
+    output += " " + h.padEnd(widths[i] - 1);
+    output += "\u2502";
+  });
+  output += "\n";
+  output += "\u251C" + widths.map((w) => "\u2500".repeat(w)).join("\u253C") + "\u2524\n";
+  for (const dim of dimensions) {
+    output += "\u2502";
+    const gradeColor = getGradeColor(dim.grade);
+    output += " " + dim.name.padEnd(widths[0] - 1);
+    output += "\u2502";
+    output += " " + dim.score.toString().padEnd(widths[1] - 1);
+    output += "\u2502";
+    const gradePadded = dim.grade.padEnd(widths[2] - 1);
+    output += " " + gradeColor(gradePadded);
+    output += "\u2502";
+    const weightStr = `${(dim.weight * 100).toFixed(0)}%`;
+    output += " " + weightStr.padEnd(widths[3] - 1);
+    output += "\u2502";
+    output += "\n";
+  }
+  output += "\u2514" + widths.map((w) => "\u2500".repeat(w)).join("\u2534") + "\u2518\n";
+  return output;
+}
+function getGradeColor(grade) {
+  switch (grade) {
+    case "A":
+      return green;
+    case "B":
+      return cyan;
+    case "C":
+      return yellow;
+    case "D":
+      return magenta;
+    case "F":
+      return red;
+    default:
+      return gray;
+  }
+}
+function bold(text) {
+  return `\x1B[1m${text}\x1B[0m`;
+}
+function green(text) {
+  return `\x1B[32m${text}\x1B[0m`;
+}
+function cyan(text) {
+  return `\x1B[36m${text}\x1B[0m`;
+}
+function yellow(text) {
+  return `\x1B[33m${text}\x1B[0m`;
+}
+function magenta(text) {
+  return `\x1B[35m${text}\x1B[0m`;
+}
+function red(text) {
+  return `\x1B[31m${text}\x1B[0m`;
+}
+function gray(text) {
+  return `\x1B[90m${text}\x1B[0m`;
 }
 
 // src/index.ts
@@ -354,4 +471,27 @@ ${pattern}
     console.error(`Warning: Failed to update .gitignore: ${err}`);
   }
 }
+program.command("health <dir>").description("Analyze dependency architecture health (0-100 score)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (dir, options) => {
+  try {
+    const projectRoot = resolve(dir);
+    const startTime = Date.now();
+    const parsedFiles = await parseProject(projectRoot);
+    const graph = buildGraph(parsedFiles);
+    const parseTime = Date.now() - startTime;
+    const report = calculateHealthScore(graph, projectRoot);
+    const trend = getHealthTrend(projectRoot, report.overall);
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      const formatted = formatHealthReport(report, trend, options.verbose || false);
+      console.log(formatted);
+      const totalTime = Date.now() - startTime;
+      console.log(`Analysis completed in ${(totalTime / 1e3).toFixed(2)}s (parse: ${(parseTime / 1e3).toFixed(2)}s)
+`);
+    }
+  } catch (err) {
+    console.error("Error analyzing health:", err);
+    process.exit(1);
+  }
+});
 program.parse();
