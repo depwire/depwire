@@ -4,6 +4,8 @@
 
 **See how your code connects. Give AI tools full codebase context.**
 
+⭐ **If Depwire helps you, please [star the repo](https://github.com/depwire/depwire)** — it helps this open-source project grow into an enterprise tool.
+
 Depwire analyzes codebases to build a cross-reference graph showing how every file, function, and import connects. It provides:
 
 - 🎨 **Beautiful arc diagram visualization** — Interactive Harrison Bible-style graphic
