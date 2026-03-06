@@ -9,8 +9,8 @@ import {
   calculateDepthScore,
   scoreToGrade
 } from './metrics.js';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 
 /**
  * Calculate the overall health score for a project
@@ -179,6 +179,9 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   if (history.length > 50) {
     history = history.slice(-50);
   }
+  
+  // Ensure directory exists before writing
+  mkdirSync(dirname(historyFile), { recursive: true });
   
   writeFileSync(historyFile, JSON.stringify(history, null, 2), 'utf-8');
 }
