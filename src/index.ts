@@ -19,6 +19,7 @@ import { calculateHealthScore, getHealthTrend } from './health/index.js';
 import { formatHealthReport } from './health/display.js';
 import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from 'fs';
 import { createInterface } from 'readline';
+import { findProjectRoot } from './utils/files.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -36,17 +37,17 @@ program
 program
   .command('parse')
   .description('Parse a TypeScript project and build dependency graph')
-  .argument('<directory>', 'Project directory to parse')
+  .argument('[directory]', 'Project directory to parse (defaults to current directory or auto-detected project root)')
   .option('-o, --output <path>', 'Output JSON file path', 'depwire-output.json')
   .option('--pretty', 'Pretty-print JSON output')
   .option('--stats', 'Print summary statistics')
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
-  .action(async (directory: string, options: { output: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
+  .action(async (directory: string | undefined, options: { output: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
     const startTime = Date.now();
     
     try {
-      const projectRoot = resolve(directory);
+      const projectRoot = directory ? resolve(directory) : findProjectRoot();
       
       console.log(`Parsing project: ${projectRoot}`);
       
@@ -167,14 +168,14 @@ program
 program
   .command('viz')
   .description('Launch interactive arc diagram visualization')
-  .argument('<directory>', 'Project directory to visualize')
+  .argument('[directory]', 'Project directory to visualize (defaults to current directory or auto-detected project root)')
   .option('-p, --port <number>', 'Server port', '3333')
   .option('--no-open', 'Don\'t auto-open browser')
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
-  .action(async (directory: string, options: { port: string; open: boolean; exclude?: string[]; verbose?: boolean }) => {
+  .action(async (directory: string | undefined, options: { port: string; open: boolean; exclude?: string[]; verbose?: boolean }) => {
     try {
-      const projectRoot = resolve(directory);
+      const projectRoot = directory ? resolve(directory) : findProjectRoot();
       
       console.log(`Parsing project: ${projectRoot}`);
       
@@ -207,19 +208,35 @@ program
 program
   .command('mcp')
   .description('Start MCP server for AI coding tools')
-  .argument('[directory]', 'Project directory to analyze (optional - use connect_repo tool to connect later)')
+  .argument('[directory]', 'Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)')
   .action(async (directory?: string) => {
     try {
       const state = createEmptyState();
-
+      
+      // Auto-detect project root if no directory provided
+      let projectRootToConnect: string | null = null;
+      
       if (directory) {
-        const projectRoot = resolve(directory);
+        // Explicit directory provided
+        projectRootToConnect = resolve(directory);
+      } else {
+        // Try to auto-detect project root
+        const detectedRoot = findProjectRoot();
+        const cwd = process.cwd();
+        
+        // Only auto-connect if we found a project marker (detected root != cwd means we found something)
+        if (detectedRoot !== cwd || existsSync(join(cwd, 'package.json')) || existsSync(join(cwd, 'tsconfig.json')) || existsSync(join(cwd, 'go.mod')) || existsSync(join(cwd, 'pyproject.toml')) || existsSync(join(cwd, 'setup.py')) || existsSync(join(cwd, '.git'))) {
+          projectRootToConnect = detectedRoot;
+        }
+      }
+
+      if (projectRootToConnect) {
         
         // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
-        console.error(`Parsing project: ${projectRoot}`);
+        console.error(`Parsing project: ${projectRootToConnect}`);
         
         // Parse all TypeScript files
-        const parsedFiles = await parseProject(projectRoot);
+        const parsedFiles = await parseProject(projectRootToConnect);
         console.error(`Parsed ${parsedFiles.length} files`);
         
         // Build the graph
@@ -228,16 +245,16 @@ program
         
         // Set initial state
         state.graph = graph;
-        state.projectRoot = projectRoot;
-        state.projectName = projectRoot.split('/').pop() || 'project';
+        state.projectRoot = projectRootToConnect;
+        state.projectName = projectRootToConnect.split('/').pop() || 'project';
 
         // Start file watcher
         console.error("Starting file watcher...");
-        state.watcher = watchProject(projectRoot, {
+        state.watcher = watchProject(projectRootToConnect, {
           onFileChanged: async (filePath: string) => {
             console.error(`File changed: ${filePath}`);
             try {
-              await updateFileInGraph(state.graph!, projectRoot, filePath);
+              await updateFileInGraph(state.graph!, projectRootToConnect, filePath);
               console.error(`Graph updated for ${filePath}`);
             } catch (error) {
               console.error(`Failed to update graph: ${error}`);
@@ -246,7 +263,7 @@ program
           onFileAdded: async (filePath: string) => {
             console.error(`File added: ${filePath}`);
             try {
-              await updateFileInGraph(state.graph!, projectRoot, filePath);
+              await updateFileInGraph(state.graph!, projectRootToConnect, filePath);
               console.error(`Graph updated for ${filePath}`);
             } catch (error) {
               console.error(`Failed to update graph: ${error}`);
@@ -278,7 +295,7 @@ program
 program
   .command('docs')
   .description('Generate comprehensive codebase documentation')
-  .argument('<directory>', 'Project directory to document')
+  .argument('[directory]', 'Project directory to document (defaults to current directory or auto-detected project root)')
   .option('-o, --output <path>', 'Output directory (default: .depwire/ inside project)')
   .option('--format <type>', 'Output format: markdown | json', 'markdown')
   .option('--gitignore', 'Add .depwire/ to .gitignore automatically')
@@ -289,7 +306,7 @@ program
   .option('--verbose', 'Show generation progress')
   .option('--stats', 'Show generation statistics at the end')
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
-  .action(async (directory: string, options: {
+  .action(async (directory: string | undefined, options: {
     output?: string;
     format: 'markdown' | 'json';
     gitignore?: boolean;
@@ -303,7 +320,7 @@ program
     const startTime = Date.now();
     
     try {
-      const projectRoot = resolve(directory);
+      const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const outputDir = options.output ? resolve(options.output) : join(projectRoot, '.depwire');
       
       // Parse include/only lists - always split by comma
@@ -416,13 +433,14 @@ function addToGitignore(projectRoot: string, pattern: string): void {
 
 // Health command
 program
-  .command('health <dir>')
+  .command('health')
   .description('Analyze dependency architecture health (0-100 score)')
+  .argument('[directory]', 'Project directory to analyze (defaults to current directory or auto-detected project root)')
   .option('--json', 'Output as JSON')
   .option('--verbose', 'Show detailed breakdown')
-  .action(async (dir: string, options: { json?: boolean; verbose?: boolean }) => {
+  .action(async (directory: string | undefined, options: { json?: boolean; verbose?: boolean }) => {
     try {
-      const projectRoot = resolve(dir);
+      const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const startTime = Date.now();
       
       // Parse project

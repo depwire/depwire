@@ -3,6 +3,7 @@ import {
   buildGraph,
   calculateHealthScore,
   createEmptyState,
+  findProjectRoot,
   generateDocs,
   getArchitectureSummary,
   getHealthTrend,
@@ -14,7 +15,7 @@ import {
   startVizServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-S3RUBXRF.js";
+} from "./chunk-VNUOE5VC.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -212,10 +213,10 @@ var packageJsonPath = join(__dirname, "../package.json");
 var packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
-program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("<directory>", "Project directory to parse").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
+program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   const startTime = Date.now();
   try {
-    const projectRoot = resolve(directory);
+    const projectRoot = directory ? resolve(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -299,9 +300,9 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
     process.exit(1);
   }
 });
-program.command("viz").description("Launch interactive arc diagram visualization").argument("<directory>", "Project directory to visualize").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
+program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   try {
-    const projectRoot = resolve(directory);
+    const projectRoot = directory ? resolve(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -321,25 +322,34 @@ program.command("viz").description("Launch interactive arc diagram visualization
     process.exit(1);
   }
 });
-program.command("mcp").description("Start MCP server for AI coding tools").argument("[directory]", "Project directory to analyze (optional - use connect_repo tool to connect later)").action(async (directory) => {
+program.command("mcp").description("Start MCP server for AI coding tools").argument("[directory]", "Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)").action(async (directory) => {
   try {
     const state = createEmptyState();
+    let projectRootToConnect = null;
     if (directory) {
-      const projectRoot = resolve(directory);
-      console.error(`Parsing project: ${projectRoot}`);
-      const parsedFiles = await parseProject(projectRoot);
+      projectRootToConnect = resolve(directory);
+    } else {
+      const detectedRoot = findProjectRoot();
+      const cwd = process.cwd();
+      if (detectedRoot !== cwd || existsSync(join(cwd, "package.json")) || existsSync(join(cwd, "tsconfig.json")) || existsSync(join(cwd, "go.mod")) || existsSync(join(cwd, "pyproject.toml")) || existsSync(join(cwd, "setup.py")) || existsSync(join(cwd, ".git"))) {
+        projectRootToConnect = detectedRoot;
+      }
+    }
+    if (projectRootToConnect) {
+      console.error(`Parsing project: ${projectRootToConnect}`);
+      const parsedFiles = await parseProject(projectRootToConnect);
       console.error(`Parsed ${parsedFiles.length} files`);
       const graph = buildGraph(parsedFiles);
       console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
       state.graph = graph;
-      state.projectRoot = projectRoot;
-      state.projectName = projectRoot.split("/").pop() || "project";
+      state.projectRoot = projectRootToConnect;
+      state.projectName = projectRootToConnect.split("/").pop() || "project";
       console.error("Starting file watcher...");
-      state.watcher = watchProject(projectRoot, {
+      state.watcher = watchProject(projectRootToConnect, {
         onFileChanged: async (filePath) => {
           console.error(`File changed: ${filePath}`);
           try {
-            await updateFileInGraph(state.graph, projectRoot, filePath);
+            await updateFileInGraph(state.graph, projectRootToConnect, filePath);
             console.error(`Graph updated for ${filePath}`);
           } catch (error) {
             console.error(`Failed to update graph: ${error}`);
@@ -348,7 +358,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
         onFileAdded: async (filePath) => {
           console.error(`File added: ${filePath}`);
           try {
-            await updateFileInGraph(state.graph, projectRoot, filePath);
+            await updateFileInGraph(state.graph, projectRootToConnect, filePath);
             console.error(`Graph updated for ${filePath}`);
           } catch (error) {
             console.error(`Failed to update graph: ${error}`);
@@ -374,10 +384,10 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     process.exit(1);
   }
 });
-program.command("docs").description("Generate comprehensive codebase documentation").argument("<directory>", "Project directory to document").option("-o, --output <path>", "Output directory (default: .depwire/ inside project)").option("--format <type>", "Output format: markdown | json", "markdown").option("--gitignore", "Add .depwire/ to .gitignore automatically").option("--no-gitignore", "Don't modify .gitignore").option("--include <docs>", "Comma-separated list of docs to generate (default: all)", "all").option("--update", "Regenerate existing docs").option("--only <docs>", "Used with --update, regenerate only specific docs").option("--verbose", "Show generation progress").option("--stats", "Show generation statistics at the end").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').action(async (directory, options) => {
+program.command("docs").description("Generate comprehensive codebase documentation").argument("[directory]", "Project directory to document (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output directory (default: .depwire/ inside project)").option("--format <type>", "Output format: markdown | json", "markdown").option("--gitignore", "Add .depwire/ to .gitignore automatically").option("--no-gitignore", "Don't modify .gitignore").option("--include <docs>", "Comma-separated list of docs to generate (default: all)", "all").option("--update", "Regenerate existing docs").option("--only <docs>", "Used with --update, regenerate only specific docs").option("--verbose", "Show generation progress").option("--stats", "Show generation statistics at the end").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').action(async (directory, options) => {
   const startTime = Date.now();
   try {
-    const projectRoot = resolve(directory);
+    const projectRoot = directory ? resolve(directory) : findProjectRoot();
     const outputDir = options.output ? resolve(options.output) : join(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
@@ -471,9 +481,9 @@ ${pattern}
     console.error(`Warning: Failed to update .gitignore: ${err}`);
   }
 }
-program.command("health <dir>").description("Analyze dependency architecture health (0-100 score)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (dir, options) => {
+program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   try {
-    const projectRoot = resolve(dir);
+    const projectRoot = directory ? resolve(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles);
