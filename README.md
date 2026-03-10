@@ -61,26 +61,30 @@ npx depwire-cli --help
 ### CLI Usage
 
 ```bash
-# Visualization (opens in browser)
-npx depwire-cli viz ./my-project
+# Auto-detects project root from current directory
+depwire viz
+depwire parse
+depwire docs
+depwire health
 
-# Parse and export as JSON
+# Or specify a directory explicitly
+npx depwire-cli viz ./my-project
 npx depwire-cli parse ./my-project
 
 # Exclude test files and node_modules
-npx depwire-cli parse ./my-project --exclude "**/*.test.*" "**/node_modules/**"
+npx depwire-cli parse --exclude "**/*.test.*" "**/node_modules/**"
 
 # Show detailed parsing progress
-npx depwire-cli parse ./my-project --verbose
+npx depwire-cli parse --verbose
 
 # Export with pretty-printed JSON and statistics
-npx depwire-cli parse ./my-project --pretty --stats
+npx depwire-cli parse --pretty --stats
 
 # Generate codebase documentation
-npx depwire-cli docs ./my-project --verbose --stats
+npx depwire-cli docs --verbose --stats
 
 # Custom output file
-npx depwire-cli parse ./my-project -o my-graph.json
+npx depwire-cli parse -o my-graph.json
 ```
 
 ### Claude Desktop
@@ -98,16 +102,20 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 }
 ```
 
+**Depwire auto-detects your project root. No path configuration needed.**
+
 Then in chat:
 ```
-Connect to /path/to/my/project and show me the architecture.
+Show me the architecture.
 ```
 
 ### Cursor
 
 Settings → Features → Experimental → Enable MCP → Add Server:
 - Command: `npx`
-- Args: `-y depwire-cli mcp /path/to/project`
+- Args: `-y depwire-cli mcp`
+
+**Depwire auto-detects your project root from the current working directory.**
 
 ## Available MCP Tools
 
@@ -143,20 +151,23 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 ![Interactive Arc Diagram](./assets/graph.gif)
 
 ```bash
-# Open visualization on default port (3456)
+# Auto-detects project root (run from anywhere in your project)
+depwire viz
+
+# Or specify a directory explicitly
 depwire viz ./my-project
 
 # Custom port
-depwire viz ./my-project --port 8080
+depwire viz --port 8080
 
 # Exclude test files from visualization
-depwire viz ./my-project --exclude "**/*.test.*"
+depwire viz --exclude "**/*.test.*"
 
 # Verbose mode with detailed parsing logs
-depwire viz ./my-project --verbose
+depwire viz --verbose
 
 # Don't auto-open browser
-depwire viz ./my-project --no-open
+depwire viz --no-open
 ```
 
 Opens an interactive arc diagram in your browser:
@@ -177,9 +188,11 @@ Opens an interactive arc diagram in your browser:
 
 ## CLI Reference
 
-### `depwire parse <directory>`
+### `depwire parse [directory]`
 
 Parse a project and export the dependency graph as JSON.
+
+**Directory argument is optional** — Depwire auto-detects your project root by looking for `package.json`, `tsconfig.json`, `go.mod`, `pyproject.toml`, `setup.py`, or `.git`.
 
 **Options:**
 - `-o, --output <path>` — Output file path (default: `depwire-output.json`)
@@ -190,19 +203,24 @@ Parse a project and export the dependency graph as JSON.
 
 **Examples:**
 ```bash
-# Basic parse
+# Auto-detect project root
+depwire parse
+
+# Explicit directory
 depwire parse ./src
 
 # Exclude test files and build outputs
-depwire parse ./src --exclude "**/*.test.*" "**/*.spec.*" "dist/**" "build/**"
+depwire parse --exclude "**/*.test.*" "**/*.spec.*" "dist/**" "build/**"
 
 # Full verbosity with stats
-depwire parse ./src --verbose --stats --pretty -o graph.json
+depwire parse --verbose --stats --pretty -o graph.json
 ```
 
-### `depwire viz <directory>`
+### `depwire viz [directory]`
 
 Start visualization server and open arc diagram in browser.
+
+**Directory argument is optional** — Auto-detects project root.
 
 **Options:**
 - `--port <number>` — Port number (default: 3456, auto-increments if in use)
@@ -212,32 +230,39 @@ Start visualization server and open arc diagram in browser.
 
 **Examples:**
 ```bash
-# Basic visualization
+# Auto-detect and visualize
+depwire viz
+
+# Explicit directory
 depwire viz ./src
 
 # Custom port without auto-open
-depwire viz ./src --port 8080 --no-open
+depwire viz --port 8080 --no-open
 
 # Exclude test files with verbose logging
-depwire viz ./src --exclude "**/*.test.*" --verbose
+depwire viz --exclude "**/*.test.*" --verbose
 ```
 
 ### `depwire mcp [directory]`
 
 Start MCP server for AI tool integration (Cursor, Claude Desktop).
 
+**Directory argument is optional** — Auto-detects project root and connects automatically.
+
 **Examples:**
 ```bash
-# Start MCP server on current directory
+# Auto-detect and connect (recommended)
 depwire mcp
 
-# Start on specific project
+# Explicit directory
 depwire mcp /path/to/project
 ```
 
-### `depwire docs <directory>`
+### `depwire docs [directory]`
 
 Generate comprehensive codebase documentation from your dependency graph.
+
+**Directory argument is optional** — Auto-detects project root.
 
 **Options:**
 - `--output <path>` — Output directory (default: `.depwire/` inside project)
@@ -253,23 +278,26 @@ Generate comprehensive codebase documentation from your dependency graph.
 
 **Examples:**
 ```bash
-# Generate all docs (outputs to .depwire/ by default)
+# Auto-detect and generate all docs
+depwire docs
+
+# Explicit directory
 depwire docs ./my-project
 
 # Show generation progress and stats
-depwire docs ./my-project --verbose --stats
+depwire docs --verbose --stats
 
 # Regenerate existing docs
-depwire docs ./my-project --update
+depwire docs --update
 
 # Generate specific docs only
-depwire docs ./my-project --include architecture,dependencies
+depwire docs --include architecture,dependencies
 
 # Custom output directory
-depwire docs ./my-project --output ./docs
+depwire docs --output ./docs
 
 # Regenerate only conventions doc
-depwire docs ./my-project --update --only conventions
+depwire docs --update --only conventions
 ```
 
 **Generated Documents (12 total):**
@@ -291,9 +319,11 @@ depwire docs ./my-project --update --only conventions
 
 Documents are stored in `.depwire/` with `metadata.json` tracking generation timestamps for staleness detection.
 
-### `depwire health <directory>`
+### `depwire health [directory]`
 
 Analyze dependency architecture health and get a 0-100 score across 6 quality dimensions.
+
+**Directory argument is optional** — Auto-detects project root.
 
 **Options:**
 - `--json` — Output as JSON (for CI/automation)
@@ -309,14 +339,17 @@ Analyze dependency architecture health and get a 0-100 score across 6 quality di
 
 **Examples:**
 ```bash
-# Analyze current directory
-depwire health .
+# Auto-detect and analyze
+depwire health
+
+# Explicit directory
+depwire health ./my-project
 
 # Detailed breakdown
-depwire health . --verbose
+depwire health --verbose
 
 # JSON output for CI
-depwire health . --json
+depwire health --json
 ```
 
 **Output:**
@@ -345,7 +378,7 @@ Depwire gracefully handles parse errors:
 ```
 # In Claude Desktop or Cursor with Depwire MCP:
 
-"Connect to /Users/me/my-app and analyze the impact of renaming UserService to UserRepository"
+"Analyze the impact of renaming UserService to UserRepository"
 
 # Depwire responds with:
 # - All files that import UserService
@@ -357,7 +390,7 @@ Depwire gracefully handles parse errors:
 ### Understanding a New Codebase
 
 ```
-"Connect to https://github.com/t3-oss/create-t3-app and give me an architecture summary"
+"Show me the architecture summary"
 
 # Depwire responds with:
 # - Language breakdown
@@ -370,7 +403,7 @@ Depwire gracefully handles parse errors:
 
 ```bash
 # Check what your changes affect before committing
-depwire viz . --open
+depwire viz
 # Review the arc diagram — red arcs show files you touched
 ```
 

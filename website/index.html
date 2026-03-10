@@ -1086,7 +1086,7 @@
             <div class="code-block-wrapper" style="margin-top: 3rem;">
                 <div class="code-block scroll-reveal">
                     <div class="code-block-title">Generate Documentation</div>
-                    <pre><code>depwire docs ./my-project --verbose --stats</code></pre>
+                    <pre><code>depwire docs --verbose --stats</code></pre>
                 </div>
             </div>
 
@@ -1164,17 +1164,18 @@
 
                 <div class="code-block scroll-reveal">
                     <div class="code-block-title">CLI Usage</div>
-                    <pre><code><span class="code-comment"># Visualization (opens in browser)</span>
-npx depwire-cli viz ./my-project
+                    <pre><code><span class="code-comment"># Auto-detects project root from current directory</span>
+depwire viz
+depwire parse
+depwire docs
+depwire health
 
-<span class="code-comment"># Parse and export as JSON</span>
+<span class="code-comment"># Or specify a directory explicitly</span>
+npx depwire-cli viz ./my-project
 npx depwire-cli parse ./my-project
 
-<span class="code-comment"># Generate codebase documentation</span>
-npx depwire-cli docs ./my-project --verbose --stats
-
 <span class="code-comment"># Exclude test files and node_modules</span>
-npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.test.*"</span> <span class="code-string">"**/node_modules/**"</span></code></pre>
+npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <span class="code-string">"**/node_modules/**"</span></code></pre>
                 </div>
 
                 <div class="code-block scroll-reveal">
@@ -1187,12 +1188,14 @@ npx depwire-cli parse ./my-project --exclude <span class="code-string">"**/*.tes
       <span class="code-string">"args"</span>: [<span class="code-string">"-y"</span>, <span class="code-string">"depwire-cli"</span>, <span class="code-string">"mcp"</span>]
     }
   }
-}</code></pre>
+}
+
+<span class="code-comment">// Depwire auto-detects your project root. No path configuration needed.</span></code></pre>
                 </div>
 
                 <div class="code-block scroll-reveal">
                     <div class="code-block-title">Then in chat</div>
-                    <pre><code>Connect to /path/to/my/project and show me the architecture.</code></pre>
+                    <pre><code>Show me the architecture.</code></pre>
                 </div>
             </div>
         </div>
