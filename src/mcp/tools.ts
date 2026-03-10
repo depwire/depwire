@@ -22,6 +22,10 @@ import { buildGraph } from "../graph/index.js";
 import { generateDocs } from "../docs/index.js";
 import { loadMetadata } from "../docs/metadata.js";
 import { calculateHealthScore } from "../health/index.js";
+import { getCommitLog, isGitRepo } from "../temporal/git.js";
+import { sampleCommits } from "../temporal/sampler.js";
+import { loadSnapshot, createSnapshot } from "../temporal/snapshots.js";
+import type { TemporalSnapshot } from "../temporal/types.js";
 
 interface ToolDefinition {
   name: string;
@@ -213,6 +217,24 @@ export function getToolsList(): ToolDefinition[] {
         properties: {},
       },
     },
+    {
+      name: "get_temporal_graph",
+      description: "Show how the dependency graph evolved over git history. Returns snapshots at sampled commits showing file counts, symbol counts, edge counts, and structural changes over time.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          commits: {
+            type: "number",
+            description: "Number of commits to sample (default: 10)",
+          },
+          strategy: {
+            type: "string",
+            enum: ["even", "weekly", "monthly"],
+            description: "Sampling strategy (default: even)",
+          },
+        },
+      },
+    },
   ];
 }
 
@@ -271,6 +293,15 @@ export async function handleToolCall(
         };
       } else {
         result = handleGetHealthScore(state);
+      }
+    } else if (name === "get_temporal_graph") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = await handleGetTemporalGraph(state, args.commits || 10, args.strategy || "even");
       }
     } else {
       // All other tools require a loaded project
@@ -970,4 +1001,106 @@ function handleGetHealthScore(state: DepwireState) {
   
   return report;
 }
+
+async function handleGetTemporalGraph(
+  state: DepwireState,
+  commits: number,
+  strategy: "even" | "weekly" | "monthly"
+): Promise<any> {
+  const projectRoot = state.projectRoot!;
+
+  if (!isGitRepo(projectRoot)) {
+    return {
+      error: "Not a git repository",
+      message: "Temporal analysis requires git history",
+    };
+  }
+
+  try {
+    const allCommits = await getCommitLog(projectRoot);
+    if (allCommits.length === 0) {
+      return {
+        error: "No commits found",
+        message: "Repository has no commit history",
+      };
+    }
+
+    const sampledCommits = sampleCommits(allCommits, commits, strategy);
+
+    const snapshots: TemporalSnapshot[] = [];
+    const outputDir = join(projectRoot, ".depwire", "temporal");
+
+    for (const commit of sampledCommits) {
+      const existing = loadSnapshot(commit.hash, outputDir);
+      if (existing) {
+        snapshots.push(existing);
+      }
+    }
+
+    if (snapshots.length === 0) {
+      return {
+        status: "no_snapshots",
+        message: "No temporal snapshots found. Run `depwire temporal` to generate them.",
+        commits_found: allCommits.length,
+        commits_to_sample: sampledCommits.length,
+      };
+    }
+
+    const first = snapshots[0];
+    const last = snapshots[snapshots.length - 1];
+
+    const growth = {
+      files: last.stats.totalFiles - first.stats.totalFiles,
+      symbols: last.stats.totalSymbols - first.stats.totalSymbols,
+      edges: last.stats.totalEdges - first.stats.totalEdges,
+    };
+
+    const trend =
+      growth.files > 0
+        ? "Growing"
+        : growth.files < 0
+          ? "Shrinking"
+          : "Stable";
+
+    let biggestGrowth = { index: 0, files: 0, date: "", message: "" };
+    for (let i = 1; i < snapshots.length; i++) {
+      const delta = snapshots[i].stats.totalFiles - snapshots[i - 1].stats.totalFiles;
+      if (delta > biggestGrowth.files) {
+        biggestGrowth = {
+          index: i,
+          files: delta,
+          date: snapshots[i].commitDate,
+          message: snapshots[i].commitMessage,
+        };
+      }
+    }
+
+    return {
+      status: "success",
+      time_range: {
+        from: first.commitDate,
+        to: last.commitDate,
+      },
+      snapshots: snapshots.map((s) => ({
+        commit: s.commitHash.substring(0, 8),
+        date: s.commitDate,
+        message: s.commitMessage,
+        author: s.commitAuthor,
+        files: s.stats.totalFiles,
+        symbols: s.stats.totalSymbols,
+        edges: s.stats.totalEdges,
+      })),
+      growth,
+      trend,
+      biggest_growth_period: biggestGrowth.files > 0 ? biggestGrowth : null,
+      summary: `Analyzed ${snapshots.length} snapshots from ${new Date(first.commitDate).toLocaleDateString()} to ${new Date(last.commitDate).toLocaleDateString()}. Overall trend: ${trend}.`,
+    };
+  } catch (error) {
+    return {
+      error: "Failed to analyze temporal graph",
+      message: String(error),
+    };
+  }
+}
+
 

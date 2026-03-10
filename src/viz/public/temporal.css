@@ -1,0 +1,397 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: #0a0a0a;
+  color: #e0e0e0;
+  overflow: hidden;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  border-bottom: 1px solid #2a2a2a;
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 100%;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  color: #00E5FF;
+}
+
+.project-name {
+  color: #a0a0a0;
+  font-weight: 400;
+}
+
+.header-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  color: #808080;
+  font-size: 0.875rem;
+}
+
+.stat-value {
+  color: #00E5FF;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: 1fr auto;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+.diagram-container {
+  grid-column: 1;
+  grid-row: 1;
+  background: #0f0f0f;
+  position: relative;
+  overflow: hidden;
+}
+
+.timeline-container {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  background: #1a1a1a;
+  border-top: 1px solid #2a2a2a;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.control-btn {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #00E5FF;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.control-btn:hover {
+  background: #3a3a3a;
+  border-color: #00E5FF;
+}
+
+.speed-controls {
+  display: flex;
+  gap: 0.25rem;
+  background: #1a1a1a;
+  padding: 0.25rem;
+  border-radius: 4px;
+  border: 1px solid #2a2a2a;
+}
+
+.speed-btn {
+  background: transparent;
+  border: none;
+  color: #808080;
+  padding: 0.25rem 0.75rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.speed-btn:hover {
+  color: #00E5FF;
+}
+
+.speed-btn.active {
+  background: #00E5FF;
+  color: #0a0a0a;
+}
+
+.timeline-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #a0a0a0;
+  font-size: 0.875rem;
+  margin-left: auto;
+}
+
+.timeline-separator {
+  color: #3a3a3a;
+}
+
+.timeline-track {
+  position: relative;
+}
+
+.timeline-rail {
+  height: 8px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.timeline-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #00E5FF 0%, #7c3aed 100%);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.timeline-scrubber {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: #00E5FF;
+  border: 2px solid #0a0a0a;
+  border-radius: 50%;
+  cursor: grab;
+  left: 0%;
+  transition: left 0.3s ease;
+}
+
+.timeline-scrubber:active {
+  cursor: grabbing;
+}
+
+.timeline-dots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+}
+
+.timeline-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #3a3a3a;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timeline-dot:hover {
+  background: #00E5FF;
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
+.timeline-dot.active {
+  background: #00E5FF;
+  width: 10px;
+  height: 10px;
+}
+
+.stats-panel {
+  grid-column: 2;
+  grid-row: 1;
+  background: #1a1a1a;
+  border-left: 1px solid #2a2a2a;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stats-panel h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #808080;
+  margin-bottom: 0.5rem;
+}
+
+.snapshot-details,
+.stats-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-row,
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.detail-label,
+.stat-label {
+  color: #808080;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.detail-value,
+.stat-value {
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.detail-value.message {
+  word-break: break-word;
+  font-style: italic;
+  color: #a0a0a0;
+}
+
+.stat-delta {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.stat-delta.positive {
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.stat-delta.negative {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.chart-container {
+  background: #0f0f0f;
+  border-radius: 4px;
+  padding: 1rem;
+  border: 1px solid #2a2a2a;
+}
+
+#evolutionChart {
+  width: 100%;
+  height: auto;
+}
+
+.search-container {
+  margin-top: auto;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #00E5FF;
+  background: #1a1a1a;
+}
+
+.search-input::placeholder {
+  color: #606060;
+}
+
+.arc {
+  transition: opacity 0.5s ease, stroke 0.5s ease;
+}
+
+.file-bar {
+  transition: fill 0.5s ease, opacity 0.3s ease;
+}
+
+.file-bar.search-match {
+  fill: #00E5FF !important;
+}
+
+.file-bar.search-dim {
+  opacity: 0.2;
+}
+
+.tooltip {
+  position: absolute;
+  background: rgba(26, 26, 26, 0.95);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #e0e0e0;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip strong {
+  color: #00E5FF;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}

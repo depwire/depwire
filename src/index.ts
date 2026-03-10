@@ -20,6 +20,7 @@ import { formatHealthReport } from './health/display.js';
 import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from 'fs';
 import { createInterface } from 'readline';
 import { findProjectRoot } from './utils/files.js';
+import { runTemporalAnalysis } from './temporal/index.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -201,6 +202,34 @@ program
       });
     } catch (err) {
       console.error('Error starting visualization:', err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('temporal')
+  .description('Visualize how the dependency graph evolved over git history')
+  .argument('[directory]', 'Project directory to analyze (defaults to current directory or auto-detected project root)')
+  .option('--commits <number>', 'Number of commits to sample', '20')
+  .option('--strategy <type>', 'Sampling strategy: even, weekly, monthly', 'even')
+  .option('-p, --port <number>', 'Server port', '3334')
+  .option('--output <path>', 'Save snapshots to custom path (default: .depwire/temporal/)')
+  .option('--verbose', 'Show progress for each commit being parsed')
+  .option('--stats', 'Show summary statistics at end')
+  .action(async (directory: string | undefined, options: { commits: string; strategy: string; port: string; output?: string; verbose?: boolean; stats?: boolean }) => {
+    try {
+      const projectRoot = directory ? resolve(directory) : findProjectRoot();
+      
+      await runTemporalAnalysis(projectRoot, {
+        commits: parseInt(options.commits, 10),
+        strategy: options.strategy as 'even' | 'weekly' | 'monthly',
+        port: parseInt(options.port, 10),
+        output: options.output,
+        verbose: options.verbose,
+        stats: options.stats,
+      });
+    } catch (err) {
+      console.error('Error running temporal analysis:', err);
       process.exit(1);
     }
   });

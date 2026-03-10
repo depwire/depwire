@@ -2,26 +2,37 @@
 import {
   buildGraph,
   calculateHealthScore,
+  checkoutCommit,
   createEmptyState,
+  createSnapshot,
   findProjectRoot,
   generateDocs,
   getArchitectureSummary,
+  getCommitLog,
+  getCurrentBranch,
   getHealthTrend,
   getImpact,
+  isGitRepo,
+  loadSnapshot,
   parseProject,
+  popStash,
   prepareVizData,
+  restoreOriginal,
+  sampleCommits,
+  saveSnapshot,
   searchSymbols,
   startMcpServer,
   startVizServer,
+  stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-VNUOE5VC.js";
+} from "./chunk-5QXVYDBT.js";
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve, dirname, join } from "path";
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { fileURLToPath } from "url";
+import { resolve, dirname as dirname2, join as join3 } from "path";
+import { writeFileSync, readFileSync as readFileSync2, existsSync } from "fs";
+import { fileURLToPath as fileURLToPath2 } from "url";
 
 // src/graph/serializer.ts
 import { DirectedGraph } from "graphology";
@@ -207,10 +218,265 @@ function gray(text) {
 // src/index.ts
 import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from "fs";
 import { createInterface } from "readline";
+
+// src/temporal/index.ts
+import { join as join2 } from "path";
+
+// src/viz/temporal-server.ts
+import express from "express";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import open from "open";
+
+// src/viz/temporal-data.ts
+import { basename } from "path";
+
+// src/temporal/diff.ts
+function diffSnapshots(previous, current) {
+  const prevFiles = new Set(previous.files.map((f) => f.path));
+  const currFiles = new Set(current.files.map((f) => f.path));
+  const addedFiles = Array.from(currFiles).filter((f) => !prevFiles.has(f));
+  const removedFiles = Array.from(prevFiles).filter((f) => !currFiles.has(f));
+  const prevEdges = new Set(
+    previous.edges.map((e) => `${e.source}|${e.target}`)
+  );
+  const currEdges = new Set(current.edges.map((e) => `${e.source}|${e.target}`));
+  const addedEdgeKeys = Array.from(currEdges).filter((e) => !prevEdges.has(e));
+  const removedEdgeKeys = Array.from(prevEdges).filter((e) => !currEdges.has(e));
+  const addedEdges = addedEdgeKeys.map((key) => {
+    const [source, target] = key.split("|");
+    return { source, target };
+  });
+  const removedEdges = removedEdgeKeys.map((key) => {
+    const [source, target] = key.split("|");
+    return { source, target };
+  });
+  return {
+    addedFiles,
+    removedFiles,
+    addedEdges,
+    removedEdges,
+    statsChange: {
+      files: current.stats.totalFiles - previous.stats.totalFiles,
+      symbols: current.stats.totalSymbols - previous.stats.totalSymbols,
+      edges: current.stats.totalEdges - previous.stats.totalEdges
+    }
+  };
+}
+
+// src/viz/temporal-data.ts
+function prepareTemporalVizData(snapshots, projectRoot) {
+  const projectName = basename(projectRoot);
+  const snapshotsWithDiff = snapshots.map((snapshot, index) => {
+    const diff = index > 0 ? diffSnapshots(snapshots[index - 1], snapshot) : void 0;
+    return {
+      commitHash: snapshot.commitHash,
+      commitDate: snapshot.commitDate,
+      commitMessage: snapshot.commitMessage,
+      commitAuthor: snapshot.commitAuthor,
+      stats: snapshot.stats,
+      files: snapshot.files,
+      arcs: snapshot.edges,
+      diff
+    };
+  });
+  const timeline = snapshots.map((snapshot, index) => ({
+    index,
+    date: snapshot.commitDate,
+    shortHash: snapshot.commitHash.substring(0, 8),
+    message: snapshot.commitMessage
+  }));
+  return {
+    projectName,
+    snapshots: snapshotsWithDiff,
+    timeline
+  };
+}
+
+// src/viz/temporal-server.ts
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = dirname(__filename);
-var packageJsonPath = join(__dirname, "../package.json");
-var packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+async function findAvailablePort(startPort) {
+  const net = await import("net");
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const testPort = startPort + attempt;
+    const isAvailable = await new Promise((resolve2) => {
+      const server = net.createServer().once("error", () => resolve2(false)).once("listening", () => {
+        server.close();
+        resolve2(true);
+      }).listen(testPort, "127.0.0.1");
+    });
+    if (isAvailable) {
+      return testPort;
+    }
+  }
+  throw new Error(`No available port found starting from ${startPort}`);
+}
+async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334) {
+  const availablePort = await findAvailablePort(preferredPort);
+  const app = express();
+  const vizData = prepareTemporalVizData(snapshots, projectRoot);
+  app.get("/api/data", (_req, res) => {
+    res.json(vizData);
+  });
+  const publicDir = join(__dirname, "viz", "public");
+  app.get("/", (_req, res) => {
+    const htmlPath = join(publicDir, "temporal.html");
+    const html = readFileSync(htmlPath, "utf-8");
+    res.send(html);
+  });
+  app.get("/temporal.js", (_req, res) => {
+    const jsPath = join(publicDir, "temporal.js");
+    const js = readFileSync(jsPath, "utf-8");
+    res.type("application/javascript").send(js);
+  });
+  app.get("/temporal.css", (_req, res) => {
+    const cssPath = join(publicDir, "temporal.css");
+    const css = readFileSync(cssPath, "utf-8");
+    res.type("text/css").send(css);
+  });
+  const server = app.listen(availablePort, "127.0.0.1", () => {
+    const url = `http://127.0.0.1:${availablePort}`;
+    console.log(`
+\u2713 Temporal visualization server running at ${url}`);
+    console.log("  Press Ctrl+C to stop\n");
+    open(url).catch(() => {
+      console.log("  (Could not open browser automatically)");
+    });
+  });
+  await new Promise((resolve2, reject) => {
+    server.on("error", reject);
+    process.on("SIGINT", () => {
+      console.log("\n\nShutting down temporal server...");
+      server.close(() => {
+        console.log("Server stopped");
+        resolve2();
+        process.exit(0);
+      });
+    });
+  });
+}
+
+// src/temporal/index.ts
+async function runTemporalAnalysis(projectDir, options) {
+  if (!isGitRepo(projectDir)) {
+    throw new Error("Not a git repository. Temporal analysis requires git history.");
+  }
+  console.log("\u{1F50D} Analyzing git history...");
+  const originalBranch = await getCurrentBranch(projectDir);
+  const hadStash = await stashChanges(projectDir);
+  try {
+    const outputDir = options.output || join2(projectDir, ".depwire", "temporal");
+    const commits = await getCommitLog(projectDir);
+    if (commits.length === 0) {
+      throw new Error("No commits found in repository");
+    }
+    console.log(`Found ${commits.length} commits`);
+    const sampledCommits = sampleCommits(
+      commits,
+      options.commits,
+      options.strategy
+    );
+    console.log(
+      `Sampled ${sampledCommits.length} commits using ${options.strategy} strategy`
+    );
+    const snapshots = [];
+    for (let i = 0; i < sampledCommits.length; i++) {
+      const commit = sampledCommits[i];
+      const progress = `[${i + 1}/${sampledCommits.length}]`;
+      const existingSnapshot = loadSnapshot(commit.hash, outputDir);
+      if (existingSnapshot) {
+        if (options.verbose) {
+          console.log(
+            `${progress} Using cached snapshot for ${commit.hash.substring(0, 8)} - ${commit.message}`
+          );
+        }
+        snapshots.push(existingSnapshot);
+        continue;
+      }
+      if (options.verbose) {
+        console.log(
+          `${progress} Parsing commit ${commit.hash.substring(0, 8)} - ${commit.message}`
+        );
+      }
+      await checkoutCommit(projectDir, commit.hash);
+      const parsedFiles = await parseProject(projectDir);
+      const graph = buildGraph(parsedFiles);
+      const projectGraph = exportToJSON(graph, projectDir);
+      const snapshot = createSnapshot(
+        projectGraph,
+        commit.hash,
+        commit.date,
+        commit.message,
+        commit.author
+      );
+      saveSnapshot(snapshot, outputDir);
+      snapshots.push(snapshot);
+    }
+    await restoreOriginal(projectDir, originalBranch);
+    if (hadStash) {
+      await popStash(projectDir);
+    }
+    console.log(`\u2713 Created ${snapshots.length} snapshots`);
+    if (options.stats) {
+      printStats(snapshots);
+    }
+    console.log("\n\u{1F680} Starting temporal visualization server...");
+    await startTemporalServer(snapshots, projectDir, options.port);
+  } catch (error) {
+    await restoreOriginal(projectDir, originalBranch);
+    if (hadStash) {
+      await popStash(projectDir);
+    }
+    throw error;
+  }
+}
+function printStats(snapshots) {
+  console.log("\n\u{1F4CA} Temporal Analysis Statistics:");
+  const first = snapshots[0];
+  const last = snapshots[snapshots.length - 1];
+  console.log(
+    `
+  Time Range: ${new Date(first.commitDate).toLocaleDateString()} \u2192 ${new Date(last.commitDate).toLocaleDateString()}`
+  );
+  console.log(`
+  Growth:`);
+  console.log(
+    `    Files:   ${first.stats.totalFiles} \u2192 ${last.stats.totalFiles} (${last.stats.totalFiles >= first.stats.totalFiles ? "+" : ""}${last.stats.totalFiles - first.stats.totalFiles})`
+  );
+  console.log(
+    `    Symbols: ${first.stats.totalSymbols} \u2192 ${last.stats.totalSymbols} (${last.stats.totalSymbols >= first.stats.totalSymbols ? "+" : ""}${last.stats.totalSymbols - first.stats.totalSymbols})`
+  );
+  console.log(
+    `    Edges:   ${first.stats.totalEdges} \u2192 ${last.stats.totalEdges} (${last.stats.totalEdges >= first.stats.totalEdges ? "+" : ""}${last.stats.totalEdges - first.stats.totalEdges})`
+  );
+  let maxGrowth = { index: 0, files: 0 };
+  for (let i = 1; i < snapshots.length; i++) {
+    const growth = snapshots[i].stats.totalFiles - snapshots[i - 1].stats.totalFiles;
+    if (growth > maxGrowth.files) {
+      maxGrowth = { index: i, files: growth };
+    }
+  }
+  if (maxGrowth.files > 0) {
+    const growthCommit = snapshots[maxGrowth.index];
+    console.log(`
+  Biggest Growth Period:`);
+    console.log(
+      `    +${maxGrowth.files} files at ${new Date(growthCommit.commitDate).toLocaleDateString()}`
+    );
+    console.log(`    ${growthCommit.commitMessage}`);
+  }
+  const trend = last.stats.totalFiles > first.stats.totalFiles ? "Growing" : last.stats.totalFiles < first.stats.totalFiles ? "Shrinking" : "Stable";
+  console.log(`
+  Overall Trend: ${trend}`);
+}
+
+// src/index.ts
+var __filename2 = fileURLToPath2(import.meta.url);
+var __dirname2 = dirname2(__filename2);
+var packageJsonPath = join3(__dirname2, "../package.json");
+var packageJson = JSON.parse(readFileSync2(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
 program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
@@ -259,7 +525,7 @@ program.command("query").description("Query impact analysis for a symbol").argum
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");
-      const json = JSON.parse(readFileSync(cacheFile, "utf-8"));
+      const json = JSON.parse(readFileSync2(cacheFile, "utf-8"));
       graph = importFromJSON(json);
     } else {
       console.log("Parsing project...");
@@ -322,6 +588,22 @@ program.command("viz").description("Launch interactive arc diagram visualization
     process.exit(1);
   }
 });
+program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
+  try {
+    const projectRoot = directory ? resolve(directory) : findProjectRoot();
+    await runTemporalAnalysis(projectRoot, {
+      commits: parseInt(options.commits, 10),
+      strategy: options.strategy,
+      port: parseInt(options.port, 10),
+      output: options.output,
+      verbose: options.verbose,
+      stats: options.stats
+    });
+  } catch (err) {
+    console.error("Error running temporal analysis:", err);
+    process.exit(1);
+  }
+});
 program.command("mcp").description("Start MCP server for AI coding tools").argument("[directory]", "Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)").action(async (directory) => {
   try {
     const state = createEmptyState();
@@ -331,7 +613,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
-      if (detectedRoot !== cwd || existsSync(join(cwd, "package.json")) || existsSync(join(cwd, "tsconfig.json")) || existsSync(join(cwd, "go.mod")) || existsSync(join(cwd, "pyproject.toml")) || existsSync(join(cwd, "setup.py")) || existsSync(join(cwd, ".git"))) {
+      if (detectedRoot !== cwd || existsSync(join3(cwd, "package.json")) || existsSync(join3(cwd, "tsconfig.json")) || existsSync(join3(cwd, "go.mod")) || existsSync(join3(cwd, "pyproject.toml")) || existsSync(join3(cwd, "setup.py")) || existsSync(join3(cwd, ".git"))) {
         projectRootToConnect = detectedRoot;
       }
     }
@@ -388,7 +670,7 @@ program.command("docs").description("Generate comprehensive codebase documentati
   const startTime = Date.now();
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve(options.output) : join(projectRoot, ".depwire");
+    const outputDir = options.output ? resolve(options.output) : join3(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -459,7 +741,7 @@ async function promptGitignore() {
   });
 }
 function addToGitignore(projectRoot, pattern) {
-  const gitignorePath = join(projectRoot, ".gitignore");
+  const gitignorePath = join3(projectRoot, ".gitignore");
   try {
     let content = "";
     if (existsSyncNode(gitignorePath)) {

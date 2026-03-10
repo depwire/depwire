@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depwire Temporal — Dependency Graph Evolution</title>
+  <link rel="stylesheet" href="/temporal.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-content">
+        <h1>
+          <span class="logo">Depwire Temporal</span>
+          <span class="project-name" id="projectName">Loading...</span>
+        </h1>
+        <div class="header-stats" id="headerStats">
+          <div class="stat-item">
+            <span class="stat-label">Snapshots:</span>
+            <span class="stat-value" id="snapshotCount">-</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="diagram-container">
+        <svg id="diagram"></svg>
+      </div>
+
+      <div class="timeline-container">
+        <div class="timeline-controls">
+          <button id="playBtn" class="control-btn" title="Play/Pause">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M3 2v12l10-6L3 2z"/>
+            </svg>
+          </button>
+          <div class="speed-controls">
+            <button class="speed-btn" data-speed="0.5">0.5×</button>
+            <button class="speed-btn active" data-speed="1">1×</button>
+            <button class="speed-btn" data-speed="2">2×</button>
+          </div>
+          <div class="timeline-info" id="timelineInfo">
+            <span id="currentCommit">-</span>
+            <span class="timeline-separator">•</span>
+            <span id="currentDate">-</span>
+          </div>
+        </div>
+        <div class="timeline-track">
+          <div class="timeline-rail" id="timelineRail">
+            <div class="timeline-progress" id="timelineProgress"></div>
+            <div class="timeline-scrubber" id="timelineScrubber"></div>
+          </div>
+          <div class="timeline-dots" id="timelineDots"></div>
+        </div>
+      </div>
+
+      <aside class="stats-panel">
+        <h3>Current Snapshot</h3>
+        <div class="snapshot-details" id="snapshotDetails">
+          <div class="detail-row">
+            <span class="detail-label">Commit:</span>
+            <span class="detail-value" id="detailCommit">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value" id="detailDate">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Message:</span>
+            <span class="detail-value message" id="detailMessage">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Author:</span>
+            <span class="detail-value" id="detailAuthor">-</span>
+          </div>
+        </div>
+
+        <h3>Statistics</h3>
+        <div class="stats-details" id="statsDetails">
+          <div class="stat-row">
+            <span class="stat-label">Files:</span>
+            <span class="stat-value" id="statFiles">-</span>
+            <span class="stat-delta" id="deltaFiles"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Symbols:</span>
+            <span class="stat-value" id="statSymbols">-</span>
+            <span class="stat-delta" id="deltaSymbols"></span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Edges:</span>
+            <span class="stat-value" id="statEdges">-</span>
+            <span class="stat-delta" id="deltaEdges"></span>
+          </div>
+        </div>
+
+        <h3>Evolution Chart</h3>
+        <div class="chart-container">
+          <canvas id="evolutionChart" width="280" height="150"></canvas>
+        </div>
+
+        <div class="search-container">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search files..."
+          />
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="/temporal.js"></script>
+</body>
+</html>
