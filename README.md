@@ -40,8 +40,8 @@ Depwire fixes this by giving AI tools a complete dependency graph of your codeba
 - **Live graph, always current** — edit a file and the dependency map updates in real-time. No re-indexing, no waiting.
 - **Works locally, stays private** — zero cloud accounts, zero data leaving your machine. Just `npm install` and go.
 
-### 13 MCP Tools, Not Just Visualization
-Depwire isn't just a pretty graph. It's a full context engine with 13 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, health scores, and more. The AI decides which tool to use based on your question.
+### 14 MCP Tools, Not Just Visualization
+Depwire isn't just a pretty graph. It's a full context engine with 14 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, health scores, temporal evolution, and more. The AI decides which tool to use based on your question.
 
 ## Installation
 
@@ -66,10 +66,15 @@ depwire viz
 depwire parse
 depwire docs
 depwire health
+depwire temporal
 
 # Or specify a directory explicitly
 npx depwire-cli viz ./my-project
 npx depwire-cli parse ./my-project
+npx depwire-cli temporal ./my-project
+
+# Temporal visualization options
+npx depwire-cli temporal --commits 20 --strategy monthly --verbose --stats
 
 # Exclude test files and node_modules
 npx depwire-cli parse --exclude "**/*.test.*" "**/node_modules/**"
@@ -134,6 +139,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `get_project_docs` | Retrieve auto-generated codebase documentation |
 | `update_project_docs` | Regenerate documentation on demand |
 | `get_health_score` | Get 0-100 dependency health score with recommendations |
+| `get_temporal_graph` | Show how the graph evolved over git history |
 
 ## Supported Languages
 
@@ -178,6 +184,41 @@ Opens an interactive arc diagram in your browser:
 - **Live refresh when files change** — Edit code and see the graph update in real-time
 - Export as SVG or PNG
 - **Port collision handling** — Automatically finds an available port if default is in use
+
+## Temporal Graph
+
+Visualize how your codebase architecture evolved over git history. Scrub through time with an interactive timeline slider.
+
+```bash
+# Auto-detects project root
+depwire temporal
+
+# Sample 20 commits with monthly snapshots
+depwire temporal --commits 20 --strategy monthly
+
+# Verbose mode with detailed progress
+depwire temporal --verbose --stats
+
+# Custom port
+depwire temporal --port 3335
+```
+
+**Options:**
+- `--commits <number>` — Number of commits to sample (default: 20)
+- `--strategy <type>` — Sampling strategy: `even`, `weekly`, `monthly` (default: `even`)
+- `-p, --port <number>` — Server port (default: 3334)
+- `--output <path>` — Save snapshots to custom path (default: `.depwire/temporal/`)
+- `--verbose` — Show progress for each commit being parsed
+- `--stats` — Show summary statistics at end
+
+Opens an interactive temporal visualization in your browser:
+- Timeline slider showing all sampled commits
+- Arc diagram morphing between snapshots
+- Play/pause animation with speed controls (0.5×, 1×, 2×)
+- Statistics panel with growth deltas
+- Evolution chart tracking files/symbols/edges over time
+- Auto-zoom to fit all arcs on snapshot change
+- Search to highlight specific files across time
 
 ## How It Works
 
@@ -359,6 +400,44 @@ depwire health --json
 - Trend indicator (↑/↓ from last check)
 
 Health history is stored in `.depwire/health-history.json` (last 50 checks).
+
+### `depwire temporal [directory]`
+
+Visualize how the dependency graph evolved over git history.
+
+**Directory argument is optional** — Auto-detects project root.
+
+**Options:**
+- `--commits <number>` — Number of commits to sample (default: 20)
+- `--strategy <type>` — Sampling strategy: `even` (every Nth), `weekly`, `monthly` (default: `even`)
+- `-p, --port <number>` — Server port (default: 3334)
+- `--output <path>` — Save snapshots to custom path (default: `.depwire/temporal/`)
+- `--verbose` — Show progress for each commit being parsed
+- `--stats` — Show summary statistics at end
+
+**Examples:**
+```bash
+# Auto-detect and analyze 20 commits
+depwire temporal
+
+# Sample 50 commits with monthly snapshots
+depwire temporal --commits 50 --strategy monthly
+
+# Verbose mode with stats
+depwire temporal --verbose --stats
+
+# Custom output directory
+depwire temporal --output ./temp-snapshots
+```
+
+**Output:**
+- Interactive browser visualization at `http://127.0.0.1:3334`
+- Timeline slider to scrub through git history
+- Arc diagram morphing between snapshots
+- Growth statistics showing files/symbols/edges evolution
+- Auto-zoom to fit full diagram on each snapshot change
+
+Snapshots are cached in `.depwire/temporal/` for fast re-rendering.
 
 ### Error Handling
 

@@ -368,20 +368,18 @@ function fitToViewport(zoom, width, height, margin) {
       const fullWidth = bounds.width;
       const fullHeight = bounds.height;
       
-      const midX = bounds.x + fullWidth / 2;
-      const midY = bounds.y + fullHeight / 2;
-      
-      const padding = 0.85;
-      const scale = padding / Math.max(fullWidth / width, fullHeight / height);
-      
-      const translateX = width / 2 - scale * midX;
-      const translateY = height / 2 - scale * midY;
+      const padding = 0.9;
+      const scale = Math.min(
+        (width * padding) / fullWidth,
+        (height * padding) / fullHeight,
+        1.0
+      );
       
       svg.transition()
         .duration(750)
         .call(
           zoom.transform,
-          d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+          d3.zoomIdentity.scale(scale)
         );
     } catch (e) {
       console.warn('Could not fit to viewport:', e);
