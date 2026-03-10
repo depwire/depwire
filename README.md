@@ -189,6 +189,8 @@ Opens an interactive arc diagram in your browser:
 
 Visualize how your codebase architecture evolved over git history. Scrub through time with an interactive timeline slider.
 
+![Depwire Temporal Graph](assets/depwire-temporal-hono.gif)
+
 ```bash
 # Auto-detects project root
 depwire temporal
