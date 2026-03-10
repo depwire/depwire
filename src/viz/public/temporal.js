@@ -241,10 +241,10 @@ function renderArcDiagram(snapshot) {
 
   svg.call(zoom);
 
-  const margin = { top: 40, right: 40, bottom: 60, left: 40 };
+  const margin = { top: 60, right: 40, bottom: 120, left: 40 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const baseline = height - margin.bottom;
+  const baseline = margin.top + plotHeight;
 
   const totalSymbols = d3.sum(snapshot.files, (d) => d.symbols);
   const minBarWidth = 4;
@@ -316,9 +316,9 @@ function renderArcDiagram(snapshot) {
     .append('rect')
     .attr('class', 'file-bar')
     .attr('x', (d) => filePositions.get(d.path).x - filePositions.get(d.path).width / 2)
-    .attr('y', baseline - 10)
+    .attr('y', baseline)
     .attr('width', (d) => filePositions.get(d.path).width)
-    .attr('height', 20)
+    .attr('height', 8)
     .attr('fill', (d) => {
       if (addedFiles.has(d.path)) return '#22C55E';
       if (removedFiles.has(d.path)) return '#EF4444';
