@@ -100,6 +100,8 @@ export async function runTemporalAnalysis(
       await popStash(projectDir);
     }
 
+    snapshots.reverse();
+
     console.log(`✓ Created ${snapshots.length} snapshots`);
 
     if (options.stats) {

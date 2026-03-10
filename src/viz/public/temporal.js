@@ -352,6 +352,41 @@ function renderArcDiagram(snapshot) {
       });
     }, 1000);
   }
+
+  fitToViewport(zoom, width, height, margin);
+}
+
+function fitToViewport(zoom, width, height, margin) {
+  setTimeout(() => {
+    try {
+      const bounds = g.node().getBBox();
+      
+      if (!bounds || bounds.width === 0 || bounds.height === 0) {
+        return;
+      }
+
+      const fullWidth = bounds.width;
+      const fullHeight = bounds.height;
+      
+      const midX = bounds.x + fullWidth / 2;
+      const midY = bounds.y + fullHeight / 2;
+      
+      const padding = 0.85;
+      const scale = padding / Math.max(fullWidth / width, fullHeight / height);
+      
+      const translateX = width / 2 - scale * midX;
+      const translateY = height / 2 - scale * midY;
+      
+      svg.transition()
+        .duration(750)
+        .call(
+          zoom.transform,
+          d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+        );
+    } catch (e) {
+      console.warn('Could not fit to viewport:', e);
+    }
+  }, 100);
 }
 
 function highlightConnections(filePath) {

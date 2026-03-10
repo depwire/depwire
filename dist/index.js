@@ -26,7 +26,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-5QXVYDBT.js";
+} from "./chunk-65H7HCM4.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -418,6 +418,7 @@ async function runTemporalAnalysis(projectDir, options) {
     if (hadStash) {
       await popStash(projectDir);
     }
+    snapshots.reverse();
     console.log(`\u2713 Created ${snapshots.length} snapshots`);
     if (options.stats) {
       printStats(snapshots);
