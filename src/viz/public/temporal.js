@@ -241,10 +241,10 @@ function renderArcDiagram(snapshot) {
 
   svg.call(zoom);
 
-  const margin = { top: 60, right: 40, bottom: 80, left: 40 };
+  const margin = { top: 40, right: 40, bottom: 60, left: 40 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const baseline = margin.top + plotHeight;
+  const baseline = height - margin.bottom;
 
   const totalSymbols = d3.sum(snapshot.files, (d) => d.symbols);
   const minBarWidth = 4;
@@ -288,10 +288,10 @@ function renderArcDiagram(snapshot) {
       const x1 = sourcePos.x;
       const x2 = targetPos.x;
       const distance = Math.abs(x2 - x1);
-      const height = distance * 0.4;
+      const arcHeight = Math.min(plotHeight * 0.8, distance * 0.6);
       const midX = (x1 + x2) / 2;
 
-      return `M ${x1},${baseline} Q ${midX},${baseline - height} ${x2},${baseline}`;
+      return `M ${x1},${baseline} Q ${midX},${baseline - arcHeight} ${x2},${baseline}`;
     })
     .attr('stroke', (d) => {
       const sourcePos = filePositions.get(d.source);

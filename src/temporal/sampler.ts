@@ -29,27 +29,17 @@ function sampleEvenly(
   commits: CommitInfo[],
   targetCount: number
 ): CommitInfo[] {
-  const result: CommitInfo[] = [];
-  const first = commits[0];
-  const last = commits[commits.length - 1];
-
-  result.push(first);
-
-  if (targetCount <= 2) {
-    if (targetCount === 2) {
-      result.push(last);
-    }
-    return result;
+  if (targetCount >= commits.length) {
+    return commits;
   }
 
-  const step = Math.floor((commits.length - 2) / (targetCount - 2));
+  const result: CommitInfo[] = [];
+  const step = (commits.length - 1) / (targetCount - 1);
 
-  for (let i = 1; i < targetCount - 1; i++) {
-    const index = Math.min(i * step, commits.length - 2);
+  for (let i = 0; i < targetCount; i++) {
+    const index = Math.round(i * step);
     result.push(commits[index]);
   }
-
-  result.push(last);
 
   return result;
 }
