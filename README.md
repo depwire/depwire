@@ -1,5 +1,29 @@
 # Depwire
 
+<p align="center">
+  <a href="https://glama.ai/mcp/servers/depwire/depwire">
+    <img width="380" height="200" src="https://glama.ai/mcp/servers/depwire/depwire/badge" alt="Depwire MCP server" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/depwire-cli">
+    <img src="https://img.shields.io/npm/v/depwire-cli.svg?style=flat-square" alt="npm version" />
+  </a>
+  <a href="https://www.npmjs.com/package/depwire-cli">
+    <img src="https://img.shields.io/npm/dm/depwire-cli.svg?style=flat-square" alt="npm downloads" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-BUSL--1.1-blue.svg?style=flat-square" alt="License" />
+  </a>
+  <a href="https://github.com/depwire/depwire/stargazers">
+    <img src="https://img.shields.io/github/stars/depwire/depwire.svg?style=flat-square" alt="GitHub stars" />
+  </a>
+  <a href="https://github.com/depwire/depwire/network/members">
+    <img src="https://img.shields.io/github/forks/depwire/depwire.svg?style=flat-square" alt="GitHub forks" />
+  </a>
+</p>
+
 ![Depwire - Arc diagram visualization of the Hono framework](./assets/depwire-hero.png)
 
 **See how your code connects. Give AI tools full codebase context.**
