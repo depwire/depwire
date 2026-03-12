@@ -21,6 +21,7 @@ import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsS
 import { createInterface } from 'readline';
 import { findProjectRoot } from './utils/files.js';
 import { runTemporalAnalysis } from './temporal/index.js';
+import { analyzeDeadCode } from './dead-code/index.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -494,6 +495,49 @@ program
       }
     } catch (err) {
       console.error('Error analyzing health:', err);
+      process.exit(1);
+    }
+  });
+
+// Dead code detection command
+program
+  .command('dead-code')
+  .description('Identify dead code - symbols defined but never referenced')
+  .argument('[directory]', 'Project directory to analyze (defaults to current directory or auto-detected project root)')
+  .option('--confidence <level>', 'Minimum confidence level to show: high, medium, low (default: medium)', 'medium')
+  .option('--json', 'Output as JSON (for CI/automation)')
+  .option('--verbose', 'Show detailed info for each dead symbol')
+  .option('--stats', 'Show summary statistics')
+  .option('--include-tests', 'Include test files in analysis')
+  .option('--include-low', 'Shortcut for --confidence low')
+  .action(async (directory: string | undefined, options: { confidence?: string; json?: boolean; verbose?: boolean; stats?: boolean; includeTests?: boolean; includeLow?: boolean }) => {
+    try {
+      const projectRoot = directory ? resolve(directory) : findProjectRoot();
+      const startTime = Date.now();
+      
+      const parsedFiles = await parseProject(projectRoot);
+      const graph = buildGraph(parsedFiles);
+      
+      const confidence = options.includeLow ? 'low' : (options.confidence || 'medium');
+      
+      const report = analyzeDeadCode(graph, projectRoot, {
+        confidence: confidence as any,
+        includeTests: options.includeTests || false,
+        verbose: options.verbose || false,
+        stats: options.stats || false,
+        json: options.json || false,
+      });
+      
+      if (options.json) {
+        console.log(JSON.stringify(report, null, 2));
+      }
+      
+      const totalTime = Date.now() - startTime;
+      if (!options.json) {
+        console.log(`\nAnalysis completed in ${(totalTime / 1000).toFixed(2)}s\n`);
+      }
+    } catch (err) {
+      console.error('Error analyzing dead code:', err);
       process.exit(1);
     }
   });

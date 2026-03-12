@@ -331,8 +331,8 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
 }
 
 /**
- * Dimension 5: Orphan Files (Weight: 10%)
- * Files with zero connections
+ * Dimension 5: Orphan Files & Dead Code (Weight: 10%)
+ * Files with zero connections + Dead code percentage
  */
 export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
   const files = new Set<string>();
@@ -355,26 +355,45 @@ export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
   const orphanCount = files.size - connectedFiles.size;
   const orphanPercent = files.size > 0 ? (orphanCount / files.size) * 100 : 0;
   
+  const totalSymbols = graph.order;
+  let deadSymbolCount = 0;
+  
+  graph.forEachNode((node) => {
+    const inDegree = graph.inDegree(node);
+    if (inDegree === 0) {
+      deadSymbolCount++;
+    }
+  });
+  
+  const deadCodePercent = totalSymbols > 0 ? (deadSymbolCount / totalSymbols) * 100 : 0;
+  
+  const combinedScore = (orphanPercent + deadCodePercent) / 2;
+  
   let score = 100;
-  if (orphanPercent === 0) {
+  if (combinedScore === 0) {
     score = 100;
-  } else if (orphanPercent <= 5) {
+  } else if (combinedScore <= 5) {
     score = 80;
-  } else if (orphanPercent <= 10) {
+  } else if (combinedScore <= 10) {
     score = 60;
-  } else if (orphanPercent <= 20) {
+  } else if (combinedScore <= 20) {
     score = 40;
   } else {
     score = 20;
   }
   
   return {
-    name: 'Orphan Files',
+    name: 'Orphans & Dead Code',
     score,
     weight: 0.10,
     grade: scoreToGrade(score),
-    details: orphanCount === 0 ? 'No orphan files' : `${orphanCount} orphan file${orphanCount === 1 ? '' : 's'} (${orphanPercent.toFixed(0)}%)`,
-    metrics: { orphans: orphanCount, percentage: parseFloat(orphanPercent.toFixed(1)) }
+    details: `${orphanCount} orphan file${orphanCount === 1 ? '' : 's'} (${orphanPercent.toFixed(0)}%), ${deadSymbolCount} dead symbols (${deadCodePercent.toFixed(1)}%)`,
+    metrics: { 
+      orphans: orphanCount, 
+      orphanPercentage: parseFloat(orphanPercent.toFixed(1)),
+      deadSymbols: deadSymbolCount,
+      deadCodePercentage: parseFloat(deadCodePercent.toFixed(1))
+    }
   };
 }
 
