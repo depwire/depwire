@@ -612,10 +612,26 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## Roadmap
 
-- [ ] PR Impact Visualization (GitHub Action)
-- [ ] Temporal Graph — watch your architecture evolve over git history
+### ✅ Shipped
+- [x] Arc diagram visualization
+- [x] MCP server (15 tools)
+- [x] Multi-language support (TypeScript, JavaScript, Python, Go)
+- [x] File watching + live refresh
+- [x] Auto-generated documentation (13 documents)
+- [x] Dependency health score (0-100)
+- [x] Dead code detection with confidence scoring
+- [x] Temporal graph — watch your architecture evolve over git history
+- [x] PR Impact GitHub Action (depwire-action v1.0.0)
+- [x] Auto-detect project root (no path needed)
+- [x] WASM migration (Windows support)
+
+### 🔜 Coming Next
+- [ ] New language support (C, Rust — community requested)
+- [ ] "What If" simulation — simulate refactors before touching code
 - [ ] Cross-language edge detection (API routes ↔ frontend calls)
-- [ ] Dependency health scoring
+- [ ] Cloud dashboard (first paid feature)
+- [ ] AI-suggested refactors
+- [ ] Natural language architecture queries
 - [ ] VSCode extension
 
 ## Contributing
