@@ -34,9 +34,10 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 
 - 🎨 **Beautiful arc diagram visualization** — Interactive Harrison Bible-style graphic
 - 🤖 **MCP server for AI tools** — Cursor, Claude Desktop get full dependency context
-- 📊 **Dependency health score** — 0-100 score across 6 dimensions (coupling, cohesion, circular deps, god files, orphans, depth)
-- 📄 **Auto-generated documentation** — 12 comprehensive documents: architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, test coverage, git history, full snapshot, TODO/FIXME inventory, and health report
+- 📊 **Dependency health score** — 0-100 score across 6 dimensions (coupling, cohesion, circular deps, god files, orphans & dead code, depth)
+- 📄 **Auto-generated documentation** — 13 comprehensive documents: architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, test coverage, git history, full snapshot, TODO/FIXME inventory, health report, and dead code analysis
 - 🔍 **Impact analysis** — "What breaks if I rename this function?" answered precisely
+- 🧹 **Dead code detection** — Find symbols that are defined but never referenced, categorized by confidence level
 - 👀 **Live updates** — Graph stays current as you edit code
 - 🌍 **Multi-language** — TypeScript, JavaScript, Python, and Go
 
@@ -58,14 +59,14 @@ Depwire fixes this by giving AI tools a complete dependency graph of your codeba
 ### Ship Better Code
 - **Impact analysis for any change** — renaming a function, moving a file, upgrading a dependency, deleting a module — know the full blast radius before you touch anything
 - **Refactor with confidence** — see every downstream consumer, every transitive dependency, 2-3 levels deep
-- **Catch dead code** — find symbols nobody references anymore
+- **Catch dead code** — find symbols nobody references anymore with confidence-based classification (high/medium/low)
 
 ### Stay in Flow
 - **Live graph, always current** — edit a file and the dependency map updates in real-time. No re-indexing, no waiting.
 - **Works locally, stays private** — zero cloud accounts, zero data leaving your machine. Just `npm install` and go.
 
-### 14 MCP Tools, Not Just Visualization
-Depwire isn't just a pretty graph. It's a full context engine with 14 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, health scores, temporal evolution, and more. The AI decides which tool to use based on your question.
+### 15 MCP Tools, Not Just Visualization
+Depwire isn't just a pretty graph. It's a full context engine with 15 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, health scores, dead code detection, temporal evolution, and more. The AI decides which tool to use based on your question.
 
 ## Installation
 
@@ -90,11 +91,13 @@ depwire viz
 depwire parse
 depwire docs
 depwire health
+depwire dead-code
 depwire temporal
 
 # Or specify a directory explicitly
 npx depwire-cli viz ./my-project
 npx depwire-cli parse ./my-project
+npx depwire-cli dead-code ./my-project
 npx depwire-cli temporal ./my-project
 
 # Temporal visualization options
@@ -163,6 +166,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `get_project_docs` | Retrieve auto-generated codebase documentation |
 | `update_project_docs` | Regenerate documentation on demand |
 | `get_health_score` | Get 0-100 dependency health score with recommendations |
+| `find_dead_code` | Find dead code — symbols defined but never referenced |
 | `get_temporal_graph` | Show how the graph evolved over git history |
 
 ## Supported Languages
@@ -245,6 +249,52 @@ Opens an interactive temporal visualization in your browser:
 - Evolution chart tracking files/symbols/edges over time
 - Auto-zoom to fit all arcs on snapshot change
 - Search to highlight specific files across time
+
+### Dead Code Detection
+
+Find symbols that are defined but never referenced in your codebase:
+
+```bash
+# Analyze dead code (default: medium confidence and above)
+depwire dead-code
+
+# Show only high-confidence dead code
+depwire dead-code --confidence high
+
+# Show all potential dead code (including low confidence)
+depwire dead-code --confidence low
+# Or use shortcut
+depwire dead-code --include-low
+
+# Detailed analysis with reasons and statistics
+depwire dead-code --verbose --stats
+
+# Include test files in analysis (excluded by default)
+depwire dead-code --include-tests
+
+# JSON output for CI/automation
+depwire dead-code --json
+```
+
+**Options:**
+- `--confidence <level>` — Minimum confidence level: `high`, `medium`, `low` (default: `medium`)
+- `--include-low` — Shortcut for `--confidence low`
+- `--verbose` — Show detailed info for each dead symbol (file, line, kind, reason)
+- `--stats` — Show summary statistics
+- `--include-tests` — Include test files in analysis (excluded by default)
+- `--json` — Output as JSON for CI/automation
+
+**Confidence Levels:**
+- 🔴 **High confidence (definitely dead)**: Not exported with zero references, or exported but never used
+- 🟡 **Medium confidence (probably dead)**: Exported from barrel files with zero dependents, or only used in test files
+- ⚪ **Low confidence (might be dead)**: Exported from package entry points, types with zero dependents, or in dynamic-use directories (routes, middleware, etc.)
+
+The dead code detector automatically excludes:
+- Entry point files (index.ts, main.ts, server.ts, etc.)
+- Test files (*.test.*, *.spec.*, __tests__/)
+- Config files (*.config.*)
+- Type declarations (*.d.ts)
+- Framework auto-loaded directories (pages/, routes/, middleware/, commands/)
 
 ## How It Works
 

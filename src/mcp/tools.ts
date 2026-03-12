@@ -26,6 +26,7 @@ import { getCommitLog, isGitRepo } from "../temporal/git.js";
 import { sampleCommits } from "../temporal/sampler.js";
 import { loadSnapshot, createSnapshot } from "../temporal/snapshots.js";
 import type { TemporalSnapshot } from "../temporal/types.js";
+import { analyzeDeadCode } from "../dead-code/index.js";
 
 interface ToolDefinition {
   name: string;
@@ -235,6 +236,21 @@ export function getToolsList(): ToolDefinition[] {
         },
       },
     },
+    {
+      name: "find_dead_code",
+      description: "Find potentially dead code — symbols that are defined but never referenced anywhere in the codebase. Returns symbols categorized by confidence level (high, medium, low). High confidence means definitely unused. Use this to identify cleanup opportunities.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          confidence: {
+            type: "string",
+            enum: ["high", "medium", "low"],
+            description: "Minimum confidence level to return (default: medium)",
+            default: "medium",
+          },
+        },
+      },
+    },
   ];
 }
 
@@ -302,6 +318,15 @@ export async function handleToolCall(
         };
       } else {
         result = await handleGetTemporalGraph(state, args.commits || 10, args.strategy || "even");
+      }
+    } else if (name === "find_dead_code") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleFindDeadCode(state, args.confidence || "medium");
       }
     } else {
       // All other tools require a loaded project
@@ -1098,6 +1123,49 @@ async function handleGetTemporalGraph(
   } catch (error) {
     return {
       error: "Failed to analyze temporal graph",
+      message: String(error),
+    };
+  }
+}
+
+function handleFindDeadCode(state: DepwireState, confidence: string): any {
+  if (!state.graph || !state.projectRoot) {
+    return {
+      error: "No project loaded",
+      message: "Use connect_repo to connect to a codebase first",
+    };
+  }
+
+  try {
+    const report = analyzeDeadCode(state.graph, state.projectRoot, {
+      confidence: confidence as any,
+      includeTests: false,
+      verbose: false,
+      stats: false,
+      json: true,
+    });
+
+    return {
+      status: "success",
+      totalSymbols: report.totalSymbols,
+      deadSymbols: report.deadSymbols,
+      deadPercentage: report.deadPercentage,
+      byConfidence: report.byConfidence,
+      symbols: report.symbols.map((s) => ({
+        name: s.name,
+        kind: s.kind,
+        file: s.file,
+        line: s.line,
+        exported: s.exported,
+        dependents: s.dependents,
+        confidence: s.confidence,
+        reason: s.reason,
+      })),
+      summary: `Found ${report.deadSymbols} potentially dead symbols (${report.byConfidence.high} high, ${report.byConfidence.medium} medium, ${report.byConfidence.low} low confidence) out of ${report.totalSymbols} total symbols (${report.deadPercentage.toFixed(1)}% dead code).`,
+    };
+  } catch (error) {
+    return {
+      error: "Failed to analyze dead code",
       message: String(error),
     };
   }

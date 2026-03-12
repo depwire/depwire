@@ -13,6 +13,7 @@ import { generateHistory } from './history.js';
 import { generateCurrent } from './current.js';
 import { generateStatus } from './status.js';
 import { generateHealth } from './health.js';
+import { generateDeadCode } from './dead-code.js';
 import { createMetadata, updateMetadata, saveMetadata, loadMetadata, type ProjectMetadata } from './metadata.js';
 
 export interface GeneratorOptions {
@@ -69,7 +70,7 @@ export async function generateDocs(
     if (docsToGenerate.includes('all')) {
       docsToGenerate = [
         'architecture', 'conventions', 'dependencies', 'onboarding',
-        'files', 'api_surface', 'errors', 'tests', 'history', 'current', 'status', 'health'
+        'files', 'api_surface', 'errors', 'tests', 'history', 'current', 'status', 'health', 'dead_code'
       ];
     }
     
@@ -227,6 +228,18 @@ export async function generateDocs(
           generated.push('HEALTH.md');
         } catch (err) {
           errors.push(`Failed to generate HEALTH.md: ${err}`);
+        }
+      }
+      
+      if (docsToGenerate.includes('dead_code')) {
+        try {
+          if (options.verbose) console.log('Generating DEAD_CODE.md...');
+          const content = generateDeadCode(graph, projectRoot, version);
+          const filePath = join(options.outputDir, 'DEAD_CODE.md');
+          writeFileSync(filePath, content, 'utf-8');
+          generated.push('DEAD_CODE.md');
+        } catch (err) {
+          errors.push(`Failed to generate DEAD_CODE.md: ${err}`);
         }
       }
     } else if (options.format === 'json') {
