@@ -1109,6 +1109,16 @@
                     <h3>STATUS.md</h3>
                     <p>TODO/FIXME/HACK inventory with priority matrix. Shows what's implemented vs pending, prioritized by impact.</p>
                 </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🏥</div>
+                    <h3>HEALTH.md</h3>
+                    <p>Architecture health score report — coupling, cohesion, circular dependencies, god files, orphans, and depth analysis with improvement recommendations.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🪦</div>
+                    <h3>DEAD_CODE.md</h3>
+                    <p>Unused symbol inventory with confidence classification. High, medium, and low confidence dead code with smart exclusion rules for entry points and test files.</p>
+                </div>
             </div>
 
             <div class="code-block-wrapper" style="margin-top: 3rem;">
@@ -1232,8 +1242,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
     <!-- MCP Tools Section -->
     <section class="mcp-section">
         <div class="container">
-            <h2 class="section-title scroll-reveal">13 MCP Tools for AI Assistants</h2>
-            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 13 tools that AI assistants call autonomously based on your questions.</p>
+            <h2 class="section-title scroll-reveal">15 MCP Tools for AI Assistants</h2>
+            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 15 tools that AI assistants call autonomously based on your questions.</p>
             <div class="tools-table scroll-reveal">
                 <table>
                     <thead>
@@ -1290,6 +1300,18 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         <tr>
                             <td><code>update_project_docs</code></td>
                             <td>Regenerate documentation on demand</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_health_score</code></td>
+                            <td>Architecture health score across 6 dimensions</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_temporal_graph</code></td>
+                            <td>Visualize how your codebase evolved over git history</td>
+                        </tr>
+                        <tr>
+                            <td><code>find_dead_code</code></td>
+                            <td>Find unused symbols with confidence-based scoring</td>
                         </tr>
                     </tbody>
                 </table>
