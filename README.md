@@ -250,39 +250,24 @@ Opens an interactive temporal visualization in your browser:
 - Auto-zoom to fit all arcs on snapshot change
 - Search to highlight specific files across time
 
-### Dead Code Detection
+## 🪦 Dead Code Detection
 
-Find symbols that are defined but never referenced in your codebase:
+Find unused symbols across your codebase before they become technical debt.
+
+- Detects symbols with zero incoming references (never called, never imported)
+- Confidence scoring: **high** (definitely dead), **medium** (probably dead), **low** (might be dead)
+- Smart exclusion rules — ignores entry points, test files, barrel files, and config files to reduce false positives
+- Filter by confidence level, export as JSON for CI pipelines
+- Integrated into the health score (orphans dimension)
+- New MCP tool: `find_dead_code` — AI assistants can query dead code directly
+- New document generator: `DEAD_CODE.md` — auto-generated dead code report
 
 ```bash
-# Analyze dead code (default: medium confidence and above)
 depwire dead-code
-
-# Show only high-confidence dead code
 depwire dead-code --confidence high
-
-# Show all potential dead code (including low confidence)
-depwire dead-code --confidence low
-# Or use shortcut
-depwire dead-code --include-low
-
-# Detailed analysis with reasons and statistics
-depwire dead-code --verbose --stats
-
-# Include test files in analysis (excluded by default)
-depwire dead-code --include-tests
-
-# JSON output for CI/automation
+depwire dead-code --stats
 depwire dead-code --json
 ```
-
-**Options:**
-- `--confidence <level>` — Minimum confidence level: `high`, `medium`, `low` (default: `medium`)
-- `--include-low` — Shortcut for `--confidence low`
-- `--verbose` — Show detailed info for each dead symbol (file, line, kind, reason)
-- `--stats` — Show summary statistics
-- `--include-tests` — Include test files in analysis (excluded by default)
-- `--json` — Output as JSON for CI/automation
 
 **Confidence Levels:**
 - 🔴 **High confidence (definitely dead)**: Not exported with zero references, or exported but never used
@@ -433,6 +418,7 @@ depwire docs --update --only conventions
 | `CURRENT.md` | Complete codebase snapshot (every file, symbol, connection) |
 | `STATUS.md` | TODO/FIXME/HACK inventory with priority matrix |
 | `HEALTH.md` | Dependency health score (0-100) across 6 dimensions with recommendations |
+| `DEAD_CODE.md` | Dead code analysis — unused symbols by confidence level (high/medium/low) |
 
 Documents are stored in `.depwire/` with `metadata.json` tracking generation timestamps for staleness detection.
 
@@ -476,6 +462,56 @@ depwire health --json
 - Trend indicator (↑/↓ from last check)
 
 Health history is stored in `.depwire/health-history.json` (last 50 checks).
+
+### `depwire dead-code [directory]`
+
+Detect unused symbols across your codebase with confidence-based classification.
+
+**Directory argument is optional** — Auto-detects project root.
+
+**Options:**
+- `--confidence <level>` — Minimum confidence level to show: `high`, `medium`, `low` (default: `medium`)
+- `--include-low` — Shortcut for `--confidence low`
+- `--verbose` — Show detailed info for each dead symbol (file, line, kind, reason)
+- `--stats` — Show summary statistics
+- `--include-tests` — Include test files in analysis (excluded by default)
+- `--json` — Output as JSON for CI/automation
+
+**Confidence Levels:**
+- 🔴 **High confidence (definitely dead)**: Not exported with zero references, or exported but never used
+- 🟡 **Medium confidence (probably dead)**: Exported from barrel files with zero dependents, or only used in test files
+- ⚪ **Low confidence (might be dead)**: Exported from package entry points, types with zero dependents, or in dynamic-use directories (routes, middleware, etc.)
+
+**Examples:**
+```bash
+# Analyze dead code (default: medium confidence and above)
+depwire dead-code
+
+# Show only high-confidence dead code
+depwire dead-code --confidence high
+
+# Show all potential dead code (including low confidence)
+depwire dead-code --confidence low
+# Or use shortcut
+depwire dead-code --include-low
+
+# Detailed analysis with reasons and statistics
+depwire dead-code --verbose --stats
+
+# Include test files in analysis (excluded by default)
+depwire dead-code --include-tests
+
+# JSON output for CI/automation
+depwire dead-code --json
+```
+
+**Automatic Exclusions:**
+The dead code detector automatically excludes:
+- Entry point files (index.ts, main.ts, server.ts, etc.)
+- Test files (*.test.*, *.spec.*, __tests__/)
+- Config files (*.config.*)
+- Type declarations (*.d.ts)
+- Framework auto-loaded directories (pages/, routes/, middleware/, commands/)
 
 ### `depwire temporal [directory]`
 
