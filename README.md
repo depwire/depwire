@@ -39,7 +39,7 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 - 🔍 **Impact analysis** — "What breaks if I rename this function?" answered precisely
 - 🧹 **Dead code detection** — Find symbols that are defined but never referenced, categorized by confidence level
 - 👀 **Live updates** — Graph stays current as you edit code
-- 🌍 **Multi-language** — TypeScript, JavaScript, Python, and Go
+- 🌍 **Multi-language** — TypeScript, JavaScript, Python, Go, and Rust
 
 ## Why Depwire?
 
@@ -177,6 +177,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | ES modules, CommonJS require(), JSX components |
 | Python | `.py` | Imports, classes, decorators, inheritance |
 | Go | `.go` | go.mod resolution, structs, interfaces, methods |
+| Rust | `.rs` | Functions, structs, enums, traits, impl blocks, use declarations |
 
 ## Visualization
 

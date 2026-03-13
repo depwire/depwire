@@ -46,8 +46,8 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   console.error('[Watcher] Attaching event listeners...');
 
   watcher.on('change', (absolutePath: string) => {
-    // Only process TypeScript, JavaScript, Python, and Go files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go'];
+    // Only process TypeScript, JavaScript, Python, Go, and Rust files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files
@@ -60,8 +60,8 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('add', (absolutePath: string) => {
-    // Only process TypeScript, JavaScript, Python, and Go files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go'];
+    // Only process TypeScript, JavaScript, Python, Go, and Rust files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files
@@ -74,8 +74,8 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('unlink', (absolutePath: string) => {
-    // Only process TypeScript, JavaScript, Python, and Go files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go'];
+    // Only process TypeScript, JavaScript, Python, Go, and Rust files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files

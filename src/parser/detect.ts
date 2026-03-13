@@ -4,12 +4,14 @@ import { typescriptParser } from './typescript.js';
 import { pythonParser } from './python.js';
 import { javascriptParser } from './javascript.js';
 import { goParser } from './go.js';
+import { rustParser } from './rust.js';
 
 const parsers: LanguageParser[] = [
   typescriptParser,
   pythonParser,
   javascriptParser,
   goParser,
+  rustParser,
 ];
 
 export function getParserForFile(filePath: string): LanguageParser | null {

@@ -39,13 +39,14 @@ export function scanDirectory(
         // Recursively scan subdirectories
         files.push(...scanDirectory(rootDir, fullPath));
       } else if (stats.isFile()) {
-        // Include .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, and .go files (skip .d.ts and _test.go)
+        // Include .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, .go, and .rs files (skip .d.ts and _test.go)
         const isTypeScript = (entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts');
         const isJavaScript = entry.endsWith('.js') || entry.endsWith('.jsx') || entry.endsWith('.mjs') || entry.endsWith('.cjs');
         const isPython = entry.endsWith('.py');
         const isGo = entry.endsWith('.go') && !entry.endsWith('_test.go');
+        const isRust = entry.endsWith('.rs');
         
-        if (isTypeScript || isJavaScript || isPython || isGo) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
@@ -76,6 +77,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'package.json',      // Node.js
     'tsconfig.json',     // TypeScript
     'go.mod',            // Go
+    'Cargo.toml',        // Rust
     'pyproject.toml',    // Python (modern)
     'setup.py',          // Python (legacy)
     '.git'               // Any git repo

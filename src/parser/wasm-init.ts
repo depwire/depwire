@@ -41,6 +41,7 @@ export async function initParser(): Promise<void> {
     'javascript': 'tree-sitter-javascript.wasm',
     'python': 'tree-sitter-python.wasm',
     'go': 'tree-sitter-go.wasm',
+    'rust': 'tree-sitter-rust.wasm',
   };
 
   for (const [name, file] of Object.entries(grammarFiles)) {
@@ -55,7 +56,7 @@ export async function initParser(): Promise<void> {
 /**
  * Get a parser instance configured for a specific language.
  */
-export function getParser(language: 'typescript' | 'tsx' | 'javascript' | 'python' | 'go'): Parser {
+export function getParser(language: 'typescript' | 'tsx' | 'javascript' | 'python' | 'go' | 'rust'): Parser {
   if (!initialized) {
     throw new Error('Parser not initialized. Call initParser() first.');
   }
