@@ -616,7 +616,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 ### ✅ Shipped
 - [x] Arc diagram visualization
 - [x] MCP server (15 tools)
-- [x] Multi-language support (TypeScript, JavaScript, Python, Go)
+- [x] Multi-language support (TypeScript, JavaScript, Python, Go, Rust)
 - [x] File watching + live refresh
 - [x] Auto-generated documentation (13 documents)
 - [x] Dependency health score (0-100)
@@ -627,7 +627,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 - [x] WASM migration (Windows support)
 
 ### 🔜 Coming Next
-- [ ] New language support (C, Rust — community requested)
+- [ ] New language support (C — community requested)
 - [ ] "What If" simulation — simulate refactors before touching code
 - [ ] Cross-language edge detection (API routes ↔ frontend calls)
 - [ ] Cloud dashboard (first paid feature)

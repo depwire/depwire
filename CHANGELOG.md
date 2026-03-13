@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.9.0] - 2026-03-13
+
+### Added
+- **Rust language support** — Full parsing support for Rust `.rs` files
+  - Functions (`fn`), structs, enums, traits, impl blocks (methods)
+  - Constants, type aliases, use declarations (`use crate::`, `use super::`, `use self::`)
+  - Module declarations (`mod`) with file resolution (`module.rs` and `module/mod.rs`)
+  - Cross-file dependency tracking via imports
+  - `Cargo.toml` as project root marker
+- Tree-sitter Rust WASM grammar (v0.23.2)
+- Comprehensive Rust test fixtures (`test/fixtures/rust-project/`)
+- 5th supported language (TypeScript, JavaScript, Python, Go, Rust)
+
+### Fixed
+- **Graph builder bug**: Target `__file__` nodes were not being created, causing import edges to be silently dropped
+  - Impact: Go fixture edges increased from 1 → 7, Rust fixture edges increased from 2 → 7
+  - This fix benefits all languages by ensuring file-level import edges are properly added to the graph
+
+### Changed
+- Updated README, website, and server.json to reflect Rust support
+- Bumped version from 0.8.0 → 0.9.0
+- Updated supported languages documentation and roadmap
+
+---
+
 ## [0.6.0] - 2026-03-06
 
 ### Added
