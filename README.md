@@ -39,7 +39,7 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 - 🔍 **Impact analysis** — "What breaks if I rename this function?" answered precisely
 - 🧹 **Dead code detection** — Find symbols that are defined but never referenced, categorized by confidence level
 - 👀 **Live updates** — Graph stays current as you edit code
-- 🌍 **Multi-language** — TypeScript, JavaScript, Python, Go, and Rust
+- 🌍 **Multi-language** — TypeScript, JavaScript, Python, Go, Rust, and C
 
 ## Why Depwire?
 
@@ -178,6 +178,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | Python | `.py` | Imports, classes, decorators, inheritance |
 | Go | `.go` | go.mod resolution, structs, interfaces, methods |
 | Rust | `.rs` | Functions, structs, enums, traits, impl blocks, use declarations |
+| C | `.c`, `.h` | Functions, structs, enums, typedefs, macros, #include directives |
 
 ## Visualization
 
@@ -616,7 +617,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 ### ✅ Shipped
 - [x] Arc diagram visualization
 - [x] MCP server (15 tools)
-- [x] Multi-language support (TypeScript, JavaScript, Python, Go, Rust)
+- [x] Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C)
 - [x] File watching + live refresh
 - [x] Auto-generated documentation (13 documents)
 - [x] Dependency health score (0-100)
