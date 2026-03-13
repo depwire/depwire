@@ -38,6 +38,19 @@ export function buildGraph(parsedFiles: ParsedFile[]): DirectedGraph {
           exported: false,
         });
       }
+      // Also create target __file__ nodes
+      if (edge.target.endsWith('::__file__') && !fileNodes.has(edge.target)) {
+        fileNodes.add(edge.target);
+        const filePath = edge.target.replace('::__file__', '');
+        graph.addNode(edge.target, {
+          name: '__file__',
+          kind: 'import',
+          filePath,
+          startLine: 1,
+          endLine: 1,
+          exported: false,
+        });
+      }
     }
   }
   

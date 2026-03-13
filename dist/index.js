@@ -27,7 +27,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-KZAUE66R.js";
+} from "./chunk-MGMDHXPB.js";
 
 // src/index.ts
 import { Command } from "commander";
