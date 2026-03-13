@@ -5,6 +5,7 @@ import { pythonParser } from './python.js';
 import { javascriptParser } from './javascript.js';
 import { goParser } from './go.js';
 import { rustParser } from './rust.js';
+import { cParser } from './c.js';
 
 const parsers: LanguageParser[] = [
   typescriptParser,
@@ -12,6 +13,7 @@ const parsers: LanguageParser[] = [
   javascriptParser,
   goParser,
   rustParser,
+  cParser,
 ];
 
 export function getParserForFile(filePath: string): LanguageParser | null {
