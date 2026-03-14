@@ -510,7 +510,8 @@ program
   .option('--stats', 'Show summary statistics')
   .option('--include-tests', 'Include test files in analysis')
   .option('--include-low', 'Shortcut for --confidence low')
-  .action(async (directory: string | undefined, options: { confidence?: string; json?: boolean; verbose?: boolean; stats?: boolean; includeTests?: boolean; includeLow?: boolean }) => {
+  .option('--debug', 'Show debug information (exclusion stats)')
+  .action(async (directory: string | undefined, options: { confidence?: string; json?: boolean; verbose?: boolean; stats?: boolean; includeTests?: boolean; includeLow?: boolean; debug?: boolean }) => {
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const startTime = Date.now();
@@ -526,6 +527,7 @@ program
         verbose: options.verbose || false,
         stats: options.stats || false,
         json: options.json || false,
+        debug: options.debug || false,
       });
       
       if (options.json) {

@@ -15,9 +15,15 @@ export function analyzeDeadCode(
     verbose: options.verbose || false,
     stats: options.stats || false,
     json: options.json || false,
+    debug: options.debug || false,
   };
 
-  const rawDeadSymbols = findDeadSymbols(graph, projectRoot, opts.includeTests);
+  const { symbols: rawDeadSymbols } = findDeadSymbols(
+    graph, 
+    projectRoot, 
+    opts.includeTests,
+    opts.debug
+  );
 
   const classifiedSymbols = classifyDeadSymbols(rawDeadSymbols, graph);
 

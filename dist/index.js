@@ -27,7 +27,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-UPAZDLUB.js";
+} from "./chunk-3DXWSPZL.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -788,7 +788,7 @@ program.command("health").description("Analyze dependency architecture health (0
     process.exit(1);
   }
 });
-program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").action(async (directory, options) => {
+program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
     const startTime = Date.now();
@@ -800,7 +800,8 @@ program.command("dead-code").description("Identify dead code - symbols defined b
       includeTests: options.includeTests || false,
       verbose: options.verbose || false,
       stats: options.stats || false,
-      json: options.json || false
+      json: options.json || false,
+      debug: options.debug || false
     });
     if (options.json) {
       console.log(JSON.stringify(report, null, 2));

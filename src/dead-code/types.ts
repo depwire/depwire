@@ -31,9 +31,20 @@ export interface DeadCodeOptions {
   verbose: boolean;
   stats: boolean;
   json: boolean;
+  debug: boolean;
 }
 
 export interface ExclusionContext {
   graph: Graph;
   projectRoot: string;
+}
+
+export interface ExclusionStats {
+  total: number;
+  excludedByTestFile: number;
+  excludedByEntryPoint: number;
+  excludedByConfigFile: number;
+  excludedByTypeDeclaration: number;
+  excludedByDefaultExport: number;
+  excludedByFrameworkDir: number;
 }
