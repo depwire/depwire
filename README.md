@@ -1,12 +1,6 @@
 # Depwire
 
 <p align="center">
-  <a href="https://glama.ai/mcp/servers/depwire/depwire">
-    <img width="380" height="200" src="https://glama.ai/mcp/servers/depwire/depwire/badge" alt="Depwire MCP server" />
-  </a>
-</p>
-
-<p align="center">
   <a href="https://www.npmjs.com/package/depwire-cli">
     <img src="https://img.shields.io/npm/v/depwire-cli.svg?style=flat-square" alt="npm version" />
   </a>
