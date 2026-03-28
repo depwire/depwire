@@ -7,6 +7,9 @@
   <a href="https://www.npmjs.com/package/depwire-cli">
     <img src="https://img.shields.io/npm/dm/depwire-cli.svg?style=flat-square" alt="npm downloads" />
   </a>
+  <a href="https://glama.ai/mcp/servers/depwire/depwire">
+    <img src="https://glama.ai/mcp/servers/depwire/depwire/badges/score.svg" alt="depwire/depwire MCP server" />
+  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-BUSL--1.1-blue.svg?style=flat-square" alt="License" />
   </a>
