@@ -86,9 +86,19 @@ export async function stashChanges(dir: string): Promise<boolean> {
 
 export async function popStash(dir: string): Promise<void> {
   try {
-    execSync('git stash pop -q', { cwd: dir, stdio: 'ignore' });
+    // Check if there's actually something in the stash
+    const stashList = execSync('git stash list', {
+      cwd: dir,
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'ignore'], // Suppress stderr
+    }).trim();
+
+    // Only pop if stash is non-empty
+    if (stashList) {
+      execSync('git stash pop -q', { cwd: dir, stdio: 'ignore' });
+    }
   } catch (error) {
-    console.warn('Warning: Failed to restore stashed changes:', error);
+    // Silently ignore - don't print anything to terminal
   }
 }
 
