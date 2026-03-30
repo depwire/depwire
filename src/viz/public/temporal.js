@@ -10,7 +10,12 @@ let filePositions = new Map();
 async function init() {
   try {
     const response = await fetch('/api/data');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
     temporalData = await response.json();
+    if (!temporalData || !temporalData.snapshots || temporalData.snapshots.length === 0) {
+      throw new Error('No snapshot data received');
+    }
 
     document.getElementById('projectName').textContent = temporalData.projectName;
     document.getElementById('snapshotCount').textContent = temporalData.snapshots.length;
@@ -26,7 +31,14 @@ async function init() {
       renderSnapshot(currentIndex);
     });
   } catch (error) {
-    console.error('Failed to load temporal data:', error);
+    console.error('Failed to initialize temporal graph:', error);
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0f18;color:#fff;flex-direction:column;gap:20px;">
+        <h1 style="color:#ff4a4a;">⚠️ Failed to Load Temporal Graph</h1>
+        <p style="color:#888;">${error.message}</p>
+        <button onclick="location.reload()" style="padding:10px 20px;background:#4a9eff;border:none;color:#fff;border-radius:6px;cursor:pointer;">Reload Page</button>
+      </div>
+    `;
   }
 }
 
@@ -81,8 +93,14 @@ function setupTimeline() {
 
 function setupControls() {
   const playBtn = document.getElementById('playBtn');
+  
+  if (!playBtn) {
+    console.error('Play button not found in DOM');
+    return;
+  }
 
   playBtn.addEventListener('click', () => {
+    console.log('Play button clicked, isPlaying:', isPlaying); // Debug log
     if (isPlaying) {
       pausePlayback();
     } else {
@@ -130,6 +148,12 @@ function highlightSearchResults(query) {
 }
 
 function startPlayback() {
+  if (!temporalData || !temporalData.snapshots || temporalData.snapshots.length === 0) {
+    console.error('Cannot start playback: no temporal data loaded');
+    return;
+  }
+  
+  console.log('Starting playback from index:', currentIndex);
   isPlaying = true;
   document.getElementById('playBtn').innerHTML = `
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">

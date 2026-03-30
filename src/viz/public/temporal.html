@@ -113,6 +113,22 @@
     </main>
   </div>
 
+  <script>
+// Catch any global errors and prevent them from breaking the page
+window.addEventListener('error', (event) => {
+  console.error('Global error caught:', event.error);
+  // Prevent default error handling that might crash the page
+  event.preventDefault();
+  return true;
+});
+
+// Catch unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  event.preventDefault();
+  return true;
+});
+</script>
   <script src="/temporal.js"></script>
 </body>
 </html>
