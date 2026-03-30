@@ -153,7 +153,13 @@ function startPlayback() {
     return;
   }
   
-  console.log('Starting playback from index:', currentIndex);
+  // If we're at the last snapshot, start from the beginning
+  if (currentIndex >= temporalData.snapshots.length - 1) {
+    currentIndex = 0;
+    goToSnapshot(0);
+  }
+  
+  console.log(`Temporal playback started: ${temporalData.snapshots.length} snapshots at ${playSpeed}x speed`);
   isPlaying = true;
   document.getElementById('playBtn').innerHTML = `
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -270,13 +276,20 @@ function renderArcDiagram(snapshot) {
   const margin = { top: 60, right: 40, bottom: 120, left: 40 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const baseline = margin.top + plotHeight;
+  const baseline = margin.top + plotHeight; // Position baseline at consistent percentage
 
   const totalSymbols = d3.sum(snapshot.files, (d) => d.symbols);
   const minBarWidth = 4;
   const gap = 2;
 
-  let x = margin.left;
+  // Calculate total width needed for all bars
+  const totalBarsWidth = snapshot.files.reduce((sum, file) => {
+    const barWidth = Math.max(minBarWidth, (file.symbols / totalSymbols) * plotWidth * 0.8);
+    return sum + barWidth + gap;
+  }, 0) - gap; // Remove last gap
+
+  // Center the bar group horizontally
+  let x = margin.left + (plotWidth - totalBarsWidth) / 2;
   filePositions.clear();
 
   snapshot.files.forEach((file) => {
