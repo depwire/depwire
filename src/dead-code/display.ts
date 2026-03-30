@@ -63,18 +63,26 @@ function displayConfidenceGroup(
       chalk.gray(`(${level === "HIGH" ? "definitely" : level === "MEDIUM" ? "probably" : "might be"} dead)`)
   );
 
-  const headers = ["Symbol", "Kind", "File", verbose ? "Reason" : ""];
-  const rows = symbols.map((symbol) => {
-    const relativePath = path.relative(projectRoot, symbol.file);
-    return [
-      chalk.bold(symbol.name),
-      symbol.kind,
-      `${relativePath}:${symbol.line}`,
-      verbose ? symbol.reason : "",
-    ];
-  });
-
-  displayTable(headers, rows.filter(row => row[3] !== ""));
+  if (verbose) {
+    // Verbose mode: show table with all columns including Reason
+    const headers = ["Symbol", "Kind", "File", "Reason"];
+    const rows = symbols.map((symbol) => {
+      const relativePath = path.relative(projectRoot, symbol.file);
+      return [
+        chalk.bold(symbol.name),
+        symbol.kind,
+        `${relativePath}:${symbol.line}`,
+        symbol.reason,
+      ];
+    });
+    displayTable(headers, rows);
+  } else {
+    // Non-verbose mode: show simple list format
+    symbols.forEach((symbol) => {
+      const relativePath = path.relative(projectRoot, symbol.file);
+      console.log(`  ${relativePath} :: ${symbol.name}`);
+    });
+  }
 }
 
 function displayTable(headers: string[], rows: string[][]): void {
