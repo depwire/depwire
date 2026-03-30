@@ -1,5 +1,5 @@
 let temporalData = null;
-let currentIndex = 0;
+let currentIndex = 0; // Will be set to latest snapshot after data loads
 let isPlaying = false;
 let playSpeed = 1;
 let playInterval = null;
@@ -15,8 +15,10 @@ async function init() {
     document.getElementById('projectName').textContent = temporalData.projectName;
     document.getElementById('snapshotCount').textContent = temporalData.snapshots.length;
 
+    currentIndex = temporalData.snapshots.length - 1; // Start at latest snapshot
+
     setupTimeline();
-    renderSnapshot(0);
+    renderSnapshot(currentIndex);
     setupControls();
     setupSearch();
 
