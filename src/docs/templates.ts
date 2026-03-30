@@ -57,8 +57,8 @@ export function timestamp(version: string, date: string, fileCount: number, symb
 /**
  * Format a number with commas for better readability
  */
-export function formatNumber(n: number): string {
-  return n.toLocaleString();
+export function formatNumber(n: number | undefined): string {
+  return (n ?? 0).toLocaleString();
 }
 
 /**

@@ -124,14 +124,14 @@ function displayTable(headers: string[], rows: string[][]): void {
 
 function displayStats(report: DeadCodeReport): void {
   console.log(chalk.cyan.bold("\n📊 Summary\n"));
-  console.log(`  Total symbols analyzed: ${chalk.bold(report.totalSymbols.toLocaleString())}`);
-  console.log(`  Potentially dead: ${chalk.yellow.bold(report.deadSymbols)} (${report.deadPercentage.toFixed(1)}%)`);
+  console.log(`  Total symbols analyzed: ${chalk.bold((report.totalSymbols ?? 0).toLocaleString())}`);
+  console.log(`  Potentially dead: ${chalk.yellow.bold(report.deadSymbols ?? 0)} (${(report.deadPercentage ?? 0).toFixed(1)}%)`);
   console.log(
-    `  By confidence: ${chalk.red(report.byConfidence.high)} high, ` +
-      `${chalk.yellow(report.byConfidence.medium)} medium, ${chalk.gray(report.byConfidence.low)} low`
+    `  By confidence: ${chalk.red(report.byConfidence?.high ?? 0)} high, ` +
+      `${chalk.yellow(report.byConfidence?.medium ?? 0)} medium, ${chalk.gray(report.byConfidence?.low ?? 0)} low`
   );
 
-  const estimatedLines = report.deadSymbols * 18;
+  const estimatedLines = (report.deadSymbols ?? 0) * 18;
   console.log(`  Estimated dead code: ${chalk.gray(`~${estimatedLines.toLocaleString()} lines`)}\n`);
 }
 
