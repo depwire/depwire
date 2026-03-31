@@ -31,7 +31,7 @@ Depwire uses tree-sitter grammars for parsing, graphology for graph operations, 
 
 ## Reporting Vulnerabilities
 
-If you discover a security vulnerability, please email: atef@verdent.ai
+If you discover a security vulnerability, please email: atef@depwire.dev
 
 Do NOT open a public GitHub issue for security vulnerabilities.
 
