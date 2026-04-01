@@ -401,7 +401,7 @@ depwire docs --output ./docs
 depwire docs --update --only conventions
 ```
 
-**Generated Documents (12 total):**
+**Generated Documents (13 total):**
 
 | Document | What It Contains |
 |----------|------------------|
@@ -417,7 +417,7 @@ depwire docs --update --only conventions
 | `CURRENT.md` | Complete codebase snapshot (every file, symbol, connection) |
 | `STATUS.md` | TODO/FIXME/HACK inventory with priority matrix |
 | `HEALTH.md` | Dependency health score (0-100) across 6 dimensions with recommendations |
-| `DEAD_CODE.md` | Dead code analysis — unused symbols by confidence level (high/medium/low) |
+| `DEAD_CODE.md` | Unused symbols by confidence level (high/medium/low) with smart exclusions |
 
 Documents are stored in `.depwire/` with `metadata.json` tracking generation timestamps for staleness detection.
 
@@ -625,7 +625,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 - [x] WASM migration (Windows support)
 
 ### 🔜 Coming Next
-- [ ] New language support (C — community requested)
+- [ ] New language support (Java, C++, Ruby — community requested)
 - [ ] "What If" simulation — simulate refactors before touching code
 - [ ] Cross-language edge detection (API routes ↔ frontend calls)
 - [ ] Cloud dashboard (first paid feature)
