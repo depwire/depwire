@@ -1,5 +1,6 @@
 import { readdirSync, statSync, existsSync, lstatSync } from 'fs';
 import { join, relative } from 'path';
+import os from 'os';
 
 export function scanDirectory(
   rootDir: string,
@@ -87,10 +88,30 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     '.git'               // Any git repo
   ];
   
+  // Blocklist of directories to never scan (macOS system dirs)
+  const blocklist = ['Library', 'System', 'Applications', 'usr', 'bin', 'etc', 'var', 'private'];
+  
   let currentDir = startDir;
   const rootDir = '/'; // Unix root (will work on Windows too via path normalization)
+  const maxDepth = 10; // Maximum 10 levels up from starting directory
+  let depth = 0;
   
-  while (currentDir !== rootDir) {
+  // Get home directory to prevent walking above it
+  const home = os.homedir();
+  
+  while (currentDir !== rootDir && depth < maxDepth) {
+    // Check if we've hit home directory or gone above it
+    if (currentDir === home || !currentDir.startsWith(home)) {
+      break;
+    }
+    
+    // Check if current directory name is in blocklist
+    const dirName = currentDir.split('/').pop();
+    if (dirName && blocklist.includes(dirName)) {
+      console.warn(`⚠️  Skipping blocked directory: ${dirName}`);
+      break;
+    }
+    
     // Check if any project marker exists in current directory
     for (const marker of projectMarkers) {
       const markerPath = join(currentDir, marker);
@@ -108,9 +129,11 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     }
     
     currentDir = parentDir;
+    depth++;
   }
   
-  // No project root found, return the starting directory
+  // No project root found, return the starting directory with warning
+  console.warn(`⚠️  No project root found within ${maxDepth} levels. Using current directory: ${startDir}`);
   return startDir;
 }
 // test action

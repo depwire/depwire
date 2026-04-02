@@ -110,6 +110,10 @@ export function getToolsList(): ToolDefinition[] {
             type: "string",
             description: "Symbol name (e.g., 'Router') or full ID (e.g., 'src/router.ts::Router')",
           },
+          file: {
+            type: "string",
+            description: "Optional: File path to disambiguate when multiple symbols have the same name (e.g., 'src/router.ts')",
+          },
         },
         required: ["symbol"],
       },
@@ -349,7 +353,7 @@ export async function handleToolCall(
             result = handleGetDependents(args.symbol, graph);
             break;
           case "impact_analysis":
-            result = handleImpactAnalysis(args.symbol, graph);
+            result = handleImpactAnalysis(args.symbol, graph, args.file);
             break;
           case "get_file_context":
             result = handleGetFileContext(args.filePath, graph);
@@ -418,10 +422,11 @@ export async function handleToolCall(
  */
 function createDisambiguationResponse(matches: SymbolMatch[], queryName: string) {
   const suggestion = matches.length > 0 ? matches[0].id : '';
+  const exampleFile = matches.length > 0 ? matches[0].filePath : '';
   
   return {
     ambiguous: true,
-    message: `Found ${matches.length} symbols named '${queryName}'. Please specify which one by using the full ID (e.g., '${suggestion}').`,
+    message: `Found ${matches.length} symbols named '${queryName}'. Disambiguate by:\n1. Using full ID: '${suggestion}'\n2. Or adding file parameter: { symbol: '${queryName}', file: '${exampleFile}' }`,
     matches: matches.map((m, index) => ({
       id: m.id,
       kind: m.kind,
@@ -569,7 +574,7 @@ function handleGetDependents(symbol: string, graph: DirectedGraph) {
   };
 }
 
-function handleImpactAnalysis(symbol: string, graph: DirectedGraph) {
+function handleImpactAnalysis(symbol: string, graph: DirectedGraph, file?: string) {
   const matches = findSymbols(graph, symbol);
   
   if (matches.length === 0) {
@@ -583,13 +588,26 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph) {
     };
   }
   
-  // If multiple matches, return disambiguation response
-  if (matches.length > 1) {
-    return createDisambiguationResponse(matches, symbol);
+  // If file parameter is provided, filter matches to that file
+  let filteredMatches = matches;
+  if (file) {
+    filteredMatches = matches.filter(m => m.filePath === file || m.filePath.endsWith(file));
+    if (filteredMatches.length === 0) {
+      return {
+        error: `Symbol '${symbol}' not found in file '${file}'`,
+        availableFiles: matches.map(m => m.filePath),
+        suggestion: `The symbol exists in: ${matches.map(m => m.filePath).join(', ')}`,
+      };
+    }
+  }
+  
+  // If multiple matches remain, return disambiguation response
+  if (filteredMatches.length > 1) {
+    return createDisambiguationResponse(filteredMatches, symbol);
   }
   
   // Single match - proceed with impact analysis
-  const target = matches[0];
+  const target = filteredMatches[0];
   const impact = getImpact(graph, target.id);
   
   // Get edge kinds for direct dependents
