@@ -78,6 +78,30 @@ Or use directly with `npx`:
 npx depwire-cli --help
 ```
 
+## Telemetry
+
+Depwire collects **anonymous usage data** to help us understand which features are most useful and prioritize development.
+
+**What we collect:**
+- Command name (e.g. `parse`, `mcp`, `viz`)
+- Depwire version
+- Operating system (mac/linux/windows)
+- Node.js version
+
+**What we never collect:**
+- File paths or code content
+- Repo names or URLs
+- Usernames, emails, or any personal data
+
+**To opt out**, set this environment variable:
+```bash
+DEPWIRE_NO_TELEMETRY=1 depwire parse
+# Or add to your shell profile:
+export DEPWIRE_NO_TELEMETRY=1
+```
+
+Telemetry data is used solely to improve Depwire. [View our privacy policy](https://depwire.dev/privacy)
+
 ## Quick Start
 
 ### CLI Usage

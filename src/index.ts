@@ -22,6 +22,7 @@ import { createInterface } from 'readline';
 import { findProjectRoot } from './utils/files.js';
 import { runTemporalAnalysis } from './temporal/index.js';
 import { analyzeDeadCode } from './dead-code/index.js';
+import { trackCommand } from './telemetry.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -46,6 +47,7 @@ program
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
   .action(async (directory: string | undefined, options: { output: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
+    trackCommand('parse', packageJson.version);
     const startTime = Date.now();
     
     try {
@@ -108,6 +110,7 @@ program
   .argument('<directory>', 'Project directory')
   .argument('<symbol-name>', 'Symbol name to query')
   .action(async (directory: string, symbolName: string) => {
+    trackCommand('query', packageJson.version);
     try {
       const projectRoot = resolve(directory);
       const cacheFile = 'depwire-output.json';
@@ -176,6 +179,7 @@ program
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
   .action(async (directory: string | undefined, options: { port: string; open: boolean; exclude?: string[]; verbose?: boolean }) => {
+    trackCommand('viz', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       
@@ -218,6 +222,7 @@ program
   .option('--verbose', 'Show progress for each commit being parsed')
   .option('--stats', 'Show summary statistics at end')
   .action(async (directory: string | undefined, options: { commits: string; strategy: string; port: string; output?: string; verbose?: boolean; stats?: boolean }) => {
+    trackCommand('temporal', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       
@@ -240,6 +245,7 @@ program
   .description('Start MCP server for AI coding tools')
   .argument('[directory]', 'Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)')
   .action(async (directory?: string) => {
+    trackCommand('mcp', packageJson.version);
     try {
       const state = createEmptyState();
       
@@ -347,6 +353,7 @@ program
     stats?: boolean;
     exclude?: string[];
   }) => {
+    trackCommand('docs', packageJson.version);
     const startTime = Date.now();
     
     try {
@@ -469,6 +476,7 @@ program
   .option('--json', 'Output as JSON')
   .option('--verbose', 'Show detailed breakdown')
   .action(async (directory: string | undefined, options: { json?: boolean; verbose?: boolean }) => {
+    trackCommand('health', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const startTime = Date.now();
@@ -512,6 +520,7 @@ program
   .option('--include-low', 'Shortcut for --confidence low')
   .option('--debug', 'Show debug information (exclusion stats)')
   .action(async (directory: string | undefined, options: { confidence?: string; json?: boolean; verbose?: boolean; stats?: boolean; includeTests?: boolean; includeLow?: boolean; debug?: boolean }) => {
+    trackCommand('dead-code', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const startTime = Date.now();

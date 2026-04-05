@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Depwire</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+           sans-serif; max-width: 700px; margin: 60px auto; padding: 0 24px;
+           color: #1a1a1a; line-height: 1.7; }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    h2 { font-size: 1.2rem; margin-top: 40px; }
+    a { color: #0066cc; }
+    .meta { color: #666; margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Last updated: April 5, 2026</p>
+
+  <h2>Overview</h2>
+  <p>Depwire is an open-source CLI tool. We collect minimal, 
+  anonymous telemetry data to understand how the tool is used 
+  and improve it over time.</p>
+
+  <h2>What We Collect</h2>
+  <p>When you run a depwire command, we collect:</p>
+  <ul>
+    <li>Command name (e.g. parse, mcp, viz)</li>
+    <li>Depwire version number</li>
+    <li>Operating system (mac, linux, or windows)</li>
+    <li>Node.js version</li>
+  </ul>
+
+  <h2>What We Never Collect</h2>
+  <ul>
+    <li>File paths or code content</li>
+    <li>Repository names or URLs</li>
+    <li>Usernames, emails, or personal data</li>
+    <li>IP addresses (not stored)</li>
+    <li>Machine or device identifiers</li>
+  </ul>
+
+  <h2>How to Opt Out</h2>
+  <p>Set this environment variable to disable telemetry:</p>
+  <pre style="background:#f4f4f4;padding:16px;border-radius:6px;">
+export DEPWIRE_NO_TELEMETRY=1</pre>
+  <p>We also respect the 
+  <a href="https://consoledonottrack.com/">DO_NOT_TRACK=1</a> 
+  standard.</p>
+
+  <h2>Data Storage</h2>
+  <p>Telemetry events are stored in Cloudflare D1 (SQLite). 
+  Data is retained for 12 months and used solely to improve 
+  Depwire.</p>
+
+  <h2>Open Source</h2>
+  <p>Depwire is open source. You can review exactly what the 
+  telemetry code does in our 
+  <a href="https://github.com/depwire/depwire/blob/main/src/telemetry.ts">
+  GitHub repository</a>.</p>
+
+  <h2>Contact</h2>
+  <p>Questions? Email us at 
+  <a href="mailto:atef@depwire.dev">atef@depwire.dev</a></p>
+
+  <p style="margin-top:60px;">
+    <a href="https://depwire.dev">← Back to Depwire</a>
+  </p>
+</body>
+</html>
