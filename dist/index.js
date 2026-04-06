@@ -474,6 +474,28 @@ function printStats(snapshots) {
   Overall Trend: ${trend}`);
 }
 
+// src/telemetry.ts
+import os from "os";
+var TELEMETRY_URL = "https://telemetry.depwire.dev/event";
+async function trackCommand(command, version = "unknown") {
+  if (process.env.DEPWIRE_NO_TELEMETRY === "1" || process.env.DEPWIRE_NO_TELEMETRY === "true" || process.env.DO_NOT_TRACK === "1") {
+    return;
+  }
+  const payload = {
+    command,
+    version,
+    os: os.platform(),
+    node: process.version
+  };
+  fetch(TELEMETRY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(2e3)
+  }).catch(() => {
+  });
+}
+
 // src/index.ts
 var __filename2 = fileURLToPath2(import.meta.url);
 var __dirname2 = dirname2(__filename2);
@@ -482,6 +504,7 @@ var packageJson = JSON.parse(readFileSync2(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
 program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
+  trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
@@ -521,6 +544,7 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
   }
 });
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
+  trackCommand("query", packageJson.version);
   try {
     const projectRoot = resolve(directory);
     const cacheFile = "depwire-output.json";
@@ -569,6 +593,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
   }
 });
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
+  trackCommand("viz", packageJson.version);
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
@@ -591,6 +616,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
   }
 });
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
+  trackCommand("temporal", packageJson.version);
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
@@ -607,6 +633,7 @@ program.command("temporal").description("Visualize how the dependency graph evol
   }
 });
 program.command("mcp").description("Start MCP server for AI coding tools").argument("[directory]", "Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)").action(async (directory) => {
+  trackCommand("mcp", packageJson.version);
   try {
     const state = createEmptyState();
     let projectRootToConnect = null;
@@ -669,6 +696,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
   }
 });
 program.command("docs").description("Generate comprehensive codebase documentation").argument("[directory]", "Project directory to document (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output directory (default: .depwire/ inside project)").option("--format <type>", "Output format: markdown | json", "markdown").option("--gitignore", "Add .depwire/ to .gitignore automatically").option("--no-gitignore", "Don't modify .gitignore").option("--include <docs>", "Comma-separated list of docs to generate (default: all)", "all").option("--update", "Regenerate existing docs").option("--only <docs>", "Used with --update, regenerate only specific docs").option("--verbose", "Show generation progress").option("--stats", "Show generation statistics at the end").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').action(async (directory, options) => {
+  trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
@@ -766,6 +794,7 @@ ${pattern}
   }
 }
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
+  trackCommand("health", packageJson.version);
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
     const startTime = Date.now();
@@ -789,6 +818,7 @@ program.command("health").description("Analyze dependency architecture health (0
   }
 });
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
+  trackCommand("dead-code", packageJson.version);
   try {
     const projectRoot = directory ? resolve(directory) : findProjectRoot();
     const startTime = Date.now();
