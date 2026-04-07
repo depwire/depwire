@@ -1,25 +1,11 @@
 # Depwire
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/depwire-cli">
-    <img src="https://img.shields.io/npm/v/depwire-cli.svg?style=flat-square" alt="npm version" />
-  </a>
-  <a href="https://www.npmjs.com/package/depwire-cli">
-    <img src="https://img.shields.io/npm/dm/depwire-cli.svg?style=flat-square" alt="npm downloads" />
-  </a>
-  <a href="https://glama.ai/mcp/servers/depwire/depwire">
-    <img src="https://glama.ai/mcp/servers/depwire/depwire/badges/score.svg" alt="depwire/depwire MCP server" />
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/license-BUSL--1.1-blue.svg?style=flat-square" alt="License" />
-  </a>
-  <a href="https://github.com/depwire/depwire/stargazers">
-    <img src="https://img.shields.io/github/stars/depwire/depwire.svg?style=flat-square" alt="GitHub stars" />
-  </a>
-  <a href="https://github.com/depwire/depwire/network/members">
-    <img src="https://img.shields.io/github/forks/depwire/depwire.svg?style=flat-square" alt="GitHub forks" />
-  </a>
-</p>
+[![npm version](https://img.shields.io/npm/v/depwire-cli.svg?style=flat-square)](https://www.npmjs.com/package/depwire-cli)
+[![npm downloads](https://img.shields.io/npm/dm/depwire-cli.svg?style=flat-square)](https://www.npmjs.com/package/depwire-cli)
+[![depwire MCP server](https://glama.ai/mcp/servers/depwire/depwire/badges/score.svg)](https://glama.ai/mcp/servers/depwire/depwire)
+[![License](https://img.shields.io/badge/license-BUSL--1.1-blue.svg?style=flat-square)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/depwire/depwire.svg?style=flat-square)](https://github.com/depwire/depwire/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/depwire/depwire.svg?style=flat-square)](https://github.com/depwire/depwire/network/members)
 
 ![Depwire - Arc diagram visualization of the Hono framework](./assets/depwire-hero.png)
 
