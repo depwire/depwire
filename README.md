@@ -181,6 +181,41 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `find_dead_code` | Find dead code — symbols defined but never referenced |
 | `get_temporal_graph` | Show how the graph evolved over git history |
 
+## GitHub Action — PR Impact Analysis
+
+Depwire integrates directly into your CI/CD pipeline via the [depwire-action](https://github.com/depwire/depwire-action) GitHub Action.
+
+On every pull request, it automatically:
+- Analyzes which symbols and files are affected by the changes
+- Posts a dependency impact report as a PR comment
+- Shows added, removed, and changed dependencies
+- Helps reviewers understand the architectural blast radius before merging
+
+### Usage
+
+Add this to `.github/workflows/depwire.yml`:
+```yaml
+name: Depwire PR Impact
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: depwire/depwire-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Links
+- [GitHub Marketplace](https://github.com/marketplace/actions/depwire-pr-impact)
+- [depwire-action repository](https://github.com/depwire/depwire-action)
+
 ## Supported Languages
 
 | Language | Extensions | Features |
