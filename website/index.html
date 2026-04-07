@@ -141,6 +141,14 @@
             color: var(--text-primary);
         }
         
+        nav a.nav-cloud {
+            color: #00d4aa;
+        }
+        
+        nav a.nav-cloud:hover {
+            color: #33e8c0;
+        }
+        
         /* Hero Section */
         .hero {
             padding: 8rem 0 6rem;
@@ -901,6 +909,8 @@
                     <a href="#install">Install</a>
                     <a href="https://github.com/depwire/depwire" target="_blank">GitHub</a>
                     <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a>
+                    <a href="https://github.com/marketplace/actions/depwire-pr-impact" target="_blank">GitHub Action</a>
+                    <a href="https://app.depwire.dev" target="_blank" class="nav-cloud">Cloud ↗</a>
                     <a href="/privacy">Privacy</a>
                 </nav>
             </div>
@@ -1320,6 +1330,48 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
         </div>
     </section>
 
+    <!-- GitHub Action Section -->
+    <section class="proof-section" style="background: linear-gradient(180deg, transparent, var(--bg-secondary) 50%, transparent);">
+        <div class="container">
+            <h2 class="section-title scroll-reveal">PR Impact Analysis</h2>
+            <p class="solution-subtitle scroll-reveal">See the impact of every PR before you merge</p>
+            <div class="features-grid" style="margin-top: 3rem; grid-template-columns: 1fr 1fr;">
+                <div class="feature-card scroll-reveal" style="grid-row: span 2;">
+                    <div class="feature-icon" style="font-size: 3.5rem;">🔀</div>
+                    <h3>Automatic Dependency Impact Reports</h3>
+                    <p style="margin-bottom: 1.5rem;">The Depwire GitHub Action runs on every pull request and posts an automatic dependency impact report. Know exactly which symbols break, which files are affected, and what the architectural blast radius is — before the code lands.</p>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Automatic PR comments with impact analysis</li>
+                        <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Dependency diff (added, removed, changed)</li>
+                        <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Zero configuration for public repos</li>
+                        <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Free on GitHub Marketplace</li>
+                    </ul>
+                    <div style="margin-top: 2rem;">
+                        <a href="https://github.com/marketplace/actions/depwire-pr-impact" target="_blank" class="btn btn-secondary" style="color: var(--accent-cyan); border-color: var(--accent-cyan);">View on GitHub Marketplace →</a>
+                    </div>
+                </div>
+                <div class="code-block scroll-reveal" style="margin: 0;">
+                    <div class="code-block-title">Setup — .github/workflows/depwire.yml</div>
+                    <pre><code><span class="code-keyword">name:</span> Depwire PR Impact
+<span class="code-keyword">on:</span>
+  <span class="code-keyword">pull_request:</span>
+    <span class="code-keyword">branches:</span> [main]
+
+<span class="code-keyword">jobs:</span>
+  <span class="code-keyword">impact:</span>
+    <span class="code-keyword">runs-on:</span> ubuntu-latest
+    <span class="code-keyword">steps:</span>
+      - <span class="code-keyword">uses:</span> actions/checkout@v4
+        <span class="code-keyword">with:</span>
+          <span class="code-keyword">fetch-depth:</span> 0
+      - <span class="code-keyword">uses:</span> depwire/depwire-action@v1
+        <span class="code-keyword">with:</span>
+          <span class="code-keyword">github-token:</span> <span class="code-string">${{ secrets.GITHUB_TOKEN }}</span></code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Comparison Section -->
     <section class="comparison-section">
         <div class="container-wide">
@@ -1390,6 +1442,13 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                             <td><span class="check">✓</span></td>
                             <td><span class="cross">✗</span></td>
                             <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>GitHub Action (PR Impact)</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
                             <td><span class="cross">✗</span></td>
                         </tr>
                         <tr>
