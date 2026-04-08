@@ -1,7 +1,7 @@
 {
   "name": "depwire-cli",
   "version": "0.9.18",
-  "description": "Code cross-reference visualization and AI context engine for TypeScript, JavaScript, Python, Go, Rust, and C. Zero native dependencies — works on Windows, macOS, and Linux.",
+  "description": "The missing context layer for AI coding assistants. Dependency graph, MCP server, architecture health, dead code detection.",
   "type": "module",
   "bin": {
     "depwire": "dist/index.js"
