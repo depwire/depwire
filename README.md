@@ -30,7 +30,7 @@ AI coding tools are flying blind. Every time Claude, Cursor, or Copilot touches 
 
 **Lost context = lost money + lost time + bad code.**
 
-**Depwire parsed the entire Hono framework — 305 files, 5,636 symbols, 1,565 dependency edges — in 2.3 seconds.**
+**Depwire parsed the entire Hono framework — 352 files, 5,971 symbols, 1,565 dependency edges — in ~3 seconds.** 40% fewer tool calls, 56% fewer file reads vs. no context layer.
 
 Depwire fixes this by giving AI tools a complete dependency graph of your codebase — not a fuzzy embedding, not a keyword search, but a deterministic, tree-sitter-parsed map of every symbol and connection.
 
@@ -659,15 +659,22 @@ See [SECURITY.md](SECURITY.md) for full details.
 - [x] PR Impact GitHub Action (depwire-action v1.0.0)
 - [x] Auto-detect project root (no path needed)
 - [x] WASM migration (Windows support)
+- [x] Cloud dashboard — [app.depwire.dev](https://app.depwire.dev)
 
 ### 🔜 Coming Next
 - [ ] New language support (Java, C++, Ruby — community requested)
 - [ ] "What If" simulation — simulate refactors before touching code
 - [ ] Cross-language edge detection (API routes ↔ frontend calls)
-- [ ] Cloud dashboard (first paid feature)
 - [ ] AI-suggested refactors
 - [ ] Natural language architecture queries
 - [ ] VSCode extension
+
+## Depwire Cloud
+
+Try [Depwire Cloud](https://app.depwire.dev) — connect any GitHub repo and get instant visualization, health scoring, and dead code detection in the browser. No CLI needed.
+
+- **Free** for public repos
+- **Pro** ($19/month) — unlimited repos + private repo support
 
 ## Contributing
 
