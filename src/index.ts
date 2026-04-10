@@ -23,6 +23,7 @@ import { findProjectRoot } from './utils/files.js';
 import { runTemporalAnalysis } from './temporal/index.js';
 import { analyzeDeadCode } from './dead-code/index.js';
 import { trackCommand } from './telemetry.js';
+import { whatif } from './commands/whatif.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -549,6 +550,28 @@ program
       }
     } catch (err) {
       console.error('Error analyzing dead code:', err);
+      process.exit(1);
+    }
+  });
+
+// What If simulation command
+program
+  .command('whatif')
+  .description('Simulate architectural changes before touching code')
+  .argument('[directory]', 'Project directory (defaults to auto-detected project root)')
+  .option('--simulate <action>', 'Action to simulate: move, delete, rename, split, merge')
+  .option('--target <file>', 'File to apply the action to')
+  .option('--destination <file>', 'Destination path (for move action)')
+  .option('--new-name <name>', 'New name (for rename action)')
+  .option('--source <file>', 'Source file (for merge action)')
+  .option('--new-file <file>', 'New file path (for split action)')
+  .option('--symbols <symbols>', 'Comma-separated symbol names (for split action)')
+  .action(async (directory: string | undefined, options: any) => {
+    trackCommand('whatif', packageJson.version);
+    try {
+      await whatif(directory || '.', options);
+    } catch (err) {
+      console.error('Error running simulation:', err);
       process.exit(1);
     }
   });

@@ -255,6 +255,42 @@ export function getToolsList(): ToolDefinition[] {
         },
       },
     },
+    {
+      name: "simulate_change",
+      description: "Simulate an architectural change and see the impact before touching code. Returns health score delta, broken imports, and affected files.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          action: {
+            type: "string",
+            enum: ["move", "delete", "rename", "split", "merge"],
+            description: "Type of change to simulate",
+          },
+          target: {
+            type: "string",
+            description: "File path to apply the action to",
+          },
+          destination: {
+            type: "string",
+            description: "Destination path (for move action)",
+          },
+          newName: {
+            type: "string",
+            description: "New name (for rename action)",
+          },
+          source: {
+            type: "string",
+            description: "Source file (for merge action)",
+          },
+          symbols: {
+            type: "array",
+            items: { type: "string" },
+            description: "Symbols to move (for split action)",
+          },
+        },
+        required: ["action", "target"],
+      },
+    },
   ];
 }
 
@@ -332,6 +368,11 @@ export async function handleToolCall(
       } else {
         result = handleFindDeadCode(state, args.confidence || "medium");
       }
+    } else if (name === "simulate_change") {
+      result = {
+        status: "coming_soon",
+        message: "simulate_change will be fully available in v1.0.0. Use the CLI command 'depwire whatif' for simulation in the meantime.",
+      };
     } else {
       // All other tools require a loaded project
       if (!isProjectLoaded(state)) {
