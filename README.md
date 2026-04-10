@@ -9,7 +9,11 @@
 
 ![Depwire - Arc diagram visualization of the Hono framework](./assets/depwire-hero.png)
 
-**See how your code connects. Give AI tools full codebase context.**
+**The missing context layer for AI coding assistants.**
+
+Deterministic dependency graph. 16 MCP tools. Architecture health. What If simulation.
+
+The context layer that turns vibe coding into software engineering.
 
 ⭐ **If Depwire helps you, please [star the repo](https://github.com/depwire/depwire)** — it helps this open-source project grow into an enterprise tool.
 
@@ -23,33 +27,6 @@ Depwire analyzes codebases to build a cross-reference graph showing how every fi
 - 🧹 **Dead code detection** — Find symbols that are defined but never referenced, categorized by confidence level
 - 👀 **Live updates** — Graph stays current as you edit code
 - 🌍 **Multi-language** — TypeScript, JavaScript, Python, Go, Rust, and C
-
-## Why Depwire?
-
-AI coding tools are flying blind. Every time Claude, Cursor, or Copilot touches your code, it's guessing about dependencies, imports, and impact. The result: broken refactors, hallucinated imports, and wasted tokens re-scanning files it already saw.
-
-**Lost context = lost money + lost time + bad code.**
-
-**Depwire parsed the entire Hono framework — 352 files, 5,971 symbols, 1,565 dependency edges — in ~3 seconds.** 40% fewer tool calls, 56% fewer file reads vs. no context layer.
-
-Depwire fixes this by giving AI tools a complete dependency graph of your codebase — not a fuzzy embedding, not a keyword search, but a deterministic, tree-sitter-parsed map of every symbol and connection.
-
-### Stop Losing Context
-- **No more "start from scratch" chats** — Depwire is the shared knowledge layer that every AI session inherits. New chat? Your AI already knows the architecture.
-- **Stop burning tokens** — AI tools query the graph instead of scanning hundreds of files blindly
-- **One command, every AI tool** — Claude Desktop, Cursor, VS Code, any MCP-compatible tool gets the same complete picture
-
-### Ship Better Code
-- **Impact analysis for any change** — renaming a function, moving a file, upgrading a dependency, deleting a module — know the full blast radius before you touch anything
-- **Refactor with confidence** — see every downstream consumer, every transitive dependency, 2-3 levels deep
-- **Catch dead code** — find symbols nobody references anymore with confidence-based classification (high/medium/low)
-
-### Stay in Flow
-- **Live graph, always current** — edit a file and the dependency map updates in real-time. No re-indexing, no waiting.
-- **Works locally, stays private** — zero cloud accounts, zero data leaving your machine. Just `npm install` and go.
-
-### 15 MCP Tools, Not Just Visualization
-Depwire isn't just a pretty graph. It's a full context engine with 15 tools that AI assistants call autonomously — architecture summaries, dependency tracing, symbol search, file context, health scores, dead code detection, temporal evolution, and more. The AI decides which tool to use based on your question.
 
 ## Installation
 
@@ -91,6 +68,7 @@ depwire docs
 depwire health
 depwire dead-code
 depwire temporal
+depwire whatif
 
 # Or specify a directory explicitly
 npx depwire-cli viz ./my-project
@@ -166,6 +144,43 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `get_health_score` | Get 0-100 dependency health score with recommendations |
 | `find_dead_code` | Find dead code — symbols defined but never referenced |
 | `get_temporal_graph` | Show how the graph evolved over git history |
+| `simulate_change` | Simulate architectural changes before touching code |
+
+## What If Simulation
+
+Simulate architectural changes before touching a single line of code.
+
+```bash
+# What breaks if I delete this file?
+depwire whatif . --simulate delete --target src/services/auth.ts
+
+# What happens if I move this file?
+depwire whatif . --simulate move --target src/utils/helpers.ts --destination src/core/helpers.ts
+
+# What happens if I rename this file?
+depwire whatif . --simulate rename --target src/router.ts --new-name routes.ts
+```
+
+Each simulation returns:
+- **Health score delta** — does this change improve or degrade your architecture?
+- **Broken imports** — exactly which files would break and why
+- **Affected nodes** — full blast radius of the change
+- **Circular deps introduced or resolved**
+- **Edge changes** — added and removed dependency connections
+
+Supported actions: `move`, `delete`, `rename`, `split`, `merge`
+
+## Why Depwire
+
+| Feature | Depwire | Standard RAG (Fuzzy Search) | LLM Native Scanning |
+|---------|---------|----------------------------|---------------------|
+| Logic | Deterministic Graph | Probabilistic Match | Brute Force Reading |
+| Precision | 100% (Tree-sitter AST) | ~70% (Embedding match) | Varies — hallucination prone |
+| Refactor Safety | High — traces full call chains | Low — misses indirect refs | Zero — blind edits |
+| Token Cost | Ultra-low — surgical reads | High — context stuffing | Extreme — scans everything |
+| Circular Detection | Built-in | Not possible | Occasional |
+| What If Simulation | Before touching code | Not possible | Not possible |
+| Architecture Health Score | 0-100 with dimensions | Not possible | Not possible |
 
 ## GitHub Action — PR Impact Analysis
 
@@ -586,6 +601,46 @@ depwire temporal --output ./temp-snapshots
 
 Snapshots are cached in `.depwire/temporal/` for fast re-rendering.
 
+### `depwire whatif [directory]`
+
+Simulate architectural changes before touching code.
+
+**Directory argument is optional** — Auto-detects project root.
+
+**Options:**
+- `--simulate <action>` — Action to simulate: `move`, `delete`, `rename`, `split`, `merge`
+- `--target <file>` — File to apply the action to
+- `--destination <file>` — Destination path (for move action)
+- `--new-name <name>` — New name (for rename action)
+- `--source <file>` — Source file (for merge action)
+- `--new-file <file>` — New file path (for split action)
+- `--symbols <symbols>` — Comma-separated symbol names (for split action)
+
+**Examples:**
+```bash
+# What breaks if I delete this file?
+depwire whatif --simulate delete --target src/auth/service.ts
+
+# What happens if I move this module?
+depwire whatif --simulate move --target src/utils.ts --destination src/core/utils.ts
+
+# Rename a file
+depwire whatif --simulate rename --target src/router.ts --new-name routes.ts
+
+# Split symbols into a new file
+depwire whatif --simulate split --target src/utils.ts --new-file src/helpers.ts --symbols "formatDate,parseUrl"
+
+# Merge two files
+depwire whatif --simulate merge --target src/auth.ts --source src/login.ts
+```
+
+**Output:**
+- Health score delta (before/after with improvement indicator)
+- Broken imports with file and symbol details
+- Affected nodes count
+- Circular dependencies introduced or resolved
+- Added and removed edge counts
+
 ### Error Handling
 
 Depwire gracefully handles parse errors:
@@ -649,7 +704,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ### ✅ Shipped
 - [x] Arc diagram visualization
-- [x] MCP server (15 tools)
+- [x] MCP server (16 tools)
 - [x] Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C)
 - [x] File watching + live refresh
 - [x] Auto-generated documentation (13 documents)
@@ -660,18 +715,18 @@ See [SECURITY.md](SECURITY.md) for full details.
 - [x] Auto-detect project root (no path needed)
 - [x] WASM migration (Windows support)
 - [x] Cloud dashboard — [app.depwire.dev](https://app.depwire.dev)
+- [x] What If simulation — simulate refactors before touching code
 
-### 🔜 Coming Next
+### Coming Next
 - [ ] New language support (Java, C++, Ruby — community requested)
-- [ ] "What If" simulation — simulate refactors before touching code
 - [ ] Cross-language edge detection (API routes ↔ frontend calls)
 - [ ] AI-suggested refactors
 - [ ] Natural language architecture queries
 - [ ] VSCode extension
 
-## Depwire Cloud
+## Cloud Dashboard
 
-Try [Depwire Cloud](https://app.depwire.dev) — connect any GitHub repo and get instant visualization, health scoring, and dead code detection in the browser. No CLI needed.
+Prefer a browser interface? [app.depwire.dev](https://app.depwire.dev) gives you the full dependency graph, health score, dead code report, and AI codebase chat — without any local setup. Free tier available.
 
 - **Free** for public repos
 - **Pro** ($19/month) — unlimited repos + private repo support

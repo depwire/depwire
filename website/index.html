@@ -923,7 +923,7 @@
             <h1>Your AI is flying blind</h1>
             <h2>Every new chat, every new prompt — your AI tool forgets your entire codebase. The result? Hallucinated imports, broken refactors, and thousands of tokens wasted re-scanning files it already saw.</h2>
             <div class="hero-pivot">Depwire fixes this.</div>
-            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly. Now with 13 auto-generated documents — architecture, conventions, dependencies, onboarding, file catalog, API surface, error patterns, tests, history, snapshot, status, health score, and dead code analysis.</p>
+            <p class="hero-solution">A persistent dependency graph that gives Claude, Cursor, and any MCP tool complete context about your code — instantly. 8 CLI commands, 16 MCP tools, 13 auto-generated documents, What If simulation, and architecture health scoring.</p>
             <div class="cta-buttons">
                 <a href="#install" class="btn btn-primary">Install in 10 seconds</a>
                 <a href="https://github.com/depwire/depwire" target="_blank" class="btn btn-secondary">View on GitHub</a>
@@ -999,7 +999,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤖</div>
                     <h3>AI Context Engine</h3>
-                    <p>15 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
+                    <p>16 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">💥</div>
@@ -1040,6 +1040,17 @@
                         <li>CI-ready JSON output</li>
                         <li>Integrated health score impact</li>
                         <li>MCP tool: <code>find_dead_code</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🔮</div>
+                    <h3>What If Simulation</h3>
+                    <p>Simulate moving, deleting, or renaming files before touching code. See the full blast radius, broken imports, and health score delta — before your AI makes a single change.</p>
+                    <ul>
+                        <li>Health score delta (before/after)</li>
+                        <li>Broken import detection</li>
+                        <li>Circular dependency analysis</li>
+                        <li>CLI: <code>depwire whatif</code></li>
                     </ul>
                 </div>
             </div>
@@ -1218,6 +1229,7 @@ depwire viz
 depwire parse
 depwire docs
 depwire health
+depwire whatif
 
 <span class="code-comment"># Or specify a directory explicitly</span>
 npx depwire-cli viz ./my-project
@@ -1253,8 +1265,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
     <!-- MCP Tools Section -->
     <section class="mcp-section">
         <div class="container">
-            <h2 class="section-title scroll-reveal">15 MCP Tools for AI Assistants</h2>
-            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 15 tools that AI assistants call autonomously based on your questions.</p>
+            <h2 class="section-title scroll-reveal">16 MCP Tools for AI Assistants</h2>
+            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 16 tools that AI assistants call autonomously based on your questions.</p>
             <div class="tools-table scroll-reveal">
                 <table>
                     <thead>
@@ -1323,6 +1335,10 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         <tr>
                             <td><code>find_dead_code</code></td>
                             <td>Find unused symbols with confidence-based scoring</td>
+                        </tr>
+                        <tr>
+                            <td><code>simulate_change</code></td>
+                            <td>Simulate architectural changes before touching code</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1445,6 +1461,13 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                             <td><span class="cross">✗</span></td>
                         </tr>
                         <tr>
+                            <td><strong>What If Simulation</strong></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
                             <td><strong>GitHub Action (PR Impact)</strong></td>
                             <td><span class="check">✓</span></td>
                             <td><span class="cross">✗</span></td>
@@ -1501,6 +1524,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
             <div class="email-content scroll-reveal">
                 <h2 class="section-title">Stay in the loop</h2>
                 <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 1rem;">Get notified about team features, cloud dashboard, and major releases.</p>
+                <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1rem;">Prefer a browser? <a href="https://app.depwire.dev" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">app.depwire.dev</a> gives you the full dashboard without local setup.</p>
                 <form class="email-form" action="mailto:hello@depwire.dev" method="get">
                     <input type="email" name="subject" class="email-input" placeholder="your.email@company.com" required style="display:none;" value="Newsletter Subscription">
                     <input type="email" name="body" class="email-input" placeholder="your.email@company.com" required>

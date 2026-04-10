@@ -28,7 +28,14 @@
     "impact-analysis",
     "refactoring",
     "arc-diagram",
-    "cross-reference"
+    "cross-reference",
+    "whatif",
+    "simulation",
+    "architectural-simulation",
+    "what-if-analysis",
+    "refactor-simulation",
+    "blast-radius",
+    "deterministic-graph"
   ],
   "author": "Atef Ataya (https://www.youtube.com/@atefataya)",
   "license": "BUSL-1.1",
