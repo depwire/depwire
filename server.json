@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.atef-ataya/depwire",
   "mcpName": "io.github.atef-ataya/depwire",
-  "description": "Dependency graph + 16 MCP tools for AI coding assistants. TypeScript, JavaScript, Python, Go, Rust, C. Architecture health, dead code detection, What If simulation.",
+  "description": "Dependency graph + 16 MCP tools for AI assistants. Health score, dead code, What If simulation.",
   "repository": {
     "url": "https://github.com/depwire/depwire",
     "source": "github"
