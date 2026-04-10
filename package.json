@@ -11,7 +11,8 @@
     "copy-static": "mkdir -p dist/viz/public dist/parser/grammars && cp -r src/viz/public/* dist/viz/public/ && cp src/parser/grammars/*.wasm dist/parser/grammars/",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
-    "build:mcpb": "npm run build && ./scripts/build-mcpb.sh"
+    "build:mcpb": "npm run build && ./scripts/build-mcpb.sh",
+    "postversion": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('./package.json','utf8'));const s=JSON.parse(fs.readFileSync('./server.json','utf8'));s.version=p.version;s.packages[0].version=p.version;fs.writeFileSync('./server.json',JSON.stringify(s,null,2)+'\\n');console.log('server.json updated to '+p.version);\" && git add server.json"
   },
   "keywords": [
     "typescript",
