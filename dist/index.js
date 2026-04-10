@@ -2,7 +2,13 @@
 import {
   analyzeDeadCode,
   buildGraph,
+  calculateCircularDepsScore,
+  calculateCohesionScore,
+  calculateCouplingScore,
+  calculateDepthScore,
+  calculateGodFilesScore,
   calculateHealthScore,
+  calculateOrphansScore,
   checkoutCommit,
   createEmptyState,
   createSnapshot,
@@ -27,11 +33,11 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-S3NZMIIU.js";
+} from "./chunk-H6Q2OEGP.js";
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve, dirname as dirname2, join as join3 } from "path";
+import { resolve as resolve2, dirname as dirname3, join as join4 } from "path";
 import { writeFileSync, readFileSync as readFileSync2, existsSync } from "fs";
 import { fileURLToPath as fileURLToPath2 } from "url";
 
@@ -302,10 +308,10 @@ async function findAvailablePort(startPort) {
   const net = await import("net");
   for (let attempt = 0; attempt < 10; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve2) => {
-      const server = net.createServer().once("error", () => resolve2(false)).once("listening", () => {
+    const isAvailable = await new Promise((resolve3) => {
+      const server = net.createServer().once("error", () => resolve3(false)).once("listening", () => {
         server.close();
-        resolve2(true);
+        resolve3(true);
       }).listen(testPort, "127.0.0.1");
     });
     if (isAvailable) {
@@ -346,13 +352,13 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
       console.log("  (Could not open browser automatically)");
     });
   });
-  await new Promise((resolve2, reject) => {
+  await new Promise((resolve3, reject) => {
     server.on("error", reject);
     process.on("SIGINT", () => {
       console.log("\n\nShutting down temporal server...");
       server.close(() => {
         console.log("Server stopped");
-        resolve2();
+        resolve3();
         process.exit(0);
       });
     });
@@ -496,10 +502,475 @@ async function trackCommand(command, version = "unknown") {
   });
 }
 
+// src/commands/whatif.ts
+import { resolve } from "path";
+import chalk from "chalk";
+
+// src/simulation/engine.ts
+import { dirname as dirname2, join as join3 } from "path";
+function normalizePath(p) {
+  return p.replace(/^\.\//, "").replace(/\/+$/, "");
+}
+function fileMatch(nodeFilePath, target) {
+  const a = normalizePath(nodeFilePath);
+  const b = normalizePath(target);
+  return a === b || a.endsWith("/" + b) || b.endsWith("/" + a);
+}
+var SimulationEngine = class {
+  original;
+  constructor(graph) {
+    this.original = graph;
+  }
+  simulate(action) {
+    const clone = this.original.copy();
+    const brokenImports = [];
+    switch (action.type) {
+      case "move":
+        this.applyMove(clone, action.target, action.destination, brokenImports);
+        break;
+      case "delete":
+        this.applyDelete(clone, action.target, brokenImports);
+        break;
+      case "rename":
+        this.applyRename(clone, action.target, action.newName, brokenImports);
+        break;
+      case "split":
+        this.applySplit(clone, action.target, action.newFile, action.symbols, brokenImports);
+        break;
+      case "merge":
+        this.applyMerge(clone, action.target, action.source, brokenImports);
+        break;
+    }
+    const diff = this.computeDiff(this.original, clone, brokenImports);
+    const beforeHealth = this.computeHealthScore(this.original);
+    const afterHealth = this.computeHealthScore(clone);
+    const dimensionChanges = beforeHealth.dimensions.map((bd, i) => {
+      const ad = afterHealth.dimensions[i];
+      return {
+        name: bd.name,
+        before: bd.score,
+        after: ad ? ad.score : bd.score,
+        delta: (ad ? ad.score : bd.score) - bd.score
+      };
+    });
+    const healthDelta = {
+      before: beforeHealth.score,
+      after: afterHealth.score,
+      delta: afterHealth.score - beforeHealth.score,
+      improved: afterHealth.score > beforeHealth.score,
+      dimensionChanges
+    };
+    return {
+      action,
+      originalGraph: {
+        nodeCount: this.original.order,
+        edgeCount: this.original.size,
+        healthScore: beforeHealth.score
+      },
+      simulatedGraph: {
+        nodeCount: clone.order,
+        edgeCount: clone.size,
+        healthScore: afterHealth.score
+      },
+      diff,
+      healthDelta
+    };
+  }
+  // ── Action implementations ─────────────────────────────────────
+  applyMove(clone, target, destination, brokenImports) {
+    const normalizedTarget = normalizePath(target);
+    const normalizedDest = normalizePath(destination);
+    const nodesToMove = clone.filterNodes(
+      (_node, attrs) => fileMatch(attrs.filePath, target)
+    );
+    if (nodesToMove.length === 0) return;
+    for (const oldId of nodesToMove) {
+      const attrs = clone.getNodeAttributes(oldId);
+      const symbolName = oldId.includes("::") ? oldId.split("::").slice(1).join("::") : attrs.name;
+      const newId = `${normalizedDest}::${symbolName}`;
+      clone.forEachInEdge(oldId, (edge, edgeAttrs, source) => {
+        const sourceAttrs = clone.getNodeAttributes(source);
+        if (!fileMatch(sourceAttrs.filePath, target)) {
+          brokenImports.push({
+            file: sourceAttrs.filePath,
+            importedSymbol: attrs.name,
+            reason: `imports ${attrs.name} from ${target} (path would break)`
+          });
+        }
+      });
+      if (!clone.hasNode(newId)) {
+        clone.addNode(newId, { ...attrs, filePath: normalizedDest });
+      }
+      clone.forEachInEdge(oldId, (edge, edgeAttrs, source) => {
+        const newSource = nodesToMove.includes(source) ? `${normalizedDest}::${source.includes("::") ? source.split("::").slice(1).join("::") : clone.getNodeAttributes(source).name}` : source;
+        if (clone.hasNode(newSource) && clone.hasNode(newId)) {
+          clone.mergeEdge(newSource, newId, edgeAttrs);
+        }
+      });
+      clone.forEachOutEdge(oldId, (edge, edgeAttrs, _source, outTarget) => {
+        const newTarget = nodesToMove.includes(outTarget) ? `${normalizedDest}::${outTarget.includes("::") ? outTarget.split("::").slice(1).join("::") : clone.getNodeAttributes(outTarget).name}` : outTarget;
+        if (clone.hasNode(newId) && clone.hasNode(newTarget)) {
+          clone.mergeEdge(newId, newTarget, edgeAttrs);
+        }
+      });
+      clone.dropNode(oldId);
+    }
+  }
+  applyDelete(clone, target, brokenImports) {
+    const nodesToDelete = clone.filterNodes(
+      (_node, attrs) => fileMatch(attrs.filePath, target)
+    );
+    for (const nodeId of nodesToDelete) {
+      const attrs = clone.getNodeAttributes(nodeId);
+      clone.forEachInEdge(nodeId, (_edge, _edgeAttrs, source) => {
+        const sourceAttrs = clone.getNodeAttributes(source);
+        if (!fileMatch(sourceAttrs.filePath, target)) {
+          brokenImports.push({
+            file: sourceAttrs.filePath,
+            importedSymbol: attrs.name,
+            reason: `imports ${attrs.name} from ${target} (file deleted)`
+          });
+        }
+      });
+    }
+    for (const nodeId of nodesToDelete) {
+      clone.dropNode(nodeId);
+    }
+  }
+  applyRename(clone, target, newName, brokenImports) {
+    const destination = join3(dirname2(target), newName);
+    this.applyMove(clone, target, destination, brokenImports);
+  }
+  applySplit(clone, target, newFile, symbols, brokenImports) {
+    const normalizedNewFile = normalizePath(newFile);
+    const nodesToSplit = clone.filterNodes((_node, attrs) => {
+      return fileMatch(attrs.filePath, target) && symbols.includes(attrs.name);
+    });
+    if (nodesToSplit.length === 0) return;
+    for (const oldId of nodesToSplit) {
+      const attrs = clone.getNodeAttributes(oldId);
+      const symbolName = oldId.includes("::") ? oldId.split("::").slice(1).join("::") : attrs.name;
+      const newId = `${normalizedNewFile}::${symbolName}`;
+      clone.forEachInEdge(oldId, (_edge, _edgeAttrs, source) => {
+        const sourceAttrs = clone.getNodeAttributes(source);
+        if (!fileMatch(sourceAttrs.filePath, target) && !fileMatch(sourceAttrs.filePath, newFile)) {
+          brokenImports.push({
+            file: sourceAttrs.filePath,
+            importedSymbol: attrs.name,
+            reason: `imports ${attrs.name} from ${target} (symbol moved to ${newFile})`
+          });
+        }
+      });
+      if (!clone.hasNode(newId)) {
+        clone.addNode(newId, { ...attrs, filePath: normalizedNewFile });
+      }
+      clone.forEachInEdge(oldId, (_edge, edgeAttrs, source) => {
+        if (clone.hasNode(source) && clone.hasNode(newId)) {
+          clone.mergeEdge(source, newId, edgeAttrs);
+        }
+      });
+      clone.forEachOutEdge(oldId, (_edge, edgeAttrs, _source, outTarget) => {
+        if (clone.hasNode(newId) && clone.hasNode(outTarget)) {
+          clone.mergeEdge(newId, outTarget, edgeAttrs);
+        }
+      });
+      clone.dropNode(oldId);
+    }
+  }
+  applyMerge(clone, target, source, brokenImports) {
+    const normalizedTarget = normalizePath(target);
+    const sourceNodes = clone.filterNodes(
+      (_node, attrs) => fileMatch(attrs.filePath, source)
+    );
+    const targetNodes = clone.filterNodes(
+      (_node, attrs) => fileMatch(attrs.filePath, target)
+    );
+    const targetSymbols = new Set(
+      targetNodes.map((n) => clone.getNodeAttributes(n).name)
+    );
+    for (const nodeId of sourceNodes) {
+      const name = clone.getNodeAttributes(nodeId).name;
+      if (name !== "__file__" && targetSymbols.has(name)) {
+        throw new Error(
+          `Merge conflict: symbol "${name}" exists in both ${target} and ${source}`
+        );
+      }
+    }
+    for (const oldId of sourceNodes) {
+      const attrs = clone.getNodeAttributes(oldId);
+      const symbolName = oldId.includes("::") ? oldId.split("::").slice(1).join("::") : attrs.name;
+      const newId = `${normalizedTarget}::${symbolName}`;
+      clone.forEachInEdge(oldId, (_edge, _edgeAttrs, inSource) => {
+        const srcAttrs = clone.getNodeAttributes(inSource);
+        if (!fileMatch(srcAttrs.filePath, source) && !fileMatch(srcAttrs.filePath, target)) {
+          brokenImports.push({
+            file: srcAttrs.filePath,
+            importedSymbol: attrs.name,
+            reason: `imports ${attrs.name} from ${source} (merged into ${target})`
+          });
+        }
+      });
+      if (!clone.hasNode(newId)) {
+        clone.addNode(newId, { ...attrs, filePath: normalizedTarget });
+      }
+      clone.forEachInEdge(oldId, (_edge, edgeAttrs, inSource) => {
+        const resolvedSource = sourceNodes.includes(inSource) ? `${normalizedTarget}::${inSource.includes("::") ? inSource.split("::").slice(1).join("::") : clone.getNodeAttributes(inSource).name}` : inSource;
+        if (clone.hasNode(resolvedSource) && clone.hasNode(newId)) {
+          clone.mergeEdge(resolvedSource, newId, edgeAttrs);
+        }
+      });
+      clone.forEachOutEdge(oldId, (_edge, edgeAttrs, _s, outTarget) => {
+        const resolvedTarget = sourceNodes.includes(outTarget) ? `${normalizedTarget}::${outTarget.includes("::") ? outTarget.split("::").slice(1).join("::") : clone.getNodeAttributes(outTarget).name}` : outTarget;
+        if (clone.hasNode(newId) && clone.hasNode(resolvedTarget)) {
+          clone.mergeEdge(newId, resolvedTarget, edgeAttrs);
+        }
+      });
+      clone.dropNode(oldId);
+    }
+  }
+  // ── Diff computation ───────────────────────────────────────────
+  computeDiff(original, simulated, brokenImports) {
+    const originalEdges = this.collectEdges(original);
+    const simulatedEdges = this.collectEdges(simulated);
+    const originalKeys = new Set(originalEdges.map((e) => this.edgeKey(e)));
+    const simulatedKeys = new Set(simulatedEdges.map((e) => this.edgeKey(e)));
+    const addedEdges = simulatedEdges.filter((e) => !originalKeys.has(this.edgeKey(e)));
+    const removedEdges = originalEdges.filter((e) => !simulatedKeys.has(this.edgeKey(e)));
+    const affectedNodeSet = /* @__PURE__ */ new Set();
+    for (const e of [...addedEdges, ...removedEdges]) {
+      affectedNodeSet.add(e.source);
+      affectedNodeSet.add(e.target);
+    }
+    const originalCycles = this.detectCycles(original);
+    const simulatedCycles = this.detectCycles(simulated);
+    const originalCycleKeys = new Set(originalCycles.map((c) => [...c].sort().join(",")));
+    const simulatedCycleKeys = new Set(simulatedCycles.map((c) => [...c].sort().join(",")));
+    const circularDepsIntroduced = simulatedCycles.filter(
+      (c) => !originalCycleKeys.has([...c].sort().join(","))
+    );
+    const circularDepsResolved = originalCycles.filter(
+      (c) => !simulatedCycleKeys.has([...c].sort().join(","))
+    );
+    return {
+      addedEdges,
+      removedEdges,
+      affectedNodes: Array.from(affectedNodeSet),
+      brokenImports,
+      circularDepsIntroduced,
+      circularDepsResolved
+    };
+  }
+  collectEdges(graph) {
+    const edges = [];
+    graph.forEachEdge((_edge, attrs, source, target) => {
+      edges.push({ source, target, kind: attrs.kind });
+    });
+    return edges;
+  }
+  edgeKey(e) {
+    return `${e.source}|${e.target}|${e.kind || ""}`;
+  }
+  // ── Cycle detection (adapted from src/health/metrics.ts) ───────
+  detectCycles(graph) {
+    const fileGraph = /* @__PURE__ */ new Map();
+    graph.forEachEdge((_edge, _attrs, source, target) => {
+      const sourceFile = graph.getNodeAttributes(source).filePath;
+      const targetFile = graph.getNodeAttributes(target).filePath;
+      if (sourceFile !== targetFile) {
+        if (!fileGraph.has(sourceFile)) {
+          fileGraph.set(sourceFile, /* @__PURE__ */ new Set());
+        }
+        fileGraph.get(sourceFile).add(targetFile);
+      }
+    });
+    const visited = /* @__PURE__ */ new Set();
+    const recStack = /* @__PURE__ */ new Set();
+    const cycles = [];
+    const dfs = (node, path) => {
+      if (recStack.has(node)) {
+        const cycleStart = path.indexOf(node);
+        if (cycleStart >= 0) {
+          cycles.push(path.slice(cycleStart));
+        }
+        return;
+      }
+      if (visited.has(node)) return;
+      visited.add(node);
+      recStack.add(node);
+      path.push(node);
+      const neighbors = fileGraph.get(node);
+      if (neighbors) {
+        for (const neighbor of neighbors) {
+          dfs(neighbor, [...path]);
+        }
+      }
+      recStack.delete(node);
+    };
+    for (const node of fileGraph.keys()) {
+      if (!visited.has(node)) {
+        dfs(node, []);
+      }
+    }
+    const unique = /* @__PURE__ */ new Map();
+    for (const cycle of cycles) {
+      const key = [...cycle].sort().join(",");
+      if (!unique.has(key)) {
+        unique.set(key, cycle);
+      }
+    }
+    return Array.from(unique.values());
+  }
+  // ── Health score (side-effect free) ────────────────────────────
+  computeHealthScore(graph) {
+    const dimensions = [
+      calculateCouplingScore(graph),
+      calculateCohesionScore(graph),
+      calculateCircularDepsScore(graph),
+      calculateGodFilesScore(graph),
+      calculateOrphansScore(graph),
+      calculateDepthScore(graph)
+    ];
+    const score = Math.round(
+      dimensions.reduce((sum, dim) => sum + dim.score * dim.weight, 0)
+    );
+    return { score, dimensions };
+  }
+};
+
+// src/commands/whatif.ts
+async function whatif(dir, options) {
+  if (!options.simulate) {
+    console.log("Usage: depwire whatif [dir] --simulate <action> --target <file> [options]");
+    console.log("");
+    console.log("Actions: move, delete, rename, split, merge");
+    console.log("");
+    console.log("Run without --simulate to open interactive browser UI (Phase B)");
+    return;
+  }
+  const validActions = ["move", "delete", "rename", "split", "merge"];
+  if (!validActions.includes(options.simulate)) {
+    console.error(chalk.red(`Invalid action: ${options.simulate}. Must be one of: ${validActions.join(", ")}`));
+    process.exit(1);
+  }
+  if (!options.target) {
+    console.error(chalk.red("--target is required for all simulation actions"));
+    process.exit(1);
+  }
+  const action = buildAction(options);
+  const projectRoot = dir === "." ? findProjectRoot() : resolve(dir);
+  console.log(`Parsing project: ${projectRoot}`);
+  const parsedFiles = await parseProject(projectRoot);
+  const graph = buildGraph(parsedFiles);
+  console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  console.log("");
+  const engine = new SimulationEngine(graph);
+  try {
+    const result = engine.simulate(action);
+    printResult(result);
+  } catch (err) {
+    console.error(chalk.red(`Simulation failed: ${err.message}`));
+    process.exit(1);
+  }
+}
+function buildAction(options) {
+  const type = options.simulate;
+  const target = options.target;
+  switch (type) {
+    case "move":
+      if (!options.destination) {
+        console.error(chalk.red("--destination is required for move action"));
+        process.exit(1);
+      }
+      return { type: "move", target, destination: options.destination };
+    case "delete":
+      return { type: "delete", target };
+    case "rename":
+      if (!options.newName) {
+        console.error(chalk.red("--new-name is required for rename action"));
+        process.exit(1);
+      }
+      return { type: "rename", target, newName: options.newName };
+    case "split":
+      if (!options.newFile) {
+        console.error(chalk.red("--new-file is required for split action"));
+        process.exit(1);
+      }
+      if (!options.symbols) {
+        console.error(chalk.red("--symbols is required for split action (comma-separated)"));
+        process.exit(1);
+      }
+      return {
+        type: "split",
+        target,
+        newFile: options.newFile,
+        symbols: options.symbols.split(",").map((s) => s.trim())
+      };
+    case "merge":
+      if (!options.source) {
+        console.error(chalk.red("--source is required for merge action"));
+        process.exit(1);
+      }
+      return { type: "merge", target, source: options.source };
+    default:
+      console.error(chalk.red(`Unknown action: ${type}`));
+      process.exit(1);
+  }
+}
+function printResult(result) {
+  const { action, healthDelta, diff } = result;
+  const line = "\u2500".repeat(45);
+  console.log(chalk.bold("What If Simulation"));
+  console.log(chalk.dim(line));
+  const actionStr = formatAction(action);
+  console.log(`${chalk.bold("Action:")}     ${actionStr}`);
+  console.log(chalk.dim(line));
+  const deltaSign = healthDelta.delta >= 0 ? "+" : "";
+  const deltaColor = healthDelta.improved ? chalk.green : healthDelta.delta === 0 ? chalk.yellow : chalk.red;
+  const deltaIcon = healthDelta.improved ? "\u2713 improved" : healthDelta.delta === 0 ? "\u2192 unchanged" : "\u2717 degraded";
+  console.log(
+    `${chalk.bold("Health Score:")}    ${healthDelta.before} \u2192 ${healthDelta.after}  ${deltaColor(`(${deltaSign}${healthDelta.delta} ${deltaIcon})`)}`
+  );
+  const changed = healthDelta.dimensionChanges.filter((d) => d.delta !== 0);
+  if (changed.length > 0) {
+    for (const d of changed) {
+      const dSign = d.delta >= 0 ? "+" : "";
+      const dColor = d.delta > 0 ? chalk.green : chalk.red;
+      console.log(`  ${chalk.dim("\u2022")} ${d.name}: ${d.before} \u2192 ${d.after} ${dColor(`(${dSign}${d.delta})`)}`);
+    }
+  }
+  console.log(`${chalk.bold("Affected Nodes:")}  ${diff.affectedNodes.length}`);
+  console.log(`${chalk.bold("Broken Imports:")}  ${diff.brokenImports.length}`);
+  if (diff.brokenImports.length > 0) {
+    for (const bi of diff.brokenImports) {
+      console.log(`  ${chalk.yellow("\u2022")} ${bi.file} ${bi.reason}`);
+    }
+  }
+  console.log(
+    `${chalk.bold("Circular Deps:")}   ${diff.circularDepsIntroduced.length} introduced, ${diff.circularDepsResolved.length} resolved`
+  );
+  console.log(`${chalk.bold("Added Edges:")}     ${diff.addedEdges.length}`);
+  console.log(`${chalk.bold("Removed Edges:")}   ${diff.removedEdges.length}`);
+  console.log(chalk.dim(line));
+}
+function formatAction(action) {
+  switch (action.type) {
+    case "move":
+      return `MOVE ${action.target} \u2192 ${action.destination}`;
+    case "delete":
+      return `DELETE ${action.target}`;
+    case "rename":
+      return `RENAME ${action.target} \u2192 ${action.newName}`;
+    case "split":
+      return `SPLIT ${action.target} \u2192 ${action.newFile} (${action.symbols.join(", ")})`;
+    case "merge":
+      return `MERGE ${action.source} \u2192 ${action.target}`;
+  }
+}
+
 // src/index.ts
 var __filename2 = fileURLToPath2(import.meta.url);
-var __dirname2 = dirname2(__filename2);
-var packageJsonPath = join3(__dirname2, "../package.json");
+var __dirname2 = dirname3(__filename2);
+var packageJsonPath = join4(__dirname2, "../package.json");
 var packageJson = JSON.parse(readFileSync2(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
@@ -507,7 +978,7 @@ program.command("parse").description("Parse a TypeScript project and build depen
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve2(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -546,7 +1017,7 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   trackCommand("query", packageJson.version);
   try {
-    const projectRoot = resolve(directory);
+    const projectRoot = resolve2(directory);
     const cacheFile = "depwire-output.json";
     let graph;
     if (existsSync(cacheFile)) {
@@ -595,7 +1066,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("viz", packageJson.version);
   try {
-    const projectRoot = directory ? resolve(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve2(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -618,7 +1089,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
   trackCommand("temporal", packageJson.version);
   try {
-    const projectRoot = directory ? resolve(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve2(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
       commits: parseInt(options.commits, 10),
       strategy: options.strategy,
@@ -638,11 +1109,11 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     const state = createEmptyState();
     let projectRootToConnect = null;
     if (directory) {
-      projectRootToConnect = resolve(directory);
+      projectRootToConnect = resolve2(directory);
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
-      if (detectedRoot !== cwd || existsSync(join3(cwd, "package.json")) || existsSync(join3(cwd, "tsconfig.json")) || existsSync(join3(cwd, "go.mod")) || existsSync(join3(cwd, "pyproject.toml")) || existsSync(join3(cwd, "setup.py")) || existsSync(join3(cwd, ".git"))) {
+      if (detectedRoot !== cwd || existsSync(join4(cwd, "package.json")) || existsSync(join4(cwd, "tsconfig.json")) || existsSync(join4(cwd, "go.mod")) || existsSync(join4(cwd, "pyproject.toml")) || existsSync(join4(cwd, "setup.py")) || existsSync(join4(cwd, ".git"))) {
         projectRootToConnect = detectedRoot;
       }
     }
@@ -699,8 +1170,8 @@ program.command("docs").description("Generate comprehensive codebase documentati
   trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve(options.output) : join3(projectRoot, ".depwire");
+    const projectRoot = directory ? resolve2(directory) : findProjectRoot();
+    const outputDir = options.output ? resolve2(options.output) : join4(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -762,16 +1233,16 @@ async function promptGitignore() {
     input: process.stdin,
     output: process.stdout
   });
-  return new Promise((resolve2) => {
+  return new Promise((resolve3) => {
     rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve2(normalized === "" || normalized === "y" || normalized === "yes");
+      resolve3(normalized === "" || normalized === "y" || normalized === "yes");
     });
   });
 }
 function addToGitignore(projectRoot, pattern) {
-  const gitignorePath = join3(projectRoot, ".gitignore");
+  const gitignorePath = join4(projectRoot, ".gitignore");
   try {
     let content = "";
     if (existsSyncNode(gitignorePath)) {
@@ -796,7 +1267,7 @@ ${pattern}
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   trackCommand("health", packageJson.version);
   try {
-    const projectRoot = directory ? resolve(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve2(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles);
@@ -820,7 +1291,7 @@ program.command("health").description("Analyze dependency architecture health (0
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   trackCommand("dead-code", packageJson.version);
   try {
-    const projectRoot = directory ? resolve(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve2(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles);
@@ -844,6 +1315,15 @@ Analysis completed in ${(totalTime / 1e3).toFixed(2)}s
     }
   } catch (err) {
     console.error("Error analyzing dead code:", err);
+    process.exit(1);
+  }
+});
+program.command("whatif").description("Simulate architectural changes before touching code").argument("[directory]", "Project directory (defaults to auto-detected project root)").option("--simulate <action>", "Action to simulate: move, delete, rename, split, merge").option("--target <file>", "File to apply the action to").option("--destination <file>", "Destination path (for move action)").option("--new-name <name>", "New name (for rename action)").option("--source <file>", "Source file (for merge action)").option("--new-file <file>", "New file path (for split action)").option("--symbols <symbols>", "Comma-separated symbol names (for split action)").action(async (directory, options) => {
+  trackCommand("whatif", packageJson.version);
+  try {
+    await whatif(directory || ".", options);
+  } catch (err) {
+    console.error("Error running simulation:", err);
     process.exit(1);
   }
 });
