@@ -2,17 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.atef-ataya/depwire",
   "mcpName": "io.github.atef-ataya/depwire",
-  "description": "Dependency graph + 16 MCP tools for AI assistants. Health score, dead code, What If simulation.",
+  "description": "The missing context layer for AI coding assistants. Builds a complete dependency graph of your codebase using tree-sitter and serves it via 16 MCP tools. Features: impact analysis, dead code detection, architecture health scoring (0-100), What If simulation (simulate delete/move/rename/split/merge before touching code), temporal graph, arc diagram visualization, and AI codebase chat. Supports TypeScript, JavaScript, Python, Go, Rust, and C. Zero config — works with Claude Desktop, Cursor, Claude Code, and any MCP-compatible tool.",
   "repository": {
     "url": "https://github.com/depwire/depwire",
     "source": "github"
   },
-  "version": "0.9.20",
+  "version": "0.9.21",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "depwire-cli",
-      "version": "0.9.20",
+      "version": "0.9.21",
       "transport": {
         "type": "stdio"
       }

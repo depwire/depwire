@@ -1068,12 +1068,13 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🔮</div>
                     <h3>What If Simulation</h3>
-                    <p>Simulate moving, deleting, or renaming files before touching code. See the full blast radius, broken imports, and health score delta — before your AI makes a single change.</p>
+                    <p>Simulate delete, move, rename, split, merge — see the full blast radius, broken imports, and health score delta before your AI makes a single change.</p>
                     <ul>
                         <li>Health score delta (before/after)</li>
                         <li>Broken import detection</li>
                         <li>Circular dependency analysis</li>
                         <li>CLI: <code>depwire whatif</code></li>
+                        <li>MCP tool: <code>simulate_change</code></li>
                     </ul>
                 </div>
             </div>
@@ -1361,11 +1362,12 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         </tr>
                         <tr>
                             <td><code>simulate_change</code></td>
-                            <td>Simulate architectural changes before touching code</td>
+                            <td>Simulate a move/delete/rename/split/merge before touching code. Returns health score delta, broken imports, and affected nodes. Zero file I/O.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <p class="proof-tagline scroll-reveal" style="margin-top: 2rem;">Programmatic SDK available via <code>depwire-cli/sdk</code> for cloud and tooling integrations.</p>
         </div>
     </section>
 

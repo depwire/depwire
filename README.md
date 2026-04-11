@@ -144,31 +144,48 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `get_health_score` | Get 0-100 dependency health score with recommendations |
 | `find_dead_code` | Find dead code — symbols defined but never referenced |
 | `get_temporal_graph` | Show how the graph evolved over git history |
-| `simulate_change` | Simulate architectural changes before touching code |
+| `simulate_change` | Simulate a move/delete/rename/split/merge before touching code. Returns health score delta, broken imports, and affected nodes. Zero file I/O. |
+
+## SDK
+
+depwire-cli exposes a public SDK for programmatic use:
+
+```bash
+npm install depwire-cli
+```
+
+```typescript
+import { 
+  parseProject, 
+  buildGraph, 
+  calculateHealthScore,
+  analyzeDeadCode,
+  generateDocs,
+  SimulationEngine,
+  searchSymbols,
+  getImpact,
+  getArchitectureSummary,
+  DepwireSDKVersion
+} from 'depwire-cli/sdk';
+```
+
+The SDK is the stable public API surface. All cloud and tooling integrations 
+should import from `depwire-cli/sdk` — never from internal paths.
 
 ## What If Simulation
 
-Simulate architectural changes before touching a single line of code.
+Simulate architectural changes before touching any code:
 
 ```bash
-# What breaks if I delete this file?
-depwire whatif . --simulate delete --target src/services/auth.ts
-
-# What happens if I move this file?
-depwire whatif . --simulate move --target src/utils/helpers.ts --destination src/core/helpers.ts
-
-# What happens if I rename this file?
-depwire whatif . --simulate rename --target src/router.ts --new-name routes.ts
+depwire whatif . --simulate delete --target src/utils/encode.ts
+depwire whatif . --simulate move --target src/utils/encode.ts --destination src/core/encode.ts
+depwire whatif . --simulate rename --target src/utils/encode.ts --destination src/utils/encoder.ts
+depwire whatif . --simulate split --target src/services/auth.ts --symbols "validateToken,refreshToken"
+depwire whatif . --simulate merge --target src/utils/helpers.ts --merge-target src/utils/formatters.ts
 ```
 
-Each simulation returns:
-- **Health score delta** — does this change improve or degrade your architecture?
-- **Broken imports** — exactly which files would break and why
-- **Affected nodes** — full blast radius of the change
-- **Circular deps introduced or resolved**
-- **Edge changes** — added and removed dependency connections
-
-Supported actions: `move`, `delete`, `rename`, `split`, `merge`
+Returns: health score delta, broken imports, affected nodes, circular deps introduced/resolved.
+Also available as MCP tool `simulate_change` for AI coding assistants.
 
 ## Why Depwire
 
