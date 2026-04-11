@@ -375,7 +375,7 @@ function generateSymbolDistribution(graph: DirectedGraph): string {
   };
   
   graph.forEachNode((node, attrs) => {
-    symbolCounts[attrs.kind]++;
+    symbolCounts[attrs.kind as SymbolKind]++;
   });
   
   const total = graph.order;

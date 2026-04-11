@@ -1,4 +1,4 @@
-import type { Graph } from "graphology";
+import type { DirectedGraph } from "graphology";
 
 export type ConfidenceLevel = "high" | "medium" | "low";
 
@@ -35,7 +35,7 @@ export interface DeadCodeOptions {
 }
 
 export interface ExclusionContext {
-  graph: Graph;
+  graph: DirectedGraph;
   projectRoot: string;
 }
 

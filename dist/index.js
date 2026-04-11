@@ -1,43 +1,40 @@
 #!/usr/bin/env node
 import {
-  analyzeDeadCode,
-  buildGraph,
-  calculateCircularDepsScore,
-  calculateCohesionScore,
-  calculateCouplingScore,
-  calculateDepthScore,
-  calculateGodFilesScore,
-  calculateHealthScore,
-  calculateOrphansScore,
   checkoutCommit,
   createEmptyState,
   createSnapshot,
-  findProjectRoot,
-  generateDocs,
-  getArchitectureSummary,
   getCommitLog,
   getCurrentBranch,
-  getHealthTrend,
-  getImpact,
   isGitRepo,
   loadSnapshot,
-  parseProject,
   popStash,
   prepareVizData,
   restoreOriginal,
   sampleCommits,
   saveSnapshot,
-  searchSymbols,
   startMcpServer,
   startVizServer,
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-H6Q2OEGP.js";
+} from "./chunk-XBCQPU63.js";
+import {
+  SimulationEngine,
+  analyzeDeadCode,
+  buildGraph,
+  calculateHealthScore,
+  findProjectRoot,
+  generateDocs,
+  getArchitectureSummary,
+  getHealthTrend,
+  getImpact,
+  parseProject,
+  searchSymbols
+} from "./chunk-QHVWDUSX.js";
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve2, dirname as dirname3, join as join4 } from "path";
+import { resolve as resolve2, dirname as dirname2, join as join3 } from "path";
 import { writeFileSync, readFileSync as readFileSync2, existsSync } from "fs";
 import { fileURLToPath as fileURLToPath2 } from "url";
 
@@ -505,339 +502,6 @@ async function trackCommand(command, version = "unknown") {
 // src/commands/whatif.ts
 import { resolve } from "path";
 import chalk from "chalk";
-
-// src/simulation/engine.ts
-import { dirname as dirname2, join as join3 } from "path";
-function normalizePath(p) {
-  return p.replace(/^\.\//, "").replace(/\/+$/, "");
-}
-function fileMatch(nodeFilePath, target) {
-  const a = normalizePath(nodeFilePath);
-  const b = normalizePath(target);
-  return a === b || a.endsWith("/" + b) || b.endsWith("/" + a);
-}
-var SimulationEngine = class {
-  original;
-  constructor(graph) {
-    this.original = graph;
-  }
-  simulate(action) {
-    const clone = this.original.copy();
-    const brokenImports = [];
-    switch (action.type) {
-      case "move":
-        this.applyMove(clone, action.target, action.destination, brokenImports);
-        break;
-      case "delete":
-        this.applyDelete(clone, action.target, brokenImports);
-        break;
-      case "rename":
-        this.applyRename(clone, action.target, action.newName, brokenImports);
-        break;
-      case "split":
-        this.applySplit(clone, action.target, action.newFile, action.symbols, brokenImports);
-        break;
-      case "merge":
-        this.applyMerge(clone, action.target, action.source, brokenImports);
-        break;
-    }
-    const diff = this.computeDiff(this.original, clone, brokenImports);
-    const beforeHealth = this.computeHealthScore(this.original);
-    const afterHealth = this.computeHealthScore(clone);
-    const dimensionChanges = beforeHealth.dimensions.map((bd, i) => {
-      const ad = afterHealth.dimensions[i];
-      return {
-        name: bd.name,
-        before: bd.score,
-        after: ad ? ad.score : bd.score,
-        delta: (ad ? ad.score : bd.score) - bd.score
-      };
-    });
-    const healthDelta = {
-      before: beforeHealth.score,
-      after: afterHealth.score,
-      delta: afterHealth.score - beforeHealth.score,
-      improved: afterHealth.score > beforeHealth.score,
-      dimensionChanges
-    };
-    return {
-      action,
-      originalGraph: {
-        nodeCount: this.original.order,
-        edgeCount: this.original.size,
-        healthScore: beforeHealth.score
-      },
-      simulatedGraph: {
-        nodeCount: clone.order,
-        edgeCount: clone.size,
-        healthScore: afterHealth.score
-      },
-      diff,
-      healthDelta
-    };
-  }
-  // ── Action implementations ─────────────────────────────────────
-  applyMove(clone, target, destination, brokenImports) {
-    const normalizedTarget = normalizePath(target);
-    const normalizedDest = normalizePath(destination);
-    const nodesToMove = clone.filterNodes(
-      (_node, attrs) => fileMatch(attrs.filePath, target)
-    );
-    if (nodesToMove.length === 0) return;
-    for (const oldId of nodesToMove) {
-      const attrs = clone.getNodeAttributes(oldId);
-      const symbolName = oldId.includes("::") ? oldId.split("::").slice(1).join("::") : attrs.name;
-      const newId = `${normalizedDest}::${symbolName}`;
-      clone.forEachInEdge(oldId, (edge, edgeAttrs, source) => {
-        const sourceAttrs = clone.getNodeAttributes(source);
-        if (!fileMatch(sourceAttrs.filePath, target)) {
-          brokenImports.push({
-            file: sourceAttrs.filePath,
-            importedSymbol: attrs.name,
-            reason: `imports ${attrs.name} from ${target} (path would break)`
-          });
-        }
-      });
-      if (!clone.hasNode(newId)) {
-        clone.addNode(newId, { ...attrs, filePath: normalizedDest });
-      }
-      clone.forEachInEdge(oldId, (edge, edgeAttrs, source) => {
-        const newSource = nodesToMove.includes(source) ? `${normalizedDest}::${source.includes("::") ? source.split("::").slice(1).join("::") : clone.getNodeAttributes(source).name}` : source;
-        if (clone.hasNode(newSource) && clone.hasNode(newId)) {
-          clone.mergeEdge(newSource, newId, edgeAttrs);
-        }
-      });
-      clone.forEachOutEdge(oldId, (edge, edgeAttrs, _source, outTarget) => {
-        const newTarget = nodesToMove.includes(outTarget) ? `${normalizedDest}::${outTarget.includes("::") ? outTarget.split("::").slice(1).join("::") : clone.getNodeAttributes(outTarget).name}` : outTarget;
-        if (clone.hasNode(newId) && clone.hasNode(newTarget)) {
-          clone.mergeEdge(newId, newTarget, edgeAttrs);
-        }
-      });
-      clone.dropNode(oldId);
-    }
-  }
-  applyDelete(clone, target, brokenImports) {
-    const nodesToDelete = clone.filterNodes(
-      (_node, attrs) => fileMatch(attrs.filePath, target)
-    );
-    for (const nodeId of nodesToDelete) {
-      const attrs = clone.getNodeAttributes(nodeId);
-      clone.forEachInEdge(nodeId, (_edge, _edgeAttrs, source) => {
-        const sourceAttrs = clone.getNodeAttributes(source);
-        if (!fileMatch(sourceAttrs.filePath, target)) {
-          brokenImports.push({
-            file: sourceAttrs.filePath,
-            importedSymbol: attrs.name,
-            reason: `imports ${attrs.name} from ${target} (file deleted)`
-          });
-        }
-      });
-    }
-    for (const nodeId of nodesToDelete) {
-      clone.dropNode(nodeId);
-    }
-  }
-  applyRename(clone, target, newName, brokenImports) {
-    const destination = join3(dirname2(target), newName);
-    this.applyMove(clone, target, destination, brokenImports);
-  }
-  applySplit(clone, target, newFile, symbols, brokenImports) {
-    const normalizedNewFile = normalizePath(newFile);
-    const nodesToSplit = clone.filterNodes((_node, attrs) => {
-      return fileMatch(attrs.filePath, target) && symbols.includes(attrs.name);
-    });
-    if (nodesToSplit.length === 0) return;
-    for (const oldId of nodesToSplit) {
-      const attrs = clone.getNodeAttributes(oldId);
-      const symbolName = oldId.includes("::") ? oldId.split("::").slice(1).join("::") : attrs.name;
-      const newId = `${normalizedNewFile}::${symbolName}`;
-      clone.forEachInEdge(oldId, (_edge, _edgeAttrs, source) => {
-        const sourceAttrs = clone.getNodeAttributes(source);
-        if (!fileMatch(sourceAttrs.filePath, target) && !fileMatch(sourceAttrs.filePath, newFile)) {
-          brokenImports.push({
-            file: sourceAttrs.filePath,
-            importedSymbol: attrs.name,
-            reason: `imports ${attrs.name} from ${target} (symbol moved to ${newFile})`
-          });
-        }
-      });
-      if (!clone.hasNode(newId)) {
-        clone.addNode(newId, { ...attrs, filePath: normalizedNewFile });
-      }
-      clone.forEachInEdge(oldId, (_edge, edgeAttrs, source) => {
-        if (clone.hasNode(source) && clone.hasNode(newId)) {
-          clone.mergeEdge(source, newId, edgeAttrs);
-        }
-      });
-      clone.forEachOutEdge(oldId, (_edge, edgeAttrs, _source, outTarget) => {
-        if (clone.hasNode(newId) && clone.hasNode(outTarget)) {
-          clone.mergeEdge(newId, outTarget, edgeAttrs);
-        }
-      });
-      clone.dropNode(oldId);
-    }
-  }
-  applyMerge(clone, target, source, brokenImports) {
-    const normalizedTarget = normalizePath(target);
-    const sourceNodes = clone.filterNodes(
-      (_node, attrs) => fileMatch(attrs.filePath, source)
-    );
-    const targetNodes = clone.filterNodes(
-      (_node, attrs) => fileMatch(attrs.filePath, target)
-    );
-    const targetSymbols = new Set(
-      targetNodes.map((n) => clone.getNodeAttributes(n).name)
-    );
-    for (const nodeId of sourceNodes) {
-      const name = clone.getNodeAttributes(nodeId).name;
-      if (name !== "__file__" && targetSymbols.has(name)) {
-        throw new Error(
-          `Merge conflict: symbol "${name}" exists in both ${target} and ${source}`
-        );
-      }
-    }
-    for (const oldId of sourceNodes) {
-      const attrs = clone.getNodeAttributes(oldId);
-      const symbolName = oldId.includes("::") ? oldId.split("::").slice(1).join("::") : attrs.name;
-      const newId = `${normalizedTarget}::${symbolName}`;
-      clone.forEachInEdge(oldId, (_edge, _edgeAttrs, inSource) => {
-        const srcAttrs = clone.getNodeAttributes(inSource);
-        if (!fileMatch(srcAttrs.filePath, source) && !fileMatch(srcAttrs.filePath, target)) {
-          brokenImports.push({
-            file: srcAttrs.filePath,
-            importedSymbol: attrs.name,
-            reason: `imports ${attrs.name} from ${source} (merged into ${target})`
-          });
-        }
-      });
-      if (!clone.hasNode(newId)) {
-        clone.addNode(newId, { ...attrs, filePath: normalizedTarget });
-      }
-      clone.forEachInEdge(oldId, (_edge, edgeAttrs, inSource) => {
-        const resolvedSource = sourceNodes.includes(inSource) ? `${normalizedTarget}::${inSource.includes("::") ? inSource.split("::").slice(1).join("::") : clone.getNodeAttributes(inSource).name}` : inSource;
-        if (clone.hasNode(resolvedSource) && clone.hasNode(newId)) {
-          clone.mergeEdge(resolvedSource, newId, edgeAttrs);
-        }
-      });
-      clone.forEachOutEdge(oldId, (_edge, edgeAttrs, _s, outTarget) => {
-        const resolvedTarget = sourceNodes.includes(outTarget) ? `${normalizedTarget}::${outTarget.includes("::") ? outTarget.split("::").slice(1).join("::") : clone.getNodeAttributes(outTarget).name}` : outTarget;
-        if (clone.hasNode(newId) && clone.hasNode(resolvedTarget)) {
-          clone.mergeEdge(newId, resolvedTarget, edgeAttrs);
-        }
-      });
-      clone.dropNode(oldId);
-    }
-  }
-  // ── Diff computation ───────────────────────────────────────────
-  computeDiff(original, simulated, brokenImports) {
-    const originalEdges = this.collectEdges(original);
-    const simulatedEdges = this.collectEdges(simulated);
-    const originalKeys = new Set(originalEdges.map((e) => this.edgeKey(e)));
-    const simulatedKeys = new Set(simulatedEdges.map((e) => this.edgeKey(e)));
-    const addedEdges = simulatedEdges.filter((e) => !originalKeys.has(this.edgeKey(e)));
-    const removedEdges = originalEdges.filter((e) => !simulatedKeys.has(this.edgeKey(e)));
-    const affectedNodeSet = /* @__PURE__ */ new Set();
-    for (const e of [...addedEdges, ...removedEdges]) {
-      affectedNodeSet.add(e.source);
-      affectedNodeSet.add(e.target);
-    }
-    const originalCycles = this.detectCycles(original);
-    const simulatedCycles = this.detectCycles(simulated);
-    const originalCycleKeys = new Set(originalCycles.map((c) => [...c].sort().join(",")));
-    const simulatedCycleKeys = new Set(simulatedCycles.map((c) => [...c].sort().join(",")));
-    const circularDepsIntroduced = simulatedCycles.filter(
-      (c) => !originalCycleKeys.has([...c].sort().join(","))
-    );
-    const circularDepsResolved = originalCycles.filter(
-      (c) => !simulatedCycleKeys.has([...c].sort().join(","))
-    );
-    return {
-      addedEdges,
-      removedEdges,
-      affectedNodes: Array.from(affectedNodeSet),
-      brokenImports,
-      circularDepsIntroduced,
-      circularDepsResolved
-    };
-  }
-  collectEdges(graph) {
-    const edges = [];
-    graph.forEachEdge((_edge, attrs, source, target) => {
-      edges.push({ source, target, kind: attrs.kind });
-    });
-    return edges;
-  }
-  edgeKey(e) {
-    return `${e.source}|${e.target}|${e.kind || ""}`;
-  }
-  // ── Cycle detection (adapted from src/health/metrics.ts) ───────
-  detectCycles(graph) {
-    const fileGraph = /* @__PURE__ */ new Map();
-    graph.forEachEdge((_edge, _attrs, source, target) => {
-      const sourceFile = graph.getNodeAttributes(source).filePath;
-      const targetFile = graph.getNodeAttributes(target).filePath;
-      if (sourceFile !== targetFile) {
-        if (!fileGraph.has(sourceFile)) {
-          fileGraph.set(sourceFile, /* @__PURE__ */ new Set());
-        }
-        fileGraph.get(sourceFile).add(targetFile);
-      }
-    });
-    const visited = /* @__PURE__ */ new Set();
-    const recStack = /* @__PURE__ */ new Set();
-    const cycles = [];
-    const dfs = (node, path) => {
-      if (recStack.has(node)) {
-        const cycleStart = path.indexOf(node);
-        if (cycleStart >= 0) {
-          cycles.push(path.slice(cycleStart));
-        }
-        return;
-      }
-      if (visited.has(node)) return;
-      visited.add(node);
-      recStack.add(node);
-      path.push(node);
-      const neighbors = fileGraph.get(node);
-      if (neighbors) {
-        for (const neighbor of neighbors) {
-          dfs(neighbor, [...path]);
-        }
-      }
-      recStack.delete(node);
-    };
-    for (const node of fileGraph.keys()) {
-      if (!visited.has(node)) {
-        dfs(node, []);
-      }
-    }
-    const unique = /* @__PURE__ */ new Map();
-    for (const cycle of cycles) {
-      const key = [...cycle].sort().join(",");
-      if (!unique.has(key)) {
-        unique.set(key, cycle);
-      }
-    }
-    return Array.from(unique.values());
-  }
-  // ── Health score (side-effect free) ────────────────────────────
-  computeHealthScore(graph) {
-    const dimensions = [
-      calculateCouplingScore(graph),
-      calculateCohesionScore(graph),
-      calculateCircularDepsScore(graph),
-      calculateGodFilesScore(graph),
-      calculateOrphansScore(graph),
-      calculateDepthScore(graph)
-    ];
-    const score = Math.round(
-      dimensions.reduce((sum, dim) => sum + dim.score * dim.weight, 0)
-    );
-    return { score, dimensions };
-  }
-};
-
-// src/commands/whatif.ts
 async function whatif(dir, options) {
   if (!options.simulate) {
     console.log("Usage: depwire whatif [dir] --simulate <action> --target <file> [options]");
@@ -969,8 +633,8 @@ function formatAction(action) {
 
 // src/index.ts
 var __filename2 = fileURLToPath2(import.meta.url);
-var __dirname2 = dirname3(__filename2);
-var packageJsonPath = join4(__dirname2, "../package.json");
+var __dirname2 = dirname2(__filename2);
+var packageJsonPath = join3(__dirname2, "../package.json");
 var packageJson = JSON.parse(readFileSync2(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
@@ -1113,7 +777,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
-      if (detectedRoot !== cwd || existsSync(join4(cwd, "package.json")) || existsSync(join4(cwd, "tsconfig.json")) || existsSync(join4(cwd, "go.mod")) || existsSync(join4(cwd, "pyproject.toml")) || existsSync(join4(cwd, "setup.py")) || existsSync(join4(cwd, ".git"))) {
+      if (detectedRoot !== cwd || existsSync(join3(cwd, "package.json")) || existsSync(join3(cwd, "tsconfig.json")) || existsSync(join3(cwd, "go.mod")) || existsSync(join3(cwd, "pyproject.toml")) || existsSync(join3(cwd, "setup.py")) || existsSync(join3(cwd, ".git"))) {
         projectRootToConnect = detectedRoot;
       }
     }
@@ -1171,7 +835,7 @@ program.command("docs").description("Generate comprehensive codebase documentati
   const startTime = Date.now();
   try {
     const projectRoot = directory ? resolve2(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve2(options.output) : join4(projectRoot, ".depwire");
+    const outputDir = options.output ? resolve2(options.output) : join3(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -1242,7 +906,7 @@ async function promptGitignore() {
   });
 }
 function addToGitignore(projectRoot, pattern) {
-  const gitignorePath = join4(projectRoot, ".gitignore");
+  const gitignorePath = join3(projectRoot, ".gitignore");
   try {
     let content = "";
     if (existsSyncNode(gitignorePath)) {

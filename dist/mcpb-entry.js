@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import {
-  buildGraph,
   createEmptyState,
-  parseProject,
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-H6Q2OEGP.js";
+} from "./chunk-XBCQPU63.js";
+import {
+  buildGraph,
+  parseProject
+} from "./chunk-QHVWDUSX.js";
 
 // src/mcpb-entry.ts
 import { resolve } from "path";

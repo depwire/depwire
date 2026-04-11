@@ -27,6 +27,8 @@ import { sampleCommits } from "../temporal/sampler.js";
 import { loadSnapshot, createSnapshot } from "../temporal/snapshots.js";
 import type { TemporalSnapshot } from "../temporal/types.js";
 import { analyzeDeadCode } from "../dead-code/index.js";
+import { SimulationEngine } from "../simulation/engine.js";
+import type { SimulationAction } from "../simulation/engine.js";
 
 interface ToolDefinition {
   name: string;
@@ -257,38 +259,43 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "simulate_change",
-      description: "Simulate an architectural change and see the impact before touching code. Returns health score delta, broken imports, and affected files.",
+      description: `Simulate an architectural change before touching any code. Returns health score delta, broken imports, and affected nodes. Zero file I/O — pure in-memory simulation.
+
+Operations:
+- delete: Simulate deleting a file. Shows every file that would break and the full blast radius.
+- move: Simulate moving a file to a new path. Shows broken imports and edge changes.
+- rename: Simulate renaming a file. Shows all affected imports and nodes.
+- split: Simulate splitting a file by moving specified symbols to a new file.
+- merge: Simulate merging two files into one. Fails fast on symbol name collision.
+
+Always run this before any refactor that touches file structure.`,
       inputSchema: {
         type: "object",
         properties: {
-          action: {
+          operation: {
             type: "string",
             enum: ["move", "delete", "rename", "split", "merge"],
             description: "Type of change to simulate",
           },
           target: {
             type: "string",
-            description: "File path to apply the action to",
+            description: "Relative file path of the primary target",
           },
           destination: {
             type: "string",
-            description: "Destination path (for move action)",
-          },
-          newName: {
-            type: "string",
-            description: "New name (for rename action)",
-          },
-          source: {
-            type: "string",
-            description: "Source file (for merge action)",
+            description: "Required for move and rename — the new file path",
           },
           symbols: {
             type: "array",
             items: { type: "string" },
-            description: "Symbols to move (for split action)",
+            description: "Required for split — symbol names to move to new file",
+          },
+          mergeTarget: {
+            type: "string",
+            description: "Required for merge — the file to merge into target",
           },
         },
-        required: ["action", "target"],
+        required: ["operation", "target"],
       },
     },
   ];
@@ -369,10 +376,16 @@ export async function handleToolCall(
         result = handleFindDeadCode(state, args.confidence || "medium");
       }
     } else if (name === "simulate_change") {
-      result = {
-        status: "coming_soon",
-        message: "simulate_change will be fully available in v1.0.0. Use the CLI command 'depwire whatif' for simulation in the meantime.",
-      };
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: true,
+          message: "No project loaded. Use connect_repo to connect to a codebase first.",
+          operation: args.operation,
+          target: args.target,
+        };
+      } else {
+        result = handleSimulateChange(args, state);
+      }
     } else {
       // All other tools require a loaded project
       if (!isProjectLoaded(state)) {
@@ -1226,6 +1239,117 @@ function handleFindDeadCode(state: DepwireState, confidence: string): any {
     return {
       error: "Failed to analyze dead code",
       message: String(error),
+    };
+  }
+}
+
+function handleSimulateChange(args: Record<string, any>, state: DepwireState): any {
+  const { operation, target, destination, symbols, mergeTarget } = args;
+  const graph = state.graph!;
+
+  // Validate required fields per operation
+  if ((operation === "move" || operation === "rename") && !destination) {
+    return {
+      error: true,
+      message: "destination is required for move and rename operations",
+      operation,
+      target,
+    };
+  }
+
+  if (operation === "split" && (!symbols || symbols.length === 0)) {
+    return {
+      error: true,
+      message: "symbols is required for split operations and must not be empty",
+      operation,
+      target,
+    };
+  }
+
+  if (operation === "merge" && !mergeTarget) {
+    return {
+      error: true,
+      message: "mergeTarget is required for merge operations",
+      operation,
+      target,
+    };
+  }
+
+  // Validate target exists in the graph
+  const targetNodes = graph.filterNodes(
+    (_node: string, attrs: any) => {
+      const fp = attrs.filePath?.replace(/^\.\//, '').replace(/\/+$/, '');
+      const t = target.replace(/^\.\//, '').replace(/\/+$/, '');
+      return fp === t || fp?.endsWith('/' + t) || t.endsWith('/' + fp);
+    }
+  );
+
+  if (targetNodes.length === 0) {
+    return {
+      error: true,
+      message: `Target file '${target}' not found in the dependency graph`,
+      operation,
+      target,
+    };
+  }
+
+  // Build the SimulationAction
+  let action: SimulationAction;
+  switch (operation) {
+    case "move":
+      action = { type: "move", target, destination };
+      break;
+    case "delete":
+      action = { type: "delete", target };
+      break;
+    case "rename":
+      action = { type: "rename", target, newName: destination };
+      break;
+    case "split":
+      action = { type: "split", target, newFile: destination || target.replace(/(\.\w+)$/, '.split$1'), symbols };
+      break;
+    case "merge":
+      action = { type: "merge", target, source: mergeTarget };
+      break;
+    default:
+      return {
+        error: true,
+        message: `Unknown operation: ${operation}`,
+        operation,
+        target,
+      };
+  }
+
+  try {
+    const engine = new SimulationEngine(graph);
+    const result = engine.simulate(action);
+
+    const brokenImportCount = result.diff.brokenImports.length;
+    const affectedNodeCount = result.diff.affectedNodes.length;
+    const removedEdgeCount = result.diff.removedEdges.length;
+
+    return {
+      operation,
+      target,
+      healthBefore: result.healthDelta.before,
+      healthAfter: result.healthDelta.after,
+      healthDelta: result.healthDelta.delta,
+      affectedNodes: affectedNodeCount,
+      brokenImports: result.diff.brokenImports.map((bi) => ({
+        file: bi.file,
+        importedSymbol: bi.importedSymbol,
+      })),
+      removedEdges: removedEdgeCount,
+      circularDepsIntroduced: result.diff.circularDepsIntroduced.length,
+      circularDepsResolved: result.diff.circularDepsResolved.length,
+      summary: `${operation.charAt(0).toUpperCase() + operation.slice(1)}ing ${target} would ${result.healthDelta.delta >= 0 ? 'improve' : 'reduce'} health score from ${result.healthDelta.before} to ${result.healthDelta.after} (${result.healthDelta.delta >= 0 ? '+' : ''}${result.healthDelta.delta}), breaking ${brokenImportCount} import${brokenImportCount !== 1 ? 's' : ''} across ${affectedNodeCount} affected node${affectedNodeCount !== 1 ? 's' : ''}.`,
+    };
+  } catch (err: any) {
+    return {
+      error: true,
+      message: err.message,
+      operation,
+      target,
     };
   }
 }

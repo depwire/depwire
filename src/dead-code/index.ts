@@ -1,11 +1,11 @@
-import type { Graph } from "graphology";
+import type { DirectedGraph } from "graphology";
 import type { DeadCodeReport, DeadCodeOptions, ConfidenceLevel } from "./types.js";
 import { findDeadSymbols } from "./detector.js";
 import { classifyDeadSymbols } from "./classifier.js";
 import { displayDeadCodeReport } from "./display.js";
 
 export function analyzeDeadCode(
-  graph: Graph,
+  graph: DirectedGraph,
   projectRoot: string,
   options: Partial<DeadCodeOptions> = {}
 ): DeadCodeReport {
