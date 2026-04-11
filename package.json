@@ -71,7 +71,7 @@
     "graphology-types": "0.24.8",
     "minimatch": "^10.2.4",
     "open": "11.0.0",
-    "simple-git": "3.31.1",
+    "simple-git": "^3.35.2",
     "web-tree-sitter": "^0.26.6",
     "ws": "8.19.0",
     "zod": "4.3.6"
