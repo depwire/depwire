@@ -6,6 +6,9 @@ export async function getCommitLog(
   limit?: number
 ): Promise<CommitInfo[]> {
   try {
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+      throw new Error(`Invalid git log limit: ${limit}`);
+    }
     const limitArg = limit ? `-n ${limit}` : '';
     const output = execSync(
       `git log ${limitArg} --pretty=format:"%H|%aI|%s|%an"`,
@@ -43,6 +46,9 @@ export async function checkoutCommit(
   dir: string,
   hash: string
 ): Promise<void> {
+  if (!/^[a-zA-Z0-9_.\-\/]+$/.test(hash)) {
+    throw new Error(`Invalid git ref: ${hash}`);
+  }
   try {
     execSync(`git checkout -q ${hash}`, { cwd: dir, stdio: 'ignore' });
   } catch (error) {
@@ -54,6 +60,9 @@ export async function restoreOriginal(
   dir: string,
   originalBranch: string
 ): Promise<void> {
+  if (!/^[a-zA-Z0-9_.\-\/]+$/.test(originalBranch)) {
+    throw new Error(`Invalid git ref: ${originalBranch}`);
+  }
   try {
     execSync(`git checkout -q ${originalBranch}`, {
       cwd: dir,
