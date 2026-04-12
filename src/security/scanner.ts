@@ -37,7 +37,8 @@ export async function scanSecurity(
 
   // Run all checks in parallel
   const checkResults = await Promise.all([
-    checkDependencies(filteredFiles, projectRoot),
+    // Skip dependency checks for single-file scans — they are repo-wide by nature
+    options.target ? Promise.resolve([]) : checkDependencies(filteredFiles, projectRoot),
     checkInjection(filteredFiles, projectRoot),
     checkSecrets(filteredFiles, projectRoot),
     checkPathTraversal(filteredFiles, projectRoot),

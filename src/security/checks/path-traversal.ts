@@ -41,13 +41,20 @@ const PATTERNS: PathPattern[] = [
 ];
 
 function shouldSkip(filePath: string): boolean {
-  return SKIP_DIRS.some(d => filePath.includes(d));
+  if (SKIP_DIRS.some(d => filePath.includes(d))) return true;
+  // WASM loading is always internal
+  if (filePath.includes('wasm-init')) return true;
+  return false;
 }
 
 function isRouteOrTool(filePath: string): boolean {
   const lower = filePath.toLowerCase();
   return lower.includes('route') || lower.includes('api/') || lower.includes('mcp/') || lower.includes('handler') || lower.includes('controller');
 }
+
+// Patterns that indicate the path is hardcoded/internal, not user-controlled
+const SAFE_OUTPUT_PATTERNS = /(?:output|outPath|outFile|dest|target|docPath).*\.(?:md|json|html|ts|js)['"]|['"][^'"]+\.(?:md|json|html|ts|js)['"]/;
+const SAFE_DIRNAME_ARGS = /(?:grammar|wasm|wasmPath|wasmFile|grammars)/i;
 
 export async function checkPathTraversal(
   files: ParsedFile[],
@@ -78,6 +85,18 @@ export async function checkPathTraversal(
           if (pattern.regex.test(line)) {
             // Check if user input variable is involved
             if (!USER_INPUT_VARS.test(line)) continue;
+
+            // Skip writeFileSync where path looks like a hardcoded output file
+            if (/writeFileSync/.test(line) && SAFE_OUTPUT_PATTERNS.test(line)) continue;
+
+            // Also check nearby lines for hardcoded output filenames (variable defined on prev line)
+            if (/(?:writeFileSync|readFileSync)/.test(line)) {
+              const context = lines.slice(Math.max(0, i - 2), i + 1).join('\n');
+              if (SAFE_OUTPUT_PATTERNS.test(context)) continue;
+            }
+
+            // Skip __dirname joins with safe internal args (grammar, wasm)
+            if (/__dirname/.test(line) && SAFE_DIRNAME_ARGS.test(line)) continue;
 
             // Check for containment (resolve + startsWith check nearby)
             const nearbyLines = lines.slice(Math.max(0, i - 3), Math.min(lines.length, i + 4)).join('\n');

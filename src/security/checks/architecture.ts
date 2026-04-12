@@ -197,13 +197,33 @@ function checkDirectDbFromRoutes(graph: DirectedGraph): SecurityFinding[] {
   return findings;
 }
 
+const SKIP_FILE_PATTERNS = ['test/', 'tests/', 'test/fixtures/', '__tests__/', 'fixtures/', 'spec/'];
+
 function checkDeadAuthCode(graph: DirectedGraph): SecurityFinding[] {
   const findings: SecurityFinding[] = [];
+  const seen = new Set<string>();
 
   graph.forEachNode((node, attrs) => {
     if (!attrs.exported) return;
     if (!isSecurityFile(attrs.filePath)) return;
+
+    // Skip test/fixture files
+    const lowerPath = attrs.filePath.toLowerCase();
+    if (SKIP_FILE_PATTERNS.some(p => lowerPath.includes(p))) return;
+
+    // Skip single-letter variables and short names (loop vars, locals)
+    if (!attrs.name || attrs.name.length < 4) return;
+
+    // Skip common local variable names that get misidentified
+    const SKIP_NAMES = new Set(['line', 'lines', 'content', 'findings', 'result', 'results', 'data', 'options', 'args', 'config', 'error', 'catchBlock', 'nearbyLines', 'isCryptoFile', 'isAuthFile', 'isAuthRelatedFile']);
+    if (SKIP_NAMES.has(attrs.name)) return;
+
     if (graph.inDegree(node) === 0) {
+      // Deduplicate by file + line + name
+      const dedupKey = `${attrs.filePath}:${attrs.startLine}:${attrs.name}`;
+      if (seen.has(dedupKey)) return;
+      seen.add(dedupKey);
+
       findings.push({
         id: '',
         severity: 'info',
