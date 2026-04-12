@@ -92,6 +92,17 @@ export async function connectToRepo(
       }
 
       projectRoot = subdirectory ? join(cloneDir, subdirectory) : cloneDir;
+      if (subdirectory) {
+        const resolvedRoot = resolve(cloneDir);
+        const resolvedProject = resolve(projectRoot);
+        if (!resolvedProject.startsWith(resolvedRoot + '/') && 
+            resolvedProject !== resolvedRoot) {
+          return { 
+            error: 'Access denied', 
+            message: 'Subdirectory must be within the project root' 
+          };
+        }
+      }
     } else {
       // Local path - validate it's safe
       const validation = validateProjectPath(source);
@@ -110,6 +121,17 @@ export async function connectToRepo(
       }
 
       projectRoot = subdirectory ? join(source, subdirectory) : source;
+      if (subdirectory) {
+        const resolvedRoot = resolve(source);
+        const resolvedProject = resolve(projectRoot);
+        if (!resolvedProject.startsWith(resolvedRoot + '/') && 
+            resolvedProject !== resolvedRoot) {
+          return { 
+            error: 'Access denied', 
+            message: 'Subdirectory must be within the project root' 
+          };
+        }
+      }
       projectName = basename(projectRoot);
     }
     
