@@ -17,7 +17,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-B2KGFBZL.js";
+} from "./chunk-RGD3YJYQ.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -31,11 +31,11 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-YYY5TNG7.js";
+} from "./chunk-DA5LWNJ4.js";
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve3, dirname as dirname4, join as join5 } from "path";
+import { resolve as resolve4, dirname as dirname4, join as join5 } from "path";
 import { writeFileSync, readFileSync as readFileSync3, existsSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
@@ -231,7 +231,7 @@ import { join as join2 } from "path";
 import express from "express";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, resolve } from "path";
 import open from "open";
 
 // src/viz/temporal-data.ts
@@ -306,10 +306,10 @@ async function findAvailablePort(startPort) {
   const net = await import("net");
   for (let attempt = 0; attempt < 10; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve4) => {
-      const server = net.createServer().once("error", () => resolve4(false)).once("listening", () => {
+    const isAvailable = await new Promise((resolve5) => {
+      const server = net.createServer().once("error", () => resolve5(false)).once("listening", () => {
         server.close();
-        resolve4(true);
+        resolve5(true);
       }).listen(testPort, "127.0.0.1");
     });
     if (isAvailable) {
@@ -325,19 +325,22 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
   app.get("/api/data", (_req, res) => {
     res.json(vizData);
   });
-  const publicDir = join(__dirname, "viz", "public");
+  const publicDir = resolve(__dirname, "viz", "public");
   app.get("/", (_req, res) => {
-    const htmlPath = join(publicDir, "temporal.html");
+    const htmlPath = resolve(publicDir, "temporal.html");
+    if (!htmlPath.startsWith(publicDir)) return res.status(403).send("Forbidden");
     const html = readFileSync(htmlPath, "utf-8");
     res.send(html);
   });
   app.get("/temporal.js", (_req, res) => {
-    const jsPath = join(publicDir, "temporal.js");
+    const jsPath = resolve(publicDir, "temporal.js");
+    if (!jsPath.startsWith(publicDir)) return res.status(403).send("Forbidden");
     const js = readFileSync(jsPath, "utf-8");
     res.type("application/javascript").send(js);
   });
   app.get("/temporal.css", (_req, res) => {
-    const cssPath = join(publicDir, "temporal.css");
+    const cssPath = resolve(publicDir, "temporal.css");
+    if (!cssPath.startsWith(publicDir)) return res.status(403).send("Forbidden");
     const css = readFileSync(cssPath, "utf-8");
     res.type("text/css").send(css);
   });
@@ -350,13 +353,13 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
       console.log("  (Could not open browser automatically)");
     });
   });
-  await new Promise((resolve4, reject) => {
+  await new Promise((resolve5, reject) => {
     server.on("error", reject);
     process.on("SIGINT", () => {
       console.log("\n\nShutting down temporal server...");
       server.close(() => {
         console.log("Server stopped");
-        resolve4();
+        resolve5();
         process.exit(0);
       });
     });
@@ -501,7 +504,7 @@ async function trackCommand(command, version = "unknown") {
 }
 
 // src/commands/whatif.ts
-import { resolve } from "path";
+import { resolve as resolve2 } from "path";
 import chalk from "chalk";
 
 // src/viz/whatif-server.ts
@@ -690,14 +693,14 @@ async function findAvailablePort2(startPort, maxAttempts = 10) {
   const net = await import("net");
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve4) => {
+    const isAvailable = await new Promise((resolve5) => {
       const server = net.createServer();
       server.once("error", () => {
-        resolve4(false);
+        resolve5(false);
       });
       server.once("listening", () => {
         server.close();
-        resolve4(true);
+        resolve5(true);
       });
       server.listen(testPort, "127.0.0.1");
     });
@@ -752,7 +755,7 @@ Opening What If UI at ${url}`);
 // src/commands/whatif.ts
 async function whatif(dir, options) {
   if (!options.simulate) {
-    const projectRoot2 = dir === "." ? findProjectRoot() : resolve(dir);
+    const projectRoot2 = dir === "." ? findProjectRoot() : resolve2(dir);
     console.error(`Parsing project: ${projectRoot2}`);
     const parsedFiles2 = await parseProject(projectRoot2);
     const graph2 = buildGraph(parsedFiles2);
@@ -778,7 +781,7 @@ async function whatif(dir, options) {
     process.exit(1);
   }
   const action = buildAction(options);
-  const projectRoot = dir === "." ? findProjectRoot() : resolve(dir);
+  const projectRoot = dir === "." ? findProjectRoot() : resolve2(dir);
   console.error(`Parsing project: ${projectRoot}`);
   const parsedFiles = await parseProject(projectRoot);
   const graph = buildGraph(parsedFiles);
@@ -889,7 +892,7 @@ function formatAction(action) {
 }
 
 // src/commands/security.ts
-import { resolve as resolve2, dirname as dirname3, join as join4 } from "path";
+import { resolve as resolve3, dirname as dirname3, join as join4 } from "path";
 import { readFileSync as readFileSync2 } from "fs";
 import { fileURLToPath as fileURLToPath3 } from "url";
 
@@ -1031,7 +1034,7 @@ function getVersion() {
 }
 var SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"];
 async function securityCommand(dir, options) {
-  const projectRoot = dir === "." ? findProjectRoot() : resolve2(dir);
+  const projectRoot = dir === "." ? findProjectRoot() : resolve3(dir);
   console.error(`Scanning: ${projectRoot}`);
   const startTime = Date.now();
   const parsedFiles = await parseProject(projectRoot);
@@ -1079,7 +1082,7 @@ program.command("parse").description("Parse a TypeScript project and build depen
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve3(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1118,8 +1121,8 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   trackCommand("query", packageJson.version);
   try {
-    const projectRoot = resolve3(directory);
-    const cacheFile = "depwire-output.json";
+    const projectRoot = resolve4(directory);
+    const cacheFile = resolve4("depwire-output.json");
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");
@@ -1167,7 +1170,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("viz", packageJson.version);
   try {
-    const projectRoot = directory ? resolve3(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1190,7 +1193,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
   trackCommand("temporal", packageJson.version);
   try {
-    const projectRoot = directory ? resolve3(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
       commits: parseInt(options.commits, 10),
       strategy: options.strategy,
@@ -1210,7 +1213,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     const state = createEmptyState();
     let projectRootToConnect = null;
     if (directory) {
-      projectRootToConnect = resolve3(directory);
+      projectRootToConnect = resolve4(directory);
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
@@ -1271,8 +1274,8 @@ program.command("docs").description("Generate comprehensive codebase documentati
   trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve3(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve3(options.output) : join5(projectRoot, ".depwire");
+    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
+    const outputDir = options.output ? resolve4(options.output) : join5(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -1334,11 +1337,11 @@ async function promptGitignore() {
     input: process.stdin,
     output: process.stdout
   });
-  return new Promise((resolve4) => {
+  return new Promise((resolve5) => {
     rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve4(normalized === "" || normalized === "y" || normalized === "yes");
+      resolve5(normalized === "" || normalized === "y" || normalized === "yes");
     });
   });
 }
@@ -1368,7 +1371,7 @@ ${pattern}
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   trackCommand("health", packageJson.version);
   try {
-    const projectRoot = directory ? resolve3(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles);
@@ -1392,7 +1395,7 @@ program.command("health").description("Analyze dependency architecture health (0
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   trackCommand("dead-code", packageJson.version);
   try {
-    const projectRoot = directory ? resolve3(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles);

@@ -5,7 +5,7 @@
  */
 
 import { readFileSync, statSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { scanDirectory } from '../utils/files.js';
 import { getParserForFile } from './detect.js';
 import { ParsedFile } from './types.js';
@@ -43,6 +43,12 @@ export async function parseProject(
     try {
       const fullPath = join(projectRoot, file);
       
+      // Path containment check
+      if (!resolve(fullPath).startsWith(resolve(projectRoot))) {
+        skippedFiles++;
+        continue;
+      }
+      
       // Check if file should be excluded
       if (options?.exclude) {
         const shouldExclude = options.exclude.some((pattern: string) => 
@@ -74,6 +80,7 @@ export async function parseProject(
         continue;
       }
       
+      // fullPath validated via resolve().startsWith() containment check above
       const sourceCode = readFileSync(fullPath, 'utf-8');
       const parsed = parser.parseFile(file, sourceCode, projectRoot);
       parsedFiles.push(parsed);

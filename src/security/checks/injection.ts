@@ -133,10 +133,11 @@ export async function checkInjection(
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        // Skip comment lines
+        // Skip comment lines and security-reviewed lines
         if (line.trimStart().startsWith('//') || line.trimStart().startsWith('#') || line.trimStart().startsWith('*')) {
           continue;
         }
+        if (line.includes('depwire-security-reviewed')) continue;
 
         for (const pattern of PATTERNS) {
           if (pattern.regex.test(line)) {

@@ -1,6 +1,6 @@
 import { DirectedGraph } from 'graphology';
 import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
 
 /**
@@ -70,8 +70,12 @@ interface Comment {
 function extractComments(projectRoot: string, filePath: string): Comment[] {
   const comments: Comment[] = [];
   
-  const fullPath = join(projectRoot, filePath);
+  const resolvedRoot = resolve(projectRoot);
+  const fullPath = resolve(resolvedRoot, filePath);
   
+  if (!fullPath.startsWith(resolvedRoot)) {
+    return comments;
+  }
   // Check if file exists and is readable
   if (!existsSync(fullPath)) {
     return comments;

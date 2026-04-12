@@ -11,7 +11,7 @@
 
 **The missing context layer for AI coding assistants.**
 
-Deterministic dependency graph. 16 MCP tools. Architecture health. What If simulation.
+Deterministic dependency graph. 17 MCP tools. Architecture health. What If simulation. Security scanner.
 
 The context layer that turns vibe coding into software engineering.
 
@@ -69,6 +69,7 @@ depwire health
 depwire dead-code
 depwire temporal
 depwire whatif
+depwire security
 
 # Or specify a directory explicitly
 npx depwire-cli viz ./my-project
@@ -145,6 +146,7 @@ Settings → Features → Experimental → Enable MCP → Add Server:
 | `find_dead_code` | Find dead code — symbols defined but never referenced |
 | `get_temporal_graph` | Show how the graph evolved over git history |
 | `simulate_change` | Simulate a move/delete/rename/split/merge before touching code. Returns health score delta, broken imports, and affected nodes. Zero file I/O. |
+| `security_scan` | Scan for security vulnerabilities with graph-aware severity elevation. No API key required. |
 
 ## SDK
 
@@ -161,6 +163,7 @@ import {
   calculateHealthScore,
   analyzeDeadCode,
   generateDocs,
+  scanSecurity,
   SimulationEngine,
   searchSymbols,
   getImpact,
@@ -186,6 +189,32 @@ depwire whatif . --simulate merge --target src/utils/helpers.ts --merge-target s
 
 Returns: health score delta, broken imports, affected nodes, circular deps introduced/resolved.
 Also available as MCP tool `simulate_change` for AI coding assistants.
+
+## Security Scanner
+
+Scan your codebase for security vulnerabilities before AI-generated code ships to production:
+
+```bash
+depwire security .                          # Full repo scan
+depwire security . --target src/auth.ts    # Single file
+depwire security . --format sarif          # GitHub Security tab
+depwire security . --fail-on high          # CI gate — exit 1 if HIGH+
+depwire security . --class injection       # Specific check only
+```
+
+10 vulnerability categories:
+- Dependency CVEs (npm/pip/cargo/go audit)
+- Shell injection + code injection
+- Hardcoded secrets (API keys, passwords, private keys)
+- Path traversal
+- Auth bypass patterns
+- Input validation gaps
+- Information disclosure
+- Cryptography weaknesses
+- Frontend XSS (dangerouslySetInnerHTML, localStorage tokens)
+- Architecture-level risks (graph-powered severity elevation)
+
+Graph-aware severity: vulnerabilities reachable from MCP tools or HTTP routes are automatically elevated. Available as MCP tool `security_scan` and via `depwire-cli/sdk`.
 
 ## Why Depwire
 
@@ -721,7 +750,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ### ✅ Shipped
 - [x] Arc diagram visualization
-- [x] MCP server (16 tools)
+- [x] MCP server (17 tools)
 - [x] Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C)
 - [x] File watching + live refresh
 - [x] Auto-generated documentation (13 documents)
@@ -733,6 +762,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 - [x] WASM migration (Windows support)
 - [x] Cloud dashboard — [app.depwire.dev](https://app.depwire.dev)
 - [x] What If simulation — simulate refactors before touching code
+- [x] Security scanner — deterministic vulnerability detection with graph-aware severity
 
 ### Coming Next
 - [ ] New language support (Java, C++, Ruby — community requested)

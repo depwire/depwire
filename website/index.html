@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Depwire — The Missing Context Layer for AI Coding Assistants</title>
-    <meta name="description" content="Depwire gives AI coding assistants a deterministic dependency graph via MCP. 16 tools for impact analysis, architecture health, dead code detection, and What If simulation. The context layer that turns vibe coding into software engineering.">
+    <meta name="description" content="Depwire gives AI coding assistants a deterministic dependency graph via MCP. 17 tools for impact analysis, architecture health, dead code detection, What If simulation, and security scanning. The context layer that turns vibe coding into software engineering.">
     <meta name="keywords" content="MCP server, dependency graph, AI coding assistant, codebase context, impact analysis, architecture health, dead code detection, what if simulation, Claude Desktop, Cursor, tree-sitter, TypeScript, Python, Go">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://depwire.dev/">
     <meta property="og:title" content="Depwire — The Missing Context Layer for AI Coding Assistants">
-    <meta property="og:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 16 MCP tools.">
+    <meta property="og:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 17 MCP tools.">
     <meta property="og:image" content="https://depwire.dev/assets/depwire-hero.png">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://depwire.dev/">
     <meta property="twitter:title" content="Depwire — The Missing Context Layer for AI Coding Assistants">
-    <meta property="twitter:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 16 MCP tools.">
+    <meta property="twitter:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 17 MCP tools.">
     <meta property="twitter:image" content="https://depwire.dev/assets/depwire-hero.png">
     
     <!-- Favicon -->
@@ -925,7 +925,7 @@
             <h2>Every new chat, every new prompt — your AI tool forgets your entire codebase. The result? Hallucinated imports, broken refactors, and thousands of tokens wasted re-scanning files it already saw.</h2>
             <div class="hero-pivot">Depwire fixes this.</div>
             <p class="hero-solution">The context layer that turns vibe coding into software engineering. Deterministic dependency graph. Not probabilistic guessing.</p>
-            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">8 CLI commands. 16 MCP tools. 13 auto-generated documents. What If simulation. Architecture health scoring.</p>
+            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">8 CLI commands. 17 MCP tools. 13 auto-generated documents. What If simulation. Security scanner. Architecture health scoring.</p>
             
             <!-- Benchmark Stats -->
             <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;" class="scroll-reveal">
@@ -1022,7 +1022,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤖</div>
                     <h3>AI Context Engine</h3>
-                    <p>16 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
+                    <p>17 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">💥</div>
@@ -1075,6 +1075,18 @@
                         <li>Circular dependency analysis</li>
                         <li>CLI: <code>depwire whatif</code></li>
                         <li>MCP tool: <code>simulate_change</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Security Scanner</h3>
+                    <p>Deterministic vulnerability detection — no API key, no LLM. Scans for injection, secrets, path traversal, auth bypass, XSS, and more.</p>
+                    <ul>
+                        <li>10 vulnerability categories, 40+ patterns</li>
+                        <li>Graph-aware severity elevation</li>
+                        <li>SARIF output for GitHub Security tab</li>
+                        <li>CLI: <code>depwire security</code></li>
+                        <li>MCP tool: <code>security_scan</code></li>
                     </ul>
                 </div>
             </div>
@@ -1254,6 +1266,7 @@ depwire parse
 depwire docs
 depwire health
 depwire whatif
+depwire security
 
 <span class="code-comment"># Or specify a directory explicitly</span>
 npx depwire-cli viz ./my-project
@@ -1289,8 +1302,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
     <!-- MCP Tools Section -->
     <section class="mcp-section">
         <div class="container">
-            <h2 class="section-title scroll-reveal">16 MCP Tools for AI Assistants</h2>
-            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 16 tools that AI assistants call autonomously based on your questions.</p>
+            <h2 class="section-title scroll-reveal">17 MCP Tools for AI Assistants</h2>
+            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 17 tools that AI assistants call autonomously based on your questions.</p>
             <div class="tools-table scroll-reveal">
                 <table>
                     <thead>
@@ -1363,6 +1376,10 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         <tr>
                             <td><code>simulate_change</code></td>
                             <td>Simulate a move/delete/rename/split/merge before touching code. Returns health score delta, broken imports, and affected nodes. Zero file I/O.</td>
+                        </tr>
+                        <tr>
+                            <td><code>security_scan</code></td>
+                            <td>Scan for security vulnerabilities with graph-aware severity elevation. No API key required.</td>
                         </tr>
                     </tbody>
                 </table>

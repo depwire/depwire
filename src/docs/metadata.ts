@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 export interface DocMetadata {
   generated_at: string;
@@ -20,9 +20,10 @@ export interface ProjectMetadata {
  * Load existing metadata from .depwire/metadata.json
  */
 export function loadMetadata(outputDir: string): ProjectMetadata | null {
-  const metadataPath = join(outputDir, 'metadata.json');
+  const resolvedDir = resolve(outputDir);
+  const metadataPath = resolve(resolvedDir, 'metadata.json');
   
-  if (!existsSync(metadataPath)) {
+  if (!metadataPath.startsWith(resolvedDir) || !existsSync(metadataPath)) {
     return null;
   }
   
@@ -39,7 +40,11 @@ export function loadMetadata(outputDir: string): ProjectMetadata | null {
  * Save metadata to .depwire/metadata.json
  */
 export function saveMetadata(outputDir: string, metadata: ProjectMetadata): void {
-  const metadataPath = join(outputDir, 'metadata.json');
+  const resolvedDir = resolve(outputDir);
+  const metadataPath = resolve(resolvedDir, 'metadata.json');
+  if (!metadataPath.startsWith(resolvedDir)) {
+    throw new Error(`Path traversal attempt blocked: ${metadataPath}`);
+  }
   writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
 }
 

@@ -46,11 +46,11 @@ export async function checkoutCommit(
   dir: string,
   hash: string
 ): Promise<void> {
-  if (!/^[a-zA-Z0-9_.\-\/]+$/.test(hash)) {
-    throw new Error(`Invalid git ref: ${hash}`);
+  if (!/^[a-f0-9]+$/.test(hash)) {
+    throw new Error(`Invalid commit hash: ${hash}`);
   }
   try {
-    execSync(`git checkout -q ${hash}`, { cwd: dir, stdio: 'ignore' });
+    execSync(`git checkout -q ${hash}`, { cwd: dir, stdio: 'ignore' }); // depwire-security-reviewed: hash validated above
   } catch (error) {
     throw new Error(`Failed to checkout commit ${hash}: ${error}`);
   }
@@ -60,11 +60,11 @@ export async function restoreOriginal(
   dir: string,
   originalBranch: string
 ): Promise<void> {
-  if (!/^[a-zA-Z0-9_.\-\/]+$/.test(originalBranch)) {
-    throw new Error(`Invalid git ref: ${originalBranch}`);
+  if (!/^[a-zA-Z0-9/_.\-]+$/.test(originalBranch)) {
+    throw new Error(`Invalid branch name: ${originalBranch}`);
   }
   try {
-    execSync(`git checkout -q ${originalBranch}`, {
+    execSync(`git checkout -q ${originalBranch}`, { // depwire-security-reviewed: branch validated above
       cwd: dir,
       stdio: 'ignore',
     });

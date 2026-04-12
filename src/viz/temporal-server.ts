@@ -1,7 +1,7 @@
 import express from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
 import open from 'open';
 import { TemporalSnapshot } from '../temporal/types.js';
 import { prepareTemporalVizData } from './temporal-data.js';
@@ -49,22 +49,25 @@ export async function startTemporalServer(
     res.json(vizData);
   });
 
-  const publicDir = join(__dirname, 'viz', 'public');
+  const publicDir = resolve(__dirname, 'viz', 'public');
 
   app.get('/', (_req, res) => {
-    const htmlPath = join(publicDir, 'temporal.html');
+    const htmlPath = resolve(publicDir, 'temporal.html');
+    if (!htmlPath.startsWith(publicDir)) return res.status(403).send('Forbidden');
     const html = readFileSync(htmlPath, 'utf-8');
     res.send(html);
   });
 
   app.get('/temporal.js', (_req, res) => {
-    const jsPath = join(publicDir, 'temporal.js');
+    const jsPath = resolve(publicDir, 'temporal.js');
+    if (!jsPath.startsWith(publicDir)) return res.status(403).send('Forbidden');
     const js = readFileSync(jsPath, 'utf-8');
     res.type('application/javascript').send(js);
   });
 
   app.get('/temporal.css', (_req, res) => {
-    const cssPath = join(publicDir, 'temporal.css');
+    const cssPath = resolve(publicDir, 'temporal.css');
+    if (!cssPath.startsWith(publicDir)) return res.status(403).send('Forbidden');
     const css = readFileSync(cssPath, 'utf-8');
     res.type('text/css').send(css);
   });

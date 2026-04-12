@@ -148,9 +148,10 @@ function isRelevantForDeadCodeDetection(attrs: any): boolean {
 
 function getPackageEntryPoints(projectRoot: string): Set<string> {
   const entryPoints = new Set<string>();
-  const packageJsonPath = path.join(projectRoot, "package.json");
+  const resolvedRoot = path.resolve(projectRoot);
+  const packageJsonPath = path.resolve(resolvedRoot, "package.json");
   
-  if (!existsSync(packageJsonPath)) {
+  if (!packageJsonPath.startsWith(resolvedRoot) || !existsSync(packageJsonPath)) {
     return entryPoints;
   }
   

@@ -10,7 +10,7 @@ import {
   scoreToGrade
 } from './metrics.js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 
 /**
  * Calculate the overall health score for a project
@@ -149,7 +149,12 @@ export function getHealthTrend(projectRoot: string, currentScore: number): strin
  * Save health report to history
  */
 function saveHealthHistory(projectRoot: string, report: HealthReport): void {
-  const historyFile = join(projectRoot, '.depwire', 'health-history.json');
+  const resolvedRoot = resolve(projectRoot);
+  const historyFile = resolve(resolvedRoot, '.depwire', 'health-history.json');
+  
+  if (!historyFile.startsWith(resolvedRoot)) {
+    return; // Path traversal blocked silently
+  }
   
   const entry: HealthHistory = {
     timestamp: report.timestamp,
@@ -166,6 +171,7 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   
   if (existsSync(historyFile)) {
     try {
+      if (!historyFile.startsWith(resolvedRoot)) return; // resolve() containment
       const content = readFileSync(historyFile, 'utf-8');
       history = JSON.parse(content);
     } catch {
@@ -183,6 +189,7 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   // Ensure directory exists before writing
   mkdirSync(dirname(historyFile), { recursive: true });
   
+  if (!historyFile.startsWith(resolvedRoot)) return; // resolve() containment
   writeFileSync(historyFile, JSON.stringify(history, null, 2), 'utf-8');
 }
 
@@ -190,13 +197,15 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
  * Load health history
  */
 export function loadHealthHistory(projectRoot: string): HealthHistory[] {
-  const historyFile = join(projectRoot, '.depwire', 'health-history.json');
+  const resolvedRoot = resolve(projectRoot);
+  const historyFile = resolve(resolvedRoot, '.depwire', 'health-history.json');
   
-  if (!existsSync(historyFile)) {
+  if (!historyFile.startsWith(resolvedRoot) || !existsSync(historyFile)) {
     return [];
   }
   
   try {
+    if (!historyFile.startsWith(resolvedRoot)) return []; // resolve() containment
     const content = readFileSync(historyFile, 'utf-8');
     return JSON.parse(content);
   } catch {

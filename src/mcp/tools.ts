@@ -1,5 +1,5 @@
 import { DirectedGraph } from "graphology";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { existsSync, readFileSync } from "fs";
 import {
   searchSymbols,
@@ -1045,6 +1045,12 @@ Available document types:
     }
     
     const filePath = join(docsDir, metadata.documents[doc].file);
+    
+    // Path containment check
+    if (!resolve(filePath).startsWith(resolve(docsDir))) {
+      missing.push(doc);
+      continue;
+    }
     
     if (!existsSync(filePath)) {
       missing.push(doc);

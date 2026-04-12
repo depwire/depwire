@@ -115,7 +115,7 @@ program
     trackCommand('query', packageJson.version);
     try {
       const projectRoot = resolve(directory);
-      const cacheFile = 'depwire-output.json';
+      const cacheFile = resolve('depwire-output.json');
       
       let graph;
       

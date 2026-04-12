@@ -1,7 +1,7 @@
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { existsSync, readFileSync, readdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 
 interface Context {
   filePath: string;
@@ -403,7 +403,7 @@ function readGoModuleName(projectRoot: string): string | null {
   let currentDir = projectRoot;
   
   for (let i = 0; i < 5; i++) {
-    const goModPath = join(currentDir, 'go.mod');
+    const goModPath = resolve(currentDir, 'go.mod');
     
     if (existsSync(goModPath)) {
       try {

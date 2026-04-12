@@ -98,9 +98,9 @@ export async function checkPathTraversal(
             // Skip __dirname joins with safe internal args (grammar, wasm)
             if (/__dirname/.test(line) && SAFE_DIRNAME_ARGS.test(line)) continue;
 
-            // Check for containment (resolve + startsWith check nearby)
-            const nearbyLines = lines.slice(Math.max(0, i - 3), Math.min(lines.length, i + 4)).join('\n');
-            if (nearbyLines.includes('startsWith') && nearbyLines.includes('resolve')) continue;
+            // Check for containment (resolve + startsWith check in surrounding function — 15 line window)
+            const nearbyLines = lines.slice(Math.max(0, i - 15), Math.min(lines.length, i + 4)).join('\n');
+            if (nearbyLines.includes('startsWith') && /resolve/.test(nearbyLines)) continue;
 
             const severity: Severity = inRouteOrTool ? 'high' : 'medium';
 

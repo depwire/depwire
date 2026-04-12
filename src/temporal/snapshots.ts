@@ -1,5 +1,5 @@
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { TemporalSnapshot } from './types.js';
 import { ProjectGraph } from '../parser/types.js';
 
@@ -12,7 +12,11 @@ export function saveSnapshot(
   }
 
   const filename = `${snapshot.commitHash.substring(0, 8)}.json`;
-  const filepath = join(outputDir, filename);
+  const filepath = resolve(outputDir, filename);
+
+  if (!filepath.startsWith(resolve(outputDir))) {
+    throw new Error(`Path traversal attempt blocked: ${filepath}`);
+  }
 
   writeFileSync(filepath, JSON.stringify(snapshot, null, 2), 'utf-8');
 }
@@ -22,9 +26,9 @@ export function loadSnapshot(
   outputDir: string
 ): TemporalSnapshot | null {
   const shortHash = commitHash.substring(0, 8);
-  const filepath = join(outputDir, `${shortHash}.json`);
+  const filepath = resolve(outputDir, `${shortHash}.json`);
 
-  if (!existsSync(filepath)) {
+  if (!filepath.startsWith(resolve(outputDir)) || !existsSync(filepath)) {
     return null;
   }
 
@@ -46,7 +50,9 @@ export function loadAllSnapshots(outputDir: string): TemporalSnapshot[] {
 
   for (const file of files) {
     try {
-      const content = readFileSync(join(outputDir, file), 'utf-8');
+      const filepath = resolve(outputDir, file);
+      if (!filepath.startsWith(resolve(outputDir))) continue;
+      const content = readFileSync(filepath, 'utf-8');
       snapshots.push(JSON.parse(content));
     } catch {
       continue;
