@@ -575,12 +575,15 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     }
     .panels {
       display: flex;
+      flex-direction: row;
       gap: 0;
-      height: calc(100vh - 200px);
+      width: 100%;
+      height: calc(100vh - 180px);
       min-height: 400px;
     }
     .panel {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       border-right: 1px solid #2a2a4a;
@@ -597,6 +600,7 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
       border-bottom: 1px solid #2a2a4a;
       display: flex;
       justify-content: space-between;
+      flex-shrink: 0;
     }
     .panel-diagram {
       flex: 1;
@@ -604,6 +608,7 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
       position: relative;
     }
     .panel-diagram svg {
+      display: block;
       width: 100%;
       height: 100%;
     }
@@ -707,11 +712,17 @@ async function findAvailablePort2(startPort, maxAttempts = 10) {
 async function serveWhatIfViz(currentVizData, simulatedVizData, simulationResult, operation, target) {
   const availablePort = await findAvailablePort2(3335);
   const app = express2();
-  const publicDir = join3(__dirname2, "viz", "public");
-  app.use(express2.static(publicDir));
   app.get("/", (_req, res) => {
     const html = generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, operation, target);
     res.type("html").send(html);
+  });
+  app.get("/favicon.ico", (_req, res) => {
+    res.sendFile(join3(__dirname2, "..", "..", "icon.png"));
+  });
+  const publicDir = join3(__dirname2, "viz", "public");
+  app.use(express2.static(publicDir));
+  app.get("/api/graph", (_req, res) => {
+    res.json(currentVizData);
   });
   app.get("/api/current", (_req, res) => {
     res.json(currentVizData);

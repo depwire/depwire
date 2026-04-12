@@ -52,17 +52,25 @@ export async function serveWhatIfViz(
 
   const app = express();
 
-  // Serve static files (arc.js, style.css) from viz/public
-  const publicDir = join(__dirname, 'viz', 'public');
-  app.use(express.static(publicDir));
-
-  // Main page
+  // Main page (must be before static middleware to override index.html)
   app.get('/', (_req, res) => {
     const html = generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, operation, target);
     res.type('html').send(html);
   });
 
+  app.get('/favicon.ico', (_req, res) => {
+    res.sendFile(join(__dirname, '..', '..', 'icon.png'));
+  });
+
+  // Serve static files (arc.js, style.css) from viz/public
+  const publicDir = join(__dirname, 'viz', 'public');
+  app.use(express.static(publicDir));
+
   // API endpoints
+  app.get('/api/graph', (_req, res) => {
+    res.json(currentVizData);
+  });
+
   app.get('/api/current', (_req, res) => {
     res.json(currentVizData);
   });

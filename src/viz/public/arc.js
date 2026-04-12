@@ -195,12 +195,16 @@ async function init() {
     // Render diagram
     renderArcDiagram();
     
-    // Setup interactions
-    setupSearch();
-    setupExport();
+    // Setup interactions (not in whatif mode)
+    if (!window.__depwireWhatIf) {
+      setupSearch();
+      setupExport();
+    }
     
-    // Setup WebSocket for live updates
-    setupWebSocket();
+    // Setup WebSocket for live updates (not in whatif mode)
+    if (!window.__depwireWhatIf) {
+      setupWebSocket();
+    }
     
     // Handle window resize
     window.addEventListener('resize', () => {

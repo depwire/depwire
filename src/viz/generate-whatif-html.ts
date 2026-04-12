@@ -86,12 +86,15 @@ export function generateWhatIfHtml(
     }
     .panels {
       display: flex;
+      flex-direction: row;
       gap: 0;
-      height: calc(100vh - 200px);
+      width: 100%;
+      height: calc(100vh - 180px);
       min-height: 400px;
     }
     .panel {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       border-right: 1px solid #2a2a4a;
@@ -108,6 +111,7 @@ export function generateWhatIfHtml(
       border-bottom: 1px solid #2a2a4a;
       display: flex;
       justify-content: space-between;
+      flex-shrink: 0;
     }
     .panel-diagram {
       flex: 1;
@@ -115,6 +119,7 @@ export function generateWhatIfHtml(
       position: relative;
     }
     .panel-diagram svg {
+      display: block;
       width: 100%;
       height: 100%;
     }
