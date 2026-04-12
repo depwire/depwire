@@ -57,3 +57,21 @@ export type {
 
 // Note: handleToolCall and getToolsList are excluded — MCP tools are
 // consumed via stdio protocol, not direct function calls, in the cloud.
+
+/**
+ * Scan a codebase for security vulnerabilities.
+ * Deterministic checks + graph-aware severity elevation.
+ * No API key required. Use in CI pipelines and custom tooling.
+ *
+ * @param projectRoot - Absolute path to project root
+ * @param graph - Built graph from buildGraph()
+ * @param options - Scan options (target file, classes, format)
+ */
+export { scanSecurity } from './security/scanner.js';
+export type {
+  SecurityFinding,
+  SecurityScanResult,
+  SecurityScanOptions,
+  Severity,
+  VulnerabilityClass
+} from './security/types.js';

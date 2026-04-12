@@ -29,6 +29,8 @@ import type { TemporalSnapshot } from "../temporal/types.js";
 import { analyzeDeadCode } from "../dead-code/index.js";
 import { SimulationEngine } from "../simulation/engine.js";
 import type { SimulationAction } from "../simulation/engine.js";
+import { scanSecurity } from "../security/scanner.js";
+import type { VulnerabilityClass } from "../security/types.js";
 
 interface ToolDefinition {
   name: string;
@@ -298,6 +300,41 @@ Always run this before any refactor that touches file structure.`,
         required: ["operation", "target"],
       },
     },
+    {
+      name: "security_scan",
+      description: `Scan the codebase for security vulnerabilities using deterministic checks + graph-aware severity scoring. No API key required.
+
+Checks: dependency CVEs, shell injection, hardcoded secrets, path traversal, auth bypass, input validation, information disclosure, cryptography weaknesses, frontend XSS, architecture-level risks.
+
+Graph-aware severity: vulnerabilities reachable from MCP tools or HTTP routes are automatically elevated. A medium shell injection reachable from connect_repo becomes Critical.
+
+Returns ranked findings (Critical → Low) with attack scenarios and suggested fixes. Use --target for single-file scan.`,
+      inputSchema: {
+        type: "object",
+        properties: {
+          target: {
+            type: "string",
+            description: "Relative file path to scan. Omit to scan entire repo.",
+          },
+          classes: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: [
+                "dependency-cve", "shell-injection", "code-injection", "secrets",
+                "path-traversal", "auth", "input-validation", "information-disclosure",
+                "architecture", "cryptography", "supply-chain", "frontend-xss"
+              ],
+            },
+            description: "Vulnerability classes to check. Omit for all.",
+          },
+          graphAware: {
+            type: "boolean",
+            description: "Enable graph-aware severity elevation (recommended). Default: true.",
+          },
+        },
+      },
+    },
   ];
 }
 
@@ -385,6 +422,19 @@ export async function handleToolCall(
         };
       } else {
         result = handleSimulateChange(args, state);
+      }
+    } else if (name === "security_scan") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = await scanSecurity(state.projectRoot!, state.graph!, {
+          target: args.target,
+          classes: args.classes as VulnerabilityClass[] | undefined,
+          graphAware: args.graphAware !== false,
+        });
       }
     } else {
       // All other tools require a loaded project

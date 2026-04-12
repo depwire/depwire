@@ -24,6 +24,7 @@ import { runTemporalAnalysis } from './temporal/index.js';
 import { analyzeDeadCode } from './dead-code/index.js';
 import { trackCommand } from './telemetry.js';
 import { whatif } from './commands/whatif.js';
+import { securityCommand } from './commands/security.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -572,6 +573,25 @@ program
       await whatif(directory || '.', options);
     } catch (err) {
       console.error('Error running simulation:', err);
+      process.exit(1);
+    }
+  });
+
+// Security scanner command
+program
+  .command('security')
+  .description('Scan codebase for security vulnerabilities (deterministic, no API key required)')
+  .argument('[directory]', 'Project directory to scan (defaults to current directory or auto-detected project root)')
+  .option('--target <file>', 'Scan a single file instead of the whole repo')
+  .option('--class <classes...>', 'Only run specific vulnerability class checks')
+  .option('--format <format>', 'Output format: table (default), json, sarif', 'table')
+  .option('--fail-on <level>', 'Exit with code 1 if findings at this severity or above')
+  .action(async (directory: string | undefined, options: any) => {
+    trackCommand('security', packageJson.version);
+    try {
+      await securityCommand(directory || '.', options);
+    } catch (err) {
+      console.error('Error running security scan:', err);
       process.exit(1);
     }
   });
