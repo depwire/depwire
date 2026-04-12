@@ -34,9 +34,9 @@ import {
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve2, dirname as dirname2, join as join3 } from "path";
+import { resolve as resolve2, dirname as dirname3, join as join4 } from "path";
 import { writeFileSync, readFileSync as readFileSync2, existsSync } from "fs";
-import { fileURLToPath as fileURLToPath2 } from "url";
+import { fileURLToPath as fileURLToPath3 } from "url";
 
 // src/graph/serializer.ts
 import { DirectedGraph } from "graphology";
@@ -502,13 +502,258 @@ async function trackCommand(command, version = "unknown") {
 // src/commands/whatif.ts
 import { resolve } from "path";
 import chalk from "chalk";
+
+// src/viz/whatif-server.ts
+import express2 from "express";
+import open2 from "open";
+import { fileURLToPath as fileURLToPath2 } from "url";
+import { dirname as dirname2, join as join3 } from "path";
+
+// src/viz/generate-whatif-html.ts
+function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, operation, target) {
+  const { healthDelta, diff } = simulationResult;
+  const deltaSign = healthDelta.delta >= 0 ? "+" : "";
+  const deltaLabel = healthDelta.delta === 0 ? "unchanged" : healthDelta.improved ? `${deltaSign}${healthDelta.delta} \u2713 improved` : `${healthDelta.delta} \u2717 degraded`;
+  const deltaColor = healthDelta.delta === 0 ? "#fbbf24" : healthDelta.improved ? "#4ade80" : "#f87171";
+  const opBadge = operation !== "none" ? `<span style="background:${deltaColor};color:#000;padding:4px 12px;border-radius:4px;font-weight:700;font-size:13px;text-transform:uppercase;margin-left:12px;">${operation} ${target}</span>` : "";
+  const brokenImportsHtml = diff.brokenImports.length > 0 ? `<details style="margin-top:16px;background:#16213e;border:1px solid #2a2a4a;border-radius:8px;padding:12px 16px;">
+        <summary style="cursor:pointer;color:#f87171;font-weight:600;font-size:14px;">Broken Imports (${diff.brokenImports.length})</summary>
+        <ul style="margin:8px 0 0 16px;padding:0;list-style:none;">
+          ${diff.brokenImports.map((bi) => `<li style="color:#e0e0e0;font-size:13px;padding:4px 0;font-family:monospace;">${bi.file} \u2192 <span style="color:#f87171;">${bi.importedSymbol}</span></li>`).join("")}
+        </ul>
+      </details>` : "";
+  const currentDataJson = JSON.stringify(currentVizData);
+  const simulatedDataJson = JSON.stringify(simulatedVizData);
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depwire \u2014 What If Simulation</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { overflow: auto; height: auto; }
+    .whatif-header {
+      background: #16213e;
+      border-bottom: 1px solid #2a2a4a;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .whatif-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #4a9eff, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .health-banner {
+      background: #0f1729;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 16px 24px;
+      margin: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .health-score {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .health-stat {
+      font-size: 14px;
+      color: #a0a0a0;
+    }
+    .health-stat strong {
+      color: #e0e0e0;
+      font-size: 18px;
+    }
+    .panels {
+      display: flex;
+      gap: 0;
+      height: calc(100vh - 200px);
+      min-height: 400px;
+    }
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2a2a4a;
+      overflow: hidden;
+      position: relative;
+    }
+    .panel:last-child { border-right: none; }
+    .panel-label {
+      background: #16213e;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #a0a0a0;
+      border-bottom: 1px solid #2a2a4a;
+      display: flex;
+      justify-content: space-between;
+    }
+    .panel-diagram {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .panel-diagram svg {
+      width: 100%;
+      height: 100%;
+    }
+    .broken-section {
+      padding: 0 24px 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="whatif-header">
+    <h1>depwire \u2014 What If Simulation</h1>
+    ${opBadge}
+  </div>
+
+  <div class="health-banner">
+    <div class="health-score" style="color:${deltaColor}">
+      Health Score: ${healthDelta.before} \u2192 ${healthDelta.after}
+      <span style="font-size:16px;margin-left:8px;">(${deltaLabel})</span>
+    </div>
+    <div class="health-stat"><strong>${diff.affectedNodes.length}</strong> Affected Nodes</div>
+    <div class="health-stat"><strong>${diff.brokenImports.length}</strong> Broken Imports</div>
+    <div class="health-stat"><strong>${diff.removedEdges.length}</strong> Removed Edges</div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-label">
+        <span>Current</span>
+        <span>${currentVizData.stats.totalFiles} files</span>
+      </div>
+      <div class="panel-diagram" id="arc-diagram-current">
+        <svg id="svg-current"></svg>
+      </div>
+      <div class="tooltip" id="tooltip-current"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">
+        <span>After ${operation !== "none" ? operation.toUpperCase() : "\u2014"}</span>
+        <span>${simulatedVizData.stats.totalFiles} files</span>
+      </div>
+      <div class="panel-diagram" id="arc-diagram-simulated">
+        <svg id="svg-simulated"></svg>
+      </div>
+      <div class="tooltip" id="tooltip-simulated"></div>
+    </div>
+  </div>
+
+  <div class="broken-section">
+    ${brokenImportsHtml}
+  </div>
+
+  <script>window.__depwireWhatIf = true;</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="/arc.js"></script>
+  <script>
+    const currentData = ${currentDataJson};
+    const simulatedData = ${simulatedDataJson};
+
+    const left = window.createArcDiagram('arc-diagram-current', 'svg-current', 'tooltip-current', currentData);
+    const right = window.createArcDiagram('arc-diagram-simulated', 'svg-simulated', 'tooltip-simulated', simulatedData);
+
+    left.render();
+    right.render();
+
+    window.addEventListener('resize', () => {
+      left.render();
+      right.render();
+    });
+  </script>
+</body>
+</html>`;
+}
+
+// src/viz/whatif-server.ts
+var __filename2 = fileURLToPath2(import.meta.url);
+var __dirname2 = dirname2(__filename2);
+async function findAvailablePort2(startPort, maxAttempts = 10) {
+  const net = await import("net");
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const testPort = startPort + attempt;
+    const isAvailable = await new Promise((resolve3) => {
+      const server = net.createServer();
+      server.once("error", () => {
+        resolve3(false);
+      });
+      server.once("listening", () => {
+        server.close();
+        resolve3(true);
+      });
+      server.listen(testPort, "127.0.0.1");
+    });
+    if (isAvailable) {
+      if (attempt > 0) {
+        console.error(`Port ${startPort} in use, using port ${testPort} instead`);
+      }
+      return testPort;
+    }
+  }
+  throw new Error(`No available ports found between ${startPort} and ${startPort + maxAttempts - 1}`);
+}
+async function serveWhatIfViz(currentVizData, simulatedVizData, simulationResult, operation, target) {
+  const availablePort = await findAvailablePort2(3335);
+  const app = express2();
+  const publicDir = join3(__dirname2, "viz", "public");
+  app.use(express2.static(publicDir));
+  app.get("/", (_req, res) => {
+    const html = generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, operation, target);
+    res.type("html").send(html);
+  });
+  app.get("/api/current", (_req, res) => {
+    res.json(currentVizData);
+  });
+  app.get("/api/simulated", (_req, res) => {
+    res.json(simulatedVizData);
+  });
+  app.get("/api/result", (_req, res) => {
+    res.json(simulationResult);
+  });
+  const server = app.listen(availablePort, "127.0.0.1", () => {
+    const url = `http://127.0.0.1:${availablePort}`;
+    console.error(`
+Opening What If UI at ${url}`);
+    console.error("Press Ctrl+C to stop\n");
+    open2(url);
+  });
+  process.on("SIGINT", () => {
+    console.error("\nShutting down What If server...");
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+}
+
+// src/commands/whatif.ts
 async function whatif(dir, options) {
   if (!options.simulate) {
-    console.log("Usage: depwire whatif [dir] --simulate <action> --target <file> [options]");
-    console.log("");
-    console.log("Actions: move, delete, rename, split, merge");
-    console.log("");
-    console.log("Run without --simulate to open interactive browser UI (Phase B)");
+    const projectRoot2 = dir === "." ? findProjectRoot() : resolve(dir);
+    console.error(`Parsing project: ${projectRoot2}`);
+    const parsedFiles2 = await parseProject(projectRoot2);
+    const graph2 = buildGraph(parsedFiles2);
+    console.error(`Built graph: ${graph2.order} symbols, ${graph2.size} edges`);
+    const vizData = prepareVizData(graph2, projectRoot2);
+    const emptyResult = {
+      action: { type: "delete", target: "" },
+      originalGraph: { nodeCount: graph2.order, edgeCount: graph2.size, healthScore: 0 },
+      simulatedGraph: { nodeCount: graph2.order, edgeCount: graph2.size, healthScore: 0 },
+      diff: { addedEdges: [], removedEdges: [], affectedNodes: [], brokenImports: [], circularDepsIntroduced: [], circularDepsResolved: [] },
+      healthDelta: { before: 0, after: 0, delta: 0, improved: false, dimensionChanges: [] }
+    };
+    await serveWhatIfViz(vizData, vizData, emptyResult, "none", "");
     return;
   }
   const validActions = ["move", "delete", "rename", "split", "merge"];
@@ -522,11 +767,11 @@ async function whatif(dir, options) {
   }
   const action = buildAction(options);
   const projectRoot = dir === "." ? findProjectRoot() : resolve(dir);
-  console.log(`Parsing project: ${projectRoot}`);
+  console.error(`Parsing project: ${projectRoot}`);
   const parsedFiles = await parseProject(projectRoot);
   const graph = buildGraph(parsedFiles);
-  console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
-  console.log("");
+  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  console.error("");
   const engine = new SimulationEngine(graph);
   try {
     const result = engine.simulate(action);
@@ -632,9 +877,9 @@ function formatAction(action) {
 }
 
 // src/index.ts
-var __filename2 = fileURLToPath2(import.meta.url);
-var __dirname2 = dirname2(__filename2);
-var packageJsonPath = join3(__dirname2, "../package.json");
+var __filename3 = fileURLToPath3(import.meta.url);
+var __dirname3 = dirname3(__filename3);
+var packageJsonPath = join4(__dirname3, "../package.json");
 var packageJson = JSON.parse(readFileSync2(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
@@ -777,7 +1022,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
-      if (detectedRoot !== cwd || existsSync(join3(cwd, "package.json")) || existsSync(join3(cwd, "tsconfig.json")) || existsSync(join3(cwd, "go.mod")) || existsSync(join3(cwd, "pyproject.toml")) || existsSync(join3(cwd, "setup.py")) || existsSync(join3(cwd, ".git"))) {
+      if (detectedRoot !== cwd || existsSync(join4(cwd, "package.json")) || existsSync(join4(cwd, "tsconfig.json")) || existsSync(join4(cwd, "go.mod")) || existsSync(join4(cwd, "pyproject.toml")) || existsSync(join4(cwd, "setup.py")) || existsSync(join4(cwd, ".git"))) {
         projectRootToConnect = detectedRoot;
       }
     }
@@ -835,7 +1080,7 @@ program.command("docs").description("Generate comprehensive codebase documentati
   const startTime = Date.now();
   try {
     const projectRoot = directory ? resolve2(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve2(options.output) : join3(projectRoot, ".depwire");
+    const outputDir = options.output ? resolve2(options.output) : join4(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -906,7 +1151,7 @@ async function promptGitignore() {
   });
 }
 function addToGitignore(projectRoot, pattern) {
-  const gitignorePath = join3(projectRoot, ".gitignore");
+  const gitignorePath = join4(projectRoot, ".gitignore");
   try {
     let content = "";
     if (existsSyncNode(gitignorePath)) {

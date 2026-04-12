@@ -1,4 +1,176 @@
 // Arc Diagram Renderer using D3.js
+
+// ── Factory function for creating isolated arc diagram instances ──
+window.createArcDiagram = function(containerId, svgId, tooltipId, data) {
+  let _data = data;
+  let _svg = null;
+  let _g = null;
+  let _filePositions = new Map();
+  let _selectedFile = null;
+  let _selectedArc = null;
+
+  function _showTooltip(event, content) {
+    const el = document.getElementById(tooltipId);
+    if (!el) return;
+    el.innerHTML = content;
+    el.style.left = (event.pageX + 10) + 'px';
+    el.style.top = (event.pageY + 10) + 'px';
+    el.classList.add('show');
+  }
+
+  function _hideTooltip() {
+    const el = document.getElementById(tooltipId);
+    if (!el) return;
+    el.classList.remove('show');
+  }
+
+  function _clearSelection() {
+    _selectedFile = null;
+    _selectedArc = null;
+    const ctr = d3.select('#' + containerId);
+    ctr.selectAll('.arc').classed('highlighted', false).classed('dimmed', false);
+    ctr.selectAll('.file-bar').classed('highlighted', false).classed('dimmed', false);
+  }
+
+  function render() {
+    const container = document.getElementById(containerId);
+    if (!container || !_data) return;
+
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    _filePositions.clear();
+    _selectedFile = null;
+    _selectedArc = null;
+
+    const svgEl = d3.select('#' + svgId);
+    svgEl.selectAll('*').remove();
+    _svg = svgEl.attr('width', width).attr('height', height);
+    _g = _svg.append('g');
+
+    const zoom = d3.zoom().scaleExtent([0.5, 4]).on('zoom', (event) => {
+      _g.attr('transform', event.transform);
+    });
+    _svg.call(zoom);
+
+    const margin = { top: 60, right: 40, bottom: 120, left: 40 };
+    const plotWidth = width - margin.left - margin.right;
+    const plotHeight = height - margin.top - margin.bottom;
+    const baseline = margin.top + plotHeight;
+
+    const totalSymbols = d3.sum(_data.files, d => d.symbolCount);
+    const minBarWidth = 4;
+    const gap = 2;
+    let x = margin.left;
+
+    _data.files.forEach(file => {
+      const barWidth = Math.max(minBarWidth, (file.symbolCount / totalSymbols) * plotWidth * 0.8);
+      _filePositions.set(file.path, { x: x + barWidth / 2, width: barWidth, file: file });
+      x += barWidth + gap;
+    });
+
+    const directories = [...new Set(_data.files.map(f => f.directory))];
+    const colorScale = d3.scaleOrdinal().domain(directories)
+      .range(['#4a9eff', '#7c3aed', '#ec4899', '#f59e0b', '#10b981', '#06b6d4']);
+
+    const maxDistance = d3.max(_data.arcs, arc => {
+      const s = _filePositions.get(arc.sourceFile);
+      const t = _filePositions.get(arc.targetFile);
+      return (s && t) ? Math.abs(t.x - s.x) : 0;
+    }) || 1;
+
+    const ctr = d3.select('#' + containerId);
+
+    _g.selectAll('.arc').data(_data.arcs).enter().append('path')
+      .attr('class', 'arc')
+      .attr('d', d => {
+        const s = _filePositions.get(d.sourceFile);
+        const t = _filePositions.get(d.targetFile);
+        if (!s || !t) return null;
+        const x1 = s.x, x2 = t.x, dist = Math.abs(x2 - x1), midX = (x1 + x2) / 2;
+        return `M ${x1} ${baseline} Q ${midX} ${baseline - dist * 0.4} ${x2} ${baseline}`;
+      })
+      .attr('stroke', d => {
+        const s = _filePositions.get(d.sourceFile);
+        const t = _filePositions.get(d.targetFile);
+        if (!s || !t) return '#4a9eff';
+        return d3.interpolateRainbow(Math.abs(t.x - s.x) / maxDistance);
+      })
+      .attr('stroke-width', d => Math.min(4, 1 + Math.log(d.edgeCount)))
+      .on('mouseover', function(event, d) {
+        if (_selectedArc) return;
+        d3.select(this).classed('highlighted', true);
+        ctr.selectAll('.arc').filter(a => a !== d).classed('dimmed', true);
+        ctr.selectAll('.file-bar').each(function(f) {
+          const match = f.path === d.sourceFile || f.path === d.targetFile;
+          d3.select(this).classed('highlighted', match).classed('dimmed', !match);
+        });
+        _showTooltip(event, `<div class="tooltip-line"><strong>${d.sourceFile}</strong> → <strong>${d.targetFile}</strong></div><div class="tooltip-line"><span class="tooltip-label">Edges:</span> ${d.edgeCount}</div>`);
+      })
+      .on('mouseout', function() {
+        if (_selectedArc) return;
+        d3.select(this).classed('highlighted', false);
+        ctr.selectAll('.arc').classed('dimmed', false);
+        ctr.selectAll('.file-bar').classed('highlighted', false).classed('dimmed', false);
+        _hideTooltip();
+      })
+      .on('click', function(event, d) {
+        event.stopPropagation();
+        if (_selectedArc === d) { _selectedArc = null; ctr.selectAll('.arc,.file-bar').classed('highlighted', false).classed('dimmed', false); _hideTooltip(); return; }
+        _selectedArc = d; _selectedFile = null;
+        ctr.selectAll('.arc').classed('highlighted', false).classed('dimmed', true);
+        d3.select(this).classed('highlighted', true).classed('dimmed', false);
+        ctr.selectAll('.file-bar').each(function(f) {
+          const match = f.path === d.sourceFile || f.path === d.targetFile;
+          d3.select(this).classed('highlighted', match).classed('dimmed', !match);
+        });
+      });
+
+    _g.selectAll('.file-bar').data(_data.files).enter().append('rect')
+      .attr('class', 'file-bar')
+      .attr('x', d => { const p = _filePositions.get(d.path); return p.x - p.width / 2; })
+      .attr('y', baseline).attr('width', d => _filePositions.get(d.path).width).attr('height', 8)
+      .attr('fill', d => colorScale(d.directory))
+      .on('mouseover', function(event, d) {
+        if (_selectedFile) return;
+        d3.select(this).classed('highlighted', true);
+        const connected = _data.arcs.filter(a => a.sourceFile === d.path || a.targetFile === d.path);
+        ctr.selectAll('.arc').classed('highlighted', a => connected.includes(a)).classed('dimmed', a => !connected.includes(a));
+        ctr.selectAll('.file-bar').filter(f => f !== d).classed('dimmed', true);
+        _showTooltip(event, `<div class="tooltip-line"><strong>${d.path}</strong></div><div class="tooltip-line"><span class="tooltip-label">Symbols:</span> ${d.symbolCount} | In: ${d.incomingCount} | Out: ${d.outgoingCount}</div>`);
+      })
+      .on('mouseout', function() {
+        if (_selectedFile) return;
+        d3.select(this).classed('highlighted', false);
+        ctr.selectAll('.arc').classed('highlighted', false).classed('dimmed', false);
+        ctr.selectAll('.file-bar').classed('dimmed', false);
+        _hideTooltip();
+      })
+      .on('click', function(event, d) {
+        event.stopPropagation();
+        if (_selectedFile === d) { _selectedFile = null; ctr.selectAll('.arc,.file-bar').classed('highlighted', false).classed('dimmed', false); return; }
+        _selectedFile = d; _selectedArc = null;
+        const connected = _data.arcs.filter(a => a.sourceFile === d.path || a.targetFile === d.path);
+        ctr.selectAll('.arc').classed('highlighted', a => connected.includes(a)).classed('dimmed', a => !connected.includes(a));
+        ctr.selectAll('.file-bar').classed('highlighted', f => f === d).classed('dimmed', f => f !== d);
+      });
+
+    _g.selectAll('.file-label').data(_data.files).enter().append('text')
+      .attr('class', 'file-label')
+      .attr('x', d => _filePositions.get(d.path).x)
+      .attr('y', baseline + 20)
+      .attr('transform', d => `rotate(-45, ${_filePositions.get(d.path).x}, ${baseline + 20})`)
+      .attr('text-anchor', 'end')
+      .text(d => d.path.split('/').pop());
+
+    _svg.append('text').attr('x', 10).attr('y', 20).attr('fill', '#4a9eff')
+      .attr('font-size', '12px').attr('cursor', 'pointer').text('↺ Reset View')
+      .on('click', () => { _svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity); _clearSelection(); });
+  }
+
+  return { render };
+};
+
+// ── Legacy global state and functions (used by depwire viz) ──
 let graphData = null;
 let svg = null;
 let g = null;
@@ -575,5 +747,7 @@ d3.select('body').on('click', () => {
   }
 });
 
-// Initialize on page load
-init();
+// Initialize on page load — only if NOT in What If context
+if (!window.__depwireWhatIf) {
+  init();
+}

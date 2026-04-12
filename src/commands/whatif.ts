@@ -4,6 +4,8 @@ import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
 import { findProjectRoot } from '../utils/files.js';
 import { SimulationEngine, SimulationAction, SimulationResult } from '../simulation/engine.js';
+import { prepareVizData } from '../viz/data.js';
+import { serveWhatIfViz } from '../viz/whatif-server.js';
 
 export interface WhatIfOptions {
   simulate?: string;
@@ -17,11 +19,26 @@ export interface WhatIfOptions {
 
 export async function whatif(dir: string, options: WhatIfOptions): Promise<void> {
   if (!options.simulate) {
-    console.log('Usage: depwire whatif [dir] --simulate <action> --target <file> [options]');
-    console.log('');
-    console.log('Actions: move, delete, rename, split, merge');
-    console.log('');
-    console.log('Run without --simulate to open interactive browser UI (Phase B)');
+    // Phase B: open browser UI
+    const projectRoot = dir === '.' ? findProjectRoot() : resolve(dir);
+    console.error(`Parsing project: ${projectRoot}`);
+
+    const parsedFiles = await parseProject(projectRoot);
+    const graph = buildGraph(parsedFiles);
+    console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+
+    const vizData = prepareVizData(graph, projectRoot);
+
+    // Empty simulation result for initial state
+    const emptyResult: SimulationResult = {
+      action: { type: 'delete', target: '' },
+      originalGraph: { nodeCount: graph.order, edgeCount: graph.size, healthScore: 0 },
+      simulatedGraph: { nodeCount: graph.order, edgeCount: graph.size, healthScore: 0 },
+      diff: { addedEdges: [], removedEdges: [], affectedNodes: [], brokenImports: [], circularDepsIntroduced: [], circularDepsResolved: [] },
+      healthDelta: { before: 0, after: 0, delta: 0, improved: false, dimensionChanges: [] },
+    };
+
+    await serveWhatIfViz(vizData, vizData, emptyResult, 'none', '');
     return;
   }
 
@@ -42,14 +59,14 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
 
   // Parse codebase
   const projectRoot = dir === '.' ? findProjectRoot() : resolve(dir);
-  console.log(`Parsing project: ${projectRoot}`);
+  console.error(`Parsing project: ${projectRoot}`);
 
   const parsedFiles = await parseProject(projectRoot);
   const graph = buildGraph(parsedFiles);
-  console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
 
   // Run simulation
-  console.log('');
+  console.error('');
   const engine = new SimulationEngine(graph);
 
   try {
