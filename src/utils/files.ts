@@ -1,4 +1,4 @@
-import { readdirSync, statSync, existsSync, lstatSync } from 'fs';
+import { readdirSync, statSync, existsSync, lstatSync, realpathSync } from 'fs';
 import { join, relative } from 'path';
 import os from 'os';
 
@@ -75,6 +75,7 @@ export function fileExists(filePath: string): boolean {
  * @returns Project root path if found, otherwise the start directory
  */
 export function findProjectRoot(startDir: string = process.cwd()): string {
+  startDir = realpathSync(startDir);
   const projectMarkers = [
     'package.json',      // Node.js
     'tsconfig.json',     // TypeScript
@@ -100,11 +101,6 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
   const home = os.homedir();
   
   while (currentDir !== rootDir && depth < maxDepth) {
-    // Check if we've hit home directory or gone above it
-    if (currentDir === home || !currentDir.startsWith(home)) {
-      break;
-    }
-    
     // Check if current directory name is in blocklist
     const dirName = currentDir.split('/').pop();
     if (dirName && blocklist.includes(dirName)) {

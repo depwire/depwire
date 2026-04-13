@@ -17,7 +17,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-VJLBOFCD.js";
+} from "./chunk-FUIZQCYB.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -31,7 +31,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-ITEGMPF7.js";
+} from "./chunk-WUSXCZXA.js";
 
 // src/index.ts
 import { Command } from "commander";
