@@ -1,11 +1,15 @@
 # Depwire
 
+<div align="center">
+
 [![npm version](https://img.shields.io/npm/v/depwire-cli.svg?style=flat-square)](https://www.npmjs.com/package/depwire-cli)
 [![npm downloads](https://img.shields.io/npm/dm/depwire-cli.svg?style=flat-square)](https://www.npmjs.com/package/depwire-cli)
 [![MCP Registry](https://img.shields.io/badge/MCP-registry-blue?style=flat-square)](https://registry.modelcontextprotocol.io/servers/io.github.atef-ataya/depwire)
 [![Glama](https://glama.ai/mcp/servers/depwire/depwire/badges/score.svg)](https://glama.ai/mcp/servers/depwire/depwire)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-orange.svg?style=flat-square)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/depwire/depwire.svg?style=flat-square)](https://github.com/depwire/depwire/stargazers)
+
+</div>
 
 **Your AI doesn't know your architecture. Depwire does.**
 
