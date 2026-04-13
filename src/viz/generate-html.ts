@@ -42,6 +42,8 @@ export function generateArcDiagramHTML(
       source: a.sourceFile,
       target: a.targetFile,
       count: a.edgeCount,
+      crossLanguage: a.crossLanguage || false,
+      edgeType: a.edgeType || null,
     })),
     highlight,
     stats: vizData.stats,
@@ -135,6 +137,7 @@ export function generateArcDiagramHTML(
       <span><strong>\${graphData.stats.totalFiles}</strong> files</span>
       <span><strong>\${graphData.stats.totalSymbols}</strong> symbols</span>
       <span><strong>\${graphData.stats.totalCrossFileEdges}</strong> cross-file edges</span>
+      \${graphData.arcs.some(a => a.crossLanguage) ? '<span style="margin-left:16px"><span style="color:#ff6b6b">●</span> REST API <span style="color:#ffd93d">●</span> Subprocess <span style="color:#888">●</span> Same-language import</span>' : ''}
     \`;
     
     let hoveredArc = null;
@@ -188,22 +191,32 @@ export function generateArcDiagramHTML(
         const distance = Math.abs(tgt.idx - src.idx);
         const maxDist = fileCount - 1;
         
-        // Rainbow color based on distance
-        const hue = (distance / maxDist) * 280;
         const isHovered = hoveredArc && 
           hoveredArc.source === arc.source && 
           hoveredArc.target === arc.target;
         const alpha = isHovered ? 0.9 : 0.6;
         const width = isHovered ? 2.5 : 1.5;
         
-        arcData.push({ arc, x1, x2, distance, hue, alpha, width });
+        // Color based on edge type
+        let color;
+        if (arc.crossLanguage && arc.edgeType === 'rest-api') {
+          color = \`rgba(255, 107, 107, \${alpha})\`; // coral red
+        } else if (arc.crossLanguage && arc.edgeType === 'subprocess') {
+          color = \`rgba(255, 217, 61, \${alpha})\`; // yellow
+        } else {
+          // Rainbow color based on distance
+          const hue = (distance / maxDist) * 280;
+          color = \`hsla(\${hue}, 80%, 60%, \${alpha})\`;
+        }
+        
+        arcData.push({ arc, x1, x2, distance, color, alpha, width });
       });
       
       // Sort by distance (draw long arcs first)
       arcData.sort((a, b) => b.distance - a.distance);
       
       // Draw arcs
-      arcData.forEach(({ arc, x1, x2, hue, alpha, width }) => {
+      arcData.forEach(({ arc, x1, x2, color, width }) => {
         const midX = (x1 + x2) / 2;
         const radius = Math.abs(x2 - x1) / 2;
         const arcHeight = baseline - radius * 0.8;
@@ -211,7 +224,7 @@ export function generateArcDiagramHTML(
         ctx.beginPath();
         ctx.moveTo(x1, baseline);
         ctx.quadraticCurveTo(midX, arcHeight, x2, baseline);
-        ctx.strokeStyle = \`hsla(\${hue}, 80%, 60%, \${alpha})\`;
+        ctx.strokeStyle = color;
         ctx.lineWidth = width;
         ctx.lineCap = 'round';
         ctx.stroke();

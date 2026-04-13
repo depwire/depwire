@@ -1,7 +1,8 @@
 import { DirectedGraph } from 'graphology';
 import { ParsedFile, SymbolNode } from '../parser/types.js';
+import { detectCrossLanguageEdges } from '../cross-language/index.js';
 
-export function buildGraph(parsedFiles: ParsedFile[]): DirectedGraph {
+export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): DirectedGraph {
   const graph = new DirectedGraph();
   
   // First pass: Add all nodes
@@ -69,5 +70,13 @@ export function buildGraph(parsedFiles: ParsedFile[]): DirectedGraph {
     }
   }
   
+  // Cross-language edge detection
+  if (projectRoot) {
+    const result = detectCrossLanguageEdges(parsedFiles, projectRoot, graph);
+    if (result.stats.restApiEdges > 0 || result.stats.subprocessEdges > 0) {
+      console.error(`Cross-language edges: ${result.stats.restApiEdges} rest-api, ${result.stats.subprocessEdges} subprocess detected`);
+    }
+  }
+
   return graph;
 }

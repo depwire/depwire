@@ -125,7 +125,7 @@ export async function startVizServer(
       try {
         // Re-parse entire project (simplest and most reliable approach)
         const parsedFiles = await parseProject(projectRoot, options);
-        const newGraph = buildGraph(parsedFiles);
+        const newGraph = buildGraph(parsedFiles, projectRoot);
         
         // Replace the graph reference (mutations affect the shared reference)
         // Copy nodes and edges to the existing graph object
@@ -153,7 +153,7 @@ export async function startVizServer(
       try {
         // Re-parse entire project
         const parsedFiles = await parseProject(projectRoot, options);
-        const newGraph = buildGraph(parsedFiles);
+        const newGraph = buildGraph(parsedFiles, projectRoot);
         
         // Replace graph contents
         graph.clear();
@@ -180,7 +180,7 @@ export async function startVizServer(
       try {
         // Re-parse entire project
         const parsedFiles = await parseProject(projectRoot, options);
-        const newGraph = buildGraph(parsedFiles);
+        const newGraph = buildGraph(parsedFiles, projectRoot);
         
         // Replace graph contents
         graph.clear();

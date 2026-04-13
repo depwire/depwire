@@ -75,3 +75,11 @@ export type {
   Severity,
   VulnerabilityClass
 } from './security/types.js';
+
+/**
+ * Detect cross-language edges (REST API calls, subprocess invocations)
+ * between files written in different languages.
+ * Called automatically during buildGraph — exposed here for custom pipelines.
+ */
+export { detectCrossLanguageEdges } from './cross-language/index.js';
+export type { CrossLanguageEdge, CrossLanguageDetectionResult } from './cross-language/types.js';

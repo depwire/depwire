@@ -106,7 +106,7 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "impact_analysis",
-      description: "Analyze what would break if a symbol is changed, renamed, or removed. Shows direct dependents, transitive dependents (chain reaction), and all affected files. Pass a symbol name (e.g., 'Router') or a fully qualified ID (e.g., 'src/router.ts::Router') for exact matching. If multiple symbols share the same name, returns all matches for disambiguation. Use this before making changes to understand the blast radius.",
+      description: "Analyze what would break if a symbol is changed, renamed, or removed. Shows direct dependents, transitive dependents (chain reaction), and all affected files. Cross-language edges included — a TypeScript fetch call to a Python route will show the Python file as affected. Pass a symbol name (e.g., 'Router') or a fully qualified ID (e.g., 'src/router.ts::Router') for exact matching. If multiple symbols share the same name, returns all matches for disambiguation. Use this before making changes to understand the blast radius.",
       inputSchema: {
         type: "object",
         properties: {
@@ -124,7 +124,7 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "get_file_context",
-      description: "Get complete context about a file — all symbols defined in it, all imports, all exports, and all files that import from it.",
+      description: "Get complete context about a file — all symbols defined in it, all imports, all exports, and all files that import from it. Includes cross-language connections (REST API calls, subprocess invocations).",
       inputSchema: {
         type: "object",
         properties: {
@@ -261,7 +261,7 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "simulate_change",
-      description: `Simulate an architectural change before touching any code. Returns health score delta, broken imports, and affected nodes. Zero file I/O — pure in-memory simulation.
+      description: `Simulate an architectural change before touching any code. Returns health score delta, broken imports, and affected nodes. Zero file I/O — pure in-memory simulation. Cross-language edges included — deleting a Python route file will show TypeScript callers as affected.
 
 Operations:
 - delete: Simulate deleting a file. Shows every file that would break and the full blast radius.
@@ -1086,7 +1086,7 @@ async function handleUpdateProjectDocs(
   
   // Re-parse the project
   const parsedFiles = await parseProject(state.projectRoot!);
-  const graph = buildGraph(parsedFiles);
+  const graph = buildGraph(parsedFiles, state.projectRoot!);
   const parseTime = (Date.now() - startTime) / 1000;
   
   // Update state graph

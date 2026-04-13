@@ -17,7 +17,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-RGD3YJYQ.js";
+} from "./chunk-NVMZ7V4C.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -31,7 +31,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-DA5LWNJ4.js";
+} from "./chunk-IOONOEC6.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -410,7 +410,7 @@ async function runTemporalAnalysis(projectDir, options) {
       }
       await checkoutCommit(projectDir, commit.hash);
       const parsedFiles = await parseProject(projectDir);
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectDir);
       const projectGraph = exportToJSON(graph, projectDir);
       const snapshot = createSnapshot(
         projectGraph,
@@ -758,7 +758,7 @@ async function whatif(dir, options) {
     const projectRoot2 = dir === "." ? findProjectRoot() : resolve2(dir);
     console.error(`Parsing project: ${projectRoot2}`);
     const parsedFiles2 = await parseProject(projectRoot2);
-    const graph2 = buildGraph(parsedFiles2);
+    const graph2 = buildGraph(parsedFiles2, projectRoot2);
     console.error(`Built graph: ${graph2.order} symbols, ${graph2.size} edges`);
     const vizData = prepareVizData(graph2, projectRoot2);
     const emptyResult = {
@@ -784,7 +784,7 @@ async function whatif(dir, options) {
   const projectRoot = dir === "." ? findProjectRoot() : resolve2(dir);
   console.error(`Parsing project: ${projectRoot}`);
   const parsedFiles = await parseProject(projectRoot);
-  const graph = buildGraph(parsedFiles);
+  const graph = buildGraph(parsedFiles, projectRoot);
   console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
   console.error("");
   const engine = new SimulationEngine(graph);
@@ -1039,7 +1039,7 @@ async function securityCommand(dir, options) {
   const startTime = Date.now();
   const parsedFiles = await parseProject(projectRoot);
   console.error(`Parsed ${parsedFiles.length} files`);
-  const graph = buildGraph(parsedFiles);
+  const graph = buildGraph(parsedFiles, projectRoot);
   console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
   const result = await scanSecurity(projectRoot, graph, {
     target: options.target,
@@ -1089,7 +1089,7 @@ program.command("parse").description("Parse a TypeScript project and build depen
       verbose: options.verbose
     });
     console.log(`Parsed ${parsedFiles.length} files`);
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
     const projectGraph = exportToJSON(graph, projectRoot);
     const json = options.pretty ? JSON.stringify(projectGraph, null, 2) : JSON.stringify(projectGraph);
     writeFileSync(options.output, json, "utf-8");
@@ -1131,7 +1131,7 @@ program.command("query").description("Query impact analysis for a symbol").argum
     } else {
       console.log("Parsing project...");
       const parsedFiles = await parseProject(projectRoot);
-      graph = buildGraph(parsedFiles);
+      graph = buildGraph(parsedFiles, projectRoot);
     }
     const matches = searchSymbols(graph, symbolName);
     if (matches.length === 0) {
@@ -1177,7 +1177,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
       verbose: options.verbose
     });
     console.log(`Parsed ${parsedFiles.length} files`);
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
     const vizData = prepareVizData(graph, projectRoot);
     console.log(`Found ${vizData.stats.totalSymbols} symbols, ${vizData.stats.totalCrossFileEdges} cross-file edges`);
     const port = parseInt(options.port, 10);
@@ -1225,7 +1225,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
       console.error(`Parsing project: ${projectRootToConnect}`);
       const parsedFiles = await parseProject(projectRootToConnect);
       console.error(`Parsed ${parsedFiles.length} files`);
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRootToConnect);
       console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
       state.graph = graph;
       state.projectRoot = projectRootToConnect;
@@ -1292,7 +1292,7 @@ program.command("docs").description("Generate comprehensive codebase documentati
       verbose: options.verbose
     });
     console.log(`Parsed ${parsedFiles.length} files`);
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
     const parseTime = (Date.now() - startTime) / 1e3;
     console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
     if (options.verbose) {
@@ -1374,7 +1374,7 @@ program.command("health").description("Analyze dependency architecture health (0
     const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
     const parseTime = Date.now() - startTime;
     const report = calculateHealthScore(graph, projectRoot);
     const trend = getHealthTrend(projectRoot, report.overall);
@@ -1398,7 +1398,7 @@ program.command("dead-code").description("Identify dead code - symbols defined b
     const projectRoot = directory ? resolve4(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
     const confidence = options.includeLow ? "low" : options.confidence || "medium";
     const report = analyzeDeadCode(graph, projectRoot, {
       confidence,

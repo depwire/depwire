@@ -65,7 +65,7 @@ program
       console.log(`Parsed ${parsedFiles.length} files`);
       
       // Build the graph
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       
       // Export to JSON
       const projectGraph = exportToJSON(graph, projectRoot);
@@ -127,7 +127,7 @@ program
       } else {
         console.log('Parsing project...');
         const parsedFiles = await parseProject(projectRoot);
-        graph = buildGraph(parsedFiles);
+        graph = buildGraph(parsedFiles, projectRoot);
       }
       
       // Search for the symbol
@@ -195,7 +195,7 @@ program
       console.log(`Parsed ${parsedFiles.length} files`);
       
       // Build the graph
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       
       // Prepare visualization data
       const vizData = prepareVizData(graph, projectRoot);
@@ -278,7 +278,7 @@ program
         console.error(`Parsed ${parsedFiles.length} files`);
         
         // Build the graph
-        const graph = buildGraph(parsedFiles);
+        const graph = buildGraph(parsedFiles, projectRootToConnect);
         console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
         
         // Set initial state
@@ -389,7 +389,7 @@ program
       console.log(`Parsed ${parsedFiles.length} files`);
       
       // Build the graph
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       const parseTime = (Date.now() - startTime) / 1000;
       
       console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
@@ -485,7 +485,7 @@ program
       
       // Parse project
       const parsedFiles = await parseProject(projectRoot);
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       const parseTime = Date.now() - startTime;
       
       // Calculate health score
@@ -528,7 +528,7 @@ program
       const startTime = Date.now();
       
       const parsedFiles = await parseProject(projectRoot);
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       
       const confidence = options.includeLow ? 'low' : (options.confidence || 'medium');
       

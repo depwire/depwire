@@ -23,4 +23,6 @@ export interface VizArc {
   targetFile: string;
   edgeCount: number;
   edgeKinds: string[];
+  crossLanguage?: boolean;
+  edgeType?: string; // 'rest-api' | 'subprocess' for cross-language edges
 }

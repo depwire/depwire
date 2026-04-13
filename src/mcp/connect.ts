@@ -172,7 +172,7 @@ export async function connectToRepo(
     }
 
     // Build the graph
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
 
     // Update state
     state.graph = graph;

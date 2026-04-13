@@ -24,7 +24,7 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
     console.error(`Parsing project: ${projectRoot}`);
 
     const parsedFiles = await parseProject(projectRoot);
-    const graph = buildGraph(parsedFiles);
+    const graph = buildGraph(parsedFiles, projectRoot);
     console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
 
     const vizData = prepareVizData(graph, projectRoot);
@@ -62,7 +62,7 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
   console.error(`Parsing project: ${projectRoot}`);
 
   const parsedFiles = await parseProject(projectRoot);
-  const graph = buildGraph(parsedFiles);
+  const graph = buildGraph(parsedFiles, projectRoot);
   console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
 
   // Run simulation

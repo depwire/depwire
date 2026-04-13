@@ -4,11 +4,11 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-RGD3YJYQ.js";
+} from "./chunk-NVMZ7V4C.js";
 import {
   buildGraph,
   parseProject
-} from "./chunk-DA5LWNJ4.js";
+} from "./chunk-IOONOEC6.js";
 
 // src/mcpb-entry.ts
 import { resolve } from "path";
@@ -21,7 +21,7 @@ async function main() {
       console.error(`[MCPB] Parsing project: ${projectRoot}`);
       const parsedFiles = await parseProject(projectRoot);
       console.error(`[MCPB] Parsed ${parsedFiles.length} files`);
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       console.error(`[MCPB] Built graph: ${graph.order} symbols, ${graph.size} edges`);
       state.graph = graph;
       state.projectRoot = projectRoot;

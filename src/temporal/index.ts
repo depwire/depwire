@@ -80,7 +80,7 @@ export async function runTemporalAnalysis(
       await checkoutCommit(projectDir, commit.hash);
 
       const parsedFiles = await parseProject(projectDir);
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectDir);
       const projectGraph = exportToJSON(graph, projectDir);
 
       const snapshot = createSnapshot(

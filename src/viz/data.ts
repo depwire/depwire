@@ -36,12 +36,19 @@ export function prepareVizData(graph: DirectedGraph, projectRoot: string): VizDa
       if (!arc.edgeKinds.includes(edge.kind)) {
         arc.edgeKinds.push(edge.kind);
       }
+      // Mark as cross-language if any edge has crossLanguage attribute
+      if (edge.crossLanguage) {
+        arc.crossLanguage = true;
+        arc.edgeType = edge.edgeType || arc.edgeType;
+      }
     } else {
       arcMap.set(key, {
         sourceFile: edge.sourceFile,
         targetFile: edge.targetFile,
         edgeCount: 1,
         edgeKinds: [edge.kind],
+        crossLanguage: edge.crossLanguage || false,
+        edgeType: edge.edgeType,
       });
     }
   }

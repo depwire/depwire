@@ -30,7 +30,7 @@ async function main() {
       console.error(`[MCPB] Parsed ${parsedFiles.length} files`);
       
       // Build the graph
-      const graph = buildGraph(parsedFiles);
+      const graph = buildGraph(parsedFiles, projectRoot);
       console.error(`[MCPB] Built graph: ${graph.order} symbols, ${graph.size} edges`);
       
       // Set initial state

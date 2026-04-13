@@ -48,7 +48,7 @@ export async function securityCommand(
   const parsedFiles = await parseProject(projectRoot);
   console.error(`Parsed ${parsedFiles.length} files`);
 
-  const graph = buildGraph(parsedFiles);
+  const graph = buildGraph(parsedFiles, projectRoot);
   console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
 
   const result = await scanSecurity(projectRoot, graph, {

@@ -170,6 +170,8 @@ export function getCrossFileEdges(graph: DirectedGraph): {
   sourceFile: string;
   targetFile: string;
   kind: EdgeKind;
+  crossLanguage?: boolean;
+  edgeType?: string;
 }[] {
   const crossFileEdges: {
     source: string;
@@ -177,6 +179,8 @@ export function getCrossFileEdges(graph: DirectedGraph): {
     sourceFile: string;
     targetFile: string;
     kind: EdgeKind;
+    crossLanguage?: boolean;
+    edgeType?: string;
   }[] = [];
   
   graph.forEachEdge((edge, attrs, source, target) => {
@@ -190,6 +194,8 @@ export function getCrossFileEdges(graph: DirectedGraph): {
         sourceFile: sourceAttrs.filePath,
         targetFile: targetAttrs.filePath,
         kind: attrs.kind,
+        crossLanguage: attrs.crossLanguage || false,
+        edgeType: attrs.edgeType,
       });
     }
   });
