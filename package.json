@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "0.9.29",
+  "version": "0.9.30",
   "description": "Dependency graph + 17 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner.",
   "type": "module",
   "bin": {
