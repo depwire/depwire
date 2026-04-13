@@ -142,7 +142,7 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
     }
 
     if (lang === 'python') {
-      // FastAPI/Flask: @app.get('/api/...') or @router.get('/api/...')
+      // FastAPI: @app.get('/api/...') or @router.get('/api/...')
       const pythonMatch = line.match(/@(?:app|router)\s*\.\s*(get|post|put|delete|patch)\s*\(\s*(['"])([^'"]+)\2/i);
       if (pythonMatch) {
         const path = pythonMatch[3];
@@ -154,6 +154,29 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
             file: filePath,
             line: i + 1,
           });
+        }
+      }
+
+      // Flask: @app.route('/api/...') or @blueprint.route('/api/...')
+      const flaskMatch = line.match(/@(?:app|blueprint|router)\s*\.\s*route\s*\(\s*(['"])([^'"]+)\1/);
+      if (flaskMatch) {
+        const path = flaskMatch[2];
+        if (path.startsWith('/')) {
+          // Extract methods from methods=['POST'] or methods=['GET', 'POST']
+          const methodsMatch = line.match(/methods\s*=\s*\[([^\]]+)\]/);
+          const methods: string[] = methodsMatch
+            ? methodsMatch[1].match(/['"](\w+)['"]/g)?.map(m => m.replace(/['"]/g, '').toUpperCase()) || ['GET']
+            : ['GET'];
+
+          for (const method of methods) {
+            routes.push({
+              method,
+              path,
+              normalizedPath: normalizePath(path),
+              file: filePath,
+              line: i + 1,
+            });
+          }
         }
       }
     }
