@@ -22,7 +22,7 @@
     <meta property="twitter:image" content="https://depwire.dev/assets/depwire-hero.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300d4ff'/%3E%3Cstop offset='100%25' style='stop-color:%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='20' cy='50' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='30' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='70' r='8' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='50' r='8' fill='url(%23g)'/%3E%3Cpath d='M 28 50 Q 39 40 50 30' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 28 50 Q 39 60 50 70' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 30 Q 69 40 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 70 Q 69 60 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300d4ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300d4aa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='20' cy='50' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='30' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='70' r='8' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='50' r='8' fill='url(%23g)'/%3E%3Cpath d='M 28 50 Q 39 40 50 30' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 28 50 Q 39 60 50 70' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 30 Q 69 40 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 70 Q 69 60 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3C/svg%3E">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,18 +31,18 @@
     
     <style>
         :root {
-            --bg-primary: #0a0a0f;
+            --bg-primary: #0d0d0d;
             --bg-secondary: #13131a;
             --bg-tertiary: #1a1a24;
             --accent-cyan: #00d4ff;
-            --accent-purple: #a855f7;
+            --accent-purple: #00d4aa;
             --accent-pink: #ec4899;
             --text-primary: #ffffff;
             --text-secondary: #a0a0b8;
             --text-muted: #6b6b80;
             --border: rgba(255, 255, 255, 0.1);
             --glow-cyan: rgba(0, 212, 255, 0.3);
-            --glow-purple: rgba(168, 85, 247, 0.3);
+            --glow-purple: rgba(0, 212, 170, 0.3);
         }
         
         * {
@@ -72,7 +72,7 @@
             width: 100%;
             height: 100%;
             background: radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+                        radial-gradient(circle at 80% 80%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
             pointer-events: none;
             z-index: -1;
         }
@@ -98,7 +98,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10, 10, 15, 0.8);
+            background: rgba(13, 13, 13, 0.8);
         }
         
         .header-content {
@@ -1137,7 +1137,7 @@
     </section>
 
     <!-- Temporal Graph Showcase -->
-    <section class="proof-section" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);">
+    <section class="proof-section" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);">
         <div class="container">
             <h2 class="section-title scroll-reveal">Track Your Codebase Evolution Over Time</h2>
             <p class="solution-subtitle scroll-reveal">See how your architecture grew, morphed, and evolved across git history.</p>
@@ -1617,7 +1617,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                             <defs>
                                 <linearGradient id="gradient-footer" x1="0%" y1="0%" x2="100%" y2="100%">
                                     <stop offset="0%" style="stop-color:#00d4ff"/>
-                                    <stop offset="100%" style="stop-color:#a855f7"/>
+                                    <stop offset="100%" style="stop-color:#00d4aa"/>
                                 </linearGradient>
                             </defs>
                             <circle cx="20" cy="50" r="8" fill="url(#gradient-footer)"/>
