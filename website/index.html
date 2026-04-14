@@ -692,6 +692,24 @@
             box-shadow: 0 8px 30px var(--glow-purple);
         }
         
+        .hero-category {
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            color: #00d4ff;
+            font-weight: 500;
+            margin: 0.5rem 0 1.5rem;
+            letter-spacing: 0.01em;
+        }
+        
+        .nav-subscribe {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .nav-subscribe:hover {
+            color: #00d4ff;
+        }
+        
         /* Footer */
         footer {
             padding: 4rem 0 2rem;
@@ -911,6 +929,7 @@
                     <a href="https://github.com/depwire/depwire" target="_blank">GitHub</a>
                     <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a>
                     <a href="https://github.com/marketplace/actions/depwire-pr-impact" target="_blank">GitHub Action</a>
+                    <a href="#subscribe" class="nav-subscribe">Stay updated</a>
                     <a href="https://app.depwire.dev" target="_blank" class="nav-cloud">Cloud ↗</a>
                     <a href="/privacy">Privacy</a>
                 </nav>
@@ -921,10 +940,9 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Your AI is flying blind</h1>
-            <h2>Every new chat, every new prompt — your AI tool forgets your entire codebase. The result? Hallucinated imports, broken refactors, and thousands of tokens wasted re-scanning files it already saw.</h2>
-            <div class="hero-pivot">Depwire fixes this.</div>
-            <p class="hero-solution">The context layer that turns vibe coding into software engineering. Deterministic dependency graph. Not probabilistic guessing.</p>
+            <h1>Your AI doesn't know your architecture. Depwire does.</h1>
+            <p class="hero-category">Depwire is the context and safety layer for AI-generated code.</p>
+            <h2>Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.</h2>
             <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">8 CLI commands. 17 MCP tools. 13 auto-generated documents. What If simulation. Security scanner. Architecture health scoring.</p>
             
             <!-- Benchmark Stats -->
@@ -952,8 +970,8 @@
                 <a href="https://github.com/depwire/depwire" target="_blank" class="btn btn-secondary">View on GitHub</a>
             </div>
             <div class="hero-image">
-                <img src="./assets/depwire-hero.png" alt="Depwire arc diagram visualization" loading="lazy">
-                <p class="hero-caption">Depwire visualizing the Hono framework — 305 files, 5,636 symbols, 1,565 edges</p>
+                <img src="../assets/depwire-demo-cli.gif" alt="Depwire CLI demo on honojs/hono" loading="lazy" />
+                <p class="hero-caption">honojs/hono — 352 files, 6,245 symbols, 2,133 edges, 4,048 cross-language edges detected in 1.2s</p>
             </div>
         </div>
     </section>
@@ -1007,6 +1025,37 @@
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Architecture Diagram Section -->
+    <section class="architecture-section" style="padding: 5rem 0; background: var(--bg-secondary);">
+      <div class="container">
+        <h2 class="section-title scroll-reveal">The infrastructure layer</h2>
+        <p class="section-subtitle scroll-reveal" style="text-align:center; color: var(--text-muted); max-width: 600px; margin: 0 auto 3rem;">
+          Depwire sits between your AI and your codebase. Every query goes through Depwire — graph context flows back up.
+        </p>
+        <div style="max-width: 800px; margin: 0 auto;">
+          <img src="../assets/architecture.svg" alt="Depwire architecture diagram" style="width: 100%; height: auto;" />
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 3rem auto 0;">
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Local</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">Everything runs on your machine. No cloud parsing. No data sent anywhere.</div>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Secure</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">Your code never leaves your machine. Security scanner requires no API key.</div>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Token-efficient</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">Pre-computed graph data. 40% fewer tool calls. 56% fewer file reads.</div>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Deterministic</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">tree-sitter AST parsing. 100% accurate. Not a probabilistic guess.</div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Features Section -->
@@ -1080,7 +1129,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🛡️</div>
                     <h3>Security Scanner</h3>
-                    <p>Deterministic vulnerability detection — no API key, no LLM. Scans for injection, secrets, path traversal, auth bypass, XSS, and more.</p>
+                    <p>AI will confidently ship vulnerable code. Depwire stops it before production. Graph-aware severity — a vulnerability reachable from an MCP tool is automatically elevated to Critical. No API key required.</p>
                     <ul>
                         <li>10 vulnerability categories, 40+ patterns</li>
                         <li>Graph-aware severity elevation</li>
@@ -1088,6 +1137,15 @@
                         <li>CLI: <code>depwire security</code></li>
                         <li>MCP tool: <code>security_scan</code></li>
                     </ul>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                        </svg>
+                    </div>
+                    <h3>Cross-language edge detection</h3>
+                    <p>Detects connections between files written in different languages. A TypeScript fetch('/api/users') matched to a Python @app.get('/api/users') route — that's a cross-language edge. Delete the Python route and see the TypeScript callers break.</p>
                 </div>
             </div>
         </div>
@@ -1209,8 +1267,8 @@
                         <tr>
                             <td><strong>Hono</strong></td>
                             <td>TypeScript</td>
-                            <td>305</td>
-                            <td>5,636</td>
+                            <td>352</td>
+                            <td>6,245</td>
                             <td>2.3s</td>
                         </tr>
                         <tr>
@@ -1549,13 +1607,14 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
     </section>
 
     <!-- Email Capture Section -->
-    <section class="email-section">
+    <section id="subscribe" class="email-section">
         <div class="container">
             <div class="email-content scroll-reveal">
                 <h2 class="section-title">Stay in the loop</h2>
                 <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 1rem;">Get notified about team features, cloud dashboard, and major releases.</p>
                 <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1rem;">Prefer a browser? <a href="https://app.depwire.dev" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">app.depwire.dev</a> gives you the full dashboard without local setup.</p>
                 <form class="email-form">
+                    <input type="text" name="website" id="honeypot-field" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off" />
                     <input type="email" class="email-input" placeholder="your.email@company.com" required>
                     <button type="submit" class="btn-subscribe">Subscribe</button>
                 </form>
@@ -1674,6 +1733,10 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
             const email = input.value.trim();
             if (!email) return;
 
+            // Honeypot check — bots fill hidden fields
+            const honeypot = document.getElementById('honeypot-field');
+            if (honeypot && honeypot.value) return;
+
             btn.disabled = true;
             btn.textContent = 'Subscribing...';
             msg.textContent = '';
@@ -1682,7 +1745,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
               const res = await fetch('https://depwire-api.atef-ataya.workers.dev/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, source: 'website' }),
               });
 
               const data = await res.json();
