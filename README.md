@@ -298,6 +298,52 @@ C# / .NET support coming in v1.1.
 
 ---
 
+## GitHub Action — PR Impact Analysis
+
+Depwire integrates into your CI/CD pipeline via the [depwire-action](https://github.com/depwire/depwire-action) GitHub Action.
+
+On every pull request it automatically posts a dependency impact report — which symbols changed, what breaks, health score before and after. Code reviewers see the architectural blast radius before merging.
+
+Add to `.github/workflows/depwire.yml`:
+
+```yaml
+name: Depwire PR Impact
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  depwire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: depwire/depwire-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Block PRs that hurt your architecture:
+
+```yaml
+- uses: depwire/depwire-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    fail-on-score-drop: 5
+```
+
+[GitHub Marketplace](https://github.com/marketplace/actions/depwire-pr-impact) — [depwire-action repo](https://github.com/depwire/depwire-action)
+
+---
+
 ## Cloud dashboard
 
 [app.depwire.dev](https://app.depwire.dev) — full dependency graph, health score, dead code report, and AI codebase chat in the browser. No local setup required.
