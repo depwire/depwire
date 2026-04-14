@@ -1555,9 +1555,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 <h2 class="section-title">Stay in the loop</h2>
                 <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 1rem;">Get notified about team features, cloud dashboard, and major releases.</p>
                 <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1rem;">Prefer a browser? <a href="https://app.depwire.dev" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">app.depwire.dev</a> gives you the full dashboard without local setup.</p>
-                <form class="email-form" action="mailto:hello@depwire.dev" method="get">
-                    <input type="email" name="subject" class="email-input" placeholder="your.email@company.com" required style="display:none;" value="Newsletter Subscription">
-                    <input type="email" name="body" class="email-input" placeholder="your.email@company.com" required>
+                <form class="email-form">
+                    <input type="email" class="email-input" placeholder="your.email@company.com" required>
                     <button type="submit" class="btn-subscribe">Subscribe</button>
                 </form>
             </div>
@@ -1653,6 +1652,60 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 }
             });
         });
+
+        // Subscribe form
+        (function() {
+          const form = document.querySelector('.email-form');
+          const input = document.querySelector('.email-input');
+          const btn = document.querySelector('.btn-subscribe');
+
+          if (!form || !input || !btn) return;
+
+          let msg = document.getElementById('subscribe-msg');
+          if (!msg) {
+            msg = document.createElement('p');
+            msg.id = 'subscribe-msg';
+            msg.style.cssText = 'margin-top:8px;font-size:14px;min-height:20px;text-align:center;';
+            btn.parentNode.insertAdjacentElement('afterend', msg);
+          }
+
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = input.value.trim();
+            if (!email) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Subscribing...';
+            msg.textContent = '';
+
+            try {
+              const res = await fetch('https://depwire-api.atef-ataya.workers.dev/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+              });
+
+              const data = await res.json();
+
+              if (res.ok) {
+                msg.textContent = 'Subscribed! You will be notified of new releases.';
+                msg.style.color = '#4ade80';
+                input.value = '';
+                btn.textContent = 'Subscribed';
+              } else {
+                msg.textContent = data.error || 'Something went wrong. Please try again.';
+                msg.style.color = '#f87171';
+                btn.disabled = false;
+                btn.textContent = 'Subscribe';
+              }
+            } catch {
+              msg.textContent = 'Failed to subscribe. Please try again.';
+              msg.style.color = '#f87171';
+              btn.disabled = false;
+              btn.textContent = 'Subscribe';
+            }
+          });
+        })();
     </script>
 </body>
 </html>
