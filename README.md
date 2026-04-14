@@ -39,6 +39,8 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 ![Depwire architecture](./assets/architecture.svg)
 
+Depwire is the context and safety layer for AI-generated code.
+
 Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 17 MCP tools.
 
 Four guarantees:
@@ -59,9 +61,9 @@ npm install -g depwire-cli
 Three commands to understand any codebase:
 
 ```bash
-depwire viz        # open interactive arc diagram in browser
-depwire whatif     # simulate changes before touching code
-depwire security   # scan for vulnerabilities
+depwire whatif     # know what breaks before you change anything
+depwire security   # catch vulnerabilities before AI ships them
+depwire viz        # see your entire architecture instantly
 ```
 
 ---
@@ -103,7 +105,7 @@ Run without `--simulate` to open the browser UI — side-by-side arc diagrams sh
 
 ## Security scanner
 
-AI-generated code ships vulnerabilities. Depwire catches them before they reach production.
+AI will confidently ship vulnerable code. Depwire stops it before production.
 
 ```bash
 depwire security .                        # full repo scan
