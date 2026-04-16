@@ -25,6 +25,9 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.go')) return 'go';
   if (filePath.endsWith('.cs') || filePath.endsWith('.csx')) return 'csharp';
   if (filePath.endsWith('.java')) return 'java';
+  if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
+      filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
+      filePath.endsWith('.h') || filePath.endsWith('.inl') || filePath.endsWith('.ipp')) return 'cpp';
   return 'unknown';
 }
 
@@ -332,6 +335,83 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
           file: filePath,
           line: i + 1,
         });
+      }
+    }
+
+    if (lang === 'cpp') {
+      // Crow: CROW_ROUTE(app, "/api/users")
+      const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
+      if (crowMatch) {
+        const path = crowMatch[1];
+        if (path.startsWith('/')) {
+          // Check for .methods() call
+          const methodsMatch = line.match(/methods\s*\(\s*"([^"]+)"_method/);
+          const method = methodsMatch ? methodsMatch[1].toUpperCase() : 'ANY';
+          routes.push({
+            method,
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Drogon: ADD_METHOD_TO(Controller::method, "/api/users", Get)
+      const drogonMatch = line.match(/ADD_METHOD_TO\s*\(\s*[^,]+,\s*"([^"]+)"\s*,\s*(\w+)/);
+      if (drogonMatch) {
+        const path = drogonMatch[1].startsWith('/') ? drogonMatch[1] : '/' + drogonMatch[1];
+        routes.push({
+          method: drogonMatch[2].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Drogon: PATH_ADD("/api/users", Get, Post)
+      const pathAddMatch = line.match(/PATH_ADD\s*\(\s*"([^"]+)"\s*,\s*(\w+)/);
+      if (pathAddMatch) {
+        const path = pathAddMatch[1].startsWith('/') ? pathAddMatch[1] : '/' + pathAddMatch[1];
+        routes.push({
+          method: pathAddMatch[2].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Pistache: router.get("/api/users", Routes::bind(...))
+      const pistacheMatch = line.match(/router\s*\.\s*(get|post|put|del|patch)\s*\(\s*"([^"]+)"/i);
+      if (pistacheMatch) {
+        const method = pistacheMatch[1].toUpperCase() === 'DEL' ? 'DELETE' : pistacheMatch[1].toUpperCase();
+        const path = pistacheMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method,
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // cpp-httplib: svr.Get("/api/users", ...)
+      const httplibMatch = line.match(/(?:svr|server)\s*\.\s*(Get|Post|Put|Delete|Patch)\s*\(\s*"([^"]+)"/);
+      if (httplibMatch) {
+        const path = httplibMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: httplibMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
       }
     }
   }

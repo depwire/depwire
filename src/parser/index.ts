@@ -73,15 +73,16 @@ export async function parseProject(
         console.error(`[Parser] Parsing: ${file}`);
       }
       
-      const parser = getParserForFile(file);
+      // fullPath validated via resolve().startsWith() containment check above
+      const sourceCode = readFileSync(fullPath, 'utf-8');
+
+      const parser = getParserForFile(file, sourceCode);
       if (!parser) {
         console.error(`No parser found for file: ${file}`);
         skippedFiles++;
         continue;
       }
       
-      // fullPath validated via resolve().startsWith() containment check above
-      const sourceCode = readFileSync(fullPath, 'utf-8');
       const parsed = parser.parseFile(file, sourceCode, projectRoot);
       parsedFiles.push(parsed);
     } catch (err) {

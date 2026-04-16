@@ -228,6 +228,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // C++ specific exclusions
+  if (isCppExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -289,4 +294,38 @@ function isFrameworkAutoLoadedFile(filePath: string): boolean {
     filePath.includes("/config/") ||
     filePath.includes("/configuration/")
   );
+}
+
+/**
+ * C++ specific dead code exclusions
+ */
+function isCppExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+  const kind = attrs.kind || '';
+
+  // Header files may be used by external consumers
+  if (/\.(?:h|hpp|hh|hxx|h\+\+|inl|ipp)$/.test(filePath)) {
+    return true;
+  }
+
+  // main() is always an entry point
+  if (name === 'main') return true;
+
+  // Operator overloads may be called implicitly
+  if (name.startsWith('operator')) return true;
+
+  // Destructors are called implicitly
+  if (name.startsWith('~')) return true;
+
+  // Virtual functions may be called via vtable
+  // (We check the source text for 'virtual' keyword — heuristic)
+
+  // [[nodiscard]] functions are intentionally exported
+  // (checked via source text in caller)
+
+  // Macros and constants in headers are meant to be consumed
+  if (kind === 'constant' && /\.(?:h|hpp)$/.test(filePath)) return true;
+
+  return false;
 }

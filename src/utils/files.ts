@@ -40,17 +40,21 @@ export function scanDirectory(
         // Recursively scan subdirectories
         files.push(...scanDirectory(rootDir, fullPath));
       } else if (stats.isFile()) {
-        // Include .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, .go, .rs, .c, .h, .cs, .csx, .csproj, and .java files (skip .d.ts and _test.go)
+        // Include supported source files
         const isTypeScript = (entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts');
         const isJavaScript = entry.endsWith('.js') || entry.endsWith('.jsx') || entry.endsWith('.mjs') || entry.endsWith('.cjs');
         const isPython = entry.endsWith('.py');
         const isGo = entry.endsWith('.go') && !entry.endsWith('_test.go');
         const isRust = entry.endsWith('.rs');
-        const isC = entry.endsWith('.c') || entry.endsWith('.h');
+        const isC = entry.endsWith('.c');
+        const isCpp = entry.endsWith('.cpp') || entry.endsWith('.cc') || entry.endsWith('.cxx') || entry.endsWith('.c++') ||
+          entry.endsWith('.hpp') || entry.endsWith('.hh') || entry.endsWith('.hxx') || entry.endsWith('.h++') ||
+          entry.endsWith('.h') || entry.endsWith('.inl') || entry.endsWith('.ipp');
         const isCSharp = entry.endsWith('.cs') || entry.endsWith('.csx') || entry.endsWith('.csproj');
         const isJava = entry.endsWith('.java') || entry === 'pom.xml' || entry === 'build.gradle' || entry === 'build.gradle.kts';
+        const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCSharp || isJava) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isCppBuild) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }

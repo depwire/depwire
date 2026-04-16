@@ -1,4 +1,5 @@
 import { extname, basename } from 'path';
+import { readFileSync } from 'fs';
 import { LanguageParser } from './types.js';
 import { typescriptParser } from './typescript.js';
 import { pythonParser } from './python.js';
@@ -8,6 +9,7 @@ import { rustParser } from './rust.js';
 import { cParser } from './c.js';
 import { csharpParser } from './csharp.js';
 import { javaParser } from './java.js';
+import { cppParser } from './cpp.js';
 
 const parsers: LanguageParser[] = [
   typescriptParser,
@@ -18,11 +20,29 @@ const parsers: LanguageParser[] = [
   cParser,
   csharpParser,
   javaParser,
+  cppParser,
 ];
 
-export function getParserForFile(filePath: string): LanguageParser | null {
+// C++ keywords that distinguish .h files as C++ rather than C
+const CPP_KEYWORDS = /\b(?:class|namespace|template|public:|private:|protected:|virtual|nullptr|constexpr|auto\s+\w+\s*=|using\s+\w+\s*=|static_cast|dynamic_cast|reinterpret_cast|const_cast|noexcept|override|final|decltype|concept|requires|co_await|co_yield|co_return|std::)\b/;
+
+export function getParserForFile(filePath: string, content?: string): LanguageParser | null {
   const ext = extname(filePath).toLowerCase();
   const fileName = basename(filePath);
+
+  // Disambiguate .h files: check for C++ keywords
+  if (ext === '.h' && content) {
+    if (CPP_KEYWORDS.test(content)) {
+      return cppParser;
+    }
+    return cParser;
+  }
+
+  // .h without content — default to C parser (backward compatible)
+  if (ext === '.h') {
+    return cParser;
+  }
+
   return parsers.find(p => p.extensions.includes(ext) || p.extensions.includes(fileName)) || null;
 }
 

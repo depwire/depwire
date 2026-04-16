@@ -146,6 +146,36 @@ export async function checkCryptography(
             suggestedFix: 'Generate a unique random salt per user using crypto.randomBytes(16).',
           });
         }
+
+        // C++ weak random: rand() for security-sensitive operations
+        if (/\brand\s*\(\s*\)/.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak random: rand() in security context',
+            description: 'rand() is not cryptographically secure — its output can be predicted.',
+            attackScenario: 'An attacker could predict rand() values to forge tokens or bypass security checks.',
+            suggestedFix: 'Use std::random_device or platform-specific CSPRNG (e.g., /dev/urandom, BCryptGenRandom).',
+          });
+        }
+
+        // C++ hardcoded credentials
+        if (/(?:const\s+(?:char|std::string)\s*\*?\s*(?:password|secret|api_key|apiKey|token)\s*=\s*["'])/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in C++ source',
+            description: 'A password, secret, or API key is hardcoded as a string literal.',
+            attackScenario: 'An attacker with access to the binary or source could extract the credential.',
+            suggestedFix: 'Load credentials from environment variables or a secure vault at runtime.',
+          });
+        }
       }
     }
   } catch {

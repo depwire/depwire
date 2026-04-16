@@ -465,6 +465,6 @@ function getCurrentSymbolId(context: Context): string | null {
 
 export const cParser: LanguageParser = {
   name: 'c',
-  extensions: ['.c', '.h'],
+  extensions: ['.c'],
   parseFile: parseCFile,
 };

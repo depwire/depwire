@@ -164,6 +164,43 @@ const PATTERNS: InjectionPattern[] = [
     attackScenario: 'An attacker could access administrative or destructive endpoints without authentication.',
     suggestedFix: 'Use .hasRole("ADMIN") or .authenticated() for sensitive endpoints.',
   },
+  // C++ injection patterns
+  {
+    regex: /\b(?:strcpy|strcat|sprintf|gets)\s*\(/,
+    title: 'C++ buffer overflow risk: unsafe string function',
+    vulnClass: 'shell-injection',
+    baseSeverity: 'high',
+    description: 'Unsafe C string functions (strcpy, strcat, sprintf, gets) with no bounds checking — buffer overflow risk.',
+    attackScenario: 'An attacker could provide oversized input to overflow the buffer, enabling arbitrary code execution.',
+    suggestedFix: 'Use bounded alternatives: strncpy, strncat, snprintf, or C++ std::string.',
+  },
+  {
+    regex: /printf\s*\(\s*(?!")[a-zA-Z_]\w*/,
+    title: 'C++ format string vulnerability',
+    vulnClass: 'shell-injection',
+    baseSeverity: 'high',
+    description: 'printf called with a variable as the format string — format string attack risk.',
+    attackScenario: 'An attacker could inject format specifiers (%x, %n) to read/write arbitrary memory.',
+    suggestedFix: 'Always use a literal format string: printf("%s", userInput).',
+  },
+  {
+    regex: /\bsystem\s*\(\s*(?!")[a-zA-Z_]\w*/,
+    title: 'C++ command injection via system()',
+    vulnClass: 'shell-injection',
+    baseSeverity: 'high',
+    description: 'system() called with a variable argument — potential command injection.',
+    attackScenario: 'An attacker could inject shell metacharacters to execute arbitrary commands.',
+    suggestedFix: 'Avoid system(). Use execvp with an argument array, or validate input with a strict allowlist.',
+  },
+  {
+    regex: /\bpopen\s*\(\s*(?!")[a-zA-Z_]\w*/,
+    title: 'C++ command injection via popen()',
+    vulnClass: 'shell-injection',
+    baseSeverity: 'high',
+    description: 'popen() called with a variable argument — potential command injection.',
+    attackScenario: 'An attacker could inject shell metacharacters to execute arbitrary commands.',
+    suggestedFix: 'Avoid popen(). Use pipe/fork/exec with argument arrays instead.',
+  },
 ];
 
 function shouldSkip(filePath: string): boolean {
