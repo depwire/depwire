@@ -314,6 +314,8 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++ — with cross-langua
 
 **C# / .NET** — classes, interfaces, records, structs, enums, delegates, file-scoped namespaces, primary constructors, global usings, .csproj ProjectReference and PackageReference edges, ASP.NET Core cross-language edges (attribute routing + Minimal API).
 
+**C++ / Systems** — classes, structs, unions, enums, namespaces, concepts, coroutines, C++20 modules, template support with parameter stripping. CMakeLists.txt, Conan, and vcpkg dependency edge parsing. Crow, Drogon, Pistache, and cpp-httplib cross-language route detection. Dead code detection with vtable and template exclusions. Health score checks: circular includes, missing header guards, god classes, raw pointer fields, missing virtual destructors. Security scanner: buffer overflow, format string vulnerability, use-after-free, command injection.
+
 ---
 
 ## GitHub Action — PR Impact Analysis
