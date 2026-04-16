@@ -1,5 +1,4 @@
 import { extname, basename } from 'path';
-import { readFileSync } from 'fs';
 import { LanguageParser } from './types.js';
 import { typescriptParser } from './typescript.js';
 import { pythonParser } from './python.js';
