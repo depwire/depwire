@@ -280,6 +280,13 @@ function isFrameworkAutoLoadedFile(filePath: string): boolean {
     filePath.includes("/app/") ||
     filePath.includes("/Controllers/") ||
     filePath.includes("/Hubs/") ||
-    filePath.includes("/Migrations/")
+    filePath.includes("/Migrations/") ||
+    // Java / Spring / Jakarta
+    filePath.includes("/controller/") ||
+    filePath.includes("/controllers/") ||
+    filePath.includes("/service/") ||
+    filePath.includes("/repository/") ||
+    filePath.includes("/config/") ||
+    filePath.includes("/configuration/")
   );
 }

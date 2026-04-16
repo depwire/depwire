@@ -107,5 +107,7 @@ function detectPackageManager(projectRoot: string): string {
   if (existsSync(join(projectRoot, 'pyproject.toml'))) return 'pip';
   if (existsSync(join(projectRoot, 'Cargo.toml'))) return 'cargo';
   if (existsSync(join(projectRoot, 'go.mod'))) return 'go';
+  if (existsSync(join(projectRoot, 'pom.xml'))) return 'maven';
+  if (existsSync(join(projectRoot, 'build.gradle')) || existsSync(join(projectRoot, 'build.gradle.kts'))) return 'gradle';
   return 'unknown';
 }

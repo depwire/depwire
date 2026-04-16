@@ -24,6 +24,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.py')) return 'python';
   if (filePath.endsWith('.go')) return 'go';
   if (filePath.endsWith('.cs') || filePath.endsWith('.csx')) return 'csharp';
+  if (filePath.endsWith('.java')) return 'java';
   return 'unknown';
 }
 
@@ -249,9 +250,106 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
         }
       }
     }
+
+    if (lang === 'java') {
+      // Spring Boot: @GetMapping("/api/users"), @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
+      const springMethodMatch = line.match(/@(Get|Post|Put|Delete|Patch)Mapping\s*\(\s*(?:value\s*=\s*)?["']([^"']+)["']/);
+      if (springMethodMatch) {
+        const method = springMethodMatch[1].toUpperCase();
+        let path = springMethodMatch[2];
+        const classPrefix = findClassLevelPrefix(source);
+        if (classPrefix) path = classPrefix + path;
+        if (!path.startsWith('/')) path = '/' + path;
+        routes.push({
+          method,
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // @GetMapping (no path — maps to class-level path)
+      if (!springMethodMatch) {
+        const springNoPathMatch = line.match(/@(Get|Post|Put|Delete|Patch)Mapping\s*$/);
+        if (springNoPathMatch) {
+          const method = springNoPathMatch[1].toUpperCase();
+          const classPrefix = findClassLevelPrefix(source);
+          if (classPrefix) {
+            routes.push({
+              method,
+              path: classPrefix,
+              normalizedPath: normalizePath(classPrefix),
+              file: filePath,
+              line: i + 1,
+            });
+          }
+        }
+      }
+
+      // @RequestMapping(value = "/api/users", method = RequestMethod.GET)
+      const requestMappingMatch = line.match(/@RequestMapping\s*\(\s*(?:value\s*=\s*)?["']([^"']+)["']/);
+      if (requestMappingMatch) {
+        let path = requestMappingMatch[1];
+        if (!path.startsWith('/')) path = '/' + path;
+        const methodMatch = line.match(/method\s*=\s*RequestMethod\.(\w+)/);
+        const method = methodMatch ? methodMatch[1].toUpperCase() : 'ANY';
+        routes.push({
+          method,
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // JAX-RS: @Path("/api/users") combined with @GET, @POST, etc.
+      const jaxPathMatch = line.match(/@Path\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (jaxPathMatch) {
+        let path = jaxPathMatch[1];
+        if (!path.startsWith('/')) path = '/' + path;
+        const nextLine = i + 1 < lines.length ? lines[i + 1] : '';
+        const prevLine = i > 0 ? lines[i - 1] : '';
+        const jaxMethodMatch = (nextLine + prevLine).match(/@(GET|POST|PUT|DELETE|PATCH)/);
+        const method = jaxMethodMatch ? jaxMethodMatch[1] : 'ANY';
+        routes.push({
+          method,
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Spring WebFlux RouterFunction: route(GET("/api/users"), handler::list)
+      const webFluxMatch = line.match(/(?:route|andRoute)\s*\(\s*(GET|POST|PUT|DELETE|PATCH)\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (webFluxMatch) {
+        const path = webFluxMatch[2].startsWith('/') ? webFluxMatch[2] : '/' + webFluxMatch[2];
+        routes.push({
+          method: webFluxMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+    }
   }
 
   return routes;
+}
+
+function findClassLevelPrefix(source: string): string | null {
+  // Look for class-level @RequestMapping("/api/...") annotation
+  const match = source.match(/@RequestMapping\s*\(\s*(?:value\s*=\s*)?["']([^"']+)["']/);
+  if (match) {
+    let path = match[1];
+    if (!path.startsWith('/')) path = '/' + path;
+    // Remove trailing slash for combining
+    if (path.endsWith('/') && path.length > 1) path = path.slice(0, -1);
+    return path;
+  }
+  return null;
 }
 
 function matchPaths(callPath: string, routeNormalized: string): boolean {

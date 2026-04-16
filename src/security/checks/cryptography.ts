@@ -5,6 +5,8 @@ import type { SecurityFinding, Severity } from '../types.js';
 
 const SKIP_DIRS = ['node_modules/', 'dist/', '.git/', '.wrangler/', 'src/security/checks/'];
 
+const USER_INPUT_NAMES = /(?:input|user|name|path|query|param|request|body|args|url)/i;
+
 function shouldSkip(filePath: string): boolean {
   return SKIP_DIRS.some(d => filePath.includes(d));
 }
@@ -40,7 +42,7 @@ export async function checkCryptography(
         if (line.trimStart().startsWith('//') || line.trimStart().startsWith('#')) continue;
 
         // Weak hash algorithms
-        if (/createHash\s*\(\s*['"]md5['"]\s*\)/.test(line) || /hashlib\.md5\s*\(/.test(line)) {
+        if (/createHash\s*\(\s*['"]md5['"]\s*\)/.test(line) || /hashlib\.md5\s*\(/.test(line) || /MessageDigest\.getInstance\s*\(\s*["']MD5["']\s*\)/.test(line)) {
           findings.push({
             id: '',
             severity: isCryptoFile ? 'high' : 'medium',
@@ -54,7 +56,7 @@ export async function checkCryptography(
           });
         }
 
-        if (/createHash\s*\(\s*['"]sha1['"]\s*\)/.test(line) || /hashlib\.sha1\s*\(/.test(line)) {
+        if (/createHash\s*\(\s*['"]sha1['"]\s*\)/.test(line) || /hashlib\.sha1\s*\(/.test(line) || /MessageDigest\.getInstance\s*\(\s*["']SHA-?1["']\s*\)/.test(line)) {
           findings.push({
             id: '',
             severity: isCryptoFile ? 'high' : 'medium',
@@ -66,6 +68,38 @@ export async function checkCryptography(
             attackScenario: 'An attacker could generate SHA-1 collisions to bypass integrity checks.',
             suggestedFix: 'Use SHA-256 or SHA-3 for integrity checks. Use bcrypt, scrypt, or argon2 for password hashing.',
           });
+        }
+
+        // Java weak cipher: DES
+        if (/Cipher\.getInstance\s*\(\s*["']DES/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak cipher algorithm: DES',
+            description: 'DES uses a 56-bit key and can be brute-forced in hours.',
+            attackScenario: 'An attacker could brute-force DES-encrypted data to reveal plaintext.',
+            suggestedFix: 'Use AES-256 with GCM mode: Cipher.getInstance("AES/GCM/NoPadding")',
+          });
+        }
+
+        // Java log injection
+        if (/(?:log|logger|LOG)\s*\.\s*(?:info|debug|warn|error|trace)\s*\([^)]*\+/.test(line)) {
+          if (USER_INPUT_NAMES.test(line)) {
+            findings.push({
+              id: '',
+              severity: 'medium',
+              vulnerabilityClass: 'cryptography',
+              file: file.filePath,
+              line: i + 1,
+              title: 'Potential log injection',
+              description: 'User-controlled input concatenated directly into log output.',
+              attackScenario: 'An attacker could inject newlines or control characters to forge log entries or hide malicious activity.',
+              suggestedFix: 'Use parameterized logging: log.info("User: {}", userInput) instead of string concatenation.',
+            });
+          }
         }
 
         // Math.random in crypto-related files

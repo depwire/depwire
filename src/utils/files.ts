@@ -40,7 +40,7 @@ export function scanDirectory(
         // Recursively scan subdirectories
         files.push(...scanDirectory(rootDir, fullPath));
       } else if (stats.isFile()) {
-        // Include .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, .go, .rs, .c, .h, .cs, .csx, and .csproj files (skip .d.ts and _test.go)
+        // Include .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, .go, .rs, .c, .h, .cs, .csx, .csproj, and .java files (skip .d.ts and _test.go)
         const isTypeScript = (entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts');
         const isJavaScript = entry.endsWith('.js') || entry.endsWith('.jsx') || entry.endsWith('.mjs') || entry.endsWith('.cjs');
         const isPython = entry.endsWith('.py');
@@ -48,8 +48,9 @@ export function scanDirectory(
         const isRust = entry.endsWith('.rs');
         const isC = entry.endsWith('.c') || entry.endsWith('.h');
         const isCSharp = entry.endsWith('.cs') || entry.endsWith('.csx') || entry.endsWith('.csproj');
+        const isJava = entry.endsWith('.java') || entry === 'pom.xml' || entry === 'build.gradle' || entry === 'build.gradle.kts';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCSharp) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCSharp || isJava) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
@@ -87,6 +88,8 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'Makefile',          // C/C++ (make-based)
     'CMakeLists.txt',    // C/C++ (cmake-based)
     'configure.ac',      // C/C++ (autotools)
+    'pom.xml',           // Java (Maven)
+    'build.gradle',      // Java (Gradle)
     '.git'               // Any git repo
   ];
   
