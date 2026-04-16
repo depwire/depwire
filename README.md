@@ -294,9 +294,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C — with cross-language edge detection between all supported languages.
-
-C# / .NET support coming in v1.1.
+TypeScript, JavaScript, Python, Go, Rust, C, C# — with cross-language edge detection between all supported languages.
 
 ---
 
@@ -360,7 +358,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 17 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#)
 - Architecture health score
 - Dead code detection
 - Temporal graph

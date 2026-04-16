@@ -46,8 +46,8 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   console.error('[Watcher] Attaching event listeners...');
 
   watcher.on('change', (absolutePath: string) => {
-    // Only process TypeScript, JavaScript, Python, Go, Rust, and C files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h'];
+    // Only process TypeScript, JavaScript, Python, Go, Rust, C, and C# files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files
@@ -60,8 +60,8 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('add', (absolutePath: string) => {
-    // Only process TypeScript, JavaScript, Python, Go, Rust, and C files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h'];
+    // Only process TypeScript, JavaScript, Python, Go, Rust, C, and C# files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files
@@ -74,8 +74,8 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   });
 
   watcher.on('unlink', (absolutePath: string) => {
-    // Only process TypeScript, JavaScript, Python, Go, Rust, and C files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h'];
+    // Only process TypeScript, JavaScript, Python, Go, Rust, C, and C# files
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files
@@ -98,7 +98,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     const dirs = Object.keys(watched);
     let fileCount = 0;
     
-    // Count .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, .go, .rs, .c, and .h files (excluding _test.go)
+    // Count .ts, .tsx, .js, .jsx, .mjs, .cjs, .py, .go, .rs, .c, .h, .cs, .csx, and .csproj files (excluding _test.go)
     for (const dir of dirs) {
       const files = watched[dir];
       fileCount += files.filter(f => 
@@ -107,11 +107,12 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
         f.endsWith('.py') ||
         (f.endsWith('.go') && !f.endsWith('_test.go')) ||
         f.endsWith('.rs') ||
-        f.endsWith('.c') || f.endsWith('.h')
+        f.endsWith('.c') || f.endsWith('.h') ||
+        f.endsWith('.cs') || f.endsWith('.csx') || f.endsWith('.csproj')
       ).length;
     }
     
-    console.error(`[Watcher] Watching ${fileCount} TypeScript/JavaScript/Python/Go/Rust/C files in ${dirs.length} directories`);
+    console.error(`[Watcher] Watching ${fileCount} TypeScript/JavaScript/Python/Go/Rust/C/C# files in ${dirs.length} directories`);
   });
 
   return watcher;

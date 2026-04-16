@@ -17,7 +17,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-FUIZQCYB.js";
+} from "./chunk-5BQLGAUL.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -31,7 +31,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-WUSXCZXA.js";
+} from "./chunk-IYKS66CG.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -1077,8 +1077,8 @@ var __dirname4 = dirname4(__filename4);
 var packageJsonPath = join5(__dirname4, "../package.json");
 var packageJson = JSON.parse(readFileSync3(packageJsonPath, "utf-8"));
 var program = new Command();
-program.name("depwire").description("Code cross-reference graph builder for TypeScript projects").version(packageJson.version);
-program.command("parse").description("Parse a TypeScript project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
+program.name("depwire").description("Code cross-reference graph builder for multi-language projects").version(packageJson.version);
+program.command("parse").description("Parse a project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {

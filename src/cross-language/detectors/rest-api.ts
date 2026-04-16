@@ -23,6 +23,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.js') || filePath.endsWith('.jsx') || filePath.endsWith('.mjs') || filePath.endsWith('.cjs')) return 'javascript';
   if (filePath.endsWith('.py')) return 'python';
   if (filePath.endsWith('.go')) return 'go';
+  if (filePath.endsWith('.cs') || filePath.endsWith('.csx')) return 'csharp';
   return 'unknown';
 }
 
@@ -197,6 +198,57 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
         }
       }
     }
+
+    if (lang === 'csharp') {
+      // ASP.NET Core attribute routing: [HttpGet("/api/users")], [HttpPost("/api/users")]
+      const attrMatch = line.match(/\[\s*Http(Get|Post|Put|Delete|Patch)\s*\(\s*"([^"]+)"\s*\)\s*\]/);
+      if (attrMatch) {
+        routes.push({
+          method: attrMatch[1].toUpperCase(),
+          path: attrMatch[2],
+          normalizedPath: normalizePath(attrMatch[2]),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // [Route("api/[controller]")] — extract and normalize [controller] token
+      const routeAttrMatch = line.match(/\[\s*Route\s*\(\s*"([^"]+)"\s*\)\s*\]/);
+      if (routeAttrMatch) {
+        let routePath = routeAttrMatch[1];
+        // Resolve [controller] using class name convention
+        if (routePath.includes('[controller]')) {
+          // Look ahead/behind for the controller class name
+          const classMatch = source.match(/class\s+(\w+?)Controller\s/);
+          if (classMatch) {
+            routePath = routePath.replace('[controller]', classMatch[1].toLowerCase());
+          }
+        }
+        if (!routePath.startsWith('/')) routePath = '/' + routePath;
+        routes.push({
+          method: 'ANY',
+          path: routePath,
+          normalizedPath: normalizePath(routePath),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Minimal API (.NET 6+): app.MapGet("/api/users", ...)
+      const minimalMatch = line.match(/app\s*\.\s*Map(Get|Post|Put|Delete|Patch)\s*\(\s*"([^"]+)"/);
+      if (minimalMatch) {
+        const path = minimalMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: minimalMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+    }
   }
 
   return routes;
@@ -237,7 +289,7 @@ function getConfidence(
   const normalizedCall = normalizePath(stripTrailingSlash(callPath));
   const normalizedRoute = normalizePath(stripTrailingSlash(routePath));
   const exactPath = normalizedCall === normalizedRoute;
-  const methodMatch = callMethod === routeMethod;
+  const methodMatch = callMethod === routeMethod || routeMethod === 'ANY';
 
   if (exactPath && methodMatch) return 'high';
   if (exactPath) return 'medium';

@@ -127,8 +127,10 @@ function isRelevantForDeadCodeDetection(attrs: any): boolean {
     "class",
     "interface",
     "type",
+    "type_alias",
     "enum",
     "const",
+    "constant",
     "let",
     "var",
     "method",
@@ -275,6 +277,9 @@ function isFrameworkAutoLoadedFile(filePath: string): boolean {
     filePath.includes("/middleware/") ||
     filePath.includes("/commands/") ||
     filePath.includes("/api/") ||
-    filePath.includes("/app/")
+    filePath.includes("/app/") ||
+    filePath.includes("/Controllers/") ||
+    filePath.includes("/Hubs/") ||
+    filePath.includes("/Migrations/")
   );
 }

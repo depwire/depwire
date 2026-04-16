@@ -36,12 +36,12 @@ const program = new Command();
 
 program
   .name('depwire')
-  .description('Code cross-reference graph builder for TypeScript projects')
+  .description('Code cross-reference graph builder for multi-language projects')
   .version(packageJson.version);
 
 program
   .command('parse')
-  .description('Parse a TypeScript project and build dependency graph')
+  .description('Parse a project and build dependency graph')
   .argument('[directory]', 'Project directory to parse (defaults to current directory or auto-detected project root)')
   .option('-o, --output <path>', 'Output JSON file path', 'depwire-output.json')
   .option('--pretty', 'Pretty-print JSON output')
@@ -57,7 +57,7 @@ program
       
       console.log(`Parsing project: ${projectRoot}`);
       
-      // Parse all TypeScript files
+      // Parse all source files
       const parsedFiles = await parseProject(projectRoot, {
         exclude: options.exclude,
         verbose: options.verbose
@@ -187,7 +187,7 @@ program
       
       console.log(`Parsing project: ${projectRoot}`);
       
-      // Parse all TypeScript files
+      // Parse all source files
       const parsedFiles = await parseProject(projectRoot, {
         exclude: options.exclude,
         verbose: options.verbose
@@ -273,7 +273,7 @@ program
         // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
         console.error(`Parsing project: ${projectRootToConnect}`);
         
-        // Parse all TypeScript files
+        // Parse all source files
         const parsedFiles = await parseProject(projectRootToConnect);
         console.error(`Parsed ${parsedFiles.length} files`);
         
