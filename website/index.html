@@ -131,6 +131,12 @@
             align-items: center;
         }
         
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
         nav a {
             color: var(--text-secondary);
             text-decoration: none;
@@ -711,6 +717,34 @@
             color: #00d4aa;
         }
         
+        /* Hamburger Menu */
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 4px;
+            background: none;
+            border: none;
+        }
+        .nav-hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: #e6edf3;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .nav-hamburger.open span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+        .nav-hamburger.open span:nth-child(2) {
+            opacity: 0;
+        }
+        .nav-hamburger.open span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+        
         /* Footer */
         footer {
             padding: 4rem 0 2rem;
@@ -839,12 +873,29 @@
                 padding: 4rem 0 3rem;
             }
             
-            nav {
-                gap: 1rem;
+            .nav-hamburger {
+                display: flex;
             }
-            
-            nav a {
-                font-size: 0.9rem;
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #0d0d0d;
+                border-bottom: 1px solid rgba(0, 212, 170, 0.15);
+                flex-direction: column;
+                padding: 1rem 1.5rem;
+                gap: 1rem;
+                z-index: 100;
+            }
+            .nav-links.open {
+                display: flex;
+            }
+            .nav-links a {
+                font-size: 1rem;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
             }
             
             .pain-section,
@@ -911,13 +962,20 @@
                     Depwire
                 </a>
                 <nav>
-                    <a href="#install">Install</a>
-                    <a href="https://github.com/depwire/depwire" target="_blank">GitHub</a>
-                    <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a>
-                    <a href="https://github.com/marketplace/actions/depwire-pr-impact" target="_blank">GitHub Action</a>
-                    <a href="#subscribe" class="nav-subscribe">Stay updated</a>
-                    <a href="https://app.depwire.dev" target="_blank" class="nav-cloud">Cloud ↗</a>
-                    <a href="/privacy">Privacy</a>
+                    <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="nav-links">
+                        <a href="#install">Install</a>
+                        <a href="https://github.com/depwire/depwire" target="_blank">GitHub</a>
+                        <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a>
+                        <a href="https://github.com/marketplace/actions/depwire-pr-impact" target="_blank">GitHub Action</a>
+                        <a href="#subscribe" class="nav-subscribe">Stay updated</a>
+                        <a href="https://app.depwire.dev" target="_blank" class="nav-cloud">Cloud ↗</a>
+                        <a href="/privacy">Privacy</a>
+                    </div>
                 </nav>
             </div>
         </div>
@@ -1762,6 +1820,22 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
             }
           });
         })();
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        if (hamburger && navLinks) {
+          hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('open');
+            navLinks.classList.toggle('open');
+          });
+          navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+              hamburger.classList.remove('open');
+              navLinks.classList.remove('open');
+            });
+          });
+        }
     </script>
 </body>
 </html>
