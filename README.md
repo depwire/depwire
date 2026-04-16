@@ -296,6 +296,8 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 TypeScript, JavaScript, Python, Go, Rust, C, C# — with cross-language edge detection between all supported languages.
 
+**C# / .NET** — classes, interfaces, records, structs, enums, delegates, file-scoped namespaces, primary constructors, global usings, .csproj ProjectReference and PackageReference edges, ASP.NET Core cross-language edges (attribute routing + Minimal API).
+
 ---
 
 ## GitHub Action — PR Impact Analysis
@@ -370,7 +372,6 @@ Block PRs that hurt your architecture:
 - PR Impact GitHub Action
 
 **Coming next**
-- C# / .NET language support
 - AI-suggested refactors
 - VSCode extension
 - Natural language architecture queries
