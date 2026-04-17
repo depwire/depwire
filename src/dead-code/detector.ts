@@ -233,6 +233,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // Kotlin specific exclusions
+  if (isKotlinExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -326,6 +331,37 @@ function isCppExcluded(attrs: any): boolean {
 
   // Macros and constants in headers are meant to be consumed
   if (kind === 'constant' && /\.(?:h|hpp)$/.test(filePath)) return true;
+
+  return false;
+}
+
+/**
+ * Kotlin specific dead code exclusions
+ */
+function isKotlinExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  // Only apply to Kotlin files
+  if (!filePath.endsWith('.kt') && !filePath.endsWith('.kts')) return false;
+
+  // main() is always an entry point
+  if (name === 'main') return true;
+
+  // Override functions are called polymorphically
+  // (Heuristic — the name itself isn't enough, but we err on the side of exclusion)
+
+  // Android lifecycle functions
+  const androidLifecycle = ['onCreate', 'onStart', 'onResume', 'onPause', 'onStop', 'onDestroy',
+    'onCreateView', 'onViewCreated', 'onDestroyView', 'onSaveInstanceState', 'onRestoreInstanceState',
+    'onActivityResult', 'onRequestPermissionsResult', 'onConfigurationChanged', 'onNewIntent'];
+  if (androidLifecycle.includes(name)) return true;
+
+  // Serialization functions
+  if (['readObject', 'writeObject', 'readResolve', 'writeReplace'].includes(name)) return true;
+
+  // Operator overloads (operator fun)
+  if (name.startsWith('operator')) return true;
 
   return false;
 }

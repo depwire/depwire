@@ -9,6 +9,7 @@ import { cParser } from './c.js';
 import { csharpParser } from './csharp.js';
 import { javaParser } from './java.js';
 import { cppParser } from './cpp.js';
+import { kotlinParser } from './kotlin.js';
 
 const parsers: LanguageParser[] = [
   typescriptParser,
@@ -20,6 +21,7 @@ const parsers: LanguageParser[] = [
   csharpParser,
   javaParser,
   cppParser,
+  kotlinParser,
 ];
 
 // C++ keywords that distinguish .h files as C++ rather than C

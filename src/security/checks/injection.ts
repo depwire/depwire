@@ -201,6 +201,52 @@ const PATTERNS: InjectionPattern[] = [
     attackScenario: 'An attacker could inject shell metacharacters to execute arbitrary commands.',
     suggestedFix: 'Avoid popen(). Use pipe/fork/exec with argument arrays instead.',
   },
+  // Kotlin injection patterns
+  {
+    regex: /["']SELECT\b[^"']*\$(?:\{|\w)/,
+    title: 'Kotlin SQL injection via string template',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'SQL query built using Kotlin string templates — vulnerable to SQL injection.',
+    attackScenario: 'An attacker could inject SQL through interpolated variables to read, modify, or delete database data.',
+    suggestedFix: 'Use parameterized queries with PreparedStatement or your ORM\'s query builder.',
+  },
+  {
+    regex: /["'](?:INSERT|UPDATE|DELETE)\b[^"']*\$(?:\{|\w)/,
+    title: 'Kotlin SQL injection via string template',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'SQL mutation query built using Kotlin string templates — vulnerable to SQL injection.',
+    attackScenario: 'An attacker could inject SQL through interpolated variables.',
+    suggestedFix: 'Use parameterized queries with PreparedStatement or your ORM\'s query builder.',
+  },
+  {
+    regex: /Runtime\.getRuntime\(\)\.exec\s*\(/,
+    title: 'Kotlin/Java command injection via Runtime.exec',
+    vulnClass: 'shell-injection',
+    baseSeverity: 'high',
+    description: 'Runtime.exec() executes a system command — vulnerable if user input reaches the argument.',
+    attackScenario: 'An attacker could inject shell metacharacters to execute arbitrary commands on the server.',
+    suggestedFix: 'Use ProcessBuilder with an argument array. Validate all input against a strict allowlist.',
+  },
+  {
+    regex: /\.csrf\(\)\s*\.?\s*disable\(\)/,
+    title: 'Spring Security CSRF protection disabled',
+    vulnClass: 'code-injection',
+    baseSeverity: 'medium',
+    description: 'CSRF protection has been explicitly disabled in Spring Security configuration.',
+    attackScenario: 'An attacker could forge cross-site requests to perform actions on behalf of authenticated users.',
+    suggestedFix: 'Only disable CSRF for stateless APIs using JWT. Keep CSRF enabled for session-based authentication.',
+  },
+  {
+    regex: /\.permitAll\(\).*(?:admin|manage|delete|config|setting)/i,
+    title: 'Spring Security permitAll on sensitive path',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'permitAll() applied to a path that appears security-sensitive.',
+    attackScenario: 'An attacker could access administrative or destructive endpoints without authentication.',
+    suggestedFix: 'Use .hasRole("ADMIN") or .authenticated() for sensitive endpoints.',
+  },
 ];
 
 function shouldSkip(filePath: string): boolean {

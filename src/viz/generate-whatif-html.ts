@@ -35,6 +35,13 @@ export function generateWhatIfHtml(
   const currentDataJson = JSON.stringify(currentVizData);
   const simulatedDataJson = JSON.stringify(simulatedVizData);
 
+  // Build a set of removed edge file pairs for the right diagram to highlight
+  const removedFilePairs = diff.removedEdges.map(e => ({
+    source: e.source.split('::')[0],
+    target: e.target.split('::')[0],
+  }));
+  const removedFilePairsJson = JSON.stringify(removedFilePairs);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,6 +130,11 @@ export function generateWhatIfHtml(
       width: 100%;
       height: 100%;
     }
+    .broken-arc {
+      stroke: #ef4444 !important;
+      stroke-opacity: 0.85 !important;
+      filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
+    }
     .broken-section {
       padding: 0 24px 24px;
     }
@@ -177,12 +189,26 @@ export function generateWhatIfHtml(
   <script>
     const currentData = ${currentDataJson};
     const simulatedData = ${simulatedDataJson};
+    const removedFilePairs = ${removedFilePairsJson};
 
     const left = window.createArcDiagram('arc-diagram-current', 'svg-current', 'tooltip-current', currentData);
     const right = window.createArcDiagram('arc-diagram-simulated', 'svg-simulated', 'tooltip-simulated', simulatedData);
 
     left.render();
     right.render();
+
+    // Highlight broken (removed) arcs in red on the right diagram
+    if (removedFilePairs.length > 0) {
+      const brokenSet = new Set(removedFilePairs.map(p => p.source + '::' + p.target));
+      d3.select('#arc-diagram-simulated').selectAll('.arc')
+        .filter(d => brokenSet.has(d.sourceFile + '::' + d.targetFile) || brokenSet.has(d.targetFile + '::' + d.sourceFile))
+        .classed('broken-arc', true);
+
+      // Also highlight broken arcs on the left (current) diagram to show what will break
+      d3.select('#arc-diagram-current').selectAll('.arc')
+        .filter(d => brokenSet.has(d.sourceFile + '::' + d.targetFile) || brokenSet.has(d.targetFile + '::' + d.sourceFile))
+        .classed('broken-arc', true);
+    }
 
     window.addEventListener('resize', () => {
       left.render();

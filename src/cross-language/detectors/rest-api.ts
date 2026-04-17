@@ -25,6 +25,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.go')) return 'go';
   if (filePath.endsWith('.cs') || filePath.endsWith('.csx')) return 'csharp';
   if (filePath.endsWith('.java')) return 'java';
+  if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) return 'kotlin';
   if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
       filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
       filePath.endsWith('.h') || filePath.endsWith('.inl') || filePath.endsWith('.ipp')) return 'cpp';
@@ -338,6 +339,128 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
       }
     }
 
+    if (lang === 'kotlin') {
+      // Spring Boot with Kotlin — same annotations as Java
+      const springMethodMatch = line.match(/@(Get|Post|Put|Delete|Patch)Mapping\s*\(\s*(?:value\s*=\s*)?["']([^"']+)["']/);
+      if (springMethodMatch) {
+        const method = springMethodMatch[1].toUpperCase();
+        let path = springMethodMatch[2];
+        const classPrefix = findClassLevelPrefix(source);
+        if (classPrefix) path = classPrefix + path;
+        if (!path.startsWith('/')) path = '/' + path;
+        routes.push({
+          method,
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // @GetMapping (no path — maps to class-level path)
+      if (!springMethodMatch) {
+        const springNoPathMatch = line.match(/@(Get|Post|Put|Delete|Patch)Mapping\s*$/);
+        if (springNoPathMatch) {
+          const method = springNoPathMatch[1].toUpperCase();
+          const classPrefix = findClassLevelPrefix(source);
+          if (classPrefix) {
+            routes.push({
+              method,
+              path: classPrefix,
+              normalizedPath: normalizePath(classPrefix),
+              file: filePath,
+              line: i + 1,
+            });
+          }
+        }
+      }
+
+      // @RequestMapping
+      const requestMappingMatch = line.match(/@RequestMapping\s*\(\s*(?:value\s*=\s*(?:\[)?\s*)?["']([^"']+)["']/);
+      if (requestMappingMatch) {
+        let path = requestMappingMatch[1];
+        if (!path.startsWith('/')) path = '/' + path;
+        const methodMatch = line.match(/method\s*=\s*\[?\s*RequestMethod\.(\w+)/);
+        const method = methodMatch ? methodMatch[1].toUpperCase() : 'ANY';
+        routes.push({
+          method,
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Ktor routing: get("/api/users"), post("/api/users"), etc.
+      const ktorMatch = line.match(/\b(get|post|put|delete|patch|head|options)\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (ktorMatch) {
+        const path = ktorMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: ktorMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Ktor route() block: route("/api/users") { ... }
+      const ktorRouteMatch = line.match(/\broute\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (ktorRouteMatch) {
+        const path = ktorRouteMatch[1];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: 'ANY',
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Ktor Resources: @Resource("/api/users")
+      const resourceMatch = line.match(/@Resource\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (resourceMatch) {
+        const path = resourceMatch[1];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: 'ANY',
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Http4k: "/api/users" bind GET to handler::listUsers
+      const http4kMatch = line.match(/["']([^"']+)["']\s*bind\s*(GET|POST|PUT|DELETE|PATCH)/);
+      if (http4kMatch) {
+        const path = http4kMatch[1];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: http4kMatch[2].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Retrofit (client-side, outgoing): @GET("api/users"), @POST("api/users")
+      const retrofitMatch = line.match(/@(GET|POST|PUT|DELETE|PATCH|HEAD)\s*\(\s*["']([^"']+)["']\s*\)/);
+      if (retrofitMatch) {
+        let path = retrofitMatch[2];
+        if (!path.startsWith('/')) path = '/' + path;
+        // Retrofit calls are outgoing HTTP calls, not route definitions
+        // Add them as HTTP calls instead
+      }
+    }
+
     if (lang === 'cpp') {
       // Crow: CROW_ROUTE(app, "/api/users")
       const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
@@ -500,6 +623,20 @@ export function detectRestApiEdges(
     // Extract HTTP calls from TS/JS files
     if (lang === 'typescript' || lang === 'javascript') {
       allCalls.push(...extractHttpCalls(source, file.filePath));
+    }
+
+    // Extract Kotlin Retrofit outgoing calls
+    if (lang === 'kotlin') {
+      const kotlinLines = source.split('\n');
+      for (let i = 0; i < kotlinLines.length; i++) {
+        const line = kotlinLines[i];
+        const retrofitMatch = line.match(/@(GET|POST|PUT|DELETE|PATCH|HEAD)\s*\(\s*["']([^"']+)["']\s*\)/);
+        if (retrofitMatch) {
+          let path = retrofitMatch[2];
+          if (!path.startsWith('/')) path = '/' + path;
+          allCalls.push({ method: retrofitMatch[1].toUpperCase(), path, file: file.filePath, line: i + 1 });
+        }
+      }
     }
 
     // Extract route definitions from all languages

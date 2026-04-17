@@ -52,9 +52,10 @@ export function scanDirectory(
           entry.endsWith('.h') || entry.endsWith('.inl') || entry.endsWith('.ipp');
         const isCSharp = entry.endsWith('.cs') || entry.endsWith('.csx') || entry.endsWith('.csproj');
         const isJava = entry.endsWith('.java') || entry === 'pom.xml' || entry === 'build.gradle' || entry === 'build.gradle.kts';
+        const isKotlin = entry.endsWith('.kt') || entry.endsWith('.kts') || entry === 'settings.gradle.kts' || entry === 'settings.gradle';
         const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isCppBuild) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isCppBuild) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
