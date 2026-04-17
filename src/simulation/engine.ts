@@ -25,6 +25,8 @@ export interface SimulationResult {
   simulatedGraph: GraphSnapshot;
   diff: GraphDiff;
   healthDelta: HealthDelta;
+  /** The cloned graph with the simulation applied — available for viz data generation */
+  simulatedGraphInstance?: DirectedGraph;
 }
 
 export interface GraphSnapshot {
@@ -148,6 +150,7 @@ export class SimulationEngine {
       },
       diff,
       healthDelta,
+      simulatedGraphInstance: clone,
     };
   }
 

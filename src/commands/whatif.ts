@@ -72,6 +72,23 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
   try {
     const result = engine.simulate(action);
     printResult(result);
+
+    // Open browser UI with simulation results pre-loaded
+    const currentVizData = prepareVizData(graph, projectRoot);
+    const simulatedVizData = result.simulatedGraphInstance
+      ? prepareVizData(result.simulatedGraphInstance, projectRoot)
+      : currentVizData;
+
+    // Strip the graph instance before passing to the server (not JSON-serializable)
+    const { simulatedGraphInstance, ...serializableResult } = result;
+
+    await serveWhatIfViz(
+      currentVizData,
+      simulatedVizData,
+      serializableResult as SimulationResult,
+      action.type,
+      action.target
+    );
   } catch (err: any) {
     console.error(chalk.red(`Simulation failed: ${err.message}`));
     process.exit(1);
