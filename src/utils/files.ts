@@ -95,6 +95,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'configure.ac',      // C/C++ (autotools)
     'pom.xml',           // Java (Maven)
     'build.gradle',      // Java (Gradle)
+    'build.gradle.kts',  // Kotlin (Gradle KTS)
     '.git'               // Any git repo
   ];
   

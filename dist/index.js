@@ -17,7 +17,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-P3UD7WEX.js";
+} from "./chunk-IOJJTKI4.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -31,7 +31,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-WKQLC63I.js";
+} from "./chunk-SLGC72RW.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -623,7 +623,8 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     }
     .broken-arc {
       stroke: #ef4444 !important;
-      stroke-opacity: 0.85 !important;
+      stroke-opacity: 1.0 !important;
+      stroke-width: 2px !important;
       filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
     }
     .broken-section {
@@ -688,15 +689,10 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     left.render();
     right.render();
 
-    // Highlight broken (removed) arcs in red on the right diagram
+    // Highlight broken (removed) arcs in red on the RIGHT diagram only
     if (removedFilePairs.length > 0) {
       const brokenSet = new Set(removedFilePairs.map(p => p.source + '::' + p.target));
       d3.select('#arc-diagram-simulated').selectAll('.arc')
-        .filter(d => brokenSet.has(d.sourceFile + '::' + d.targetFile) || brokenSet.has(d.targetFile + '::' + d.sourceFile))
-        .classed('broken-arc', true);
-
-      // Also highlight broken arcs on the left (current) diagram to show what will break
-      d3.select('#arc-diagram-current').selectAll('.arc')
         .filter(d => brokenSet.has(d.sourceFile + '::' + d.targetFile) || brokenSet.has(d.targetFile + '::' + d.sourceFile))
         .classed('broken-arc', true);
     }

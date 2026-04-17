@@ -22,6 +22,7 @@
 ![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![C++](https://img.shields.io/badge/C++-00599C?style=flat-square&logo=cplusplus&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white)
 
 </div>
 
@@ -308,13 +309,15 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++ — with cross-language edge detection between all supported languages.
+TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin — with cross-language edge detection between all supported languages.
 
 **Java / JVM** — classes, interfaces, enums, records, annotations, inner classes, anonymous classes, lambda expressions, Maven pom.xml and Gradle build file dependency edges, Spring Boot cross-language edges (@GetMapping, @PostMapping, @RequestMapping), JAX-RS / Jakarta EE route detection, Spring WebFlux RouterFunction support.
 
 **C# / .NET** — classes, interfaces, records, structs, enums, delegates, file-scoped namespaces, primary constructors, global usings, .csproj ProjectReference and PackageReference edges, ASP.NET Core cross-language edges (attribute routing + Minimal API).
 
 **C++ / Systems** — classes, structs, unions, enums, namespaces, concepts, coroutines, C++20 modules, template support with parameter stripping. CMakeLists.txt, Conan, and vcpkg dependency edge parsing. Crow, Drogon, Pistache, and cpp-httplib cross-language route detection. Dead code detection with vtable and template exclusions. Health score checks: circular includes, missing header guards, god classes, raw pointer fields, missing virtual destructors. Security scanner: buffer overflow, format string vulnerability, use-after-free, command injection.
+
+**Kotlin / JVM** — classes, data classes, sealed classes, objects, companion objects, value classes, type aliases, extension functions, enum classes, annotation classes. Coroutine awareness: suspend functions, GlobalScope detection, structured concurrency checks. build.gradle.kts, build.gradle, and settings.gradle.kts dependency parsing. Spring Boot, Ktor, Http4k, and Ktor Resources cross-language route detection. Android Retrofit outgoing edge detection. Dead code detection with Android lifecycle and Spring annotation exclusions. Security scanner: SQL injection via string templates, hardcoded credentials, insecure random, not-null assertion abuse, Ktor missing auth blocks.
 
 ---
 
@@ -378,7 +381,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 17 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin)
 - Architecture health score
 - Dead code detection
 - Temporal graph

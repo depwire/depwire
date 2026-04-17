@@ -176,6 +176,66 @@ export async function checkCryptography(
             suggestedFix: 'Load credentials from environment variables or a secure vault at runtime.',
           });
         }
+
+        // Kotlin hardcoded credentials
+        if (/(?:val|var)\s+(?:password|secret|apiKey|api_key|token)\s*=\s*["']/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in Kotlin source',
+            description: 'A password, secret, or API key is hardcoded as a string literal.',
+            attackScenario: 'An attacker with access to the binary or source could extract the credential.',
+            suggestedFix: 'Load credentials from environment variables or a secure vault at runtime.',
+          });
+        }
+
+        // Kotlin insecure random
+        if (/\bRandom\s*\(\s*\)/.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Insecure random in Kotlin security context',
+            description: 'kotlin.random.Random() is not cryptographically secure — its output can be predicted.',
+            attackScenario: 'An attacker could predict random values to forge tokens or bypass security checks.',
+            suggestedFix: 'Use java.security.SecureRandom for cryptographic purposes.',
+          });
+        }
+
+        // Kotlin not-null assertion abuse near security code
+        if (/!!\s*\./.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Not-null assertion (!!) in security-sensitive Kotlin code',
+            description: 'The !! operator can throw NullPointerException, potentially bypassing security checks.',
+            attackScenario: 'An attacker could trigger a null value to cause an exception that bypasses validation logic.',
+            suggestedFix: 'Use safe calls (?.) with proper null handling instead of !! assertions.',
+          });
+        }
+
+        // Kotlin hardcoded HTTP URL
+        if (/(?:val|var)\s+\w*[Uu]rl\w*\s*=\s*["']http:\/\/(?!(?:localhost|127\.))/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded HTTP URL in Kotlin source',
+            description: 'An HTTP (not HTTPS) URL is hardcoded — data is transmitted unencrypted.',
+            attackScenario: 'An attacker on the network path could intercept, read, or modify data in transit.',
+            suggestedFix: 'Use HTTPS for all external URLs to ensure data confidentiality and integrity.',
+          });
+        }
       }
     }
   } catch {

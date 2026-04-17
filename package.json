@@ -40,7 +40,8 @@
     "what-if-analysis",
     "refactor-simulation",
     "blast-radius",
-    "deterministic-graph"
+    "deterministic-graph",
+    "kotlin"
   ],
   "author": "Atef Ataya (https://www.youtube.com/@atefataya)",
   "license": "BUSL-1.1",
