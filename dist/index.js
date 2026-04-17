@@ -17,7 +17,7 @@ import {
   stashChanges,
   updateFileInGraph,
   watchProject
-} from "./chunk-JPDK7SOI.js";
+} from "./chunk-67KDN6H4.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -31,7 +31,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-7HLVFIVW.js";
+} from "./chunk-SPZNB7BS.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -791,6 +791,16 @@ async function whatif(dir, options) {
   try {
     const result = engine.simulate(action);
     printResult(result);
+    const currentVizData = prepareVizData(graph, projectRoot);
+    const simulatedVizData = result.simulatedGraphInstance ? prepareVizData(result.simulatedGraphInstance, projectRoot) : currentVizData;
+    const { simulatedGraphInstance, ...serializableResult } = result;
+    await serveWhatIfViz(
+      currentVizData,
+      simulatedVizData,
+      serializableResult,
+      action.type,
+      action.target
+    );
   } catch (err) {
     console.error(chalk.red(`Simulation failed: ${err.message}`));
     process.exit(1);
