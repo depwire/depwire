@@ -236,6 +236,92 @@ export async function checkCryptography(
             suggestedFix: 'Use HTTPS for all external URLs to ensure data confidentiality and integrity.',
           });
         }
+
+        // PHP weak crypto patterns
+        if (/\bmd5\s*\(/.test(line) && /password|passwd|pass|pwd/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'PHP md5() used for password hashing',
+            description: 'md5() is cryptographically broken and should never be used for password hashing.',
+            attackScenario: 'An attacker could crack MD5 password hashes in seconds using rainbow tables or GPU brute force.',
+            suggestedFix: 'Use password_hash() with PASSWORD_BCRYPT or PASSWORD_ARGON2ID.',
+          });
+        }
+
+        if (/\bsha1\s*\(/.test(line) && /password|passwd|pass|pwd/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'PHP sha1() used for password hashing',
+            description: 'SHA-1 has known collision attacks and should not be used for password hashing.',
+            attackScenario: 'An attacker could crack SHA-1 password hashes using precomputed tables.',
+            suggestedFix: 'Use password_hash() with PASSWORD_BCRYPT or PASSWORD_ARGON2ID.',
+          });
+        }
+
+        if (/\bcrypt\s*\(\s*[^,]+,\s*['"][\$]?[12a-zA-Z]{0,3}['"]/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'PHP crypt() with potentially weak salt',
+            description: 'crypt() with a short or weak salt may use DES or MD5 algorithm.',
+            attackScenario: 'An attacker could crack weakly-salted crypt() hashes using brute force.',
+            suggestedFix: 'Use password_hash() instead of crypt(). It automatically uses a strong algorithm and salt.',
+          });
+        }
+
+        if (/\bmcrypt_/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'PHP deprecated mcrypt_* function',
+            description: 'mcrypt extension was deprecated in PHP 7.1 and removed in PHP 7.2. It has known vulnerabilities.',
+            attackScenario: 'An attacker could exploit known weaknesses in mcrypt implementations.',
+            suggestedFix: 'Use openssl_encrypt()/openssl_decrypt() or the sodium extension (sodium_crypto_*).',
+          });
+        }
+
+        if (/\b(?:rand|mt_rand)\s*\(/.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'PHP rand()/mt_rand() in security context',
+            description: 'rand() and mt_rand() are not cryptographically secure — their output can be predicted.',
+            attackScenario: 'An attacker could predict random values to forge tokens or bypass security checks.',
+            suggestedFix: 'Use random_bytes() or random_int() for cryptographic purposes.',
+          });
+        }
+
+        // PHP hardcoded credentials
+        if (/\$(?:password|secret|api_?key|token)\s*=\s*['"][^'"]{4,}['"]/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in PHP source',
+            description: 'A password, secret, or API key is hardcoded as a string literal.',
+            attackScenario: 'An attacker with access to the source could extract the credential.',
+            suggestedFix: 'Load credentials from environment variables using getenv() or $_ENV.',
+          });
+        }
       }
     }
   } catch {

@@ -47,7 +47,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
 
   watcher.on('change', (absolutePath: string) => {
     // Only process TypeScript, JavaScript, Python, Go, Rust, C, and C# files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp'];
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp', '.php'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     // Also match build files by name
     const fileName = absolutePath.split('/').pop() || '';
@@ -64,7 +64,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
 
   watcher.on('add', (absolutePath: string) => {
     // Only process supported language files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp'];
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp', '.php'];
     const addFileName = absolutePath.split('/').pop() || '';
     if (!validExtensions.some(ext => absolutePath.endsWith(ext)) && !['pom.xml', 'build.gradle', 'build.gradle.kts', 'settings.gradle.kts', 'settings.gradle', 'CMakeLists.txt', 'conanfile.txt', 'vcpkg.json'].includes(addFileName)) return;
     
@@ -79,7 +79,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
 
   watcher.on('unlink', (absolutePath: string) => {
     // Only process supported language files
-    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp'];
+    const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp', '.php'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     
     // Skip Go test files
@@ -115,6 +115,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
         f.endsWith('.cs') || f.endsWith('.csx') || f.endsWith('.csproj') ||
         f.endsWith('.java') || f === 'pom.xml' || f === 'build.gradle' || f === 'build.gradle.kts' ||
         f.endsWith('.kt') || f.endsWith('.kts') || f === 'settings.gradle.kts' || f === 'settings.gradle' ||
+        f.endsWith('.php') ||
         f.endsWith('.cpp') || f.endsWith('.cc') || f.endsWith('.cxx') || f.endsWith('.c++') ||
         f.endsWith('.hpp') || f.endsWith('.hh') || f.endsWith('.hxx') || f.endsWith('.h++') ||
         f.endsWith('.inl') || f.endsWith('.ipp') ||
@@ -122,7 +123,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
       ).length;
     }
     
-    console.error(`[Watcher] Watching ${fileCount} TypeScript/JavaScript/Python/Go/Rust/C/C++/C#/Java/Kotlin files in ${dirs.length} directories`);
+    console.error(`[Watcher] Watching ${fileCount} TypeScript/JavaScript/Python/Go/Rust/C/C++/C#/Java/Kotlin/PHP files in ${dirs.length} directories`);
   });
 
   return watcher;

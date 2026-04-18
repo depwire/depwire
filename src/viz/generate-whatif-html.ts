@@ -192,23 +192,89 @@ export function generateWhatIfHtml(
     const simulatedData = ${simulatedDataJson};
     const removedFilePairs = ${removedFilePairsJson};
 
+    // Inject broken arcs and ghost files into the simulated data
+    // so they render on the right diagram and can be colored red
+    if (removedFilePairs.length > 0) {
+      // Deduplicate removed edges to file-level arcs
+      const brokenArcMap = new Map();
+      const ghostFiles = new Set();
+      const existingFiles = new Set(simulatedData.files.map(f => f.path));
+
+      for (const pair of removedFilePairs) {
+        const key = pair.source + '::' + pair.target;
+        if (brokenArcMap.has(key)) {
+          brokenArcMap.get(key).edgeCount++;
+        } else {
+          brokenArcMap.set(key, {
+            sourceFile: pair.source,
+            targetFile: pair.target,
+            edgeCount: 1,
+            edgeKinds: ['imports'],
+            broken: true,
+          });
+        }
+        // Track files that don't exist in simulated data (deleted files)
+        if (!existingFiles.has(pair.source)) ghostFiles.add(pair.source);
+        if (!existingFiles.has(pair.target)) ghostFiles.add(pair.target);
+      }
+
+      // Add ghost file bars for deleted files
+      for (const gf of ghostFiles) {
+        simulatedData.files.push({
+          path: gf,
+          directory: gf.includes('/') ? gf.substring(0, gf.lastIndexOf('/')) : '.',
+          symbolCount: 0,
+          incomingCount: 0,
+          outgoingCount: 0,
+          ghost: true,
+        });
+      }
+
+      // Re-sort files so ghost files are in correct position
+      simulatedData.files.sort((a, b) => {
+        if (a.directory !== b.directory) return a.directory.localeCompare(b.directory);
+        return a.path.localeCompare(b.path);
+      });
+
+      // Add broken arcs to simulated data
+      for (const arc of brokenArcMap.values()) {
+        simulatedData.arcs.push(arc);
+      }
+    }
+
     const left = window.createArcDiagram('arc-diagram-current', 'svg-current', 'tooltip-current', currentData);
     const right = window.createArcDiagram('arc-diagram-simulated', 'svg-simulated', 'tooltip-simulated', simulatedData);
 
     left.render();
     right.render();
 
-    // Highlight broken (removed) arcs in red on the RIGHT diagram only
+    // After render: color broken arcs red and ghost file bars red on the right diagram
     if (removedFilePairs.length > 0) {
-      const brokenSet = new Set(removedFilePairs.map(p => p.source + '::' + p.target));
       d3.select('#arc-diagram-simulated').selectAll('.arc')
-        .filter(d => brokenSet.has(d.sourceFile + '::' + d.targetFile) || brokenSet.has(d.targetFile + '::' + d.sourceFile))
+        .filter(d => d.broken === true)
         .classed('broken-arc', true);
+
+      d3.select('#arc-diagram-simulated').selectAll('.file-bar')
+        .filter(d => d.ghost === true)
+        .attr('fill', '#ef4444')
+        .attr('opacity', 0.8);
     }
 
     window.addEventListener('resize', () => {
       left.render();
       right.render();
+
+      // Re-apply broken styling after resize re-render
+      if (removedFilePairs.length > 0) {
+        d3.select('#arc-diagram-simulated').selectAll('.arc')
+          .filter(d => d.broken === true)
+          .classed('broken-arc', true);
+
+        d3.select('#arc-diagram-simulated').selectAll('.file-bar')
+          .filter(d => d.ghost === true)
+          .attr('fill', '#ef4444')
+          .attr('opacity', 0.8);
+      }
     });
   </script>
 </body>

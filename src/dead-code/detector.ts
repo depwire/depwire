@@ -238,6 +238,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // PHP specific exclusions
+  if (isPhpExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -362,6 +367,43 @@ function isKotlinExcluded(attrs: any): boolean {
 
   // Operator overloads (operator fun)
   if (name.startsWith('operator')) return true;
+
+  return false;
+}
+
+/**
+ * PHP specific dead code exclusions
+ */
+function isPhpExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  if (!filePath.endsWith('.php')) return false;
+
+  const magicMethods = [
+    '__construct', '__destruct', '__call', '__callStatic',
+    '__get', '__set', '__isset', '__unset',
+    '__sleep', '__wakeup', '__serialize', '__unserialize',
+    '__toString', '__invoke', '__set_state', '__clone', '__debugInfo',
+  ];
+  if (magicMethods.includes(name)) return true;
+
+  const wpHooks = ['init', 'admin_init', 'wp_enqueue_scripts', 'admin_enqueue_scripts',
+    'widgets_init', 'register_activation_hook', 'register_deactivation_hook',
+    'add_action', 'add_filter', 'activate', 'deactivate'];
+  if (wpHooks.includes(name)) return true;
+
+  const laravelMethods = ['register', 'boot', 'handle', 'authorize',
+    'rules', 'messages', 'prepareForValidation', 'failed',
+    'broadcastOn', 'broadcastAs', 'broadcastWith'];
+  if (laravelMethods.includes(name)) return true;
+
+  const symfonyMethods = ['__invoke', 'getSubscribedEvents', 'getSubscribedServices',
+    'configureOptions', 'buildForm', 'load', 'getConfigTreeBuilder'];
+  if (symfonyMethods.includes(name)) return true;
+
+  if (name.startsWith('test') || name === 'setUp' || name === 'tearDown' ||
+    name === 'setUpBeforeClass' || name === 'tearDownAfterClass') return true;
 
   return false;
 }

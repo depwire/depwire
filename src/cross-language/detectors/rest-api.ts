@@ -26,6 +26,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.cs') || filePath.endsWith('.csx')) return 'csharp';
   if (filePath.endsWith('.java')) return 'java';
   if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) return 'kotlin';
+  if (filePath.endsWith('.php')) return 'php';
   if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
       filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
       filePath.endsWith('.h') || filePath.endsWith('.inl') || filePath.endsWith('.ipp')) return 'cpp';
@@ -461,6 +462,77 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
       }
     }
 
+    if (lang === 'php') {
+      // Laravel: Route::get('/api/users', [Controller::class, 'method'])
+      const laravelRouteMatch = line.match(/Route\s*::\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+      if (laravelRouteMatch) {
+        const path = laravelRouteMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: laravelRouteMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Symfony: #[Route('/api/users', methods: ['GET'])]
+      const symfonyRouteMatch = line.match(/#\[Route\s*\(\s*['"]([^'"]+)['"]/);
+      if (symfonyRouteMatch) {
+        const path = symfonyRouteMatch[1];
+        if (path.startsWith('/')) {
+          const methodsMatch = line.match(/methods\s*:\s*\[([^\]]+)\]/);
+          const methods: string[] = methodsMatch
+            ? methodsMatch[1].match(/['"](\w+)['"]/g)?.map(m => m.replace(/['"]/g, '').toUpperCase()) || ['ANY']
+            : ['ANY'];
+          for (const method of methods) {
+            routes.push({
+              method,
+              path,
+              normalizedPath: normalizePath(path),
+              file: filePath,
+              line: i + 1,
+            });
+          }
+        }
+      }
+
+      // Slim Framework: $app->get('/api/users', function ...)
+      const slimMatch = line.match(/\$(?:app|group)\s*->\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+      if (slimMatch) {
+        const path = slimMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: slimMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // WordPress REST API: register_rest_route('namespace', '/route', ...)
+      const wpRestMatch = line.match(/register_rest_route\s*\(\s*['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]/);
+      if (wpRestMatch) {
+        const namespace = wpRestMatch[1];
+        let path = wpRestMatch[2];
+        if (!path.startsWith('/')) path = '/' + path;
+        const fullPath = `/wp-json/${namespace}${path}`;
+        const methodMatch = line.match(/methods\s*['"=>\s]+['"](\w+)['"]/i);
+        const method = methodMatch ? methodMatch[1].toUpperCase() : 'ANY';
+        routes.push({
+          method,
+          path: fullPath,
+          normalizedPath: normalizePath(fullPath),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+    }
+
     if (lang === 'cpp') {
       // Crow: CROW_ROUTE(app, "/api/users")
       const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
@@ -635,6 +707,41 @@ export function detectRestApiEdges(
           let path = retrofitMatch[2];
           if (!path.startsWith('/')) path = '/' + path;
           allCalls.push({ method: retrofitMatch[1].toUpperCase(), path, file: file.filePath, line: i + 1 });
+        }
+      }
+    }
+
+    // Extract PHP HTTP client calls
+    if (lang === 'php') {
+      const phpLines = source.split('\n');
+      for (let i = 0; i < phpLines.length; i++) {
+        const line = phpLines[i];
+
+        // Guzzle: $client->get('/api/users'), $client->post('/api/users'), $client->request('GET', '/api/users')
+        const guzzleMatch = line.match(/\$\w+\s*->\s*(get|post|put|delete|patch|request)\s*\(\s*['"]([^'"]+)['"]/i);
+        if (guzzleMatch) {
+          let method = guzzleMatch[1].toUpperCase();
+          let path = guzzleMatch[2];
+          if (method === 'REQUEST') {
+            // $client->request('GET', '/api/...')
+            const reqMethodMatch = line.match(/request\s*\(\s*['"](\w+)['"]\s*,\s*['"]([^'"]+)['"]/i);
+            if (reqMethodMatch) {
+              method = reqMethodMatch[1].toUpperCase();
+              path = reqMethodMatch[2];
+            }
+          }
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method, path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // file_get_contents with http
+        const fgcMatch = line.match(/file_get_contents\s*\(\s*['"]([^'"]+)['"]/);
+        if (fgcMatch) {
+          const path = fgcMatch[1];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: 'GET', path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
         }
       }
     }
