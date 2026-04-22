@@ -297,6 +297,30 @@ Open a GitHub issue tagged `enhancement` with:
 
 ---
 
+## Release Process (as of v1.0.9)
+
+Publishing to npm is fully automated via GitHub Actions. **Never run `npm publish` manually.**
+
+### How to publish a new version:
+
+1. Bump version in `package.json`, `manifest.json`, `server.json`
+2. Commit and push to `main`
+3. Create and push a git tag:
+   ```bash
+   git tag v1.0.X
+   git push origin v1.0.X
+   ```
+4. GitHub Actions automatically builds and publishes to npm
+5. Then manually run: `mcp-publisher publish`
+
+### What triggers the workflow:
+
+- Any tag matching `v*` pushed to the repo
+- Workflow file: `.github/workflows/npm-publish.yml`
+- Uses `--provenance` flag for supply chain security
+
+---
+
 ## Questions?
 
 - **Email:** atef@depwire.dev
