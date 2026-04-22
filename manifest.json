@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "depwire",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Code cross-reference visualization and AI context engine for TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, and PHP. Analyzes codebases to show dependencies, enables AI tools with MCP, and renders beautiful arc diagrams.",
   "author": {
     "name": "Depwire"
