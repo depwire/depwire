@@ -533,6 +533,27 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     target: e.target.split("::")[0]
   }));
   const removedFilePairsJson = JSON.stringify(removedFilePairs);
+  const affectedFilesJson = JSON.stringify(diff.affectedNodes);
+  const brokenImportFilesJson = JSON.stringify(diff.brokenImports.map((bi) => bi.file));
+  const brokenCount = diff.brokenImports.length;
+  const affectedCount = diff.affectedNodes.length;
+  const healthDeltaVal = healthDelta.delta;
+  let riskLevel;
+  let riskColor;
+  if (brokenCount > 10 || affectedCount > 20) {
+    riskLevel = "High";
+    riskColor = "#ef4444";
+  } else if (brokenCount > 3 || affectedCount > 5) {
+    riskLevel = "Medium";
+    riskColor = "#fbbf24";
+  } else {
+    riskLevel = "Low";
+    riskColor = "#4ade80";
+  }
+  const brokenColor = brokenCount > 0 ? "#ef4444" : "#4ade80";
+  const affectedColor = affectedCount > 0 ? "#ef4444" : "#4ade80";
+  const healthDeltaColor = healthDeltaVal < 0 ? "#ef4444" : healthDeltaVal > 0 ? "#4ade80" : "#6b7280";
+  const healthDeltaStr = healthDeltaVal > 0 ? `+${healthDeltaVal}` : healthDeltaVal === 0 ? "0" : `${healthDeltaVal}`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -559,35 +580,42 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .health-banner {
+    .stats-bar {
       background: #0f1729;
       border: 1px solid #2a2a4a;
       border-radius: 8px;
-      padding: 16px 24px;
+      padding: 12px 24px;
       margin: 16px 24px;
       display: flex;
       align-items: center;
-      gap: 32px;
+      gap: 28px;
       flex-wrap: wrap;
     }
-    .health-score {
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .health-stat {
+    .stats-bar .stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 14px;
       color: #a0a0a0;
     }
-    .health-stat strong {
-      color: #e0e0e0;
+    .stats-bar .stat-val {
+      font-weight: 700;
       font-size: 18px;
+    }
+    .stats-bar .risk-badge {
+      padding: 4px 14px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: #000;
     }
     .panels {
       display: flex;
       flex-direction: row;
       gap: 0;
       width: 100%;
-      height: calc(100vh - 180px);
+      height: calc(100vh - 220px);
       min-height: 400px;
     }
     .panel {
@@ -621,12 +649,6 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
       width: 100%;
       height: 100%;
     }
-    .broken-arc {
-      stroke: #ef4444 !important;
-      stroke-opacity: 1.0 !important;
-      stroke-width: 2px !important;
-      filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
-    }
     .broken-section {
       padding: 0 24px 24px;
     }
@@ -638,20 +660,17 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     ${opBadge}
   </div>
 
-  <div class="health-banner">
-    <div class="health-score" style="color:${deltaColor}">
-      Health Score: ${healthDelta.before} \u2192 ${healthDelta.after}
-      <span style="font-size:16px;margin-left:8px;">(${deltaLabel})</span>
-    </div>
-    <div class="health-stat"><strong>${diff.affectedNodes.length}</strong> Affected Nodes</div>
-    <div class="health-stat"><strong>${diff.brokenImports.length}</strong> Broken Imports</div>
-    <div class="health-stat"><strong>${diff.removedEdges.length}</strong> Removed Edges</div>
+  <div class="stats-bar">
+    <div class="stat">Broken Imports: <span class="stat-val" style="color:${brokenColor}">${brokenCount}</span></div>
+    <div class="stat">Affected Files: <span class="stat-val" style="color:${affectedColor}">${affectedCount}</span></div>
+    <div class="stat">Health Score Delta: <span class="stat-val" style="color:${healthDeltaColor}">${healthDeltaStr}</span></div>
+    <div class="stat"><span class="risk-badge" style="background:${riskColor}">${riskLevel} Risk</span></div>
   </div>
 
   <div class="panels">
     <div class="panel">
       <div class="panel-label">
-        <span>Current</span>
+        <span>Current State</span>
         <span>${currentVizData.stats.totalFiles} files</span>
       </div>
       <div class="panel-diagram" id="arc-diagram-current">
@@ -661,7 +680,7 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     </div>
     <div class="panel">
       <div class="panel-label">
-        <span>After ${operation !== "none" ? operation.toUpperCase() : "\u2014"}</span>
+        <span>After Simulation</span>
         <span>${simulatedVizData.stats.totalFiles} files</span>
       </div>
       <div class="panel-diagram" id="arc-diagram-simulated">
@@ -682,6 +701,8 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
     const currentData = ${currentDataJson};
     const simulatedData = ${simulatedDataJson};
     const removedFilePairs = ${removedFilePairsJson};
+    const affectedFiles = new Set(${affectedFilesJson});
+    const brokenImportFiles = new Set(${brokenImportFilesJson});
 
     // Inject broken arcs and ghost files into the simulated data
     // so they render on the right diagram and can be colored red
@@ -733,39 +754,88 @@ function generateWhatIfHtml(currentVizData, simulatedVizData, simulationResult, 
       }
     }
 
+    // Mark affected arcs in simulated data
+    simulatedData.arcs.forEach(arc => {
+      if (affectedFiles.has(arc.sourceFile) || affectedFiles.has(arc.targetFile)) {
+        arc.affected = true;
+      }
+    });
+
+    // Mark affected file bars in simulated data
+    simulatedData.files.forEach(file => {
+      if (affectedFiles.has(file.path)) {
+        file.affected = true;
+      }
+    });
+
     const left = window.createArcDiagram('arc-diagram-current', 'svg-current', 'tooltip-current', currentData);
     const right = window.createArcDiagram('arc-diagram-simulated', 'svg-simulated', 'tooltip-simulated', simulatedData);
 
     left.render();
     right.render();
 
-    // After render: color broken arcs red and ghost file bars red on the right diagram
-    if (removedFilePairs.length > 0) {
-      d3.select('#arc-diagram-simulated').selectAll('.arc')
-        .filter(d => d.broken === true)
-        .classed('broken-arc', true);
+    function applyGhostRedStyling() {
+      const simContainer = d3.select('#arc-diagram-simulated');
+      const hasAffected = affectedFiles.size > 0;
 
-      d3.select('#arc-diagram-simulated').selectAll('.file-bar')
-        .filter(d => d.ghost === true)
-        .attr('fill', '#ef4444')
-        .attr('opacity', 0.8);
+      if (!hasAffected) return;
+
+      // --- SVG filter for red glow on affected nodes ---
+      let defs = d3.select('#svg-simulated').select('defs');
+      if (defs.empty()) {
+        defs = d3.select('#svg-simulated').insert('defs', ':first-child');
+      }
+      if (defs.select('#red-glow').empty()) {
+        const filter = defs.append('filter').attr('id', 'red-glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
+        filter.append('feDropShadow').attr('dx', 0).attr('dy', 0).attr('stdDeviation', 4).attr('flood-color', '#ef4444').attr('flood-opacity', 0.8);
+      }
+
+      // --- Edges ---
+      simContainer.selectAll('.arc').each(function(d) {
+        const el = d3.select(this);
+        if (d.broken) {
+          // Broken import edges: dashed red, thicker
+          el.attr('stroke', '#ef4444')
+            .attr('stroke-opacity', 1.0)
+            .attr('stroke-width', 3.0)
+            .attr('stroke-dasharray', '6,3')
+            .style('filter', null);
+        } else if (d.affected) {
+          // Affected edges: solid red
+          el.attr('stroke', '#ef4444')
+            .attr('stroke-opacity', 1.0)
+            .attr('stroke-width', 2.5)
+            .attr('stroke-dasharray', null)
+            .style('filter', null);
+        } else {
+          // Non-affected edges: ghost
+          el.attr('stroke-opacity', 0.08);
+        }
+      });
+
+      // --- Node bars ---
+      simContainer.selectAll('.file-bar').each(function(d) {
+        const el = d3.select(this);
+        if (d.affected || d.ghost) {
+          // Affected / ghost nodes: glowing red
+          el.attr('fill', '#ef4444')
+            .attr('opacity', 1.0)
+            .attr('stroke', '#ef4444')
+            .attr('stroke-width', 2)
+            .style('filter', 'url(#red-glow)');
+        } else {
+          // Non-affected nodes: ghost
+          el.attr('opacity', 0.15);
+        }
+      });
     }
+
+    applyGhostRedStyling();
 
     window.addEventListener('resize', () => {
       left.render();
       right.render();
-
-      // Re-apply broken styling after resize re-render
-      if (removedFilePairs.length > 0) {
-        d3.select('#arc-diagram-simulated').selectAll('.arc')
-          .filter(d => d.broken === true)
-          .classed('broken-arc', true);
-
-        d3.select('#arc-diagram-simulated').selectAll('.file-bar')
-          .filter(d => d.ghost === true)
-          .attr('fill', '#ef4444')
-          .attr('opacity', 0.8);
-      }
+      applyGhostRedStyling();
     });
   </script>
 </body>
