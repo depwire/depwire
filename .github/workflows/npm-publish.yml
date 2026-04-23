@@ -1,38 +1,41 @@
-name: publish
+name: Publish to npm
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
+
+permissions:
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org/'
 
-      - run: npm ci
-      - run: npm run build --if-present
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Diagnostics for npm support
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Debug auth
         run: |
-          node --version
-          npm --version
-          npm whoami
-          npm config get registry
-          npm config list -l
-          npm ping --registry=https://registry.npmjs.org
+          echo "Node: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "Registry: $(npm config get registry)"
+          echo "Token set: $([ -n "$NODE_AUTH_TOKEN" ] && echo YES || echo NO)"
+          cat ~/.npmrc || echo "no npmrc"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (verbose)
-        run: npm publish --access public --loglevel silly
+      - name: Publish to npm
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
