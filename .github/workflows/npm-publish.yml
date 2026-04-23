@@ -22,4 +22,17 @@ jobs:
 
       - run: npm ci
       - run: npm run build --if-present
-      - run: npm publish --provenance --access public
+
+      - name: Diagnostics for npm support
+        run: |
+          node --version
+          npm --version
+          npm whoami
+          npm config get registry
+          npm config list -l
+          npm ping --registry=https://registry.npmjs.org
+
+      - name: Publish to npm (verbose)
+        run: npm publish --access public --loglevel silly
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
