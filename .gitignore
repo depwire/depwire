@@ -31,3 +31,4 @@ real-test.json
 test-docs/
 .depwire/
 docs/internal/
+depwire-cli-*.tgz
