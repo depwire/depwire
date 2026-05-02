@@ -25,16 +25,6 @@ jobs:
       - name: Build
         run: npm run build --if-present
 
-      - name: Debug auth
-        run: |
-          echo "Node: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "Registry: $(npm config get registry)"
-          echo "Token set: $([ -n "$NODE_AUTH_TOKEN" ] && echo YES || echo NO)"
-          cat ~/.npmrc || echo "no npmrc"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Publish to npm
         run: npm publish --access public
         env:

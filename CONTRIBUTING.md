@@ -297,9 +297,9 @@ Open a GitHub issue tagged `enhancement` with:
 
 ---
 
-## Release Process (as of v1.0.9)
+## Release Process (as of v1.1.0)
 
-Publishing to npm is fully automated via GitHub Actions. **Never run `npm publish` manually.**
+Publishing to npm is automated via GitHub Actions. **Never run `npm publish` manually.**
 
 ### How to publish a new version:
 
@@ -307,8 +307,8 @@ Publishing to npm is fully automated via GitHub Actions. **Never run `npm publis
 2. Commit and push to `main`
 3. Create and push a git tag:
    ```bash
-   git tag v1.0.X
-   git push origin v1.0.X
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
    ```
 4. GitHub Actions automatically builds and publishes to npm
 5. Then manually run: `mcp-publisher publish`
@@ -317,7 +317,7 @@ Publishing to npm is fully automated via GitHub Actions. **Never run `npm publis
 
 - Any tag matching `v*` pushed to the repo
 - Workflow file: `.github/workflows/npm-publish.yml`
-- Uses `--provenance` flag for supply chain security
+- Uses `NPM_TOKEN` secret for authentication
 
 ---
 
