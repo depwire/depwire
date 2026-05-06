@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/depwire-cli?color=00d4aa&label=npm)](https://www.npmjs.com/package/depwire-cli)
 [![npm downloads](https://img.shields.io/npm/dm/depwire-cli?color=00d4aa&label=downloads%2Fmonth)](https://www.npmjs.com/package/depwire-cli)
-[![GitHub stars](https://img.shields.io/badge/stars-26-00d4aa)](https://github.com/depwire/depwire/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/depwire/depwire?color=00d4aa&style=flat)](https://github.com/depwire/depwire/stargazers)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
 [![MCP Compatible](https://img.shields.io/badge/MCP-17%20tools-00d4aa)](https://github.com/depwire/depwire)
 
