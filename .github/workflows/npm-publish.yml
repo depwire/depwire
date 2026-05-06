@@ -25,7 +25,19 @@ jobs:
       - name: Build
         run: npm run build --if-present
 
+      - name: Check if version already published
+        id: version_check
+        run: |
+          PUBLISHED=$(npm view depwire-cli@$(node -p "require('./package.json').version") version 2>/dev/null || echo "")
+          CURRENT=$(node -p "require('./package.json').version")
+          if [ "$PUBLISHED" = "$CURRENT" ]; then
+            echo "already_published=true" >> $GITHUB_OUTPUT
+          else
+            echo "already_published=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to npm
+        if: steps.version_check.outputs.already_published == 'false'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
