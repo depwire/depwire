@@ -55,9 +55,10 @@ export function scanDirectory(
         const isKotlin = entry.endsWith('.kt') || entry.endsWith('.kts') || entry === 'settings.gradle.kts' || entry === 'settings.gradle';
         const isPhp = entry.endsWith('.php');
         const isSwift = entry.endsWith('.swift');
+        const isMojo = entry.endsWith('.mojo') || entry.endsWith('.🔥');
         const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isCppBuild) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isCppBuild) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
@@ -100,6 +101,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'build.gradle.kts',  // Kotlin (Gradle KTS)
     'composer.json',     // PHP
     'Package.swift',     // Swift (SPM)
+    'mojoproject.toml',  // Mojo
     '.git'               // Any git repo
   ];
   

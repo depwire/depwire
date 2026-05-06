@@ -49,6 +49,7 @@ export async function initParser(): Promise<void> {
     'kotlin': 'tree-sitter-kotlin.wasm',
     'php': 'tree-sitter-php.wasm',
     'swift': 'tree-sitter-swift.wasm',
+    // Note: Mojo uses a pattern-based parser (no tree-sitter-mojo WASM available)
   };
 
   for (const [name, file] of Object.entries(grammarFiles)) {

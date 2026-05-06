@@ -15,7 +15,7 @@
 [![Rust](https://img.shields.io/badge/Rust-✓-ce422b?style=flat)](https://github.com/depwire/depwire)
 [![Java](https://img.shields.io/badge/Java-✓-f89820?style=flat)](https://github.com/depwire/depwire)
 [![PHP](https://img.shields.io/badge/PHP-✓-777bb4?style=flat)](https://github.com/depwire/depwire)
-[![+6 more](https://img.shields.io/badge/+6_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20Swift%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
+[![+7 more](https://img.shields.io/badge/+7_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20Swift%20%7C%20Mojo%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
 
 [![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
 [![YouTube Cloud Tutorial](https://img.shields.io/badge/YouTube-Cloud%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=wdTJfSRTQu8)
@@ -327,7 +327,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift — with cross-language edge detection between all supported languages.
+TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo — with cross-language edge detection between all supported languages.
 
 **Java / JVM** — classes, interfaces, enums, records, annotations, inner classes, anonymous classes, lambda expressions, Maven pom.xml and Gradle build file dependency edges, Spring Boot cross-language edges (@GetMapping, @PostMapping, @RequestMapping), JAX-RS / Jakarta EE route detection, Spring WebFlux RouterFunction support.
 
@@ -340,6 +340,8 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift �
 **PHP / Web** — functions, classes, methods, interfaces, traits, enums, namespaces, use statements, require/include dependency edges. Both procedural and OOP styles. Laravel (Route::get/post/put/delete/patch, middleware), Symfony (#[Route(...)]), Slim Framework, and WordPress REST API (register_rest_route) cross-language route detection. Guzzle and file_get_contents HTTP client edge detection. Dead code detection with WordPress hooks, Laravel service providers, Symfony controllers, and magic method exclusions (__construct, __get, __set, __call). Security scanner: database query injection patterns, dynamic code execution patterns, OS command execution patterns, regex modifier vulnerabilities, unsafe deserialization patterns, unsafe variable extraction patterns, weak hashing for passwords, deprecated crypto libraries, weak PRNG in security contexts, hardcoded credentials.
 
 **Swift / Apple** — functions, methods, initializers (init), deinitializers (deinit), classes, structs, enums, protocols, extensions, actors (Swift concurrency), properties (var, let), computed properties, type aliases, associated types. Package.swift (SPM) dependency parsing. Vapor, Hummingbird, and Perfect cross-language route detection. URLSession and Alamofire HTTP client edge detection. Dead code detection with AppDelegate/SceneDelegate lifecycle, SwiftUI View body, @IBAction/@IBOutlet, @objc, protocol conformance, Codable synthesis, XCTestCase, and @main entry point exclusions. Security scanner: SQL injection via string interpolation, Process() command injection, unsafe pointer usage, UserDefaults storing sensitive data, CC_MD5/CC_SHA1 weak hashing, Insecure.MD5/SHA1 from CryptoKit, arc4random in crypto contexts, App Transport Security bypass, hardcoded credentials, hardcoded HTTP URLs.
+
+**Mojo / AI-native** *(strategic support)* — fn (typed functions), def (Python-compatible functions), structs (value types), classes, traits (interfaces), alias (type aliases and compile-time constants), var/let declarations, import and from...import statements. Pattern-based parser (no tree-sitter-mojo available). Supports @value, @register_passable, @staticmethod decorators, inout/owned/borrowed parameter modifiers, SIMD/Tensor/DType type references. mojoproject.toml dependency parsing. Python interop detection (from python import). Cross-language route detection via Python framework interop (FastAPI/Starlette). Dead code detection with __init__/__copyinit__/__moveinit__ lifecycle, trait implementations, MLIR dialect operations, and @export exclusions. Security scanner: Pointer[T] and DTypePointer unsafe memory, Python eval() via interop, uninitialized memory patterns, SIMD store/load without bounds checking, weak random via Python random module, hardcoded keys in alias declarations, hashlib via Python interop in crypto contexts. *Mojo is the first AI-native language supported by Depwire.*
 
 ---
 
@@ -403,7 +405,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 17 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo)
 - Architecture health score
 - Dead code detection
 - Temporal graph

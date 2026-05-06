@@ -411,6 +411,54 @@ export async function checkCryptography(
             suggestedFix: 'Use HTTPS for all external URLs to ensure data confidentiality and integrity.',
           });
         }
+
+        // Mojo crypto patterns
+        // Weak random via Python interop
+        if (/from\s+python\s+import\s+random/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Mojo weak random via Python random module',
+            description: 'Python random module imported via Mojo interop — not cryptographically secure.',
+            attackScenario: 'An attacker could predict random values to forge tokens or bypass security checks.',
+            suggestedFix: 'Use Python secrets module through interop, or implement CSPRNG natively in Mojo.',
+          });
+        }
+
+        // Hardcoded keys in alias declarations
+        if (/\balias\s+(?:key|secret|password|token|api_key)\s*[=:]\s*["'][^"']{4,}["']/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in Mojo alias declaration',
+            description: 'A secret, key, or password is hardcoded in a compile-time alias — visible in source.',
+            attackScenario: 'An attacker with access to source or compiled binary could extract the credential.',
+            suggestedFix: 'Load credentials from environment variables at runtime instead of alias declarations.',
+          });
+        }
+
+        // Insecure hash via Python hashlib interop
+        if (/from\s+python\s+import\s+hashlib/.test(line)) {
+          if (isCryptoFile) {
+            findings.push({
+              id: '',
+              severity: 'medium',
+              vulnerabilityClass: 'cryptography',
+              file: file.filePath,
+              line: i + 1,
+              title: 'Mojo Python hashlib imported in security context',
+              description: 'Python hashlib imported via interop — ensure only strong algorithms (SHA-256+) are used.',
+              attackScenario: 'If MD5 or SHA-1 from hashlib is used, an attacker could exploit weak hash collisions.',
+              suggestedFix: 'Only use hashlib.sha256() or stronger. Avoid md5() and sha1() for security purposes.',
+            });
+          }
+        }
       }
     }
   } catch {

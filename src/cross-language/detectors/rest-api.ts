@@ -28,6 +28,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) return 'kotlin';
   if (filePath.endsWith('.php')) return 'php';
   if (filePath.endsWith('.swift')) return 'swift';
+  if (filePath.endsWith('.mojo') || filePath.endsWith('.🔥')) return 'mojo';
   if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
       filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
       filePath.endsWith('.h') || filePath.endsWith('.inl') || filePath.endsWith('.ipp')) return 'cpp';
@@ -576,6 +577,39 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
           file: filePath,
           line: i + 1,
         });
+      }
+    }
+
+    if (lang === 'mojo') {
+      // Mojo can use Python-compatible frameworks via interop
+      // FastAPI/Starlette style routes (since Mojo can call Python)
+      const pythonMatch = line.match(/@(?:app|router)\s*\.\s*(get|post|put|delete|patch)\s*\(\s*(['"])([^'"]+)\2/i);
+      if (pythonMatch) {
+        const path = pythonMatch[3];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: pythonMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Mojo stdlib HTTP patterns (future-proofing)
+      const mojoHttpMatch = line.match(/(?:server|app)\s*\.\s*(?:route|handle)\s*\(\s*['"]([^'"]+)['"]\s*,\s*['"]?(GET|POST|PUT|DELETE|PATCH)['"]?/i);
+      if (mojoHttpMatch) {
+        const path = mojoHttpMatch[1];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: mojoHttpMatch[2].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
       }
     }
 

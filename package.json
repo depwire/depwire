@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Dependency graph + 17 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner.",
   "type": "module",
   "bin": {
@@ -43,7 +43,8 @@
     "deterministic-graph",
     "kotlin",
     "php",
-    "swift"
+    "swift",
+    "mojo"
   ],
   "author": "Atef Ataya (https://www.youtube.com/@atefataya)",
   "license": "BUSL-1.1",

@@ -248,6 +248,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // Mojo specific exclusions
+  if (isMojoExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -455,6 +460,45 @@ function isSwiftExcluded(attrs: any): boolean {
   // XCTestCase test methods
   if (name.startsWith('test') || name === 'setUp' || name === 'tearDown' ||
     name === 'setUpWithError' || name === 'tearDownWithError') return true;
+
+  return false;
+}
+
+/**
+ * Mojo specific dead code exclusions
+ */
+function isMojoExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  if (!filePath.endsWith('.mojo') && !filePath.endsWith('.🔥')) return false;
+
+  // @value structs have auto-generated methods
+  // @export decorated functions are exported to C ABI
+  // These are detected by name patterns since we can't inspect decorators from the graph
+
+  // Lifecycle methods (required by value semantics)
+  const lifecycleMethods = [
+    '__init__', '__copyinit__', '__moveinit__', '__del__',
+    '__enter__', '__exit__',
+  ];
+  if (lifecycleMethods.includes(name)) return true;
+
+  // Trait implementations (required by trait conformance)
+  const traitMethods = [
+    '__str__', '__repr__', '__len__', '__getitem__', '__setitem__',
+    '__eq__', '__ne__', '__lt__', '__le__', '__gt__', '__ge__',
+    '__add__', '__sub__', '__mul__', '__truediv__', '__floordiv__',
+    '__hash__', '__bool__', '__int__', '__float__',
+    '__iter__', '__next__', '__contains__',
+  ];
+  if (traitMethods.includes(name)) return true;
+
+  // MLIR dialect operations (low-level Mojo internals)
+  if (name.startsWith('__mlir_') || name.startsWith('_mlir_')) return true;
+
+  // main is always an entry point
+  if (name === 'main') return true;
 
   return false;
 }

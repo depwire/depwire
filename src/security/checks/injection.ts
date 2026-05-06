@@ -339,6 +339,52 @@ const PATTERNS: InjectionPattern[] = [
     attackScenario: 'An attacker with device access could read UserDefaults plist to extract credentials.',
     suggestedFix: 'Use Keychain Services for storing sensitive data. Never store passwords or tokens in UserDefaults.',
   },
+  // Mojo injection patterns
+  {
+    regex: /\bPointer\s*\[\s*\w+\s*\]/,
+    title: 'Mojo unsafe Pointer[T] usage',
+    vulnClass: 'code-injection',
+    baseSeverity: 'medium',
+    description: 'Mojo Pointer[T] bypasses memory safety — potential for memory corruption or buffer overflow.',
+    attackScenario: 'An attacker could exploit unsafe pointer operations to corrupt memory or execute arbitrary code.',
+    suggestedFix: 'Use safe Mojo abstractions (SIMD, Tensor) instead of raw pointers where possible. Validate bounds.',
+  },
+  {
+    regex: /\bDTypePointer\b/,
+    title: 'Mojo unsafe DTypePointer usage',
+    vulnClass: 'code-injection',
+    baseSeverity: 'medium',
+    description: 'DTypePointer provides raw memory access without bounds checking.',
+    attackScenario: 'An attacker could exploit unvalidated pointer operations for buffer overflow or memory corruption.',
+    suggestedFix: 'Use Tensor or SIMD types with bounds checking instead of raw DTypePointer.',
+  },
+  {
+    regex: /from\s+python\s+import.*\beval\b/,
+    title: 'Mojo Python interop: eval() imported',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'Python eval() imported via Mojo Python interop — can execute arbitrary code.',
+    attackScenario: 'An attacker could inject malicious code strings executed through the Python bridge.',
+    suggestedFix: 'Avoid importing eval. Use safe parsing alternatives or validate all input strictly.',
+  },
+  {
+    regex: /\b__get_address_as_lvalue\b/,
+    title: 'Mojo uninitialized memory access pattern',
+    vulnClass: 'code-injection',
+    baseSeverity: 'medium',
+    description: 'Low-level memory access without initialization — potential for use of uninitialized data.',
+    attackScenario: 'An attacker could exploit uninitialized memory to leak data or corrupt program state.',
+    suggestedFix: 'Always initialize memory before use. Use safe constructors and value semantics.',
+  },
+  {
+    regex: /SIMD\s*\[[^\]]*\]\s*\.\s*(?:store|load)\s*\(/,
+    title: 'Mojo SIMD store/load without bounds check',
+    vulnClass: 'code-injection',
+    baseSeverity: 'medium',
+    description: 'SIMD store/load operations without explicit bounds checking — buffer overflow risk.',
+    attackScenario: 'An attacker could trigger out-of-bounds SIMD operations to corrupt memory.',
+    suggestedFix: 'Validate buffer size against SIMD width before store/load operations.',
+  },
 ];
 
 function shouldSkip(filePath: string): boolean {
