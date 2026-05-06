@@ -318,6 +318,12 @@ Publishing to npm is automated via GitHub Actions. **Never run `npm publish` man
 - Any tag matching `v*` pushed to the repo
 - Workflow file: `.github/workflows/npm-publish.yml`
 - Uses `NPM_TOKEN` secret for authentication
+- The workflow skips publish if the version is already on npm
+
+### Notes:
+
+- `NPM_TOKEN` is generated via browser-based web auth (`npm login`)
+- After npm publish succeeds, manually run: `mcp-publisher publish`
 
 ---
 

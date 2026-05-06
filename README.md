@@ -2,28 +2,24 @@
 
 <div align="center">
 
-[![npm version](https://img.shields.io/npm/v/depwire-cli.svg?style=flat-square)](https://www.npmjs.com/package/depwire-cli)
-[![npm downloads](https://img.shields.io/npm/dm/depwire-cli.svg?style=flat-square)](https://www.npmjs.com/package/depwire-cli)
-[![MCP Registry](https://img.shields.io/badge/MCP-registry-blue?style=flat-square)](https://registry.modelcontextprotocol.io/servers/io.github.atef-ataya/depwire)
-[![Glama](https://glama.ai/mcp/servers/depwire/depwire/badges/score.svg)](https://glama.ai/mcp/servers/depwire/depwire)
-[![License](https://img.shields.io/badge/license-BUSL--1.1-orange.svg?style=flat-square)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/depwire/depwire.svg?style=flat-square)](https://github.com/depwire/depwire/stargazers)
+[![npm version](https://img.shields.io/npm/v/depwire-cli?color=00d4aa&label=npm)](https://www.npmjs.com/package/depwire-cli)
+[![npm downloads](https://img.shields.io/npm/dm/depwire-cli?color=00d4aa&label=downloads%2Fmonth)](https://www.npmjs.com/package/depwire-cli)
+[![GitHub stars](https://img.shields.io/github/stars/depwire/depwire?color=00d4aa)](https://github.com/depwire/depwire/stargazers)
+[![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
+[![MCP Compatible](https://img.shields.io/badge/MCP-17%20tools-00d4aa)](https://github.com/depwire/depwire)
 
-</div>
+[![Languages](https://img.shields.io/badge/languages-11-0a1a14?style=flat)](https://github.com/depwire/depwire)
+[![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
+[![Python](https://img.shields.io/badge/Python-✓-3776ab?style=flat)](https://github.com/depwire/depwire)
+[![Go](https://img.shields.io/badge/Go-✓-00add8?style=flat)](https://github.com/depwire/depwire)
+[![Rust](https://img.shields.io/badge/Rust-✓-ce422b?style=flat)](https://github.com/depwire/depwire)
+[![Java](https://img.shields.io/badge/Java-✓-f89820?style=flat)](https://github.com/depwire/depwire)
+[![PHP](https://img.shields.io/badge/PHP-✓-777bb4?style=flat)](https://github.com/depwire/depwire)
+[![+5 more](https://img.shields.io/badge/+5_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
 
-<div align="center">
-
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![Go](https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white)
-![Rust](https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white)
-![C](https://img.shields.io/badge/C-A8B9CC?style=flat-square&logo=c&logoColor=black)
-![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp&logoColor=white)
-![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
-![C++](https://img.shields.io/badge/C++-00599C?style=flat-square&logo=cplusplus&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white)
+[![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
+[![YouTube Cloud Tutorial](https://img.shields.io/badge/YouTube-Cloud%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=wdTJfSRTQu8)
+[![Cloud](https://img.shields.io/badge/cloud-app.depwire.dev-00d4aa)](https://app.depwire.dev)
 
 </div>
 
@@ -93,6 +89,15 @@ depwire whatif     # know what breaks before you change anything
 depwire security   # catch vulnerabilities before AI ships them
 depwire viz        # see your entire architecture instantly
 ```
+
+---
+
+## Tested on real-world projects
+
+| Project | Language | Files | Symbols | Edges | Health Score |
+|---------|----------|-------|---------|-------|--------------|
+| [honojs/hono](https://github.com/honojs/hono) | TypeScript | 352 | 6,245 | 3,100+ | 41/100 |
+| [CodeGraphContext/CodeGraphContext](https://github.com/CodeGraphContext/CodeGraphContext) | Python/TS | 398 | 12,001 | 5,406 | 66/100 |
 
 ---
 
