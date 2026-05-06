@@ -8,14 +8,14 @@
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
 [![MCP Compatible](https://img.shields.io/badge/MCP-17%20tools-00d4aa)](https://github.com/depwire/depwire)
 
-[![Languages](https://img.shields.io/badge/languages-11-0a1a14?style=flat)](https://github.com/depwire/depwire)
+[![Languages](https://img.shields.io/badge/languages-12-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
 [![Python](https://img.shields.io/badge/Python-✓-3776ab?style=flat)](https://github.com/depwire/depwire)
 [![Go](https://img.shields.io/badge/Go-✓-00add8?style=flat)](https://github.com/depwire/depwire)
 [![Rust](https://img.shields.io/badge/Rust-✓-ce422b?style=flat)](https://github.com/depwire/depwire)
 [![Java](https://img.shields.io/badge/Java-✓-f89820?style=flat)](https://github.com/depwire/depwire)
 [![PHP](https://img.shields.io/badge/PHP-✓-777bb4?style=flat)](https://github.com/depwire/depwire)
-[![+5 more](https://img.shields.io/badge/+5_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
+[![+6 more](https://img.shields.io/badge/+6_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20Swift%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
 
 [![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
 [![YouTube Cloud Tutorial](https://img.shields.io/badge/YouTube-Cloud%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=wdTJfSRTQu8)
@@ -31,7 +31,7 @@
   <img src="./assets/deterministic_vs_rag_diagram.svg" alt="Depwire deterministic graph vs RAG probabilistic approach" width="680" />
 </p>
 
-Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 11 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
+Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 12 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
 
 **Not a build graph either.** Tools like Nx, Turborepo, and Grapher track package-level dependencies for build caching. Depwire tracks symbol-level dependencies — every function, class, and import relationship — which is what makes What If simulation, graph-aware security scanning, and exact blast radius analysis possible.
 
@@ -327,7 +327,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP — with cross-language edge detection between all supported languages.
+TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift — with cross-language edge detection between all supported languages.
 
 **Java / JVM** — classes, interfaces, enums, records, annotations, inner classes, anonymous classes, lambda expressions, Maven pom.xml and Gradle build file dependency edges, Spring Boot cross-language edges (@GetMapping, @PostMapping, @RequestMapping), JAX-RS / Jakarta EE route detection, Spring WebFlux RouterFunction support.
 
@@ -338,6 +338,8 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP — with
 **Kotlin / JVM** — classes, data classes, sealed classes, objects, companion objects, value classes, type aliases, extension functions, enum classes, annotation classes. Coroutine awareness: suspend functions, GlobalScope detection, structured concurrency checks. build.gradle.kts, build.gradle, and settings.gradle.kts dependency parsing. Spring Boot, Ktor, Http4k, and Ktor Resources cross-language route detection. Android Retrofit outgoing edge detection. Dead code detection with Android lifecycle and Spring annotation exclusions. Security scanner: database query injection patterns, hardcoded credentials, insecure random, not-null assertion abuse, Ktor missing auth blocks.
 
 **PHP / Web** — functions, classes, methods, interfaces, traits, enums, namespaces, use statements, require/include dependency edges. Both procedural and OOP styles. Laravel (Route::get/post/put/delete/patch, middleware), Symfony (#[Route(...)]), Slim Framework, and WordPress REST API (register_rest_route) cross-language route detection. Guzzle and file_get_contents HTTP client edge detection. Dead code detection with WordPress hooks, Laravel service providers, Symfony controllers, and magic method exclusions (__construct, __get, __set, __call). Security scanner: database query injection patterns, dynamic code execution patterns, OS command execution patterns, regex modifier vulnerabilities, unsafe deserialization patterns, unsafe variable extraction patterns, weak hashing for passwords, deprecated crypto libraries, weak PRNG in security contexts, hardcoded credentials.
+
+**Swift / Apple** — functions, methods, initializers (init), deinitializers (deinit), classes, structs, enums, protocols, extensions, actors (Swift concurrency), properties (var, let), computed properties, type aliases, associated types. Package.swift (SPM) dependency parsing. Vapor, Hummingbird, and Perfect cross-language route detection. URLSession and Alamofire HTTP client edge detection. Dead code detection with AppDelegate/SceneDelegate lifecycle, SwiftUI View body, @IBAction/@IBOutlet, @objc, protocol conformance, Codable synthesis, XCTestCase, and @main entry point exclusions. Security scanner: SQL injection via string interpolation, Process() command injection, unsafe pointer usage, UserDefaults storing sensitive data, CC_MD5/CC_SHA1 weak hashing, Insecure.MD5/SHA1 from CryptoKit, arc4random in crypto contexts, App Transport Security bypass, hardcoded credentials, hardcoded HTTP URLs.
 
 ---
 
@@ -401,7 +403,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 17 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift)
 - Architecture health score
 - Dead code detection
 - Temporal graph

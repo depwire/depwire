@@ -27,6 +27,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.java')) return 'java';
   if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) return 'kotlin';
   if (filePath.endsWith('.php')) return 'php';
+  if (filePath.endsWith('.swift')) return 'swift';
   if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
       filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
       filePath.endsWith('.h') || filePath.endsWith('.inl') || filePath.endsWith('.ipp')) return 'cpp';
@@ -533,6 +534,51 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
       }
     }
 
+    if (lang === 'swift') {
+      // Vapor: app.get("api", "users") or app.post("api", "users")
+      const vaporMatch = line.match(/(?:app|router|routes)\s*\.\s*(get|post|put|delete|patch)\s*\(\s*["']([^"']+)["']/i);
+      if (vaporMatch) {
+        let path = vaporMatch[2];
+        if (!path.startsWith('/')) path = '/' + path;
+        routes.push({
+          method: vaporMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Hummingbird: router.get("api/users") or router.post("api/users")
+      const hbMatch = line.match(/router\s*\.\s*(get|post|put|delete|patch)\s*\(\s*["']([^"']+)["']/i);
+      if (hbMatch && !vaporMatch) {
+        let path = hbMatch[2];
+        if (!path.startsWith('/')) path = '/' + path;
+        routes.push({
+          method: hbMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Perfect: routes.add(method: .get, uri: "/api/users")
+      const perfectMatch = line.match(/routes\s*\.\s*add\s*\([^)]*uri\s*:\s*["']([^"']+)["']/);
+      if (perfectMatch) {
+        const path = perfectMatch[1].startsWith('/') ? perfectMatch[1] : '/' + perfectMatch[1];
+        const methodMatch = line.match(/method\s*:\s*\.(\w+)/);
+        const method = methodMatch ? methodMatch[1].toUpperCase() : 'ANY';
+        routes.push({
+          method,
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+    }
+
     if (lang === 'cpp') {
       // Crow: CROW_ROUTE(app, "/api/users")
       const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
@@ -707,6 +753,36 @@ export function detectRestApiEdges(
           let path = retrofitMatch[2];
           if (!path.startsWith('/')) path = '/' + path;
           allCalls.push({ method: retrofitMatch[1].toUpperCase(), path, file: file.filePath, line: i + 1 });
+        }
+      }
+    }
+
+    // Extract Swift HTTP client calls (URLSession, Alamofire)
+    if (lang === 'swift') {
+      const swiftLines = source.split('\n');
+      for (let i = 0; i < swiftLines.length; i++) {
+        const line = swiftLines[i];
+
+        // URLRequest/URLSession: URL(string: "/api/users") or URLRequest(url: URL(string: "..."))
+        const urlMatch = line.match(/URL\s*\(\s*string\s*:\s*["']([^"']+)["']/);
+        if (urlMatch) {
+          const path = urlMatch[1];
+          if (isLocalApiPath(path)) {
+            const methodMatch = line.match(/httpMethod\s*=\s*["'](\w+)["']/);
+            const method = methodMatch ? methodMatch[1].toUpperCase() : 'GET';
+            allCalls.push({ method, path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // Alamofire: AF.request("/api/users", method: .post)
+        const afMatch = line.match(/AF\s*\.\s*(?:request|upload|download)\s*\(\s*["']([^"']+)["']/);
+        if (afMatch) {
+          const path = afMatch[1];
+          if (isLocalApiPath(path)) {
+            const methodMatch = line.match(/method\s*:\s*\.(\w+)/);
+            const method = methodMatch ? methodMatch[1].toUpperCase() : 'GET';
+            allCalls.push({ method, path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
         }
       }
     }

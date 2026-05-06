@@ -243,6 +243,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // Swift specific exclusions
+  if (isSwiftExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -404,6 +409,52 @@ function isPhpExcluded(attrs: any): boolean {
 
   if (name.startsWith('test') || name === 'setUp' || name === 'tearDown' ||
     name === 'setUpBeforeClass' || name === 'tearDownAfterClass') return true;
+
+  return false;
+}
+
+/**
+ * Swift specific dead code exclusions
+ */
+function isSwiftExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  if (!filePath.endsWith('.swift')) return false;
+
+  // @main entry points
+  if (name === 'main') return true;
+
+  // AppDelegate / SceneDelegate lifecycle methods
+  const appLifecycle = [
+    'application', 'applicationDidFinishLaunching', 'applicationWillTerminate',
+    'applicationDidBecomeActive', 'applicationWillResignActive',
+    'applicationDidEnterBackground', 'applicationWillEnterForeground',
+    'scene', 'sceneDidDisconnect', 'sceneDidBecomeActive',
+    'sceneWillResignActive', 'sceneWillEnterForeground', 'sceneDidEnterBackground',
+  ];
+  if (appLifecycle.includes(name)) return true;
+
+  // SwiftUI View body property and PreviewProvider
+  if (name === 'body' || name === 'previews') return true;
+
+  // Protocol conformance methods (common required methods)
+  const protocolMethods = [
+    'hash', 'encode', 'init', 'deinit',
+    'tableView', 'collectionView', 'numberOfSections', 'numberOfRowsInSection',
+    'cellForRowAt', 'didSelectRowAt',
+  ];
+  if (protocolMethods.includes(name)) return true;
+
+  // @IBAction / @IBOutlet are called from Interface Builder
+  // @objc methods are called from Objective-C runtime
+
+  // Codable auto-synthesis
+  if (['encode', 'decode', 'init(from:)'].includes(name)) return true;
+
+  // XCTestCase test methods
+  if (name.startsWith('test') || name === 'setUp' || name === 'tearDown' ||
+    name === 'setUpWithError' || name === 'tearDownWithError') return true;
 
   return false;
 }

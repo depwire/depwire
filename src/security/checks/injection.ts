@@ -302,6 +302,43 @@ const PATTERNS: InjectionPattern[] = [
     attackScenario: 'An attacker could set arbitrary variables by crafting request parameters, potentially overwriting auth flags or config values.',
     suggestedFix: 'Avoid extract() on user input. Access superglobals directly or use a whitelist of expected keys.',
   },
+  // Swift injection patterns
+  {
+    regex: /["'](?:SELECT|INSERT|UPDATE|DELETE)\b[^"']*\\\(/,
+    title: 'Swift SQL injection via string interpolation',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'SQL query built using Swift string interpolation — vulnerable to SQL injection.',
+    attackScenario: 'An attacker could inject SQL through interpolated variables to read, modify, or delete database data.',
+    suggestedFix: 'Use parameterized queries with your database library (e.g., Fluent ORM, SQLite.swift bindings).',
+  },
+  {
+    regex: /Process\s*\(\s*\)/,
+    title: 'Swift command injection via Process class',
+    vulnClass: 'shell-injection',
+    baseSeverity: 'medium',
+    description: 'Process() class executes external commands — vulnerable if user input reaches arguments.',
+    attackScenario: 'An attacker could inject shell metacharacters to execute arbitrary commands on the server.',
+    suggestedFix: 'Validate all arguments against a strict allowlist before passing to Process. Avoid shell execution.',
+  },
+  {
+    regex: /Unsafe(?:Raw|Mutable|Buffer)?Pointer/,
+    title: 'Swift unsafe pointer usage',
+    vulnClass: 'code-injection',
+    baseSeverity: 'medium',
+    description: 'Unsafe pointer usage bypasses Swift memory safety — potential for memory corruption.',
+    attackScenario: 'An attacker could exploit unsafe pointer operations to corrupt memory or execute arbitrary code.',
+    suggestedFix: 'Prefer safe Swift alternatives. If unsafe pointers are necessary, validate all bounds and lifetimes.',
+  },
+  {
+    regex: /UserDefaults\s*\.\s*(?:standard\s*\.\s*)?set\s*\([^)]*(?:password|secret|token|apiKey|api_key)/i,
+    title: 'Swift sensitive data in UserDefaults (unencrypted)',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'Sensitive data stored in UserDefaults without encryption — easily accessible on jailbroken devices.',
+    attackScenario: 'An attacker with device access could read UserDefaults plist to extract credentials.',
+    suggestedFix: 'Use Keychain Services for storing sensitive data. Never store passwords or tokens in UserDefaults.',
+  },
 ];
 
 function shouldSkip(filePath: string): boolean {

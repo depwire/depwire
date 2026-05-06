@@ -322,6 +322,95 @@ export async function checkCryptography(
             suggestedFix: 'Load credentials from environment variables using getenv() or $_ENV.',
           });
         }
+
+        // Swift weak crypto patterns
+        // MD5/SHA1 via CommonCrypto or CryptoKit legacy
+        if (/\bCC_MD5\b/.test(line) || /Insecure\s*\.\s*MD5/.test(line)) {
+          findings.push({
+            id: '',
+            severity: isCryptoFile ? 'high' : 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak hash algorithm: MD5 in Swift',
+            description: 'MD5 is cryptographically broken — collisions can be generated in seconds.',
+            attackScenario: 'An attacker could generate MD5 collisions to bypass integrity checks or forge hashes.',
+            suggestedFix: 'Use SHA256 from CryptoKit: SHA256.hash(data: data)',
+          });
+        }
+
+        if (/\bCC_SHA1\b/.test(line) || /Insecure\s*\.\s*SHA1/.test(line)) {
+          findings.push({
+            id: '',
+            severity: isCryptoFile ? 'high' : 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak hash algorithm: SHA-1 in Swift',
+            description: 'SHA-1 has known collision attacks — should not be used for security purposes.',
+            attackScenario: 'An attacker could generate SHA-1 collisions to bypass integrity checks.',
+            suggestedFix: 'Use SHA256 from CryptoKit: SHA256.hash(data: data)',
+          });
+        }
+
+        // Swift hardcoded credentials
+        if (/(?:let|var)\s+(?:password|secret|apiKey|api_key|token)\s*(?::\s*String\s*)?=\s*["']/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in Swift source',
+            description: 'A password, secret, or API key is hardcoded as a string literal.',
+            attackScenario: 'An attacker with access to the binary or source could extract the credential.',
+            suggestedFix: 'Load credentials from Keychain, environment variables, or a secure configuration service.',
+          });
+        }
+
+        // Swift insecure random (arc4random is okay, but not for crypto)
+        if (/\barc4random\b/.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'arc4random in Swift security context',
+            description: 'arc4random is not suitable for cryptographic key generation.',
+            attackScenario: 'An attacker could predict random values if used for cryptographic purposes.',
+            suggestedFix: 'Use SecRandomCopyBytes or SystemRandomNumberGenerator for security-sensitive randomness.',
+          });
+        }
+
+        // Swift HTTP (non-HTTPS) allowsInsecureHTTPLoads or hardcoded http:// URLs
+        if (/allowsArbitraryLoads\s*:\s*true/.test(line) || /NSAllowsArbitraryLoads.*true/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Swift App Transport Security disabled',
+            description: 'allowsArbitraryLoads is set to true — all HTTP traffic is permitted without encryption.',
+            attackScenario: 'An attacker on the network path could intercept, read, or modify data in transit.',
+            suggestedFix: 'Remove allowsArbitraryLoads or set to false. Add specific exceptions only for domains that require HTTP.',
+          });
+        }
+
+        if (/(?:let|var)\s+\w*[Uu]rl\w*\s*=\s*["']http:\/\/(?!(?:localhost|127\.))/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded HTTP URL in Swift source',
+            description: 'An HTTP (not HTTPS) URL is hardcoded — data is transmitted unencrypted.',
+            attackScenario: 'An attacker on the network path could intercept, read, or modify data in transit.',
+            suggestedFix: 'Use HTTPS for all external URLs to ensure data confidentiality and integrity.',
+          });
+        }
       }
     }
   } catch {
