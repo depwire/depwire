@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Dependency graph + 17 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner.",
   "type": "module",
   "bin": {
@@ -16,7 +16,6 @@
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
     "build:mcpb": "npm run build && ./scripts/build-mcpb.sh",
-    "postinstall": "node scripts/postinstall.js",
     "postversion": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('./package.json','utf8'));const s=JSON.parse(fs.readFileSync('./server.json','utf8'));s.version=p.version;s.packages[0].version=p.version;fs.writeFileSync('./server.json',JSON.stringify(s,null,2)+'\\n');console.log('server.json updated to '+p.version);\" && git add server.json"
   },
   "keywords": [
@@ -59,7 +58,6 @@
   "homepage": "https://depwire.dev",
   "files": [
     "dist",
-    "scripts/postinstall.js",
     "README.md",
     "LICENSE",
     "icon.png"
