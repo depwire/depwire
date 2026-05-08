@@ -459,6 +459,99 @@ export async function checkCryptography(
             });
           }
         }
+
+        // Ruby weak crypto patterns
+        // Digest::MD5
+        if (/Digest::MD5/.test(line)) {
+          findings.push({
+            id: '',
+            severity: isCryptoFile ? 'high' : 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak hash algorithm: MD5 in Ruby',
+            description: 'MD5 is cryptographically broken — collisions can be generated in seconds.',
+            attackScenario: 'An attacker could generate MD5 collisions to bypass integrity checks or forge hashes.',
+            suggestedFix: 'Use Digest::SHA256 or bcrypt for password hashing.',
+          });
+        }
+
+        // Digest::SHA1
+        if (/Digest::SHA1/.test(line)) {
+          findings.push({
+            id: '',
+            severity: isCryptoFile ? 'high' : 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak hash algorithm: SHA-1 in Ruby',
+            description: 'SHA-1 has known collision attacks — should not be used for security purposes.',
+            attackScenario: 'An attacker could generate SHA-1 collisions to bypass integrity checks.',
+            suggestedFix: 'Use Digest::SHA256 or stronger for integrity checks.',
+          });
+        }
+
+        // Ruby weak random: rand() in security contexts
+        if (/\brand\s*\(/.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak random: rand() in Ruby security context',
+            description: 'rand() is not cryptographically secure — its output can be predicted.',
+            attackScenario: 'An attacker could predict rand() values to forge tokens or bypass security checks.',
+            suggestedFix: 'Use SecureRandom.hex, SecureRandom.uuid, or SecureRandom.random_bytes for cryptographic purposes.',
+          });
+        }
+
+        // Ruby hardcoded credentials
+        if (/(?:password|secret|api_key|token)\s*=\s*['"][^'"]{4,}['"]/i.test(line)) {
+          if (file.filePath.endsWith('.rb')) {
+            findings.push({
+              id: '',
+              severity: 'high',
+              vulnerabilityClass: 'cryptography',
+              file: file.filePath,
+              line: i + 1,
+              title: 'Hardcoded credentials in Ruby source',
+              description: 'A password, secret, or API key is hardcoded as a string literal.',
+              attackScenario: 'An attacker with access to the source could extract the credential.',
+              suggestedFix: 'Load credentials from environment variables using ENV["KEY"] or Rails credentials.',
+            });
+          }
+        }
+
+        // Ruby SSL verification disabled
+        if (/verify_mode\s*=\s*OpenSSL::SSL::VERIFY_NONE/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Ruby SSL verification disabled',
+            description: 'SSL certificate verification is disabled — connections are not authenticated.',
+            attackScenario: 'An attacker on the network could intercept and modify traffic without detection.',
+            suggestedFix: 'Use OpenSSL::SSL::VERIFY_PEER to verify server certificates.',
+          });
+        }
+
+        // Ruby weak cipher (DES/RC4 via OpenSSL::Cipher)
+        if (/OpenSSL::Cipher\s*\.\s*new\s*\(\s*['"](?:DES|RC4)/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak cipher algorithm in Ruby',
+            description: 'DES/RC4 ciphers are cryptographically weak and can be broken with modern hardware.',
+            attackScenario: 'An attacker could brute-force or exploit weaknesses in DES/RC4 to decrypt data.',
+            suggestedFix: 'Use OpenSSL::Cipher.new("aes-256-gcm") for authenticated encryption.',
+          });
+        }
       }
     }
   } catch {

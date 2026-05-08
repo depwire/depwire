@@ -253,6 +253,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // Ruby specific exclusions
+  if (isRubyExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -498,6 +503,64 @@ function isMojoExcluded(attrs: any): boolean {
   if (name.startsWith('__mlir_') || name.startsWith('_mlir_')) return true;
 
   // main is always an entry point
+  if (name === 'main') return true;
+
+  return false;
+}
+
+/**
+ * Ruby specific dead code exclusions
+ */
+function isRubyExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  if (!filePath.endsWith('.rb') && !filePath.endsWith('.rake') && !filePath.endsWith('.gemspec')) return false;
+
+  // Rails controller callbacks
+  const railsCallbacks = [
+    'before_action', 'after_action', 'around_action',
+    'before_filter', 'after_filter', 'around_filter',
+  ];
+  if (railsCallbacks.includes(name)) return true;
+
+  // ActiveRecord lifecycle callbacks
+  const arCallbacks = [
+    'before_save', 'after_save', 'before_create', 'after_create',
+    'before_update', 'after_update', 'before_destroy', 'after_destroy',
+    'before_validation', 'after_validation',
+    'after_commit', 'after_rollback', 'after_initialize', 'after_find',
+  ];
+  if (arCallbacks.includes(name)) return true;
+
+  // Rake task definitions
+  if (filePath.endsWith('.rake') || name === 'task') return true;
+
+  // RSpec/Minitest methods
+  if (['it', 'describe', 'context', 'specify', 'subject', 'let', 'let!', 'before', 'after'].includes(name)) return true;
+  if (name.startsWith('test_')) return true;
+
+  // Rails concerns (included do blocks)
+  if (name === 'included' || name === 'class_methods') return true;
+
+  // initialize is always called implicitly
+  if (name === 'initialize') return true;
+
+  // Dynamic dispatch methods
+  if (name === 'method_missing' || name === 'respond_to_missing?') return true;
+
+  // ActiveSupport::Concern blocks
+  if (name === 'concern' || name === 'concerning') return true;
+
+  // Pundit policy methods
+  const policyMethods = ['index?', 'show?', 'create?', 'new?', 'update?', 'edit?', 'destroy?'];
+  if (policyMethods.includes(name)) return true;
+
+  // Devise strategy methods
+  const deviseMethods = ['authenticate!', 'valid?', 'authenticate_user!', 'current_user'];
+  if (deviseMethods.includes(name)) return true;
+
+  // Rails entry points
   if (name === 'main') return true;
 
   return false;

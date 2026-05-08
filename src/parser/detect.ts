@@ -13,6 +13,7 @@ import { kotlinParser } from './kotlin.js';
 import { phpParser } from './php.js';
 import { swiftParser } from './swift.js';
 import { mojoParser } from './mojo.js';
+import { rubyParser } from './ruby.js';
 
 const parsers: LanguageParser[] = [
   typescriptParser,
@@ -28,6 +29,7 @@ const parsers: LanguageParser[] = [
   phpParser,
   swiftParser,
   mojoParser,
+  rubyParser,
 ];
 
 // C++ keywords that distinguish .h files as C++ rather than C

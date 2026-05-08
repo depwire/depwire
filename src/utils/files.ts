@@ -56,9 +56,10 @@ export function scanDirectory(
         const isPhp = entry.endsWith('.php');
         const isSwift = entry.endsWith('.swift');
         const isMojo = entry.endsWith('.mojo') || entry.endsWith('.🔥');
+        const isRuby = entry.endsWith('.rb') || entry.endsWith('.rake') || entry.endsWith('.gemspec') || entry.endsWith('.ru') || entry === 'Gemfile';
         const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isCppBuild) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isCppBuild) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
@@ -102,6 +103,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'composer.json',     // PHP
     'Package.swift',     // Swift (SPM)
     'mojoproject.toml',  // Mojo
+    'Gemfile',           // Ruby (Bundler)
     '.git'               // Any git repo
   ];
   

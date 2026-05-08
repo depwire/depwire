@@ -28,6 +28,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) return 'kotlin';
   if (filePath.endsWith('.php')) return 'php';
   if (filePath.endsWith('.swift')) return 'swift';
+  if (filePath.endsWith('.rb') || filePath.endsWith('.rake') || filePath.endsWith('.ru') || filePath.endsWith('.gemspec')) return 'ruby';
   if (filePath.endsWith('.mojo') || filePath.endsWith('.🔥')) return 'mojo';
   if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
       filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
@@ -613,6 +614,73 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
       }
     }
 
+    if (lang === 'ruby') {
+      // Rails routes.rb: get '/path', post '/path', resources :name, namespace :name
+      const railsRouteMatch = line.match(/^\s*(get|post|put|patch|delete)\s+['"]([^'"]+)['"]/);
+      if (railsRouteMatch) {
+        const path = railsRouteMatch[2].startsWith('/') ? railsRouteMatch[2] : '/' + railsRouteMatch[2];
+        routes.push({
+          method: railsRouteMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Sinatra: get '/path' do, post '/path' do
+      const sinatraMatch = line.match(/^\s*(get|post|put|patch|delete)\s+['"]([^'"]+)['"]\s+do/);
+      if (sinatraMatch && !railsRouteMatch) {
+        const path = sinatraMatch[2].startsWith('/') ? sinatraMatch[2] : '/' + sinatraMatch[2];
+        routes.push({
+          method: sinatraMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Rails resources: resources :users -> /users (CRUD)
+      const resourcesMatch = line.match(/^\s*resources?\s+:(\w+)/);
+      if (resourcesMatch) {
+        const resourcePath = '/' + resourcesMatch[1];
+        routes.push({
+          method: 'ANY',
+          path: resourcePath,
+          normalizedPath: normalizePath(resourcePath),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Rack: map '/path' do
+      const rackMatch = line.match(/^\s*map\s+['"]([^'"]+)['"]/);
+      if (rackMatch) {
+        const path = rackMatch[1].startsWith('/') ? rackMatch[1] : '/' + rackMatch[1];
+        routes.push({
+          method: 'ANY',
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Grape API: get '/path', post '/path' etc (inside class < Grape::API)
+      const grapeMatch = line.match(/^\s*(get|post|put|patch|delete)\s+['"]([^'"]+)['"]/);
+      if (grapeMatch && !railsRouteMatch) {
+        const path = grapeMatch[2].startsWith('/') ? grapeMatch[2] : '/' + grapeMatch[2];
+        routes.push({
+          method: grapeMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+    }
+
     if (lang === 'cpp') {
       // Crow: CROW_ROUTE(app, "/api/users")
       const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
@@ -851,6 +919,42 @@ export function detectRestApiEdges(
           const path = fgcMatch[1];
           if (isLocalApiPath(path)) {
             allCalls.push({ method: 'GET', path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+      }
+    }
+
+    // Extract Ruby HTTP client calls (Faraday, Net::HTTP, HTTParty)
+    if (lang === 'ruby') {
+      const rubyLines = source.split('\n');
+      for (let i = 0; i < rubyLines.length; i++) {
+        const line = rubyLines[i];
+
+        // Faraday: conn.get('/api/users'), conn.post('/api/users')
+        const faradayMatch = line.match(/\w+\s*\.\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+        if (faradayMatch) {
+          const path = faradayMatch[2];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: faradayMatch[1].toUpperCase(), path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // Net::HTTP.get/post_form with URI
+        const netHttpMatch = line.match(/Net::HTTP\s*\.\s*(get|post_form|post)\s*\(/i);
+        if (netHttpMatch) {
+          const uriMatch = line.match(/['"]([^'"]+)['"]/);
+          if (uriMatch && isLocalApiPath(uriMatch[1])) {
+            const method = netHttpMatch[1].toUpperCase().replace('POST_FORM', 'POST');
+            allCalls.push({ method, path: cleanPath(uriMatch[1]), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // HTTParty: self.get('/api/users'), HTTParty.get('/api/users')
+        const httpartyMatch = line.match(/(?:HTTParty|self)\s*\.\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+        if (httpartyMatch) {
+          const path = httpartyMatch[2];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: httpartyMatch[1].toUpperCase(), path: cleanPath(path), file: file.filePath, line: i + 1 });
           }
         }
       }
