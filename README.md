@@ -457,6 +457,12 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ---
 
+## Agent Identity Token (AIT)
+
+Depwire is the reference implementation of the [Agent Identity Token (AIT)](https://github.com/depwire/ait-spec) — an open standard for cryptographically signing AI agent actions. AIT provides tamper-proof audit trails for every tool call, file change, and agent delegation.
+
+---
+
 ## License
 
 [Business Source License 1.1](LICENSE) — free for personal and internal company use. Converts to Apache 2.0 on February 25, 2029.
