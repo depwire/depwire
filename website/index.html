@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Depwire — The Missing Context Layer for AI Coding Assistants</title>
     <meta name="description" content="Depwire gives AI coding assistants a deterministic dependency graph via MCP. 17 tools for impact analysis, architecture health, dead code detection, What If simulation, and security scanning. The context layer that turns vibe coding into software engineering.">
-    <meta name="keywords" content="MCP server, dependency graph, AI coding assistant, codebase context, impact analysis, architecture health, dead code detection, what if simulation, Claude Desktop, Cursor, tree-sitter, TypeScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP">
+    <meta name="keywords" content="MCP server, dependency graph, AI coding assistant, codebase context, impact analysis, architecture health, dead code detection, what if simulation, Claude Desktop, Cursor, tree-sitter, TypeScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, dart, flutter, Swift, Mojo, Ruby">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -1025,8 +1025,23 @@
         <div class="container" style="text-align: center;">
             <h2 class="section-title scroll-reveal" style="color: #00d4aa; font-size: clamp(1.8rem, 4vw, 2.8rem);">DETERMINISTIC, NOT PROBABILISTIC</h2>
             <p class="scroll-reveal" style="font-size: clamp(1.2rem, 2.5vw, 1.6rem); color: var(--text-primary); font-weight: 700; margin-bottom: 1.5rem;">This is not RAG.</p>
-            <p class="scroll-reveal" style="max-width: 800px; margin: 0 auto 2.5rem; color: var(--text-secondary); font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.8;">No embeddings. No similarity scores. No guesses. Depwire uses tree-sitter to parse every file and extract exact symbol-level facts — every function, class, interface, and import relationship across 14 languages. The result is a compiler-grade dependency graph that AI tools can query for exact answers, not probabilistic estimates.</p>
+            <p class="scroll-reveal" style="max-width: 800px; margin: 0 auto 2.5rem; color: var(--text-secondary); font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.8;">No embeddings. No similarity scores. No guesses. Depwire uses tree-sitter to parse every file and extract exact symbol-level facts — every function, class, interface, and import relationship across 15 languages. The result is a compiler-grade dependency graph that AI tools can query for exact answers, not probabilistic estimates.</p>
             <img src="assets/deterministic_vs_rag_diagram.svg" alt="Depwire: Deterministic vs RAG architecture comparison" style="width:100%;max-width:680px;margin:2rem auto;display:block;">
+        </div>
+    </section>
+
+    <!-- AIT Open Standard Section -->
+    <section style="padding: 5rem 0; background: var(--bg-primary); border-top: 1px solid rgba(0, 212, 170, 0.2);">
+        <div class="container" style="text-align: center;">
+            <div style="max-width: 800px; margin: 0 auto; border: 1px solid rgba(0, 212, 170, 0.25); border-radius: 1.5rem; padding: 3.5rem 3rem; background: linear-gradient(135deg, rgba(0, 212, 170, 0.03), rgba(0, 212, 255, 0.02));">
+                <h2 class="scroll-reveal" style="font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem;">Steward of the AIT open standard</h2>
+                <p class="scroll-reveal" style="font-size: clamp(0.95rem, 1.8vw, 1.15rem); color: #00d4aa; font-weight: 600; margin-bottom: 2rem;">Agent Identity Token — cryptographic audit trails for AI agents</p>
+                <p class="scroll-reveal" style="max-width: 700px; margin: 0 auto 2.5rem; color: #9ca3af; font-size: clamp(0.9rem, 1.6vw, 1.05rem); line-height: 1.9;">Depwire is the steward of the Agent Identity Token (AIT) specification — an open standard for cryptographically signing AI agent actions. Released under CC0 public domain in May 2026, AIT defines three JWT-based token types that chain together to form a verifiable audit trail for every action an AI agent takes — who authorized it, what model ran it, what context it had, and what it changed. The spec was drafted in response to NIST's February 2026 concept paper calling for industry-led standards on AI agent identity.</p>
+                <div class="scroll-reveal" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://github.com/depwire/ait-spec" target="_blank" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem;">Read the spec</a>
+                    <a href="https://medium.com/@atef.ataya/the-ai-agent-accountability-gap-nobody-is-talking-about-a4be0b382411" target="_blank" style="color: #9ca3af; text-decoration: none; font-weight: 500; padding: 0.85rem 1.5rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.3s;">Why AIT exists <span style="font-size: 0.85em;">→</span></a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -1135,7 +1150,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🌍</div>
                     <h3>Multi-Language</h3>
-                    <p>TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, and Ruby. Mixed-language monorepos supported. Tree-sitter parsing for deterministic accuracy.</p>
+                    <p>TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, and Dart. Mixed-language monorepos supported. Tree-sitter parsing for deterministic accuracy.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">⚡</div>
@@ -1387,6 +1402,13 @@
                             <td>~300</td>
                             <td>—</td>
                             <td>&lt; 2s</td>
+                        </tr>
+                        <tr>
+                            <td><strong>dart-lang/shelf</strong></td>
+                            <td>Dart</td>
+                            <td>108</td>
+                            <td>1,639</td>
+                            <td>0.11s</td>
                         </tr>
                     </tbody>
                 </table>
