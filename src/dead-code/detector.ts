@@ -258,6 +258,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // Dart specific exclusions
+  if (isDartExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -562,6 +567,53 @@ function isRubyExcluded(attrs: any): boolean {
 
   // Rails entry points
   if (name === 'main') return true;
+
+  return false;
+}
+
+/**
+ * Dart/Flutter specific dead code exclusions
+ */
+function isDartExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  if (!filePath.endsWith('.dart')) return false;
+
+  // main() is always an entry point
+  if (name === 'main') return true;
+
+  // Flutter widget lifecycle methods
+  const widgetLifecycle = [
+    'initState', 'dispose', 'build', 'didChangeDependencies', 'didUpdateWidget',
+    'deactivate', 'reassemble', 'setState', 'createState',
+  ];
+  if (widgetLifecycle.includes(name)) return true;
+
+  // Object override methods
+  if (['toString', 'hashCode', 'operator==', 'noSuchMethod'].includes(name)) return true;
+
+  // Serialization methods
+  if (['fromJson', 'toJson', 'fromMap', 'toMap', 'copyWith'].includes(name)) return true;
+
+  // Test methods
+  if (['test', 'testWidgets', 'group', 'setUp', 'tearDown', 'setUpAll', 'tearDownAll'].includes(name)) return true;
+
+  // Riverpod providers
+  const riverpodPatterns = ['Provider', 'StateProvider', 'FutureProvider', 'StreamProvider',
+    'StateNotifierProvider', 'ChangeNotifierProvider', 'NotifierProvider', 'AsyncNotifierProvider'];
+  if (riverpodPatterns.some(p => name.includes(p))) return true;
+
+  // Bloc/Cubit event handlers (mapEventToState, on<Event>)
+  if (name.startsWith('mapEventToState') || name.startsWith('on')) return true;
+
+  // GetX controllers and bindings
+  if (['onInit', 'onReady', 'onClose', 'dependencies'].includes(name)) return true;
+
+  // @override annotated methods commonly called by framework
+  const frameworkMethods = ['paint', 'shouldRepaint', 'shouldRebuild', 'performLayout',
+    'hitTest', 'debugFillProperties', 'toDiagnosticsNode'];
+  if (frameworkMethods.includes(name)) return true;
 
   return false;
 }

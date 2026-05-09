@@ -29,6 +29,7 @@ function getLanguage(filePath: string): string {
   if (filePath.endsWith('.php')) return 'php';
   if (filePath.endsWith('.swift')) return 'swift';
   if (filePath.endsWith('.rb') || filePath.endsWith('.rake') || filePath.endsWith('.ru') || filePath.endsWith('.gemspec')) return 'ruby';
+  if (filePath.endsWith('.dart')) return 'dart';
   if (filePath.endsWith('.mojo') || filePath.endsWith('.🔥')) return 'mojo';
   if (filePath.endsWith('.cpp') || filePath.endsWith('.cc') || filePath.endsWith('.cxx') || filePath.endsWith('.c++') ||
       filePath.endsWith('.hpp') || filePath.endsWith('.hh') || filePath.endsWith('.hxx') || filePath.endsWith('.h++') ||
@@ -681,6 +682,65 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
       }
     }
 
+    if (lang === 'dart') {
+      // Shelf router: router.get('/path', handler) or router.post('/path', handler)
+      const shelfMatch = line.match(/(?:router|app)\s*\.\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+      if (shelfMatch) {
+        const path = shelfMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: shelfMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Aqueduct/Conduit: router.route('/path')
+      const conduitMatch = line.match(/router\s*\.\s*route\s*\(\s*['"]([^'"]+)['"]/);
+      if (conduitMatch) {
+        const path = conduitMatch[1].startsWith('/') ? conduitMatch[1] : '/' + conduitMatch[1];
+        routes.push({
+          method: 'ANY',
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // Angel framework: app.get('/path', handler)
+      const angelMatch = line.match(/app\s*\.\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+      if (angelMatch && !shelfMatch) {
+        const path = angelMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: angelMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Serverpod endpoint: extends Endpoint — class-level detection
+      const serverpodMatch = line.match(/class\s+(\w+)\s+extends\s+Endpoint/);
+      if (serverpodMatch) {
+        const endpointName = serverpodMatch[1].toLowerCase().replace(/endpoint$/, '');
+        const path = '/' + endpointName;
+        routes.push({
+          method: 'ANY',
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+    }
+
     if (lang === 'cpp') {
       // Crow: CROW_ROUTE(app, "/api/users")
       const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
@@ -956,6 +1016,48 @@ export function detectRestApiEdges(
           if (isLocalApiPath(path)) {
             allCalls.push({ method: httpartyMatch[1].toUpperCase(), path: cleanPath(path), file: file.filePath, line: i + 1 });
           }
+        }
+      }
+    }
+
+    // Extract Dart HTTP client calls (http, Dio, Chopper, Retrofit)
+    if (lang === 'dart') {
+      const dartLines = source.split('\n');
+      for (let i = 0; i < dartLines.length; i++) {
+        const line = dartLines[i];
+
+        // http package: http.get(Uri.parse('/api/...')), http.post(...)
+        const httpMatch = line.match(/http\s*\.\s*(get|post|put|delete|patch)\s*\(\s*(?:Uri\.parse\s*\(\s*)?['"]([^'"]+)['"]/i);
+        if (httpMatch) {
+          const path = httpMatch[2];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: httpMatch[1].toUpperCase(), path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // Dio: dio.get('/api/...'), dio.post('/api/...')
+        const dioMatch = line.match(/(?:dio|_dio|client)\s*\.\s*(get|post|put|delete|patch|request)\s*\(\s*['"]([^'"]+)['"]/i);
+        if (dioMatch) {
+          const path = dioMatch[2];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: dioMatch[1].toUpperCase(), path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // Chopper/Retrofit annotations: @Get(path: '/api/...'), @Post(path: '/api/...')
+        const annotationMatch = line.match(/@(Get|Post|Put|Delete|Patch)\s*\(\s*(?:path\s*:\s*)?['"]([^'"]+)['"]/);
+        if (annotationMatch) {
+          let path = annotationMatch[2];
+          if (!path.startsWith('/')) path = '/' + path;
+          allCalls.push({ method: annotationMatch[1].toUpperCase(), path, file: file.filePath, line: i + 1 });
+        }
+
+        // @GET/@POST (Retrofit Dart style)
+        const retrofitMatch = line.match(/@(GET|POST|PUT|DELETE|PATCH)\s*\(\s*['"]([^'"]+)['"]/);
+        if (retrofitMatch && !annotationMatch) {
+          let path = retrofitMatch[2];
+          if (!path.startsWith('/')) path = '/' + path;
+          allCalls.push({ method: retrofitMatch[1].toUpperCase(), path, file: file.filePath, line: i + 1 });
         }
       }
     }

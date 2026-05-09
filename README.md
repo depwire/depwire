@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
 [![MCP Compatible](https://img.shields.io/badge/MCP-17%20tools-00d4aa)](https://github.com/depwire/depwire)
 
-[![Languages](https://img.shields.io/badge/languages-14-0a1a14?style=flat)](https://github.com/depwire/depwire)
+[![Languages](https://img.shields.io/badge/languages-15-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
 [![Python](https://img.shields.io/badge/Python-✓-3776ab?style=flat)](https://github.com/depwire/depwire)
 [![Go](https://img.shields.io/badge/Go-✓-00add8?style=flat)](https://github.com/depwire/depwire)
@@ -16,6 +16,7 @@
 [![Java](https://img.shields.io/badge/Java-✓-f89820?style=flat)](https://github.com/depwire/depwire)
 [![PHP](https://img.shields.io/badge/PHP-✓-777bb4?style=flat)](https://github.com/depwire/depwire)
 [![Ruby](https://img.shields.io/badge/Ruby-✓-cc342d?style=flat)](https://github.com/depwire/depwire)
+[![Dart](https://img.shields.io/badge/Dart-✓-0175c2?style=flat)](https://github.com/depwire/depwire)
 [![+7 more](https://img.shields.io/badge/+7_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20Swift%20%7C%20Mojo%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
 
 [![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
@@ -32,7 +33,7 @@
   <img src="./assets/deterministic_vs_rag_diagram.svg" alt="Depwire deterministic graph vs RAG probabilistic approach" width="680" />
 </p>
 
-Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 14 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
+Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 15 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
 
 **Not a build graph either.** Tools like Nx, Turborepo, and Grapher track package-level dependencies for build caching. Depwire tracks symbol-level dependencies — every function, class, and import relationship — which is what makes What If simulation, graph-aware security scanning, and exact blast radius analysis possible.
 
@@ -99,6 +100,7 @@ depwire viz        # see your entire architecture instantly
 |---------|----------|-------|---------|-------|--------------|
 | [honojs/hono](https://github.com/honojs/hono) | TypeScript | 352 | 6,245 | 3,100+ | 41/100 |
 | [CodeGraphContext/CodeGraphContext](https://github.com/CodeGraphContext/CodeGraphContext) | Python/TS | 398 | 12,001 | 5,406 | 66/100 |
+| [dart-lang/shelf](https://github.com/dart-lang/shelf) | Dart | 32 | 284 | 145 | 72/100 |
 
 ---
 
@@ -328,7 +330,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby — with cross-language edge detection between all supported languages.
+TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart — with cross-language edge detection between all supported languages.
 
 **Java / JVM** — classes, interfaces, enums, records, annotations, inner classes, anonymous classes, lambda expressions, Maven pom.xml and Gradle build file dependency edges, Spring Boot cross-language edges (@GetMapping, @PostMapping, @RequestMapping), JAX-RS / Jakarta EE route detection, Spring WebFlux RouterFunction support.
 
@@ -345,6 +347,8 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, 
 **Mojo / AI-native** *(strategic support)* — fn (typed functions), def (Python-compatible functions), structs (value types), classes, traits (interfaces), alias (type aliases and compile-time constants), var/let declarations, import and from...import statements. Pattern-based parser (no tree-sitter-mojo available). Supports @value, @register_passable, @staticmethod decorators, inout/owned/borrowed parameter modifiers, SIMD/Tensor/DType type references. mojoproject.toml dependency parsing. Python interop detection (from python import). Cross-language route detection via Python framework interop (FastAPI/Starlette). Dead code detection with __init__/__copyinit__/__moveinit__ lifecycle, trait implementations, MLIR dialect operations, and @export exclusions. Security scanner: Pointer[T] and DTypePointer memory safety, Python interop evaluation safety, uninitialized memory patterns, SIMD bounds safety, weak random via Python random module, hardcoded keys in alias declarations, hashlib via Python interop in crypto contexts. *Mojo is the first AI-native language supported by Depwire.*
 
 **Ruby / Web** — method definitions (def, def self.), classes, modules, instance variables (@var), class variables (@@var), constants, attr_accessor/attr_reader/attr_writer, require/require_relative dependency edges, include/extend/prepend mixin edges, blocks, procs, lambdas, Struct and OpenStruct definitions, ActiveSupport::Concern support. Gemfile dependency parsing. Rails (get/post/put/patch/delete/resources/namespace in routes.rb), Sinatra (route + do blocks), Rack (map/run/use in config.ru), and Grape API cross-language route detection. Faraday, Net::HTTP, and HTTParty HTTP client edge detection. Dead code detection with Rails controller callbacks, ActiveRecord lifecycle callbacks, rake tasks, RSpec/Minitest methods, concerns (included/class_methods blocks), initialize, method_missing/respond_to_missing?, Pundit policy methods, and Devise strategy exclusions. Security scanner: string interpolation in database query methods, command execution safety patterns, runtime evaluation safety patterns, dynamic dispatch safety patterns, file operation safety patterns, YAML deserialization safety, Marshal deserialization safety, template rendering safety patterns, weak hash algorithms (Digest::MD5/SHA1), weak random (rand vs SecureRandom), credential management patterns, SSL verification patterns, weak cipher algorithms.
+
+**Dart / Flutter** — classes, abstract classes, sealed classes (Dart 3.0+), mixins, extensions, enhanced enums, typedefs, records, top-level functions and variables, constructors (named and factory), methods, getters/setters, fields. import/export/part/part of/library directives with relative path resolution. pubspec.yaml dependency parsing. Flutter widget tree awareness: StatelessWidget, StatefulWidget, State<T> subclass detection, build() method composition tracking. Shelf router, Aqueduct/Conduit, Angel framework, and Serverpod endpoint cross-language route detection. Dio, http package, Chopper (@Get/@Post), and Retrofit Dart (@GET/@POST) HTTP client edge detection. Dead code detection with Flutter widget lifecycle (initState, dispose, build, didChangeDependencies, didUpdateWidget), framework override methods, serialization methods (fromJson/toJson/copyWith), Riverpod providers, Bloc/Cubit event handlers, GetX controller lifecycle, test methods, and mock class exclusions. Security scanner: string interpolation in database queries, process execution safety, runtime reflection patterns, file path safety, JSON decoding validation, WebView JavaScript channel safety, platform channel validation, unencrypted local storage patterns, weak hashing for credentials, insecure random generation, credential management patterns, SSL certificate validation, insecure HTTP connections, and SharedPreferences vs FlutterSecureStorage patterns. Pattern-based parser (no tree-sitter-dart WASM available).
 
 ---
 
@@ -408,7 +412,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 17 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart)
 - Architecture health score
 - Dead code detection
 - Temporal graph

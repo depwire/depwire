@@ -51,6 +51,7 @@ export async function initParser(): Promise<void> {
     'swift': 'tree-sitter-swift.wasm',
     'ruby': 'tree-sitter-ruby.wasm',
     // Note: Mojo uses a pattern-based parser (no tree-sitter-mojo WASM available)
+    // Note: Dart uses a pattern-based parser (no tree-sitter-dart WASM available)
   };
 
   for (const [name, file] of Object.entries(grammarFiles)) {

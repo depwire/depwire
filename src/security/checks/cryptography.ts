@@ -552,6 +552,98 @@ export async function checkCryptography(
             suggestedFix: 'Use OpenSSL::Cipher.new("aes-256-gcm") for authenticated encryption.',
           });
         }
+
+        // ─── Dart/Flutter cryptography patterns ───────────────────
+
+        // Dart: MD5/SHA1 for credential hashing
+        if (file.filePath.endsWith('.dart') && /(?:md5|sha1)\s*\.convert/.test(line) && /password|passwd|credential|secret/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak hash algorithm for credentials in Dart',
+            description: 'MD5/SHA1 should not be used for credential hashing — fast hashes are easily brute-forced.',
+            attackScenario: 'An attacker could crack hashed credentials using precomputed tables or GPU acceleration.',
+            suggestedFix: 'Use bcrypt, argon2, or scrypt via pointycastle or cryptography packages.',
+          });
+        }
+
+        // Dart: Insecure Random usage
+        if (file.filePath.endsWith('.dart') && /\bRandom\s*\(\s*\)/.test(line) && isCryptoFile) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Insecure random number generator in Dart',
+            description: 'Random() is not cryptographically secure — its output can be predicted.',
+            attackScenario: 'An attacker could predict Random() values to forge tokens or session identifiers.',
+            suggestedFix: 'Use Random.secure() for cryptographic randomness.',
+          });
+        }
+
+        // Dart: Hardcoded credentials
+        if (file.filePath.endsWith('.dart') && /(?:password|secret|apiKey|token)\s*=\s*['"][^'"]{4,}['"]/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in Dart source',
+            description: 'A sensitive value is hardcoded as a string literal in source code.',
+            attackScenario: 'An attacker with access to the source or compiled binary could extract the credential.',
+            suggestedFix: 'Load credentials from environment variables or a secure configuration service.',
+          });
+        }
+
+        // Dart: SSL pinning disabled (badCertificateCallback returning true)
+        if (file.filePath.endsWith('.dart') && /badCertificateCallback.*(?:=>|return)\s*true/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Dart SSL certificate validation disabled',
+            description: 'badCertificateCallback always returns true — server certificates are not validated.',
+            attackScenario: 'An attacker on the network could intercept and modify encrypted traffic.',
+            suggestedFix: 'Implement proper certificate pinning or remove the badCertificateCallback override.',
+          });
+        }
+
+        // Dart: HTTP instead of HTTPS
+        if (file.filePath.endsWith('.dart') && /['"]http:\/\/(?!localhost|127\.0\.0\.1|10\.)/.test(line) && !line.includes('// depwire-security-reviewed')) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Insecure HTTP connection in Dart',
+            description: 'HTTP used instead of HTTPS for non-local connection — traffic is unencrypted.',
+            attackScenario: 'An attacker on the network could read or modify data in transit.',
+            suggestedFix: 'Use HTTPS for all non-local connections.',
+          });
+        }
+
+        // Dart: Sensitive data in SharedPreferences (unencrypted)
+        if (file.filePath.endsWith('.dart') && /SharedPreferences/.test(line) && /(?:token|password|secret|key|auth)/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Sensitive data in unencrypted Dart local storage',
+            description: 'Sensitive values stored in SharedPreferences without encryption.',
+            attackScenario: 'Device backup extraction or root access could expose stored sensitive values.',
+            suggestedFix: 'Use flutter_secure_storage for sensitive data that needs local persistence.',
+          });
+        }
       }
     }
   } catch {

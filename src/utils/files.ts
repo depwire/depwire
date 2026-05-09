@@ -20,7 +20,7 @@ export function scanDirectory(
       }
       
       // Skip node_modules, vendor, and common build directories
-      if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist' || entry === 'build') {
+      if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist' || entry === 'build' || entry === '.dart_tool') {
         continue;
       }
       
@@ -57,9 +57,10 @@ export function scanDirectory(
         const isSwift = entry.endsWith('.swift');
         const isMojo = entry.endsWith('.mojo') || entry.endsWith('.🔥');
         const isRuby = entry.endsWith('.rb') || entry.endsWith('.rake') || entry.endsWith('.gemspec') || entry.endsWith('.ru') || entry === 'Gemfile';
+        const isDart = entry.endsWith('.dart') || entry === 'pubspec.yaml' || entry === 'pubspec.lock';
         const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isCppBuild) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isDart || isCppBuild) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
@@ -104,6 +105,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'Package.swift',     // Swift (SPM)
     'mojoproject.toml',  // Mojo
     'Gemfile',           // Ruby (Bundler)
+    'pubspec.yaml',      // Dart/Flutter
     '.git'               // Any git repo
   ];
   
