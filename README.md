@@ -6,7 +6,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/depwire-cli?color=00d4aa&label=downloads%2Fmonth)](https://www.npmjs.com/package/depwire-cli)
 [![GitHub stars](https://img.shields.io/github/stars/depwire/depwire?color=00d4aa&style=flat)](https://github.com/depwire/depwire/stargazers)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
-[![MCP Compatible](https://img.shields.io/badge/MCP-17%20tools-00d4aa)](https://github.com/depwire/depwire)
+[![MCP Compatible](https://img.shields.io/badge/MCP-23%20tools-00d4aa)](https://github.com/depwire/depwire)
 
 [![Languages](https://img.shields.io/badge/languages-15-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
@@ -67,7 +67,7 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 Depwire is the context and safety layer for AI-generated code.
 
-Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 17 MCP tools.
+Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 23 MCP tools.
 
 Four guarantees:
 
@@ -207,7 +207,7 @@ All commands auto-detect your project root. No path configuration needed.
 
 ## MCP server — AI integration
 
-Connect Depwire to any MCP-compatible AI tool. Your AI gets 17 tools it can call autonomously.
+Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call autonomously.
 
 **Claude Desktop** — add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -228,7 +228,7 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 17 tools it can call
 
 ![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
-### 17 MCP tools
+### 23 MCP tools
 
 | Tool | Description |
 |------|-------------|
@@ -249,6 +249,21 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 17 tools it can call
 | `get_temporal_graph` | Architecture evolution over git history |
 | `simulate_change` | Simulate move/delete/rename/split/merge before touching code. Returns health delta, broken imports, affected nodes. Cross-language edges included. |
 | `security_scan` | Scan for vulnerabilities with graph-aware severity elevation. No API key required. |
+| `verify_change` | Safety report before applying code changes. Returns broken imports, circular deps, health delta, affected files. |
+| `claim_files` | Multi-agent coordination: declare intent to modify files so other clients avoid conflicts. |
+| `release_files` | Release a previously made file claim. |
+| `get_active_claims` | Query who is currently working on what. |
+| `record_decision` | Save a structured decision for future sessions to reference. |
+| `get_decisions` | Retrieve past decisions by query, session, file, or tag. |
+
+#### `.depwire/` runtime state
+
+The coordination tools (`claim_files`, `release_files`, `get_active_claims`, `record_decision`, `get_decisions`) write runtime state to `.depwire/claims.jsonl` and `.depwire/decisions.jsonl`. Add these to your project's `.gitignore`:
+
+```
+.depwire/claims.jsonl
+.depwire/decisions.jsonl
+```
 
 ---
 
@@ -411,7 +426,7 @@ Block PRs that hurt your architecture:
 
 **Shipped**
 - Arc diagram visualization
-- 17 MCP tools
+- 23 MCP tools
 - Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart)
 - Architecture health score
 - Dead code detection

@@ -1,7 +1,7 @@
 {
   "name": "depwire-cli",
-  "version": "1.3.0",
-  "description": "Dependency graph + 17 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner.",
+  "version": "1.4.0",
+  "description": "Dependency graph + 23 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
   "type": "module",
   "bin": {
     "depwire": "dist/index.js"
@@ -47,7 +47,10 @@
     "mojo",
     "ruby",
     "dart",
-    "flutter"
+    "flutter",
+    "multi-agent",
+    "agent-coordination",
+    "decision-memory"
   ],
   "author": "Atef Ataya (https://www.youtube.com/@atefataya)",
   "license": "BUSL-1.1",

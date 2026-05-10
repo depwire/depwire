@@ -31,6 +31,12 @@ import { SimulationEngine } from "../simulation/engine.js";
 import type { SimulationAction } from "../simulation/engine.js";
 import { scanSecurity } from "../security/scanner.js";
 import type { VulnerabilityClass } from "../security/types.js";
+import { handleVerifyChange } from "./tools/verify-change.js";
+import { handleClaimFiles } from "./tools/claim-files.js";
+import { handleReleaseFiles } from "./tools/release-files.js";
+import { handleGetActiveClaims } from "./tools/get-active-claims.js";
+import { handleRecordDecision } from "./tools/record-decision.js";
+import { handleGetDecisions } from "./tools/get-decisions.js";
 
 interface ToolDefinition {
   name: string;
@@ -335,6 +341,179 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
         },
       },
     },
+    {
+      name: "verify_change",
+      description: "Before applying a code change, return a deterministic safety report. Checks for broken imports, new circular dependencies, health score impact, and runs a targeted scan on changed files. Used by AI coding assistants and autonomous agents.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          file_path: {
+            type: "string",
+            description: "File path being changed (use with new_content)",
+          },
+          new_content: {
+            type: "string",
+            description: "The proposed new content of the file",
+          },
+          unified_diff: {
+            type: "string",
+            description: "A unified diff string (alternative to file_path + new_content)",
+          },
+          agent_identity_token: {
+            type: "string",
+            description: "Optional, reserved for future AIT integration",
+          },
+        },
+      },
+    },
+    {
+      name: "claim_files",
+      description: "Multi-agent coordination: declare intent to modify files so other MCP clients see the claim and avoid conflicts. Claims expire after a configurable TTL.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          session_id: {
+            type: "string",
+            description: "Identifies the calling agent/session",
+          },
+          file_paths: {
+            type: "array",
+            items: { type: "string" },
+            description: "Files to claim",
+          },
+          reason: {
+            type: "string",
+            description: "Optional human-readable reason for the claim",
+          },
+          ttl_minutes: {
+            type: "number",
+            description: "Time-to-live in minutes (default 30, max 240)",
+          },
+          agent_identity_token: {
+            type: "string",
+            description: "Optional, reserved for future AIT integration",
+          },
+        },
+        required: ["session_id", "file_paths"],
+      },
+    },
+    {
+      name: "release_files",
+      description: "Release a previously made file claim. The release is recorded as an event (append-only).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          claim_id: {
+            type: "string",
+            description: "The claim ID to release",
+          },
+          session_id: {
+            type: "string",
+            description: "Must match the original claim's session_id",
+          },
+        },
+        required: ["claim_id", "session_id"],
+      },
+    },
+    {
+      name: "get_active_claims",
+      description: "Query who is currently working on what. Returns active file claims, useful for orchestrator agents deciding what to delegate.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          filter_by_session: {
+            type: "string",
+            description: "Only return claims from this session",
+          },
+          filter_by_file: {
+            type: "string",
+            description: "Only return claims affecting this file",
+          },
+          include_expired: {
+            type: "boolean",
+            description: "Include expired claims (default false)",
+          },
+        },
+      },
+    },
+    {
+      name: "record_decision",
+      description: "Save a structured decision so future clients (or the same client in a future session) can see what was decided and why. Stored in .depwire/decisions.jsonl.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          session_id: {
+            type: "string",
+            description: "Identifies the calling agent/session",
+          },
+          context: {
+            type: "string",
+            description: "What problem was being solved",
+          },
+          options_considered: {
+            type: "array",
+            items: { type: "string" },
+            description: "Alternatives the client weighed",
+          },
+          decision: {
+            type: "string",
+            description: "What was chosen",
+          },
+          reasoning: {
+            type: "string",
+            description: "Why this option was chosen",
+          },
+          files_affected: {
+            type: "array",
+            items: { type: "string" },
+            description: "Optional list of files this decision touches",
+          },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+            description: "Optional tags for categorization",
+          },
+          agent_identity_token: {
+            type: "string",
+            description: "Optional, reserved for future AIT integration",
+          },
+        },
+        required: ["session_id", "context", "options_considered", "decision", "reasoning"],
+      },
+    },
+    {
+      name: "get_decisions",
+      description: "Retrieve past decisions matching a query. Lets agents see what previous agents (or itself in a previous session) decided about similar problems.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Free-text search across context, decision, reasoning fields",
+          },
+          filter_by_session: {
+            type: "string",
+            description: "Only decisions from this session",
+          },
+          filter_by_file: {
+            type: "string",
+            description: "Only decisions affecting this file",
+          },
+          filter_by_tag: {
+            type: "string",
+            description: "Only decisions with this tag",
+          },
+          limit: {
+            type: "number",
+            description: "Max results to return (default 20, max 100)",
+          },
+          since: {
+            type: "string",
+            description: "ISO-8601 timestamp, only decisions after this time",
+          },
+        },
+      },
+    },
   ];
 }
 
@@ -435,6 +614,60 @@ export async function handleToolCall(
           classes: args.classes as VulnerabilityClass[] | undefined,
           graphAware: args.graphAware !== false,
         });
+      }
+    } else if (name === "verify_change") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = await handleVerifyChange(args as any, state);
+      }
+    } else if (name === "claim_files") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleClaimFiles(args as any, state);
+      }
+    } else if (name === "release_files") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleReleaseFiles(args as any, state);
+      }
+    } else if (name === "get_active_claims") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleGetActiveClaims(args as any, state);
+      }
+    } else if (name === "record_decision") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleRecordDecision(args as any, state);
+      }
+    } else if (name === "get_decisions") {
+      if (!isProjectLoaded(state)) {
+        result = {
+          error: "No project loaded",
+          message: "Use connect_repo to connect to a codebase first",
+        };
+      } else {
+        result = handleGetDecisions(args as any, state);
       }
     } else {
       // All other tools require a loaded project

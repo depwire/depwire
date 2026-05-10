@@ -2,17 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.atef-ataya/depwire",
   "mcpName": "io.github.atef-ataya/depwire",
-  "description": "Dependency graph + 17 MCP tools for AI coding. Impact analysis, What If simulation, security scanner",
+  "description": "Dependency graph + 23 MCP tools for AI coding. Impact analysis, What If simulation, security scanner, agent coordination",
   "repository": {
     "url": "https://github.com/depwire/depwire",
     "source": "github"
   },
-  "version": "1.3.0",
+  "version": "1.4.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "depwire-cli",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "transport": {
         "type": "stdio"
       }
