@@ -37,6 +37,23 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 
 **Not a build graph either.** Tools like Nx, Turborepo, and Grapher track package-level dependencies for build caching. Depwire tracks symbol-level dependencies — every function, class, and import relationship — which is what makes What If simulation, graph-aware security scanning, and exact blast radius analysis possible.
 
+## Contents
+
+- [What makes Depwire different](#what-makes-depwire-different)
+- [Start here](#start-here)
+- [The infrastructure layer](#the-infrastructure-layer)
+- [What If simulation](#what-if-simulation)
+- [Security scanner](#security-scanner)
+- [MCP server — AI integration](#mcp-server--ai-integration)
+- [Cross-language edge detection](#cross-language-edge-detection)
+- [Architecture health score](#architecture-health-score)
+- [Language support](#language-support)
+- [SDK](#sdk)
+- [Cloud dashboard](#cloud-dashboard)
+- [GitHub Action — PR Impact Analysis](#github-action--pr-impact-analysis)
+- [Agent Identity Token (AIT)](#agent-identity-token-ait)
+- [Roadmap](#roadmap)
+
 ---
 
 Depwire is the infrastructure layer between your AI coding assistant and your codebase. Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.
