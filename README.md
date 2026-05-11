@@ -63,7 +63,9 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 ## The infrastructure layer
 
-![Depwire architecture](./assets/architecture.svg)
+![Depwire infrastructure layer](https://raw.githubusercontent.com/depwire/depwire/main/website/assets/depwire_infrastructure_layer.svg)
+
+![Powered by AIT — open standard for AI agent identity](https://raw.githubusercontent.com/depwire/depwire/main/website/assets/depwire_ait_governance_band.svg)
 
 Depwire is the context and safety layer for AI-generated code.
 
