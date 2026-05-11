@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Depwire — The Missing Context Layer for AI Coding Assistants</title>
-    <meta name="description" content="Depwire gives AI coding assistants a deterministic dependency graph via MCP. 17 tools for impact analysis, architecture health, dead code detection, What If simulation, and security scanning. The context layer that turns vibe coding into software engineering.">
-    <meta name="keywords" content="MCP server, dependency graph, AI coding assistant, codebase context, impact analysis, architecture health, dead code detection, what if simulation, Claude Desktop, Cursor, tree-sitter, TypeScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, dart, flutter, Swift, Mojo, Ruby">
+    <meta name="description" content="Depwire gives AI coding assistants a deterministic dependency graph via MCP. 23 tools for impact analysis, architecture health, dead code detection, What If simulation, security scanning, and multi-agent coordination. The context layer that turns vibe coding into software engineering.">
+    <meta name="keywords" content="MCP server, dependency graph, AI coding assistant, codebase context, impact analysis, architecture health, dead code detection, what if simulation, multi-agent, agent-coordination, Claude Desktop, Cursor, tree-sitter, TypeScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, dart, flutter, Swift, Mojo, Ruby">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://depwire.dev/">
     <meta property="og:title" content="Depwire — The Missing Context Layer for AI Coding Assistants">
-    <meta property="og:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 17 MCP tools.">
+    <meta property="og:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 23 MCP tools.">
     <meta property="og:image" content="https://depwire.dev/assets/depwire-hero.png">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://depwire.dev/">
     <meta property="twitter:title" content="Depwire — The Missing Context Layer for AI Coding Assistants">
-    <meta property="twitter:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 17 MCP tools.">
+    <meta property="twitter:description" content="The context layer that turns vibe coding into software engineering. Deterministic dependency graph + 23 MCP tools.">
     <meta property="twitter:image" content="https://depwire.dev/assets/depwire-hero.png">
     
     <!-- Favicon -->
@@ -987,7 +987,7 @@
             <h1>Your AI doesn't know your architecture. Depwire does.</h1>
             <p class="hero-category">Depwire is the context and safety layer for AI-generated code.</p>
             <h2>Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.</h2>
-            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">8 CLI commands. 17 MCP tools. 13 auto-generated documents. What If simulation. Security scanner. Architecture health scoring.</p>
+            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">8 CLI commands. 23 MCP tools. 13 auto-generated documents. What If simulation. Security scanner. Architecture health scoring. Multi-agent coordination.</p>
             
             <!-- Benchmark Stats -->
             <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;" class="scroll-reveal">
@@ -1103,8 +1103,9 @@
         <p class="section-subtitle scroll-reveal" style="text-align:center; color: var(--text-muted); max-width: 600px; margin: 0 auto 3rem;">
           Depwire sits between your AI and your codebase. Every query goes through Depwire — graph context flows back up.
         </p>
-        <div style="max-width: 800px; margin: 0 auto;">
-          <img src="../assets/architecture-dark.svg" alt="Depwire architecture diagram" style="width: 100%; height: auto;" />
+        <div style="max-width: 700px; margin: 0 auto;">
+          <img src="assets/depwire_infrastructure_layer.svg" alt="Depwire infrastructure layer — AI clients, Depwire capabilities, codebase" style="width: 100%; max-width: 700px; height: auto; display: block; margin: 0 auto;">
+          <img src="assets/depwire_ait_governance_band.svg" alt="Powered by AIT — open standard for AI agent identity" style="width: 100%; max-width: 700px; height: auto; display: block; margin: 16px auto 0;">
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 3rem auto 0;">
           <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
@@ -1140,7 +1141,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤖</div>
                     <h3>AI Context Engine</h3>
-                    <p>17 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
+                    <p>23 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">💥</div>
@@ -1215,6 +1216,11 @@
                     </div>
                     <h3>Cross-language edge detection</h3>
                     <p>Detects connections between files written in different languages. A TypeScript fetch('/api/users') matched to a Python @app.get('/api/users') route — that's a cross-language edge. Delete the Python route and see the TypeScript callers break.</p>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Multi-agent coordination</h3>
+                    <p>Coordinate multiple AI agents working on the same codebase. Claim files, verify changes, and record decisions — so agents don't stomp on each other's work.</p>
                 </div>
             </div>
         </div>
@@ -1471,8 +1477,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
     <!-- MCP Tools Section -->
     <section class="mcp-section">
         <div class="container">
-            <h2 class="section-title scroll-reveal">17 MCP Tools for AI Assistants</h2>
-            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 17 tools that AI assistants call autonomously based on your questions.</p>
+            <h2 class="section-title scroll-reveal">23 MCP Tools for AI Assistants</h2>
+            <p class="mcp-intro scroll-reveal">Depwire isn't just a visualizer. It's a full context engine with 23 tools that AI assistants call autonomously based on your questions.</p>
             <div class="tools-table scroll-reveal">
                 <table>
                     <thead>
@@ -1549,6 +1555,30 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         <tr>
                             <td><code>security_scan</code></td>
                             <td>Scan for security vulnerabilities with graph-aware severity elevation. No API key required.</td>
+                        </tr>
+                        <tr>
+                            <td><code>verify_change</code></td>
+                            <td>Deterministic safety report before applying code changes. Returns broken imports, circular deps, health delta, blast radius.</td>
+                        </tr>
+                        <tr>
+                            <td><code>claim_files</code></td>
+                            <td>Multi-agent coordination: declare intent to modify files so other clients avoid conflicts.</td>
+                        </tr>
+                        <tr>
+                            <td><code>release_files</code></td>
+                            <td>Release a previously made file claim.</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_active_claims</code></td>
+                            <td>Query who is currently working on what.</td>
+                        </tr>
+                        <tr>
+                            <td><code>record_decision</code></td>
+                            <td>Save a structured decision for future sessions to reference.</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_decisions</code></td>
+                            <td>Retrieve past decisions by query, session, file, or tag.</td>
                         </tr>
                     </tbody>
                 </table>
