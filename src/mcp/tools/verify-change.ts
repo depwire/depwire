@@ -15,7 +15,7 @@ interface VerifyChangeInput {
   file_path?: string;
   new_content?: string;
   unified_diff?: string;
-  agent_identity_token?: string;
+  depwire_action_token?: string;
 }
 
 interface BrokenImportEntry {

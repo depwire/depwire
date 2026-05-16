@@ -14,7 +14,7 @@ interface ClaimFilesInput {
   file_paths: string[];
   reason?: string;
   ttl_minutes?: number;
-  agent_identity_token?: string;
+  depwire_action_token?: string;
 }
 
 interface ClaimConflict {

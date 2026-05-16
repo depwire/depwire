@@ -16,7 +16,7 @@ interface RecordDecisionInput {
   reasoning: string;
   files_affected?: string[];
   tags?: string[];
-  agent_identity_token?: string;
+  depwire_action_token?: string;
 }
 
 interface RecordDecisionOutput {

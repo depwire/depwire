@@ -359,9 +359,9 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
             type: "string",
             description: "A unified diff string (alternative to file_path + new_content)",
           },
-          agent_identity_token: {
+          depwire_action_token: {
             type: "string",
-            description: "Optional, reserved for future AIT integration",
+            description: "Optional, reserved for future DAT integration",
           },
         },
       },
@@ -389,9 +389,9 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
             type: "number",
             description: "Time-to-live in minutes (default 30, max 240)",
           },
-          agent_identity_token: {
+          depwire_action_token: {
             type: "string",
-            description: "Optional, reserved for future AIT integration",
+            description: "Optional, reserved for future DAT integration",
           },
         },
         required: ["session_id", "file_paths"],
@@ -473,9 +473,9 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
             items: { type: "string" },
             description: "Optional tags for categorization",
           },
-          agent_identity_token: {
+          depwire_action_token: {
             type: "string",
-            description: "Optional, reserved for future AIT integration",
+            description: "Optional, reserved for future DAT integration",
           },
         },
         required: ["session_id", "context", "options_considered", "decision", "reasoning"],

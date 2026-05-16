@@ -51,7 +51,7 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 - [SDK](#sdk)
 - [Cloud dashboard](#cloud-dashboard)
 - [GitHub Action — PR Impact Analysis](#github-action--pr-impact-analysis)
-- [Agent Identity Token (AIT)](#agent-identity-token-ait)
+- [Depwire Action Token (DAT)](#depwire-action-token-dat)
 - [Roadmap](#roadmap)
 
 ---
@@ -82,7 +82,7 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 ![Depwire infrastructure layer](https://raw.githubusercontent.com/depwire/depwire/main/website/assets/depwire_infrastructure_layer.svg)
 
-![Powered by AIT — open standard for AI agent identity](https://raw.githubusercontent.com/depwire/depwire/main/website/assets/depwire_ait_governance_band.svg)
+![Powered by DAT — open standard for AI agent action audit](https://raw.githubusercontent.com/depwire/depwire/main/website/assets/depwire_dat_governance_band.svg)
 
 Depwire is the context and safety layer for AI-generated code.
 
@@ -498,9 +498,9 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ---
 
-## Agent Identity Token (AIT)
+## Depwire Action Token (DAT)
 
-Depwire is the reference implementation of the [Agent Identity Token (AIT)](https://github.com/depwire/ait-spec) — an open standard for cryptographically signing AI agent actions. AIT provides tamper-proof audit trails for every tool call, file change, and agent delegation.
+Depwire is the reference implementation of the [Depwire Action Token (DAT)](https://github.com/depwire/dat-spec) — an open standard for cryptographically signing AI agent actions. DAT provides tamper-proof audit trails for every tool call, file change, and agent delegation.
 
 ---
 
