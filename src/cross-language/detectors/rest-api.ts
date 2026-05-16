@@ -741,6 +741,63 @@ function extractRouteDefinitions(source: string, filePath: string): RouteDefinit
       }
     }
 
+    if (lang === 'r') {
+      // plumber API annotations: #* @get /endpoint, #* @post /data
+      const plumberMatch = line.match(/^#\*\s*@(get|post|put|delete|patch|head)\s+(\/\S*)/i);
+      if (plumberMatch) {
+        const path = plumberMatch[2];
+        routes.push({
+          method: plumberMatch[1].toUpperCase(),
+          path,
+          normalizedPath: normalizePath(path),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+
+      // RestRserve routes: app$add_get("/path"), app$add_post("/path")
+      const restrserveMatch = line.match(/\w+\$add_(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/i);
+      if (restrserveMatch) {
+        const path = restrserveMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: restrserveMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Beakr framework routes: beakr %>% httpGET("/path"), newBeakr() %>% httpPOST("/path")
+      const beakrMatch = line.match(/http(GET|POST|PUT|DELETE|PATCH)\s*\(\s*['"]([^'"]+)['"]/i);
+      if (beakrMatch) {
+        const path = beakrMatch[2];
+        if (path.startsWith('/')) {
+          routes.push({
+            method: beakrMatch[1].toUpperCase(),
+            path,
+            normalizedPath: normalizePath(path),
+            file: filePath,
+            line: i + 1,
+          });
+        }
+      }
+
+      // Shiny app server function detection
+      const shinyServerMatch = line.match(/server\s*<-\s*function\s*\(\s*input\s*,\s*output/);
+      if (shinyServerMatch) {
+        routes.push({
+          method: 'ANY',
+          path: '/shiny',
+          normalizedPath: normalizePath('/shiny'),
+          file: filePath,
+          line: i + 1,
+        });
+      }
+    }
+
     if (lang === 'cpp') {
       // Crow: CROW_ROUTE(app, "/api/users")
       const crowMatch = line.match(/CROW_ROUTE\s*\(\s*\w+\s*,\s*"([^"]+)"/);
@@ -1058,6 +1115,43 @@ export function detectRestApiEdges(
           let path = retrofitMatch[2];
           if (!path.startsWith('/')) path = '/' + path;
           allCalls.push({ method: retrofitMatch[1].toUpperCase(), path, file: file.filePath, line: i + 1 });
+        }
+      }
+    }
+
+    // Extract R HTTP client calls (httr, httr2, curl, DBI)
+    if (lang === 'r') {
+      const rLines = source.split('\n');
+      for (let i = 0; i < rLines.length; i++) {
+        const line = rLines[i];
+
+        // httr: httr::GET("url"), httr::POST("url"), GET("url"), POST("url")
+        const httrMatch = line.match(/(?:httr::)?(GET|POST|PUT|DELETE|PATCH|HEAD)\s*\(\s*['"]([^'"]+)['"]/);
+        if (httrMatch) {
+          const path = httrMatch[2];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: httrMatch[1].toUpperCase(), path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // httr2: httr2::request("url") |> req_method("POST")
+        const httr2Match = line.match(/(?:httr2::)?request\s*\(\s*['"]([^'"]+)['"]/);
+        if (httr2Match) {
+          const path = httr2Match[1];
+          if (isLocalApiPath(path)) {
+            const methodMatch = line.match(/req_method\s*\(\s*['"](\w+)['"]/);
+            const method = methodMatch ? methodMatch[1].toUpperCase() : 'GET';
+            allCalls.push({ method, path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
+        }
+
+        // curl: curl_fetch_memory("url"), curl_fetch_disk("url")
+        const curlMatch = line.match(/curl_fetch_(?:memory|disk)\s*\(\s*['"]([^'"]+)['"]/);
+        if (curlMatch) {
+          const path = curlMatch[1];
+          if (isLocalApiPath(path)) {
+            allCalls.push({ method: 'GET', path: cleanPath(path), file: file.filePath, line: i + 1 });
+          }
         }
       }
     }

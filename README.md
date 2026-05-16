@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
 [![MCP Compatible](https://img.shields.io/badge/MCP-23%20tools-00d4aa)](https://github.com/depwire/depwire)
 
-[![Languages](https://img.shields.io/badge/languages-15-0a1a14?style=flat)](https://github.com/depwire/depwire)
+[![Languages](https://img.shields.io/badge/languages-16-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
 [![Python](https://img.shields.io/badge/Python-✓-3776ab?style=flat)](https://github.com/depwire/depwire)
 [![Go](https://img.shields.io/badge/Go-✓-00add8?style=flat)](https://github.com/depwire/depwire)
@@ -17,6 +17,7 @@
 [![PHP](https://img.shields.io/badge/PHP-✓-777bb4?style=flat)](https://github.com/depwire/depwire)
 [![Ruby](https://img.shields.io/badge/Ruby-✓-cc342d?style=flat)](https://github.com/depwire/depwire)
 [![Dart](https://img.shields.io/badge/Dart-✓-0175c2?style=flat)](https://github.com/depwire/depwire)
+[![R](https://img.shields.io/badge/R-✓-276dc3?style=flat)](https://github.com/depwire/depwire)
 [![+7 more](https://img.shields.io/badge/+7_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20Swift%20%7C%20Mojo%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
 
 [![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
@@ -33,7 +34,7 @@
   <img src="./assets/deterministic_vs_rag_diagram.svg" alt="Depwire deterministic graph vs RAG probabilistic approach" width="680" />
 </p>
 
-Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 15 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
+Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 16 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
 
 **Not a build graph either.** Tools like Nx, Turborepo, and Grapher track package-level dependencies for build caching. Depwire tracks symbol-level dependencies — every function, class, and import relationship — which is what makes What If simulation, graph-aware security scanning, and exact blast radius analysis possible.
 
@@ -364,7 +365,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart — with cross-language edge detection between all supported languages.
+TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R — with cross-language edge detection between all supported languages.
 
 **Java / JVM** — classes, interfaces, enums, records, annotations, inner classes, anonymous classes, lambda expressions, Maven pom.xml and Gradle build file dependency edges, Spring Boot cross-language edges (@GetMapping, @PostMapping, @RequestMapping), JAX-RS / Jakarta EE route detection, Spring WebFlux RouterFunction support.
 
@@ -383,6 +384,8 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, 
 **Ruby / Web** — method definitions (def, def self.), classes, modules, instance variables (@var), class variables (@@var), constants, attr_accessor/attr_reader/attr_writer, require/require_relative dependency edges, include/extend/prepend mixin edges, blocks, procs, lambdas, Struct and OpenStruct definitions, ActiveSupport::Concern support. Gemfile dependency parsing. Rails (get/post/put/patch/delete/resources/namespace in routes.rb), Sinatra (route + do blocks), Rack (map/run/use in config.ru), and Grape API cross-language route detection. Faraday, Net::HTTP, and HTTParty HTTP client edge detection. Dead code detection with Rails controller callbacks, ActiveRecord lifecycle callbacks, rake tasks, RSpec/Minitest methods, concerns (included/class_methods blocks), initialize, method_missing/respond_to_missing?, Pundit policy methods, and Devise strategy exclusions. Security scanner: string interpolation in database query methods, command execution safety patterns, runtime evaluation safety patterns, dynamic dispatch safety patterns, file operation safety patterns, YAML deserialization safety, Marshal deserialization safety, template rendering safety patterns, weak hash algorithms (Digest::MD5/SHA1), weak random (rand vs SecureRandom), credential management patterns, SSL verification patterns, weak cipher algorithms.
 
 **Dart / Flutter** — classes, abstract classes, sealed classes (Dart 3.0+), mixins, extensions, enhanced enums, typedefs, records, top-level functions and variables, constructors (named and factory), methods, getters/setters, fields. import/export/part/part of/library directives with relative path resolution. pubspec.yaml dependency parsing. Flutter widget tree awareness: StatelessWidget, StatefulWidget, State<T> subclass detection, build() method composition tracking. Shelf router, Aqueduct/Conduit, Angel framework, and Serverpod endpoint cross-language route detection. Dio, http package, Chopper (@Get/@Post), and Retrofit Dart (@GET/@POST) HTTP client edge detection. Dead code detection with Flutter widget lifecycle (initState, dispose, build, didChangeDependencies, didUpdateWidget), framework override methods, serialization methods (fromJson/toJson/copyWith), Riverpod providers, Bloc/Cubit event handlers, GetX controller lifecycle, test methods, and mock class exclusions. Security scanner: string interpolation in database queries, process execution safety, runtime reflection patterns, file path safety, JSON decoding validation, WebView JavaScript channel safety, platform channel validation, unencrypted local storage patterns, weak hashing for credentials, insecure random generation, credential management patterns, SSL certificate validation, insecure HTTP connections, and SharedPreferences vs FlutterSecureStorage patterns. Pattern-based parser (no tree-sitter-dart WASM available).
+
+**R / Statistics & Data Science** — functions (including anonymous functions and closures), S3/S4/R5/R6 class definitions, methods, variable assignments (both `<-` and `=` forms), library/require/source dependency edges, NAMESPACE import/export directives, DESCRIPTION file dependency parsing. Pattern-based parser (tree-sitter-r unavailable on npm). Cross-language edge detection: plumber HTTP API route definitions (`@get`, `@post`, `@put`, `@delete`, `@patch` decorators) matched to client callers; Shiny reactive graph edges (server/UI function wiring, `observe`, `reactive`, `eventReactive`, `renderXxx` output bindings); outgoing HTTP client edges via httr (`GET`, `POST`, `PUT`, `DELETE`) and httr2 (`request` + `req_perform`); DBI database connection edges (`dbConnect`, `dbGetQuery`, `dbExecute`); reticulate Python interop edges (`import_from_path`, `source_python`, `py_run_file`). Dead code detection with S3/S4 generic registration exclusions, Shiny module server/UI functions, and testthat/RUnit test block exclusions. Security scanner: string interpolation in database query calls, `system`/`system2`/`shell` execution safety patterns, `eval`/`parse` runtime evaluation safety, file path handling safety, credential management patterns, weak PRNG in statistical-security contexts (`sample`/`runif` vs `openssl` for key material), and unvalidated input in plumber route handlers.
 
 ---
 
@@ -446,7 +449,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 23 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R)
 - Architecture health score
 - Dead code detection
 - Temporal graph
