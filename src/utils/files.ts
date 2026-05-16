@@ -20,7 +20,7 @@ export function scanDirectory(
       }
       
       // Skip node_modules, vendor, and common build directories
-      if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist' || entry === 'build' || entry === '.dart_tool') {
+      if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist' || entry === 'build' || entry === '.dart_tool' || entry === '.Rproj.user' || entry === 'packrat') {
         continue;
       }
       
@@ -58,9 +58,10 @@ export function scanDirectory(
         const isMojo = entry.endsWith('.mojo') || entry.endsWith('.🔥');
         const isRuby = entry.endsWith('.rb') || entry.endsWith('.rake') || entry.endsWith('.gemspec') || entry.endsWith('.ru') || entry === 'Gemfile';
         const isDart = entry.endsWith('.dart') || entry === 'pubspec.yaml' || entry === 'pubspec.lock';
+        const isR = entry.endsWith('.R') || entry.endsWith('.r') || entry.endsWith('.Rmd') || entry.endsWith('.rmd') || entry === 'DESCRIPTION' || entry === 'NAMESPACE' || entry === 'renv.lock';
         const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isDart || isCppBuild) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isDart || isR || isCppBuild) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }
@@ -106,6 +107,8 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
     'mojoproject.toml',  // Mojo
     'Gemfile',           // Ruby (Bundler)
     'pubspec.yaml',      // Dart/Flutter
+    'DESCRIPTION',       // R package
+    'renv.lock',         // R (renv)
     '.git'               // Any git repo
   ];
   

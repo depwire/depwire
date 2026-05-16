@@ -15,6 +15,7 @@ import { swiftParser } from './swift.js';
 import { mojoParser } from './mojo.js';
 import { rubyParser } from './ruby.js';
 import { dartParser } from './dart.js';
+import { rParser } from './r.js';
 
 const parsers: LanguageParser[] = [
   typescriptParser,
@@ -32,6 +33,7 @@ const parsers: LanguageParser[] = [
   mojoParser,
   rubyParser,
   dartParser,
+  rParser,
 ];
 
 // C++ keywords that distinguish .h files as C++ rather than C

@@ -263,6 +263,11 @@ function shouldExclude(
     return "framework";
   }
 
+  // R specific exclusions
+  if (isRExcluded(attrs)) {
+    return "framework";
+  }
+
   return null;
 }
 
@@ -614,6 +619,55 @@ function isDartExcluded(attrs: any): boolean {
   const frameworkMethods = ['paint', 'shouldRepaint', 'shouldRebuild', 'performLayout',
     'hitTest', 'debugFillProperties', 'toDiagnosticsNode'];
   if (frameworkMethods.includes(name)) return true;
+
+  return false;
+}
+
+/**
+ * R specific dead code exclusions
+ */
+function isRExcluded(attrs: any): boolean {
+  const filePath = attrs.file || attrs.filePath || '';
+  const name = attrs.name || '';
+
+  // Only apply to R files
+  const isRFile = filePath.endsWith('.R') || filePath.endsWith('.r') || filePath.endsWith('.Rmd') || filePath.endsWith('.rmd');
+  if (!isRFile) return false;
+
+  // Shiny app entry points
+  if (['ui', 'server', 'shinyApp', 'shinyUI', 'shinyServer', 'runApp'].includes(name)) return true;
+
+  // plumber entry point
+  if (name === 'pr' || name === 'plumber') return true;
+
+  // R6 class lifecycle methods
+  if (['initialize', 'finalize', 'print', 'clone', 'format'].includes(name)) return true;
+
+  // S3 generic dispatch methods (any function with .classname suffix)
+  if (name.includes('.') && !name.startsWith('.')) {
+    const parts = name.split('.');
+    if (parts.length >= 2 && parts[0].length > 0) return true;
+  }
+
+  // S4 method definitions registered via setMethod()
+  if (name.startsWith('setMethod') || name.startsWith('setGeneric') || name.startsWith('setClass')) return true;
+
+  // testthat test files
+  if (filePath.includes('tests/testthat/') || filePath.includes('tests\\testthat\\')) return true;
+
+  // testthat methods
+  if (['test_that', 'describe', 'it', 'context', 'setup', 'teardown'].includes(name)) return true;
+  if (name.startsWith('expect_')) return true;
+
+  // R Markdown setup chunks
+  if (name === 'setup' && filePath.endsWith('.Rmd')) return true;
+
+  // Package hooks
+  if (['.onLoad', '.onAttach', '.onUnload', '.onDetach', '.First', '.Last'].includes(name)) return true;
+
+  // Operator overloading methods
+  const operatorPrefixes = ['+.', '-.', '*.', '/.', '^.', '==.', '<.', '>.', '&.', '|.', '!.', '[.', '[[.', '$.'];
+  if (operatorPrefixes.some(op => name.startsWith(op))) return true;
 
   return false;
 }

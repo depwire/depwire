@@ -644,6 +644,97 @@ export async function checkCryptography(
             suggestedFix: 'Use flutter_secure_storage for sensitive data that needs local persistence.',
           });
         }
+
+        // R: Weak hashing for credential handling
+        const isRFile = file.filePath.endsWith('.R') || file.filePath.endsWith('.r') || file.filePath.endsWith('.Rmd') || file.filePath.endsWith('.rmd');
+        if (isRFile && /digest\s*\(.*algo\s*=\s*['"](?:md5|sha1)['"]/.test(line) && /(?:password|credential|token|secret|auth)/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Weak hash algorithm for credential handling in R',
+            description: 'MD5 or SHA-1 used for credential-related hashing — these are considered weak.',
+            attackScenario: 'An attacker could compute hash collisions or reverse hashes using precomputed tables.',
+            suggestedFix: 'Use digest(..., algo="sha256") or bcrypt/argon2 via the sodium package for credentials.',
+          });
+        }
+
+        // R: Non-cryptographic random number generation for security purposes
+        if (isRFile && /(?:runif|sample|rnorm)\s*\(/.test(line) && /(?:token|key|secret|password|session|nonce|salt)/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Non-cryptographic RNG used for security value in R',
+            description: 'runif()/sample() are not cryptographically secure — output can be predicted.',
+            attackScenario: 'An attacker could predict the generated values to forge tokens or identifiers.',
+            suggestedFix: 'Use openssl::rand_bytes() or sodium::random() for cryptographically secure random values.',
+          });
+        }
+
+        // R: Hardcoded credentials
+        if (isRFile && /(?:password|secret|api_key|token|auth_token)\s*(?:<-|=)\s*['"][^'"]{4,}['"]/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Hardcoded credentials in R source',
+            description: 'A sensitive value is hardcoded as a string literal in source code.',
+            attackScenario: 'An attacker with access to the source could extract the credential.',
+            suggestedFix: 'Load credentials from environment variables via Sys.getenv() or a .Renviron file.',
+          });
+        }
+
+        // R: SSL verification disabled
+        if (isRFile && /(?:ssl_verifypeer\s*=\s*(?:FALSE|0)|ssl\.verifypeer\s*=\s*(?:FALSE|0)|verify\s*=\s*FALSE)/.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'high',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'SSL verification disabled in R',
+            description: 'SSL peer verification is disabled — server certificates are not validated.',
+            attackScenario: 'An attacker on the network could intercept and modify encrypted traffic.',
+            suggestedFix: 'Remove ssl_verifypeer=FALSE. Ensure proper SSL certificates are configured.',
+          });
+        }
+
+        // R: Insecure HTTP connections
+        if (isRFile && /['"]http:\/\/(?!localhost|127\.0\.0\.1|10\.)/.test(line) && !line.includes('# depwire-security-reviewed')) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Insecure HTTP connection in R',
+            description: 'HTTP used instead of HTTPS for non-local connection — traffic is unencrypted.',
+            attackScenario: 'An attacker on the network could read or modify data in transit.',
+            suggestedFix: 'Use HTTPS for all non-local connections.',
+          });
+        }
+
+        // R: Sensitive data in plain RDS files
+        if (isRFile && /saveRDS\s*\(/.test(line) && /(?:password|secret|token|key|credential|auth)/i.test(line)) {
+          findings.push({
+            id: '',
+            severity: 'medium',
+            vulnerabilityClass: 'cryptography',
+            file: file.filePath,
+            line: i + 1,
+            title: 'Sensitive data stored in unencrypted RDS file',
+            description: 'Sensitive values saved to a plain RDS file without encryption.',
+            attackScenario: 'Anyone with file access could read the deserialized sensitive data.',
+            suggestedFix: 'Use the cyphr or sodium package to encrypt sensitive data before saving.',
+          });
+        }
       }
     }
   } catch {
