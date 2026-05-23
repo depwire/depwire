@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { HealthDimension } from './types.js';
 import { dirname } from 'path';
+import { findDeadSymbols } from '../dead-code/detector.js';
 
 /**
  * Calculate the letter grade from a 0-100 score
@@ -332,9 +333,18 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
 
 /**
  * Dimension 5: Orphan Files & Dead Code (Weight: 10%)
- * Files with zero connections + Dead code percentage
+ * Files with zero connections + Dead exported symbol percentage
+ *
+ * Dead code counting only considers symbols that are:
+ * 1. Exported (visible outside their defining file)
+ * 2. Of a relevant kind (function, class, interface, type_alias, enum, exported variable)
+ * 3. Have zero incoming edges (no other symbol references them)
+ *
+ * Local variables, parameters, class methods, interface properties, and
+ * other internal implementation details are excluded — they are not
+ * meaningful candidates for "dead code" at the architecture level.
  */
-export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
+export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string): HealthDimension {
   const files = new Set<string>();
   const connectedFiles = new Set<string>();
   
@@ -355,32 +365,82 @@ export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
   const orphanCount = files.size - connectedFiles.size;
   const orphanPercent = files.size > 0 ? (orphanCount / files.size) * 100 : 0;
   
-  const totalSymbols = graph.order;
+  // Use the dead-code detector for accurate dead symbol counting.
+  // It applies proper filters: relevant kinds, exported-only for vars,
+  // exclusion of test files, entry points, config files, framework dirs, etc.
   let deadSymbolCount = 0;
+  let totalExportedSymbols = 0;
   
-  graph.forEachNode((node) => {
-    const inDegree = graph.inDegree(node);
-    if (inDegree === 0) {
-      deadSymbolCount++;
-    }
-  });
-  
-  const deadCodePercent = totalSymbols > 0 ? (deadSymbolCount / totalSymbols) * 100 : 0;
-  
-  const combinedScore = (orphanPercent + deadCodePercent) / 2;
-  
-  let score = 100;
-  if (combinedScore === 0) {
-    score = 100;
-  } else if (combinedScore <= 5) {
-    score = 80;
-  } else if (combinedScore <= 10) {
-    score = 60;
-  } else if (combinedScore <= 20) {
-    score = 40;
+  if (projectRoot) {
+    const result = findDeadSymbols(graph, projectRoot, false, false);
+    deadSymbolCount = result.symbols.length;
+    
+    // Count total exported symbols of relevant kinds for percentage calculation
+    const relevantExportedKinds = new Set([
+      'function', 'class', 'interface', 'type', 'type_alias',
+      'enum', 'const', 'constant', 'let', 'var', 'variable',
+      'method', 'property'
+    ]);
+    
+    graph.forEachNode((node, attrs) => {
+      if (!attrs.exported) return;
+      if (!relevantExportedKinds.has(attrs.kind)) return;
+      totalExportedSymbols++;
+    });
   } else {
-    score = 20;
+    // Fallback if no projectRoot: count exported symbols with zero inDegree
+    const relevantExportedKinds = new Set([
+      'function', 'class', 'interface', 'type', 'type_alias',
+      'enum', 'const', 'constant', 'let', 'var', 'variable'
+    ]);
+    
+    graph.forEachNode((node, attrs) => {
+      if (!attrs.exported) return;
+      if (!relevantExportedKinds.has(attrs.kind)) return;
+      totalExportedSymbols++;
+      if (graph.inDegree(node) === 0) {
+        deadSymbolCount++;
+      }
+    });
   }
+  
+  const deadCodePercent = graph.order > 0
+    ? (deadSymbolCount / graph.order) * 100
+    : 0;
+  
+  // Scoring scale calibrated for exported-only dead code:
+  // 0% → 100, 1-2% → 90-95, 3-5% → 80-89, 6-10% → 70-79, 11-20% → 50-69, 21%+ → 30-49
+  let deadScore: number;
+  if (deadCodePercent === 0) {
+    deadScore = 100;
+  } else if (deadCodePercent <= 2) {
+    deadScore = 95 - (deadCodePercent * 2.5); // 90-95
+  } else if (deadCodePercent <= 5) {
+    deadScore = 89 - ((deadCodePercent - 2) * 3); // 80-89
+  } else if (deadCodePercent <= 10) {
+    deadScore = 79 - ((deadCodePercent - 5) * 2); // 69-79
+  } else if (deadCodePercent <= 20) {
+    deadScore = 69 - ((deadCodePercent - 10) * 2); // 49-69
+  } else {
+    deadScore = Math.max(0, 49 - ((deadCodePercent - 20) * 1)); // 0-49
+  }
+  
+  // Orphan file scoring
+  let orphanScore: number;
+  if (orphanPercent === 0) {
+    orphanScore = 100;
+  } else if (orphanPercent <= 5) {
+    orphanScore = 90;
+  } else if (orphanPercent <= 10) {
+    orphanScore = 70;
+  } else if (orphanPercent <= 20) {
+    orphanScore = 50;
+  } else {
+    orphanScore = 30;
+  }
+  
+  // Combined score (weighted: 60% dead code, 40% orphans)
+  const score = Math.round(deadScore * 0.6 + orphanScore * 0.4);
   
   return {
     name: 'Orphans & Dead Code',

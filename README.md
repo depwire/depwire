@@ -357,6 +357,13 @@ depwire health .
 
 6 dimensions. Letter grades. Actionable recommendations. Trend tracking across runs.
 
+> **Note on v1.6.1 scoring change:** The dead code scoring methodology was
+> corrected in v1.6.1 to only count exported symbols with zero dependents
+> as candidates for dead code. Previously, local variables and class
+> internals were incorrectly included, inflating dead code ratios for
+> codebases with internally-complex modules. Health scores from v1.6.1+
+> are not directly comparable to scores from earlier versions.
+
 ---
 
 ## SDK

@@ -21,7 +21,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   const cohesion = calculateCohesionScore(graph);
   const circular = calculateCircularDepsScore(graph);
   const godFiles = calculateGodFilesScore(graph);
-  const orphans = calculateOrphansScore(graph);
+  const orphans = calculateOrphansScore(graph, projectRoot);
   const depth = calculateDepthScore(graph);
   
   const dimensions = [coupling, cohesion, circular, godFiles, orphans, depth];
