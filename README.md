@@ -45,6 +45,7 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 - [The infrastructure layer](#the-infrastructure-layer)
 - [What If simulation](#what-if-simulation)
 - [Security scanner](#security-scanner)
+- [Pre-action verification](#pre-action-verification)
 - [MCP server — AI integration](#mcp-server--ai-integration)
 - [Cross-language edge detection](#cross-language-edge-detection)
 - [Architecture health score](#architecture-health-score)
@@ -183,6 +184,44 @@ Available as MCP tool `security_scan` and via `depwire-cli/sdk`.
 
 ---
 
+## Pre-action verification
+
+Verify a proposed change is safe before applying it. Checks broken imports, new circular dependencies, health score regression, and security findings in one pass.
+
+```bash
+depwire verify-change --file src/auth.ts --content-from new-auth.ts
+depwire verify-change --diff changes.patch
+depwire verify-change --file src/auth.ts --content-from new-auth.ts --json
+cat new-auth.ts | depwire verify-change --file src/auth.ts
+```
+
+Example output:
+
+    Verify Change Report
+    ──────────────────────────────────────────────────
+    ✗ UNSAFE — risk: high
+    ──────────────────────────────────────────────────
+    Health Score:  62 → 59  (-3)
+    Broken Imports: 2
+      • src/index.ts — missing trackCommand
+      • src/server.ts — missing handleAuth
+    New Circular Deps: 0
+    Security Findings: 1
+      • [HIGH] Hardcoded secret detected (src/auth.ts:14)
+    Blast Radius:    8 files affected
+    ──────────────────────────────────────────────────
+
+CI integration:
+
+```bash
+depwire verify-change --diff pr.patch --fail-on-warnings --quiet
+# exits 1 for medium risk, 2 for high risk
+```
+
+Available as MCP tool `verify_change` and CLI command `depwire verify-change`.
+
+---
+
 ## Visualization
 
 ![Depwire arc diagram visualization](./assets/depwire-demo-viz.gif)
@@ -213,6 +252,7 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 |---------|-------------|
 | `depwire viz` | Interactive arc diagram in browser |
 | `depwire whatif` | Simulate changes before touching code |
+| `depwire verify-change` | Verify a proposed change is safe — broken imports, health delta, security |
 | `depwire security` | Scan for vulnerabilities — graph-aware severity |
 | `depwire health` | 0-100 architecture health score across 6 dimensions |
 | `depwire dead-code` | Find unused symbols with confidence scoring |
@@ -269,7 +309,7 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call
 | `get_temporal_graph` | Architecture evolution over git history |
 | `simulate_change` | Simulate move/delete/rename/split/merge before touching code. Returns health delta, broken imports, affected nodes. Cross-language edges included. |
 | `security_scan` | Scan for vulnerabilities with graph-aware severity elevation. No API key required. |
-| `verify_change` | Safety report before applying code changes. Returns broken imports, circular deps, health delta, affected files. |
+| `verify_change` | Safety report before applying code changes. Returns broken imports, circular deps, health delta, affected files. Also available as `depwire verify-change` CLI. |
 | `claim_files` | Multi-agent coordination: declare intent to modify files so other clients avoid conflicts. |
 | `release_files` | Release a previously made file claim. |
 | `get_active_claims` | Query who is currently working on what. |
