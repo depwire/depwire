@@ -25,6 +25,7 @@ import { analyzeDeadCode } from './dead-code/index.js';
 import { trackCommand } from './telemetry.js';
 import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
+import { verifyChangeCommand } from './commands/verify-change.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -592,6 +593,30 @@ program
       await securityCommand(directory || '.', options);
     } catch (err) {
       console.error('Error running security scan:', err);
+      process.exit(1);
+    }
+  });
+
+// Verify change command
+program
+  .command('verify-change')
+  .description('Verify a proposed code change is safe before applying it')
+  .argument('[directory]', 'Project directory (defaults to auto-detected project root)')
+  .option('--file <path>', 'File path being changed')
+  .option('--content <string>', 'New file content (inline)')
+  .option('--content-from <file>', 'Read new content from a file')
+  .option('--diff <patch>', 'Unified diff file to verify')
+  .option('--json', 'Output raw JSON')
+  .option('--quiet', 'Only output the verdict line')
+  .option('--fail-on-warnings', 'Exit 1 on medium risk, 2 on high risk')
+  .option('--health-threshold <n>', 'Health regression threshold (default: -3)')
+  .option('--no-color', 'Disable terminal colors')
+  .action(async (directory: string | undefined, options: any) => {
+    trackCommand('verify-change', packageJson.version);
+    try {
+      await verifyChangeCommand(directory || '.', options);
+    } catch (err) {
+      console.error('Error running verify-change:', err);
       process.exit(1);
     }
   });

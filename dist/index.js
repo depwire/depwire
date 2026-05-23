@@ -16,8 +16,9 @@ import {
   startVizServer,
   stashChanges,
   updateFileInGraph,
+  verifyChange,
   watchProject
-} from "./chunk-UUEMHASV.js";
+} from "./chunk-T56ZHLA5.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -35,8 +36,8 @@ import {
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve4, dirname as dirname4, join as join5 } from "path";
-import { writeFileSync, readFileSync as readFileSync3, existsSync } from "fs";
+import { resolve as resolve5, dirname as dirname4, join as join5 } from "path";
+import { writeFileSync, readFileSync as readFileSync4, existsSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
 // src/graph/serializer.ts
@@ -306,10 +307,10 @@ async function findAvailablePort(startPort) {
   const net = await import("net");
   for (let attempt = 0; attempt < 10; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve5) => {
-      const server = net.createServer().once("error", () => resolve5(false)).once("listening", () => {
+    const isAvailable = await new Promise((resolve6) => {
+      const server = net.createServer().once("error", () => resolve6(false)).once("listening", () => {
         server.close();
-        resolve5(true);
+        resolve6(true);
       }).listen(testPort, "127.0.0.1");
     });
     if (isAvailable) {
@@ -353,13 +354,13 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
       console.log("  (Could not open browser automatically)");
     });
   });
-  await new Promise((resolve5, reject) => {
+  await new Promise((resolve6, reject) => {
     server.on("error", reject);
     process.on("SIGINT", () => {
       console.log("\n\nShutting down temporal server...");
       server.close(() => {
         console.log("Server stopped");
-        resolve5();
+        resolve6();
         process.exit(0);
       });
     });
@@ -849,14 +850,14 @@ async function findAvailablePort2(startPort, maxAttempts = 10) {
   const net = await import("net");
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve5) => {
+    const isAvailable = await new Promise((resolve6) => {
       const server = net.createServer();
       server.once("error", () => {
-        resolve5(false);
+        resolve6(false);
       });
       server.once("listening", () => {
         server.close();
-        resolve5(true);
+        resolve6(true);
       });
       server.listen(testPort, "127.0.0.1");
     });
@@ -1237,18 +1238,162 @@ async function securityCommand(dir, options) {
   }
 }
 
+// src/commands/verify-change.ts
+import { resolve as resolve4 } from "path";
+import { readFileSync as readFileSync3, readSync } from "fs";
+import chalk3 from "chalk";
+async function verifyChangeCommand(dir, options) {
+  const input = resolveInput(options);
+  if (!input) {
+    printUsage();
+    process.exit(1);
+  }
+  const projectRoot = dir === "." ? findProjectRoot() : resolve4(dir);
+  console.error(`Parsing project: ${projectRoot}`);
+  const parsedFiles = await parseProject(projectRoot);
+  const graph = buildGraph(parsedFiles, projectRoot);
+  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  const result = await verifyChange(input, { graph, projectRoot });
+  if (options.json) {
+    console.log(JSON.stringify(result, null, 2));
+  } else if (options.quiet) {
+    printVerdict(result, options);
+  } else {
+    printHumanReadable(result, options);
+  }
+  if (options.failOnWarnings) {
+    if (result.risk_level === "high") {
+      process.exit(2);
+    } else if (result.risk_level === "medium") {
+      process.exit(1);
+    }
+  }
+}
+function resolveInput(options) {
+  if (options.diff) {
+    const diffContent = readFileSync3(resolve4(options.diff), "utf-8");
+    return { unified_diff: diffContent };
+  }
+  if (options.file && options.content) {
+    return { file_path: options.file, new_content: options.content };
+  }
+  if (options.file && options.contentFrom) {
+    const content = readFileSync3(resolve4(options.contentFrom), "utf-8");
+    return { file_path: options.file, new_content: content };
+  }
+  if (options.file && !options.content && !options.contentFrom && !options.diff) {
+    if (!process.stdin.isTTY) {
+      const chunks = [];
+      const buf = Buffer.alloc(65536);
+      let bytesRead;
+      try {
+        while ((bytesRead = readSync(0, buf, 0, buf.length, null)) > 0) {
+          chunks.push(Buffer.from(buf.subarray(0, bytesRead)));
+        }
+      } catch {
+      }
+      const stdinContent = Buffer.concat(chunks).toString("utf-8");
+      if (stdinContent.length > 0) {
+        return { file_path: options.file, new_content: stdinContent };
+      }
+    }
+  }
+  return null;
+}
+function printUsage() {
+  console.error(`Usage: depwire verify-change [options]
+
+Input modes (exactly one required):
+  --file <path> --content <string>       File path + new content inline
+  --file <path> --content-from <file>    File path + content from another file
+  --diff <patch-file>                    Unified diff file
+  cat file | depwire verify-change --file <path>   Piped stdin
+
+Options:
+  --json                Output raw JSON
+  --quiet               Only output the verdict line
+  --fail-on-warnings    Exit 1 on medium risk, 2 on high risk
+  --health-threshold N  Health regression threshold (default: -3)
+  --no-color            Disable terminal colors`);
+}
+function printVerdict(result, options) {
+  const useColor = !options.noColor && process.stdout.isTTY;
+  const c = useColor ? chalk3 : { green: (s) => s, red: (s) => s, yellow: (s) => s, dim: (s) => s, bold: (s) => s };
+  if (result.safe) {
+    console.log(c.green("\u2713 SAFE") + c.dim(` \u2014 risk: ${result.risk_level}`));
+  } else {
+    const icon = result.risk_level === "high" ? "\u2717" : "\u26A0";
+    const color = result.risk_level === "high" ? c.red : c.yellow;
+    console.log(color(`${icon} UNSAFE`) + c.dim(` \u2014 risk: ${result.risk_level}`));
+  }
+}
+function printHumanReadable(result, options) {
+  const useColor = !options.noColor && process.stdout.isTTY;
+  const c = useColor ? chalk3 : { green: (s) => s, red: (s) => s, yellow: (s) => s, dim: (s) => s, bold: (s) => s };
+  const line = "\u2500".repeat(50);
+  console.log("");
+  console.log(c.bold("Verify Change Report"));
+  console.log(c.dim(line));
+  printVerdict(result, options);
+  console.log(c.dim(line));
+  const deltaSign = result.health_score_delta >= 0 ? "+" : "";
+  const deltaColor = result.health_score_delta > 0 ? c.green : result.health_score_delta === 0 ? c.yellow : c.red;
+  console.log(
+    `${c.bold("Health Score:")}  ${result.health_score_before} \u2192 ${result.health_score_after}  ` + deltaColor(`(${deltaSign}${result.health_score_delta})`)
+  );
+  console.log(`${c.bold("Broken Imports:")} ${result.broken_imports.length}`);
+  if (result.broken_imports.length > 0) {
+    for (const bi of result.broken_imports) {
+      console.log(`  ${c.red("\u2022")} ${bi.file} \u2014 missing ${c.bold(bi.missing_symbol)}`);
+    }
+  }
+  console.log(`${c.bold("New Circular Deps:")} ${result.new_circular_dependencies.length}`);
+  if (result.new_circular_dependencies.length > 0) {
+    for (const dep of result.new_circular_dependencies) {
+      console.log(`  ${c.red("\u2022")} ${dep.cycle.join(" \u2192 ")}`);
+    }
+  }
+  console.log(`${c.bold("Security Findings:")} ${result.security_findings.length}`);
+  if (result.security_findings.length > 0) {
+    for (const f of result.security_findings) {
+      const sevColor = f.severity === "critical" || f.severity === "high" ? c.red : f.severity === "medium" ? c.yellow : c.dim;
+      console.log(`  ${sevColor("\u2022")} [${f.severity.toUpperCase()}] ${f.description} (${f.file}:${f.line})`);
+    }
+  }
+  console.log(`${c.bold("Blast Radius:")}    ${result.blast_radius} files affected`);
+  if (result.affected_files.length > 0 && result.affected_files.length <= 10) {
+    for (const f of result.affected_files) {
+      console.log(`  ${c.dim("\u2022")} ${f}`);
+    }
+  } else if (result.affected_files.length > 10) {
+    for (const f of result.affected_files.slice(0, 10)) {
+      console.log(`  ${c.dim("\u2022")} ${f}`);
+    }
+    console.log(c.dim(`  \u2026 and ${result.affected_files.length - 10} more`));
+  }
+  if (result.warnings.length > 0) {
+    console.log(c.dim(line));
+    console.log(`${c.bold("Warnings:")}`);
+    for (const w of result.warnings) {
+      console.log(`  ${c.yellow("\u26A0")} ${w}`);
+    }
+  }
+  console.log(c.dim(line));
+  console.log("");
+}
+
 // src/index.ts
 var __filename4 = fileURLToPath4(import.meta.url);
 var __dirname4 = dirname4(__filename4);
 var packageJsonPath = join5(__dirname4, "../package.json");
-var packageJson = JSON.parse(readFileSync3(packageJsonPath, "utf-8"));
+var packageJson = JSON.parse(readFileSync4(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for multi-language projects").version(packageJson.version);
 program.command("parse").description("Parse a project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1287,12 +1432,12 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   trackCommand("query", packageJson.version);
   try {
-    const projectRoot = resolve4(directory);
-    const cacheFile = resolve4("depwire-output.json");
+    const projectRoot = resolve5(directory);
+    const cacheFile = resolve5("depwire-output.json");
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");
-      const json = JSON.parse(readFileSync3(cacheFile, "utf-8"));
+      const json = JSON.parse(readFileSync4(cacheFile, "utf-8"));
       graph = importFromJSON(json);
     } else {
       console.log("Parsing project...");
@@ -1336,7 +1481,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("viz", packageJson.version);
   try {
-    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1359,7 +1504,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
   trackCommand("temporal", packageJson.version);
   try {
-    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
       commits: parseInt(options.commits, 10),
       strategy: options.strategy,
@@ -1379,7 +1524,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     const state = createEmptyState();
     let projectRootToConnect = null;
     if (directory) {
-      projectRootToConnect = resolve4(directory);
+      projectRootToConnect = resolve5(directory);
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
@@ -1440,8 +1585,8 @@ program.command("docs").description("Generate comprehensive codebase documentati
   trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve4(options.output) : join5(projectRoot, ".depwire");
+    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
+    const outputDir = options.output ? resolve5(options.output) : join5(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -1503,11 +1648,11 @@ async function promptGitignore() {
     input: process.stdin,
     output: process.stdout
   });
-  return new Promise((resolve5) => {
+  return new Promise((resolve6) => {
     rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve5(normalized === "" || normalized === "y" || normalized === "yes");
+      resolve6(normalized === "" || normalized === "y" || normalized === "yes");
     });
   });
 }
@@ -1537,7 +1682,7 @@ ${pattern}
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   trackCommand("health", packageJson.version);
   try {
-    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -1561,7 +1706,7 @@ program.command("health").description("Analyze dependency architecture health (0
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   trackCommand("dead-code", packageJson.version);
   try {
-    const projectRoot = directory ? resolve4(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -1603,6 +1748,15 @@ program.command("security").description("Scan codebase for security vulnerabilit
     await securityCommand(directory || ".", options);
   } catch (err) {
     console.error("Error running security scan:", err);
+    process.exit(1);
+  }
+});
+program.command("verify-change").description("Verify a proposed code change is safe before applying it").argument("[directory]", "Project directory (defaults to auto-detected project root)").option("--file <path>", "File path being changed").option("--content <string>", "New file content (inline)").option("--content-from <file>", "Read new content from a file").option("--diff <patch>", "Unified diff file to verify").option("--json", "Output raw JSON").option("--quiet", "Only output the verdict line").option("--fail-on-warnings", "Exit 1 on medium risk, 2 on high risk").option("--health-threshold <n>", "Health regression threshold (default: -3)").option("--no-color", "Disable terminal colors").action(async (directory, options) => {
+  trackCommand("verify-change", packageJson.version);
+  try {
+    await verifyChangeCommand(directory || ".", options);
+  } catch (err) {
+    console.error("Error running verify-change:", err);
     process.exit(1);
   }
 });
