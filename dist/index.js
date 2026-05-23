@@ -18,7 +18,7 @@ import {
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-T56ZHLA5.js";
+} from "./chunk-6I43HE2H.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -32,7 +32,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-R7C5BZWX.js";
+} from "./chunk-EOJKGCXB.js";
 
 // src/index.ts
 import { Command } from "commander";
