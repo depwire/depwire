@@ -987,7 +987,7 @@
             <h1>Your AI doesn't know your architecture. Depwire does.</h1>
             <p class="hero-category">Depwire is the context and safety layer for AI-generated code.</p>
             <h2>Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.</h2>
-            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">8 CLI commands. 23 MCP tools. 13 auto-generated documents. What If simulation. Security scanner. Architecture health scoring. Multi-agent coordination.</p>
+            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">11 CLI commands. 23 MCP tools. 13 auto-generated documents. What If simulation. Pre-action verification. Security scanner. Architecture health scoring. Multi-agent coordination.</p>
             
             <!-- Benchmark Stats -->
             <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;" class="scroll-reveal">
@@ -1194,6 +1194,19 @@
                         <li>Circular dependency analysis</li>
                         <li>CLI: <code>depwire whatif</code></li>
                         <li>MCP tool: <code>simulate_change</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">&#x2714;&#xFE0F;</div>
+                    <h3>Pre-action Verification</h3>
+                    <p>Verify a proposed code change is safe before applying it. Pass file content or a unified diff and get a deterministic safety report — broken imports, circular deps, health delta, security findings, and blast radius.</p>
+                    <ul>
+                        <li>Broken imports + circular deps</li>
+                        <li>Health score regression detection</li>
+                        <li>Security findings on changed code</li>
+                        <li>CI-ready: <code>--fail-on-warnings</code></li>
+                        <li>CLI: <code>depwire verify-change</code></li>
+                        <li>MCP tool: <code>verify_change</code></li>
                     </ul>
                 </div>
                 <div class="feature-card scroll-reveal">
@@ -1449,6 +1462,11 @@ depwire docs
 depwire health
 depwire whatif
 depwire security
+depwire verify-change
+
+<span class="code-comment"># Verify a proposed change is safe before applying it</span>
+depwire verify-change --file src/foo.ts --content-from new-version.ts
+depwire verify-change --diff feature.patch --fail-on-warnings
 
 <span class="code-comment"># Or specify a directory explicitly</span>
 npx depwire-cli viz ./my-project
@@ -1565,7 +1583,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         </tr>
                         <tr>
                             <td><code>verify_change</code></td>
-                            <td>Deterministic safety report before applying code changes. Returns broken imports, circular deps, health delta, blast radius.</td>
+                            <td>Deterministic safety report before applying code changes. Returns broken imports, circular deps, health delta, blast radius. Also available as CLI: <code>depwire verify-change</code></td>
                         </tr>
                         <tr>
                             <td><code>claim_files</code></td>
@@ -1821,7 +1839,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
+                <p>Latest: v1.6.1 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
             </div>
         </div>
     </footer>
