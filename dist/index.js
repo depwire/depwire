@@ -36,7 +36,7 @@ import {
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve5, dirname as dirname4, join as join5 } from "path";
+import { resolve as resolve6, dirname as dirname4, join as join5 } from "path";
 import { writeFileSync, readFileSync as readFileSync4, existsSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
@@ -307,10 +307,10 @@ async function findAvailablePort(startPort) {
   const net = await import("net");
   for (let attempt = 0; attempt < 10; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve6) => {
-      const server = net.createServer().once("error", () => resolve6(false)).once("listening", () => {
+    const isAvailable = await new Promise((resolve7) => {
+      const server = net.createServer().once("error", () => resolve7(false)).once("listening", () => {
         server.close();
-        resolve6(true);
+        resolve7(true);
       }).listen(testPort, "127.0.0.1");
     });
     if (isAvailable) {
@@ -354,13 +354,13 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
       console.log("  (Could not open browser automatically)");
     });
   });
-  await new Promise((resolve6, reject) => {
+  await new Promise((resolve7, reject) => {
     server.on("error", reject);
     process.on("SIGINT", () => {
       console.log("\n\nShutting down temporal server...");
       server.close(() => {
         console.log("Server stopped");
-        resolve6();
+        resolve7();
         process.exit(0);
       });
     });
@@ -850,14 +850,14 @@ async function findAvailablePort2(startPort, maxAttempts = 10) {
   const net = await import("net");
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve6) => {
+    const isAvailable = await new Promise((resolve7) => {
       const server = net.createServer();
       server.once("error", () => {
-        resolve6(false);
+        resolve7(false);
       });
       server.once("listening", () => {
         server.close();
-        resolve6(true);
+        resolve7(true);
       });
       server.listen(testPort, "127.0.0.1");
     });
@@ -1382,6 +1382,468 @@ function printHumanReadable(result, options) {
   console.log("");
 }
 
+// src/commands/diff.ts
+import chalk4 from "chalk";
+
+// src/core/diff.ts
+import { execSync } from "child_process";
+function git(cmd, cwd) {
+  return execSync(`git ${cmd}`, { cwd, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }).trim();
+}
+function isGitRepo2(cwd) {
+  try {
+    git("rev-parse --git-dir", cwd);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function resolveRef(ref, cwd) {
+  try {
+    return git(`rev-parse ${ref}`, cwd);
+  } catch {
+    throw new DiffError(`Invalid git ref: "${ref}"`, 2);
+  }
+}
+var DiffError = class extends Error {
+  exitCode;
+  constructor(message, exitCode) {
+    super(message);
+    this.name = "DiffError";
+    this.exitCode = exitCode;
+  }
+};
+async function computeDiff(commitA, commitB, projectRoot, options = {}) {
+  if (!isGitRepo2(projectRoot)) {
+    throw new DiffError("Not a git repository. Run this command inside a git project.", 2);
+  }
+  const resolvedA = resolveRef(commitA, projectRoot);
+  const resolvedB = resolveRef(commitB, projectRoot);
+  let originalRef;
+  try {
+    originalRef = git("rev-parse --abbrev-ref HEAD", projectRoot);
+    if (originalRef === "HEAD") {
+      originalRef = git("rev-parse HEAD", projectRoot);
+    }
+  } catch {
+    throw new DiffError("Failed to determine current HEAD.", 2);
+  }
+  let stashed = false;
+  try {
+    const status = git("status --porcelain", projectRoot);
+    if (status.length > 0) {
+      git('stash push -m "depwire-diff-temp-stash"', projectRoot);
+      stashed = true;
+    }
+  } catch {
+    throw new DiffError("Failed to stash uncommitted changes.", 2);
+  }
+  let graphA;
+  let graphB;
+  let healthA = null;
+  let healthB = null;
+  let securityA = [];
+  let securityB = [];
+  let filesA = [];
+  let filesB = [];
+  let symbolsA = /* @__PURE__ */ new Map();
+  let symbolsB = /* @__PURE__ */ new Map();
+  let edgesA = /* @__PURE__ */ new Map();
+  let edgesB = /* @__PURE__ */ new Map();
+  try {
+    console.error(`Checking out ${commitA} (${resolvedA.slice(0, 8)})...`);
+    git(`checkout ${resolvedA} --quiet`, projectRoot);
+    const parsedA = await parseProject(projectRoot);
+    const gA = buildGraph(parsedA, projectRoot);
+    graphA = gA;
+    const summaryA = getArchitectureSummary(gA);
+    filesA = Array.from(/* @__PURE__ */ new Set());
+    gA.forEachNode((_n, attrs) => {
+      filesA.push(attrs.filePath);
+    });
+    filesA = [...new Set(filesA)];
+    gA.forEachNode((nodeId, attrs) => {
+      symbolsA.set(nodeId, {
+        id: nodeId,
+        name: attrs.name,
+        kind: attrs.kind,
+        filePath: attrs.filePath,
+        startLine: attrs.startLine,
+        endLine: attrs.endLine
+      });
+    });
+    gA.forEachEdge((_edge, attrs, source, target) => {
+      const key = `${source}->${target}::${attrs.kind}`;
+      edgesA.set(key, {
+        source,
+        target,
+        kind: attrs.kind,
+        filePath: attrs.filePath || "",
+        line: attrs.line || 0
+      });
+    });
+    if (!options.noHealth) {
+      const report = calculateHealthScore(gA, projectRoot);
+      healthA = { overall: report.overall, grade: report.grade };
+    }
+    if (!options.noSecurity) {
+      try {
+        const scanResult = await scanSecurity(projectRoot, gA, { graphAware: true });
+        if (scanResult?.findings) {
+          securityA = scanResult.findings.map((f) => ({
+            severity: f.severity || "low",
+            title: f.title || f.description || "",
+            file: f.file || "",
+            line: f.line || 0,
+            vulnerabilityClass: f.vulnerabilityClass || ""
+          }));
+        }
+      } catch {
+      }
+    }
+    console.error(`Checking out ${commitB} (${resolvedB.slice(0, 8)})...`);
+    git(`checkout ${resolvedB} --quiet`, projectRoot);
+    const parsedB = await parseProject(projectRoot);
+    const gB = buildGraph(parsedB, projectRoot);
+    graphB = gB;
+    gB.forEachNode((_n, attrs) => {
+      filesB.push(attrs.filePath);
+    });
+    filesB = [...new Set(filesB)];
+    gB.forEachNode((nodeId, attrs) => {
+      symbolsB.set(nodeId, {
+        id: nodeId,
+        name: attrs.name,
+        kind: attrs.kind,
+        filePath: attrs.filePath,
+        startLine: attrs.startLine,
+        endLine: attrs.endLine
+      });
+    });
+    gB.forEachEdge((_edge, attrs, source, target) => {
+      const key = `${source}->${target}::${attrs.kind}`;
+      edgesB.set(key, {
+        source,
+        target,
+        kind: attrs.kind,
+        filePath: attrs.filePath || "",
+        line: attrs.line || 0
+      });
+    });
+    if (!options.noHealth) {
+      const report = calculateHealthScore(gB, projectRoot);
+      healthB = { overall: report.overall, grade: report.grade };
+    }
+    if (!options.noSecurity) {
+      try {
+        const scanResult = await scanSecurity(projectRoot, gB, { graphAware: true });
+        if (scanResult?.findings) {
+          securityB = scanResult.findings.map((f) => ({
+            severity: f.severity || "low",
+            title: f.title || f.description || "",
+            file: f.file || "",
+            line: f.line || 0,
+            vulnerabilityClass: f.vulnerabilityClass || ""
+          }));
+        }
+      } catch {
+      }
+    }
+  } finally {
+    try {
+      console.error(`Restoring original state...`);
+      git(`checkout ${originalRef} --quiet`, projectRoot);
+    } catch {
+      try {
+        git(`checkout -f ${originalRef} --quiet`, projectRoot);
+      } catch {
+        console.error(`WARNING: Failed to restore original ref "${originalRef}". Manual cleanup needed.`);
+      }
+    }
+    if (stashed) {
+      try {
+        git("stash pop", projectRoot);
+      } catch {
+        console.error('WARNING: Failed to restore stashed changes. Run "git stash pop" manually.');
+      }
+    }
+  }
+  const addedSymbols = [];
+  const removedSymbols = [];
+  const modifiedSymbols = [];
+  for (const [id, sym] of symbolsB) {
+    if (!symbolsA.has(id)) {
+      addedSymbols.push(sym);
+    } else {
+      const oldSym = symbolsA.get(id);
+      if (oldSym.kind !== sym.kind || oldSym.startLine !== sym.startLine || oldSym.endLine !== sym.endLine) {
+        modifiedSymbols.push(sym);
+      }
+    }
+  }
+  for (const [id, sym] of symbolsA) {
+    if (!symbolsB.has(id)) {
+      removedSymbols.push(sym);
+    }
+  }
+  const addedEdges = [];
+  const removedEdges = [];
+  for (const [key, edge] of edgesB) {
+    if (!edgesA.has(key)) {
+      addedEdges.push(edge);
+    }
+  }
+  for (const [key, edge] of edgesA) {
+    if (!edgesB.has(key)) {
+      removedEdges.push(edge);
+    }
+  }
+  const fileSetA = new Set(filesA);
+  const fileSetB = new Set(filesB);
+  const addedFiles = filesB.filter((f) => !fileSetA.has(f));
+  const removedFiles = filesA.filter((f) => !fileSetB.has(f));
+  const blastFiles = /* @__PURE__ */ new Set();
+  for (const sym of addedSymbols) blastFiles.add(sym.filePath);
+  for (const sym of removedSymbols) blastFiles.add(sym.filePath);
+  for (const sym of modifiedSymbols) blastFiles.add(sym.filePath);
+  for (const edge of addedEdges) {
+    if (edge.filePath) blastFiles.add(edge.filePath);
+  }
+  for (const edge of removedEdges) {
+    if (edge.filePath) blastFiles.add(edge.filePath);
+  }
+  let health = null;
+  if (healthA && healthB) {
+    health = {
+      before: healthA.overall,
+      after: healthB.overall,
+      delta: healthB.overall - healthA.overall,
+      grade_before: healthA.grade,
+      grade_after: healthB.grade
+    };
+  }
+  let security = null;
+  if (!options.noSecurity) {
+    const secAKeys = new Set(securityA.map((f) => `${f.file}:${f.line}:${f.vulnerabilityClass}`));
+    const secBKeys = new Set(securityB.map((f) => `${f.file}:${f.line}:${f.vulnerabilityClass}`));
+    const newFindings = securityB.filter((f) => !secAKeys.has(`${f.file}:${f.line}:${f.vulnerabilityClass}`));
+    const fixedFindings = securityA.filter((f) => !secBKeys.has(`${f.file}:${f.line}:${f.vulnerabilityClass}`));
+    security = { new_findings: newFindings, fixed_findings: fixedFindings };
+  }
+  return {
+    commit_a: commitA,
+    commit_b: commitB,
+    commit_a_resolved: resolvedA,
+    commit_b_resolved: resolvedB,
+    symbols: { added: addedSymbols, removed: removedSymbols, modified: modifiedSymbols },
+    edges: { added: addedEdges, removed: removedEdges },
+    files: { added: addedFiles, removed: removedFiles, count_a: filesA.length, count_b: filesB.length },
+    blast_radius: { files: Array.from(blastFiles), count: blastFiles.size },
+    health,
+    security
+  };
+}
+
+// src/commands/diff.ts
+import { resolve as resolve5 } from "path";
+async function diffCommand(commitA, commitB, dir, options) {
+  if (!commitA || !commitB) {
+    printUsage2();
+    process.exit(1);
+  }
+  const projectRoot = dir === "." ? findProjectRoot() : resolve5(dir);
+  try {
+    const result = await computeDiff(commitA, commitB, projectRoot, {
+      path: options.path,
+      noSecurity: options.noSecurity,
+      noHealth: options.noHealth
+    });
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printHumanReadable2(result, options);
+    }
+  } catch (err) {
+    if (err instanceof DiffError) {
+      console.error(getC(options).red(`Error: ${err.message}`));
+      process.exit(err.exitCode);
+    }
+    throw err;
+  }
+}
+function getC(options) {
+  const useColor = !options.noColor && process.stdout.isTTY;
+  if (useColor) return chalk4;
+  return {
+    green: (s) => s,
+    red: (s) => s,
+    yellow: (s) => s,
+    dim: (s) => s,
+    bold: (s) => s,
+    cyan: (s) => s
+  };
+}
+function printUsage2() {
+  console.error(`Usage: depwire diff <commit-a> <commit-b> [options]
+
+Compare the dependency graph between two git commits.
+Shows added/removed/modified symbols, edge changes, blast radius,
+health delta, and security diff \u2014 all computed deterministically.
+
+Arguments:
+  commit-a         Any valid git ref (branch, tag, hash, HEAD~N)
+  commit-b         Any valid git ref
+
+Options:
+  --json           Output JSON for scripting
+  --verbose        Show every changed symbol and edge by name
+  --no-color       Disable terminal colors
+  --no-security    Skip security diff (faster)
+  --no-health      Skip health score comparison (faster)
+  --path <path>    Diff a specific subdirectory only
+
+Examples:
+  depwire diff main feature/auth-refactor
+  depwire diff HEAD~5 HEAD --verbose
+  depwire diff v1.5.0 v1.6.0 --json | jq`);
+}
+function printHumanReadable2(result, options) {
+  const c = getC(options);
+  const line = "\u2501".repeat(47);
+  const totalChanges = result.symbols.added.length + result.symbols.removed.length + result.symbols.modified.length + result.edges.added.length + result.edges.removed.length;
+  if (totalChanges === 0 && result.files.added.length === 0 && result.files.removed.length === 0) {
+    console.log(`No structural changes between ${result.commit_a} and ${result.commit_b}.`);
+    return;
+  }
+  console.log("");
+  console.log(c.bold(`Depwire diff: ${result.commit_a}..${result.commit_b}`));
+  console.log(c.dim(line));
+  console.log("");
+  console.log(c.bold("Symbols"));
+  if (result.symbols.added.length > 0) {
+    const names = result.symbols.added.slice(0, 3).map((s) => s.name);
+    const more = result.symbols.added.length > 3 ? ` ...` : "";
+    console.log(`  ${c.green("+")} ${result.symbols.added.length} added      ${c.dim(names.join(", ") + more)}`);
+  }
+  if (result.symbols.removed.length > 0) {
+    const names = result.symbols.removed.slice(0, 3).map((s) => s.name);
+    const more = result.symbols.removed.length > 3 ? ` ...` : "";
+    console.log(`  ${c.red("-")} ${result.symbols.removed.length} removed    ${c.dim(names.join(", ") + more)}`);
+  }
+  if (result.symbols.modified.length > 0) {
+    const names = result.symbols.modified.slice(0, 3).map((s) => s.name);
+    const more = result.symbols.modified.length > 3 ? ` ...` : "";
+    console.log(`  ${c.yellow("~")} ${result.symbols.modified.length} modified   ${c.dim(names.join(", ") + more)}`);
+  }
+  if (result.symbols.added.length === 0 && result.symbols.removed.length === 0 && result.symbols.modified.length === 0) {
+    console.log(`  ${c.dim("(no changes)")}`);
+  }
+  console.log("");
+  console.log(c.bold("Edges"));
+  if (result.edges.added.length > 0) {
+    console.log(`  ${c.green("+")} ${result.edges.added.length} added`);
+  }
+  if (result.edges.removed.length > 0) {
+    console.log(`  ${c.red("-")} ${result.edges.removed.length} removed`);
+  }
+  if (result.edges.added.length === 0 && result.edges.removed.length === 0) {
+    console.log(`  ${c.dim("(no changes)")}`);
+  }
+  console.log("");
+  console.log(c.bold("Files"));
+  console.log(`  ${result.files.count_a} \u2192 ${result.files.count_b}  (${c.green(`+${result.files.added.length}`)} / ${c.red(`-${result.files.removed.length}`)})`);
+  console.log("");
+  console.log(`${c.bold("Blast radius:")}    ${result.blast_radius.count} files affected`);
+  if (result.health) {
+    const deltaSign = result.health.delta >= 0 ? "+" : "";
+    const deltaColor = result.health.delta > 0 ? c.green : result.health.delta === 0 ? c.yellow : c.red;
+    console.log(
+      `${c.bold("Health score:")}    ${result.health.before} \u2192 ${result.health.after}  ${deltaColor(`(${deltaSign}${result.health.delta})`)}  [${result.health.grade_before} \u2192 ${result.health.grade_after}]`
+    );
+  }
+  if (result.security) {
+    const newCount = result.security.new_findings.length;
+    const fixedCount = result.security.fixed_findings.length;
+    const newStr = newCount > 0 ? c.red(`${newCount} new`) : c.dim("0 new");
+    const fixedStr = fixedCount > 0 ? c.green(`${fixedCount} fixed`) : c.dim("0 fixed");
+    console.log(`${c.bold("Security:")}        ${newStr} / ${fixedStr}`);
+  }
+  console.log(c.dim(line));
+  if (options.verbose) {
+    console.log("");
+    if (result.symbols.added.length > 0) {
+      console.log(c.bold(c.green("Added symbols:")));
+      for (const sym of result.symbols.added) {
+        console.log(`  ${c.green("+")} ${sym.name} (${sym.kind}) ${c.dim(sym.filePath + ":" + sym.startLine)}`);
+      }
+      console.log("");
+    }
+    if (result.symbols.removed.length > 0) {
+      console.log(c.bold(c.red("Removed symbols:")));
+      for (const sym of result.symbols.removed) {
+        console.log(`  ${c.red("-")} ${sym.name} (${sym.kind}) ${c.dim(sym.filePath + ":" + sym.startLine)}`);
+      }
+      console.log("");
+    }
+    if (result.symbols.modified.length > 0) {
+      console.log(c.bold(c.yellow("Modified symbols:")));
+      for (const sym of result.symbols.modified) {
+        console.log(`  ${c.yellow("~")} ${sym.name} (${sym.kind}) ${c.dim(sym.filePath + ":" + sym.startLine)}`);
+      }
+      console.log("");
+    }
+    if (result.edges.added.length > 0 && result.edges.added.length <= 50) {
+      console.log(c.bold(c.green("Added edges:")));
+      for (const edge of result.edges.added.slice(0, 20)) {
+        const src = edge.source.split("::").pop() || edge.source;
+        const tgt = edge.target.split("::").pop() || edge.target;
+        console.log(`  ${c.green("+")} ${src} \u2192 ${tgt} (${edge.kind})`);
+      }
+      if (result.edges.added.length > 20) {
+        console.log(c.dim(`  ... and ${result.edges.added.length - 20} more`));
+      }
+      console.log("");
+    }
+    if (result.edges.removed.length > 0 && result.edges.removed.length <= 50) {
+      console.log(c.bold(c.red("Removed edges:")));
+      for (const edge of result.edges.removed.slice(0, 20)) {
+        const src = edge.source.split("::").pop() || edge.source;
+        const tgt = edge.target.split("::").pop() || edge.target;
+        console.log(`  ${c.red("-")} ${src} \u2192 ${tgt} (${edge.kind})`);
+      }
+      if (result.edges.removed.length > 20) {
+        console.log(c.dim(`  ... and ${result.edges.removed.length - 20} more`));
+      }
+      console.log("");
+    }
+    if (result.blast_radius.files.length > 0) {
+      console.log(c.bold("Affected files:"));
+      for (const f of result.blast_radius.files.slice(0, 20)) {
+        console.log(`  ${c.dim("\u2022")} ${f}`);
+      }
+      if (result.blast_radius.files.length > 20) {
+        console.log(c.dim(`  ... and ${result.blast_radius.files.length - 20} more`));
+      }
+      console.log("");
+    }
+    if (result.security && result.security.new_findings.length > 0) {
+      console.log(c.bold(c.red("New security findings:")));
+      for (const f of result.security.new_findings) {
+        console.log(`  ${c.red("\u2022")} [${f.severity.toUpperCase()}] ${f.title} (${f.file}:${f.line})`);
+      }
+      console.log("");
+    }
+    if (result.security && result.security.fixed_findings.length > 0) {
+      console.log(c.bold(c.green("Fixed security findings:")));
+      for (const f of result.security.fixed_findings) {
+        console.log(`  ${c.green("\u2022")} [${f.severity.toUpperCase()}] ${f.title} (${f.file}:${f.line})`);
+      }
+      console.log("");
+    }
+  }
+  console.log("");
+}
+
 // src/index.ts
 var __filename4 = fileURLToPath4(import.meta.url);
 var __dirname4 = dirname4(__filename4);
@@ -1393,7 +1855,7 @@ program.command("parse").description("Parse a project and build dependency graph
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1432,8 +1894,8 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   trackCommand("query", packageJson.version);
   try {
-    const projectRoot = resolve5(directory);
-    const cacheFile = resolve5("depwire-output.json");
+    const projectRoot = resolve6(directory);
+    const cacheFile = resolve6("depwire-output.json");
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");
@@ -1481,7 +1943,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("viz", packageJson.version);
   try {
-    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1504,7 +1966,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
   trackCommand("temporal", packageJson.version);
   try {
-    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
       commits: parseInt(options.commits, 10),
       strategy: options.strategy,
@@ -1524,7 +1986,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     const state = createEmptyState();
     let projectRootToConnect = null;
     if (directory) {
-      projectRootToConnect = resolve5(directory);
+      projectRootToConnect = resolve6(directory);
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
@@ -1585,8 +2047,8 @@ program.command("docs").description("Generate comprehensive codebase documentati
   trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve5(options.output) : join5(projectRoot, ".depwire");
+    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const outputDir = options.output ? resolve6(options.output) : join5(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -1648,11 +2110,11 @@ async function promptGitignore() {
     input: process.stdin,
     output: process.stdout
   });
-  return new Promise((resolve6) => {
+  return new Promise((resolve7) => {
     rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve6(normalized === "" || normalized === "y" || normalized === "yes");
+      resolve7(normalized === "" || normalized === "y" || normalized === "yes");
     });
   });
 }
@@ -1682,7 +2144,7 @@ ${pattern}
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   trackCommand("health", packageJson.version);
   try {
-    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -1706,7 +2168,7 @@ program.command("health").description("Analyze dependency architecture health (0
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   trackCommand("dead-code", packageJson.version);
   try {
-    const projectRoot = directory ? resolve5(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -1757,6 +2219,15 @@ program.command("verify-change").description("Verify a proposed code change is s
     await verifyChangeCommand(directory || ".", options);
   } catch (err) {
     console.error("Error running verify-change:", err);
+    process.exit(1);
+  }
+});
+program.command("diff").description("Compare dependency graph between two git commits").argument("<commit-a>", "First git ref (branch, tag, hash, HEAD~N)").argument("<commit-b>", "Second git ref").option("--json", "Output JSON for scripting").option("--verbose", "Show every changed symbol and edge by name").option("--no-color", "Disable terminal colors").option("--no-security", "Skip security diff (faster)").option("--no-health", "Skip health score comparison (faster)").option("--path <path>", "Diff a specific subdirectory only").action(async (commitA, commitB, options) => {
+  trackCommand("diff", packageJson.version);
+  try {
+    await diffCommand(commitA, commitB, ".", options);
+  } catch (err) {
+    console.error("Error running diff:", err);
     process.exit(1);
   }
 });
