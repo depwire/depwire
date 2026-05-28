@@ -26,6 +26,7 @@ import { trackCommand } from './telemetry.js';
 import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
 import { verifyChangeCommand } from './commands/verify-change.js';
+import { diffCommand } from './commands/diff.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -617,6 +618,28 @@ program
       await verifyChangeCommand(directory || '.', options);
     } catch (err) {
       console.error('Error running verify-change:', err);
+      process.exit(1);
+    }
+  });
+
+// Diff command
+program
+  .command('diff')
+  .description('Compare dependency graph between two git commits')
+  .argument('<commit-a>', 'First git ref (branch, tag, hash, HEAD~N)')
+  .argument('<commit-b>', 'Second git ref')
+  .option('--json', 'Output JSON for scripting')
+  .option('--verbose', 'Show every changed symbol and edge by name')
+  .option('--no-color', 'Disable terminal colors')
+  .option('--no-security', 'Skip security diff (faster)')
+  .option('--no-health', 'Skip health score comparison (faster)')
+  .option('--path <path>', 'Diff a specific subdirectory only')
+  .action(async (commitA: string, commitB: string, options: any) => {
+    trackCommand('diff', packageJson.version);
+    try {
+      await diffCommand(commitA, commitB, '.', options);
+    } catch (err) {
+      console.error('Error running diff:', err);
       process.exit(1);
     }
   });

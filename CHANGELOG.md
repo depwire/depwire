@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.7.0] - 2026-05-29
+
+### Added
+- **`depwire diff` CLI command** — Structural comparison between two git commits
+  - Compare any two git refs (branches, tags, commit hashes, HEAD~N)
+  - Shows added/removed/modified symbols, edge changes, blast radius
+  - Health score delta and security findings diff
+  - JSON output mode for scripting (`--json`)
+  - Verbose mode showing every changed symbol by name (`--verbose`)
+  - Safe: uncommitted changes are stashed and restored even on error (try/finally)
+  - Exit codes: 0 (success), 1 (usage error), 2 (git error), 3 (parse error)
+- Core logic in `src/core/diff.ts` — reusable for future MCP tool integration
+
+---
+
 ## [0.9.0] - 2026-03-13
 
 ### Added

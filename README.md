@@ -46,6 +46,7 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 - [What If simulation](#what-if-simulation)
 - [Security scanner](#security-scanner)
 - [Pre-action verification](#pre-action-verification)
+- [Structural diff between commits](#structural-diff-between-commits)
 - [MCP server — AI integration](#mcp-server--ai-integration)
 - [Cross-language edge detection](#cross-language-edge-detection)
 - [Architecture health score](#architecture-health-score)
@@ -222,6 +223,40 @@ Available as MCP tool `verify_change` and CLI command `depwire verify-change`.
 
 ---
 
+## Structural diff between commits
+
+Compare the dependency graph between any two git refs — branches, tags, commit hashes, HEAD~N.
+
+```bash
+depwire diff main feature/auth-refactor
+depwire diff HEAD~5 HEAD --verbose
+depwire diff v1.5.0 v1.6.0 --json | jq
+```
+
+Example output:
+
+    Depwire diff: v1.5.0..v1.6.0
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Symbols
+      + 114 added      VerifyChangeOptions, verifyChangeCommand, input ...
+      - 66 removed    VerifyChangeInput, BrokenImportEntry, CircularDepEntry ...
+      ~ 47 modified   __filename, __dirname, packageJsonPath ...
+    Edges
+      + 31 added
+      - 9 removed
+    Files
+      152 → 154  (+2 / -0)
+    Blast radius:    4 files affected
+    Health score:    67 → 67  (+0)  [D → D]
+    Security:        1 new / 1 fixed
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Deterministic. No LLM. Safe — uncommitted changes are stashed and restored even if the command errors.
+
+Options: `--json` (machine-readable), `--verbose` (every symbol/edge by name), `--no-security` / `--no-health` (faster runs).
+
+---
+
 ## Visualization
 
 ![Depwire arc diagram visualization](./assets/depwire-demo-viz.gif)
@@ -259,6 +294,7 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 | `depwire docs` | Generate 13 architecture documents |
 | `depwire temporal` | Visualize architecture evolution over git history |
 | `depwire parse` | Parse and export dependency graph as JSON |
+| `depwire diff` | Structural diff between two git commits — symbols, edges, health, security |
 | `depwire mcp` | Start MCP server for AI coding assistants |
 
 All commands auto-detect your project root. No path configuration needed.
@@ -503,6 +539,7 @@ Block PRs that hurt your architecture:
 - What If simulation — CLI + browser UI
 - Security scanner — graph-aware severity elevation
 - Cross-language edge detection — REST API + subprocess
+- Structural diff between commits — `depwire diff`
 - Public SDK — `depwire-cli/sdk`
 - Cloud dashboard — app.depwire.dev
 - PR Impact GitHub Action
