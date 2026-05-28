@@ -987,7 +987,7 @@
             <h1>Your AI doesn't know your architecture. Depwire does.</h1>
             <p class="hero-category">Depwire is the context and safety layer for AI-generated code.</p>
             <h2>Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.</h2>
-            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">11 CLI commands. 23 MCP tools. 13 auto-generated documents. What If simulation. Pre-action verification. Security scanner. Architecture health scoring. Multi-agent coordination.</p>
+            <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">12 CLI commands. 23 MCP tools. 13 auto-generated documents. What If simulation. Pre-action verification. Security scanner. Structural diff. Architecture health scoring. Multi-agent coordination.</p>
             
             <!-- Benchmark Stats -->
             <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem;" class="scroll-reveal">
@@ -1231,6 +1231,22 @@
                     <p>Detects connections between files written in different languages. A TypeScript fetch('/api/users') matched to a Python @app.get('/api/users') route — that's a cross-language edge. Delete the Python route and see the TypeScript callers break.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 3v18M3 12h18M7 7l-4 5 4 5M17 7l4 5-4 5"/>
+                        </svg>
+                    </div>
+                    <h3>Structural Diff Between Commits</h3>
+                    <p>Compare the dependency graph between any two git commits. See what changed structurally — symbols added, removed, modified, edges created or broken, blast radius, health delta, and security diff. Pure deterministic comparison, no LLM.</p>
+                    <ul>
+                        <li>Symbols added / removed / modified</li>
+                        <li>Health score delta with grade change</li>
+                        <li>Security findings diff</li>
+                        <li>Safe: stashes uncommitted changes, restores on error</li>
+                        <li>CLI: <code>depwire diff</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤝</div>
                     <h3>Multi-agent coordination</h3>
                     <p>Coordinate multiple AI agents working on the same codebase. Claim files, verify changes, and record decisions — so agents don't stomp on each other's work.</p>
@@ -1463,6 +1479,12 @@ depwire health
 depwire whatif
 depwire security
 depwire verify-change
+depwire diff
+
+<span class="code-comment"># Compare dependency graph between two commits</span>
+depwire diff main feature/auth-refactor
+depwire diff HEAD~5 HEAD --verbose
+depwire diff v1.5.0 v1.6.0 --json | jq
 
 <span class="code-comment"># Verify a proposed change is safe before applying it</span>
 depwire verify-change --file src/foo.ts --content-from new-version.ts
@@ -1839,7 +1861,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>Latest: v1.6.1 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
+                <p>Latest: v1.7.0 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
             </div>
         </div>
     </footer>
