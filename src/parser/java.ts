@@ -553,6 +553,18 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
       filePath: context.filePath,
       line: node.startPosition.row + 1,
     });
+  } else {
+    // Cross-file instance-method call (e.g. `commonHelper.validateTemplate(...)`)
+    // that local resolution couldn't bind. Emit a deferred edge keyed by the
+    // bare method name; the graph builder resolves these globally by matching
+    // method symbol names. This is what enables cross-file impact analysis.
+    context.edges.push({
+      source: callerId,
+      target: `__unresolved_call__::${calleeName}`,
+      kind: 'calls',
+      filePath: context.filePath,
+      line: node.startPosition.row + 1,
+    });
   }
 }
 

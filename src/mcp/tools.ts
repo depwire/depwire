@@ -37,6 +37,12 @@ import { handleReleaseFiles } from "./tools/release-files.js";
 import { handleGetActiveClaims } from "./tools/get-active-claims.js";
 import { handleRecordDecision } from "./tools/record-decision.js";
 import { handleGetDecisions } from "./tools/get-decisions.js";
+import {
+  serviceToolDefinitions,
+  handleServiceGraph,
+  handleServiceFlow,
+  handleServiceDrift,
+} from "./tools/services.js";
 
 interface ToolDefinition {
   name: string;
@@ -514,6 +520,7 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
         },
       },
     },
+    ...serviceToolDefinitions,
   ];
 }
 
@@ -528,6 +535,12 @@ export async function handleToolCall(
     // connect_repo and get_architecture_summary can work without a loaded project
     if (name === "connect_repo") {
       result = await connectToRepo(args.source, args.subdirectory, state);
+    } else if (name === "service_graph") {
+      result = await handleServiceGraph(args as any);
+    } else if (name === "service_flow") {
+      result = await handleServiceFlow(args as any);
+    } else if (name === "service_drift") {
+      result = await handleServiceDrift(args as any);
     } else if (name === "get_architecture_summary") {
       if (!isProjectLoaded(state)) {
         result = {

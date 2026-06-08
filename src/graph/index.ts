@@ -55,13 +55,57 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
     }
   }
   
-  // Third pass: Add edges (only if both nodes exist)
+  // Build a global index of method/function symbols by bare name so we can
+  // resolve cross-file instance-method calls that the per-file parser left
+  // deferred (target = "__unresolved_call__::<name>"). This is what makes
+  // cross-file impact analysis work for Java instance calls like
+  // `helper.doThing()` where `helper`'s type lives in another file.
+  const symbolsByName = new Map<string, string[]>();
+  for (const file of parsedFiles) {
+    for (const symbol of file.symbols) {
+      if (symbol.kind === 'method' || symbol.kind === 'function') {
+        const list = symbolsByName.get(symbol.name) ?? [];
+        list.push(symbol.id);
+        symbolsByName.set(symbol.name, list);
+      }
+    }
+  }
+
+  // Third pass: Add edges (only if both nodes exist), resolving deferred calls.
   for (const file of parsedFiles) {
     for (const edge of file.edges) {
+      let target = edge.target;
+
+      // Resolve deferred cross-file calls.
+      if (target.startsWith('__unresolved_call__::')) {
+        const name = target.slice('__unresolved_call__::'.length);
+        const candidates = symbolsByName.get(name);
+        if (!candidates || candidates.length === 0) continue; // external/JDK — skip
+        if (candidates.length === 1) {
+          target = candidates[0];
+        } else {
+          // Ambiguous: link to every candidate with the same name. This is a
+          // safe over-approximation for impact analysis (better to show a
+          // few extra dependents than to miss a real one). Skip self-edges.
+          for (const cand of candidates) {
+            if (cand === edge.source) continue;
+            if (graph.hasNode(edge.source) && graph.hasNode(cand)) {
+              graph.mergeEdge(edge.source, cand, {
+                kind: edge.kind,
+                filePath: edge.filePath,
+                line: edge.line,
+                resolved: 'by-name',
+              });
+            }
+          }
+          continue;
+        }
+      }
+
       // Only add edge if both source and target exist
-      if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
+      if (graph.hasNode(edge.source) && graph.hasNode(target)) {
         // Use mergeEdge to avoid duplicate edge errors
-        graph.mergeEdge(edge.source, edge.target, {
+        graph.mergeEdge(edge.source, target, {
           kind: edge.kind,
           filePath: edge.filePath,
           line: edge.line,

@@ -27,6 +27,7 @@ import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
 import { verifyChangeCommand } from './commands/verify-change.js';
 import { diffCommand } from './commands/diff.js';
+import { servicesCommand, servicesFlowCommand, servicesDriftCommand } from './commands/services.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -618,6 +619,86 @@ program
       await verifyChangeCommand(directory || '.', options);
     } catch (err) {
       console.error('Error running verify-change:', err);
+      process.exit(1);
+    }
+  });
+
+// Services command — multi-repo deterministic service-to-service graph
+program
+  .command('services')
+  .description('Build a deterministic service-to-service graph across multiple repos (REST, Kafka, RabbitMQ, SQS)')
+  .argument('[directory]', 'Parent directory containing service repos (defaults to current directory)')
+  .option('--config-repo <paths...>', 'External Spring config repo(s) to use for property resolution')
+  .option('--profile <profiles...>', 'Restrict config loading to files matching these Spring profile tokens (e.g. prod, qa)')
+  .option('--external-sources', 'Add synthetic "external:<topic>" nodes for inbound channels with no UCC-internal producer (visualizes upstream Kafka feeds, etc.)')
+  .option('--min-confidence <level>', 'Drop edges below this confidence: low (default) | medium | high', 'low')
+  .option('--format <format>', 'Output format: text | json | mermaid | dot | html', 'text')
+  .option('-o, --output <file>', 'Write output to a file instead of stdout')
+  .option('--no-open', 'Do not open the html viewer in a browser (with --format html)')
+  .option('--include-nested', 'Recurse into nested services (multi-module Gradle builds)')
+  .option('--include-tests', 'Include test sources during detection')
+  .option('--max-depth <n>', 'Maximum directory depth when scanning for services', '2')
+  .option('--unresolved', 'Show unresolved outbound channels (no matching listener)')
+  .option('--verbose', 'Show progress to stderr')
+  .action(async (directory: string | undefined, options: any) => {
+    trackCommand('services', packageJson.version);
+    try {
+      await servicesCommand(directory, options);
+    } catch (err) {
+      console.error('Error analyzing services:', err);
+      process.exit(1);
+    }
+  });
+
+// Services flow command — cross-service impact traversal from a method/service
+program
+  .command('services-flow')
+  .description('Trace cross-service impact: if you touch a method/service, which UCC flows are affected')
+  .argument('[directory]', 'Parent directory containing service repos (defaults to current directory)')
+  .requiredOption('--service <name>', 'Service that owns the symbol you are changing (name or substring)')
+  .option('--symbol <name>', 'Symbol you are changing — class, method, field, constant, or interface (name or Class.member)')
+  .option('--method <name>', 'Alias for --symbol (kept for convenience)')
+  .option('--direction <dir>', 'downstream (what this affects) or upstream (what affects this)', 'downstream')
+  .option('--depth <n>', 'Max hop depth', '10')
+  .option('--config-repo <paths...>', 'External Spring config repo(s) for property resolution')
+  .option('--profile <profiles...>', 'Restrict config loading to Spring profile tokens (e.g. prod)')
+  .option('--external-sources', 'Include external upstream feeds (Kafka topics, etc.) as flow sources')
+  .option('--format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write output to a file instead of stdout')
+  .option('--include-nested', 'Recurse into nested services')
+  .option('--include-tests', 'Include test sources during detection')
+  .option('--max-depth <n>', 'Maximum directory depth when scanning for services', '2')
+  .option('--verbose', 'Show progress to stderr')
+  .action(async (directory: string | undefined, options: any) => {
+    trackCommand('services-flow', packageJson.version);
+    try {
+      await servicesFlowCommand(directory, options);
+    } catch (err) {
+      console.error('Error tracing service flow:', err);
+      process.exit(1);
+    }
+  });
+
+// Services drift command — config vs code mismatch detection
+program
+  .command('services-drift')
+  .description('Report where config-declared stream bindings disagree with channels detected in code')
+  .argument('[directory]', 'Parent directory containing service repos (defaults to current directory)')
+  .option('--config-repo <paths...>', 'External Spring config repo(s) for property resolution')
+  .option('--profile <profiles...>', 'Restrict config loading to Spring profile tokens (e.g. prod)')
+  .option('--format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write output to a file instead of stdout')
+  .option('--include-nested', 'Recurse into nested services')
+  .option('--include-tests', 'Include test sources during detection')
+  .option('--max-depth <n>', 'Maximum directory depth when scanning for services', '2')
+  .option('--fail-on-drift', 'Exit 1 if any drift is found (for CI)')
+  .option('--verbose', 'Show progress to stderr')
+  .action(async (directory: string | undefined, options: any) => {
+    trackCommand('services-drift', packageJson.version);
+    try {
+      await servicesDriftCommand(directory, options);
+    } catch (err) {
+      console.error('Error detecting service drift:', err);
       process.exit(1);
     }
   });

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import {
+  analyzeServices,
+  analyzeServicesWithDrift,
   checkoutCommit,
   createEmptyState,
   createSnapshot,
@@ -9,16 +11,18 @@ import {
   loadSnapshot,
   popStash,
   prepareVizData,
+  renderMethodFlow,
   restoreOriginal,
   sampleCommits,
   saveSnapshot,
   startMcpServer,
   startVizServer,
   stashChanges,
+  traceMethodFlow,
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-6I43HE2H.js";
+} from "./chunk-3WK6VMY7.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -32,12 +36,15 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-EOJKGCXB.js";
+} from "./chunk-KNSOQ257.js";
+import {
+  renderDriftText
+} from "./chunk-K57IJJUW.js";
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve6, dirname as dirname4, join as join5 } from "path";
-import { writeFileSync, readFileSync as readFileSync4, existsSync } from "fs";
+import { resolve as resolve7, dirname as dirname4, join as join5 } from "path";
+import { writeFileSync as writeFileSync2, readFileSync as readFileSync4, existsSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
 // src/graph/serializer.ts
@@ -307,10 +314,10 @@ async function findAvailablePort(startPort) {
   const net = await import("net");
   for (let attempt = 0; attempt < 10; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve7) => {
-      const server = net.createServer().once("error", () => resolve7(false)).once("listening", () => {
+    const isAvailable = await new Promise((resolve8) => {
+      const server = net.createServer().once("error", () => resolve8(false)).once("listening", () => {
         server.close();
-        resolve7(true);
+        resolve8(true);
       }).listen(testPort, "127.0.0.1");
     });
     if (isAvailable) {
@@ -354,13 +361,13 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
       console.log("  (Could not open browser automatically)");
     });
   });
-  await new Promise((resolve7, reject) => {
+  await new Promise((resolve8, reject) => {
     server.on("error", reject);
     process.on("SIGINT", () => {
       console.log("\n\nShutting down temporal server...");
       server.close(() => {
         console.log("Server stopped");
-        resolve7();
+        resolve8();
         process.exit(0);
       });
     });
@@ -850,14 +857,14 @@ async function findAvailablePort2(startPort, maxAttempts = 10) {
   const net = await import("net");
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve7) => {
+    const isAvailable = await new Promise((resolve8) => {
       const server = net.createServer();
       server.once("error", () => {
-        resolve7(false);
+        resolve8(false);
       });
       server.once("listening", () => {
         server.close();
-        resolve7(true);
+        resolve8(true);
       });
       server.listen(testPort, "127.0.0.1");
     });
@@ -1844,6 +1851,567 @@ function printHumanReadable2(result, options) {
   console.log("");
 }
 
+// src/commands/services.ts
+import { resolve as resolve6 } from "path";
+import { writeFileSync } from "fs";
+
+// src/services/render.ts
+function renderText(graph) {
+  const lines = [];
+  lines.push("");
+  lines.push(`Depwire service graph \u2014 ${graph.rootPath}`);
+  lines.push("\u2550".repeat(70));
+  lines.push(`Services:    ${graph.stats.serviceCount}`);
+  lines.push(`Edges:       ${graph.stats.edgeCount}`);
+  lines.push(`  REST:        ${graph.stats.restEdges}`);
+  lines.push(`  Kafka:       ${graph.stats.kafkaEdges}`);
+  lines.push(`  RabbitMQ:    ${graph.stats.rabbitmqEdges}`);
+  lines.push(`  SQS:         ${graph.stats.sqsEdges}`);
+  lines.push(`  Kinesis:     ${graph.stats.kinesisEdges}`);
+  const streamBinding = graph.edges.filter((e) => e.kind === "stream-binding").length;
+  lines.push(`  Stream:      ${streamBinding}`);
+  lines.push(`Unresolved:  ${graph.unresolved.length}  (outbound calls with no matching listener)`);
+  lines.push(`Time:        ${graph.stats.detectionTimeMs}ms`);
+  lines.push("");
+  lines.push("Services");
+  lines.push("\u2500".repeat(70));
+  const colWidth = Math.max(...graph.services.map((s) => s.name.length), 10);
+  for (const svc of [...graph.services].sort((a, b) => a.name.localeCompare(b.name))) {
+    const inbound = svc.channels.filter((c) => c.direction === "inbound").length;
+    const outbound = svc.channels.filter((c) => c.direction === "outbound").length;
+    lines.push(
+      `  ${svc.name.padEnd(colWidth)}  files: ${String(svc.filesScanned).padStart(4)}  in: ${String(inbound).padStart(3)}  out: ${String(outbound).padStart(3)}`
+    );
+  }
+  lines.push("");
+  lines.push("Service Edges");
+  lines.push("\u2500".repeat(70));
+  const grouped = /* @__PURE__ */ new Map();
+  for (const edge of graph.edges) {
+    const list = grouped.get(edge.source) ?? [];
+    list.push(edge);
+    grouped.set(edge.source, list);
+  }
+  for (const source of [...grouped.keys()].sort()) {
+    lines.push("");
+    lines.push(`\u25B6 ${source}`);
+    for (const edge of grouped.get(source).sort((a, b) => a.target.localeCompare(b.target))) {
+      const tag = edge.kind.toUpperCase().padEnd(8);
+      const method = edge.httpMethod ? `[${edge.httpMethod}] ` : "";
+      const conf = edge.confidence === "low" ? " (low confidence)" : "";
+      lines.push(`    \u2514\u2500 ${tag} ${method}${edge.identifier} \u2192 ${edge.target}${conf}`);
+      if (edge.sites.length > 0) {
+        const first = edge.sites[0];
+        lines.push(`         from ${first.filePath}:${first.line}${edge.sites.length > 1 ? ` (+${edge.sites.length - 1} more sites)` : ""}`);
+      }
+    }
+  }
+  if (graph.unresolved.length > 0) {
+    lines.push("");
+    lines.push("Unresolved outbound channels (no matching inbound listener)");
+    lines.push("\u2500".repeat(70));
+    const byService = /* @__PURE__ */ new Map();
+    for (const u of graph.unresolved) {
+      const list = byService.get(u.serviceName) ?? [];
+      list.push(u);
+      byService.set(u.serviceName, list);
+    }
+    for (const svc of [...byService.keys()].sort()) {
+      lines.push("");
+      lines.push(`\u25B6 ${svc}`);
+      for (const u of byService.get(svc).slice(0, 20)) {
+        const tag = u.kind.toUpperCase().padEnd(8);
+        const method = u.httpMethod ? `[${u.httpMethod}] ` : "";
+        lines.push(`    \xB7 ${tag} ${method}${u.identifier}`);
+        lines.push(`         from ${u.filePath}:${u.line}`);
+      }
+      const total = byService.get(svc).length;
+      if (total > 20) lines.push(`    \xB7 ... ${total - 20} more`);
+    }
+  }
+  lines.push("");
+  return lines.join("\n");
+}
+function renderMermaid(graph) {
+  const lines = ["flowchart LR"];
+  for (const svc of graph.services) {
+    const id = sanitizeMermaidId(svc.name);
+    lines.push(`  ${id}["${svc.name}"]`);
+  }
+  const seen = /* @__PURE__ */ new Set();
+  for (const edge of graph.edges) {
+    const key = `${edge.source}|${edge.target}|${edge.kind}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const sourceId = sanitizeMermaidId(edge.source);
+    const targetId = sanitizeMermaidId(edge.target);
+    const label = labelForKind(edge.kind, edge.httpMethod);
+    lines.push(`  ${sourceId} -- "${label}" --> ${targetId}`);
+  }
+  return lines.join("\n");
+}
+function renderDot(graph) {
+  const lines = ["digraph services {", "  rankdir=LR;", "  node [shape=box, style=rounded];"];
+  for (const svc of graph.services) {
+    lines.push(`  "${svc.name}";`);
+  }
+  for (const edge of graph.edges) {
+    const label = labelForKind(edge.kind, edge.httpMethod);
+    lines.push(`  "${edge.source}" -> "${edge.target}" [label="${label}"];`);
+  }
+  lines.push("}");
+  return lines.join("\n");
+}
+function sanitizeMermaidId(name) {
+  return name.replace(/[^A-Za-z0-9_]/g, "_");
+}
+function labelForKind(kind, httpMethod) {
+  if (kind === "rest") return httpMethod ? `REST ${httpMethod}` : "REST";
+  return kind;
+}
+
+// src/services/render-html.ts
+var KIND_COLORS = {
+  rest: "#00d4aa",
+  kafka: "#f0a500",
+  rabbitmq: "#ff6b35",
+  sqs: "#7c4dff",
+  kinesis: "#39c2d7",
+  "stream-binding": "#9c27b0"
+};
+function renderHtml(graph) {
+  const visData = toVisData(graph);
+  const json = JSON.stringify(visData);
+  const stats = graph.stats;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Depwire \u2014 service graph</title>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0e0d;
+      --panel: #11201a;
+      --panel-border: #1f3a30;
+      --text: #d6efe5;
+      --text-dim: #8aa599;
+      --accent: #00d4aa;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; border-bottom: 1px solid var(--panel-border);
+      background: var(--panel);
+    }
+    header h1 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0.4px; }
+    header h1 .accent { color: var(--accent); }
+    header .stats { font-size: 12px; color: var(--text-dim); }
+    header .stats span { margin-left: 16px; }
+    header .stats span b { color: var(--text); font-weight: 600; }
+    main { display: flex; height: calc(100vh - 50px); }
+    #network { flex: 1; background: var(--bg); }
+    aside {
+      width: 320px; padding: 14px 16px; overflow-y: auto;
+      border-left: 1px solid var(--panel-border); background: var(--panel);
+      font-size: 12px;
+    }
+    aside h2 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-dim); }
+    aside section { margin-bottom: 18px; }
+    aside .legend-row { display: flex; align-items: center; margin-bottom: 6px; }
+    aside .legend-row .swatch { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+    aside .filters label { display: flex; align-items: center; cursor: pointer; padding: 4px 0; }
+    aside .filters input { margin-right: 8px; accent-color: var(--accent); }
+    aside .selection { font-size: 12px; line-height: 1.5; }
+    aside .selection .empty { color: var(--text-dim); }
+    aside .selection .row { padding: 6px 0; border-bottom: 1px dashed var(--panel-border); }
+    aside .selection .row:last-child { border-bottom: 0; }
+    aside .selection .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; margin-right: 6px; color: #001; font-weight: 600; }
+    aside .selection .file { color: var(--text-dim); font-size: 11px; }
+    aside footer { color: var(--text-dim); font-size: 10px; margin-top: 16px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span class="accent">Depwire</span> service graph</h1>
+    <div class="stats">
+      <span>services <b>${stats.serviceCount}</b></span>
+      <span>edges <b>${stats.edgeCount}</b></span>
+      <span>REST <b>${stats.restEdges}</b></span>
+      <span>Kafka <b>${stats.kafkaEdges}</b></span>
+      <span>RabbitMQ <b>${stats.rabbitmqEdges}</b></span>
+      <span>SQS <b>${stats.sqsEdges}</b></span>
+      <span>unresolved <b>${graph.unresolved.length}</b></span>
+    </div>
+  </header>
+  <main>
+    <div id="network"></div>
+    <aside>
+      <section>
+        <h2>Legend</h2>
+        ${Object.entries(KIND_COLORS).map(([k, c]) => `
+          <div class="legend-row"><span class="swatch" style="background:${c}"></span>${k}</div>
+        `).join("")}
+      </section>
+      <section class="filters">
+        <h2>Channel filters</h2>
+        ${Object.keys(KIND_COLORS).map((k) => `
+          <label><input type="checkbox" value="${k}" checked />${k}</label>
+        `).join("")}
+      </section>
+      <section>
+        <h2>Selection</h2>
+        <div class="selection" id="selection"><span class="empty">Click a node or edge.</span></div>
+      </section>
+      <footer>
+        Deterministic graph built from source.<br>
+        Click a node to highlight its neighbors. Drag to rearrange.
+      </footer>
+    </aside>
+  </main>
+
+  <script>
+    const data = ${json};
+    const KIND_COLORS = ${JSON.stringify(KIND_COLORS)};
+
+    const visNodes = new vis.DataSet(data.nodes);
+    const visEdges = new vis.DataSet(data.edges);
+
+    const container = document.getElementById('network');
+    const network = new vis.Network(container, { nodes: visNodes, edges: visEdges }, {
+      autoResize: true,
+      physics: {
+        solver: 'forceAtlas2Based',
+        forceAtlas2Based: { gravitationalConstant: -55, springLength: 140, avoidOverlap: 0.6 },
+        stabilization: { iterations: 200 },
+      },
+      interaction: { hover: true, multiselect: true, navigationButtons: true, keyboard: true },
+      nodes: {
+        shape: 'box',
+        margin: { top: 10, right: 14, bottom: 10, left: 14 },
+        color: { background: '#11201a', border: '#1f3a30', highlight: { background: '#1c3329', border: '#00d4aa' } },
+        font: { color: '#d6efe5', face: 'ui-sans-serif', size: 14 },
+        borderWidth: 1,
+      },
+      edges: {
+        arrows: 'to',
+        smooth: { type: 'dynamic' },
+        font: { color: '#8aa599', size: 11, strokeWidth: 0, align: 'top' },
+      },
+    });
+
+    // Selection panel
+    const selectionEl = document.getElementById('selection');
+    function renderSelection(payload) {
+      if (!payload) {
+        selectionEl.innerHTML = '<span class="empty">Click a node or edge.</span>';
+        return;
+      }
+      selectionEl.innerHTML = payload;
+    }
+
+    network.on('selectNode', params => {
+      const id = params.nodes[0];
+      const node = data.nodes.find(n => n.id === id);
+      if (!node) return;
+      const incoming = data.edges.filter(e => e.to === id);
+      const outgoing = data.edges.filter(e => e.from === id);
+      renderSelection(\`
+        <div class="row"><b>\${node.label}</b></div>
+        <div class="row"><b>incoming</b> (\${incoming.length})\${incoming.map(formatEdgeRow).join('')}</div>
+        <div class="row"><b>outgoing</b> (\${outgoing.length})\${outgoing.map(formatEdgeRow).join('')}</div>
+      \`);
+    });
+    network.on('selectEdge', params => {
+      if (params.nodes.length > 0) return;
+      const id = params.edges[0];
+      const edge = data.edges.find(e => e.id === id);
+      if (!edge) return;
+      renderSelection(\`
+        <div class="row"><b>\${edge.from}</b> \u2192 <b>\${edge.to}</b></div>
+        <div class="row"><span class="badge" style="background:\${KIND_COLORS[edge.kind] || '#888'}">\${edge.kind}\${edge.method ? ' ' + edge.method : ''}</span>\${edge.identifier}</div>
+        \${(edge.sites || []).map(s => '<div class="file">' + s + '</div>').join('')}
+      \`);
+    });
+    network.on('deselectNode', () => renderSelection(null));
+    network.on('deselectEdge', () => renderSelection(null));
+
+    function formatEdgeRow(edge) {
+      const color = KIND_COLORS[edge.kind] || '#888';
+      const peer = edge.from === edge._self ? edge.to : edge.from;
+      return \`<div class="row"><span class="badge" style="background:\${color}">\${edge.kind}</span>\${edge.from} \u2192 \${edge.to}<div class="file">\${edge.identifier}</div></div>\`;
+    }
+
+    // Filters
+    document.querySelectorAll('.filters input').forEach(el => {
+      el.addEventListener('change', () => {
+        const enabled = new Set([...document.querySelectorAll('.filters input:checked')].map(i => i.value));
+        const visible = data.edges.filter(e => enabled.has(e.kind));
+        visEdges.clear();
+        visEdges.add(visible);
+      });
+    });
+  </script>
+</body>
+</html>`;
+}
+function toVisData(graph) {
+  const nodes = graph.services.map((s) => ({ id: s.name, label: s.name }));
+  const knownIds = new Set(nodes.map((n) => n.id));
+  for (const e of graph.edges) {
+    if (e.source.startsWith("external-") && !knownIds.has(e.source)) {
+      knownIds.add(e.source);
+      nodes.push({ id: e.source, label: e.source.replace(/^external-[^:]+:/, "\u21E1 ") });
+    }
+  }
+  const edges = graph.edges.map((e, idx) => ({
+    id: "e" + idx,
+    from: e.source,
+    to: e.target,
+    label: e.kind === "rest" ? `REST ${e.httpMethod ?? ""}`.trim() : e.kind,
+    color: { color: KIND_COLORS[e.kind] ?? "#888" },
+    kind: e.kind,
+    method: e.httpMethod,
+    identifier: e.identifier,
+    sites: e.sites.slice(0, 5).map((s) => `${s.filePath}:${s.line}`)
+  }));
+  return { nodes, edges };
+}
+
+// src/services/flow.ts
+function traceFlow(graph, startService, options = {}) {
+  const direction = options.direction ?? "downstream";
+  const maxDepth = options.maxDepth ?? 10;
+  const filter = options.filter?.toLowerCase();
+  const adj = /* @__PURE__ */ new Map();
+  for (const e of graph.edges) {
+    const key = direction === "downstream" ? e.source : e.target;
+    const list = adj.get(key) ?? [];
+    list.push(e);
+    adj.set(key, list);
+  }
+  const steps = [];
+  const reached = /* @__PURE__ */ new Set([startService]);
+  const visitedEdges = /* @__PURE__ */ new Set();
+  const queue = [{ service: startService, depth: 0 }];
+  while (queue.length > 0) {
+    const { service, depth } = queue.shift();
+    if (depth >= maxDepth) continue;
+    const outgoing = adj.get(service) ?? [];
+    for (const e of outgoing) {
+      const peer = direction === "downstream" ? e.target : e.source;
+      if (depth === 0 && filter) {
+        const sites = direction === "downstream" ? e.sites : e.targetSites ?? [];
+        const matchesFilter = sites.some(
+          (s) => s.method && s.method.toLowerCase().includes(filter) || s.cls && s.cls.toLowerCase().includes(filter) || s.filePath && s.filePath.toLowerCase().includes(filter)
+        );
+        if (!matchesFilter) continue;
+      }
+      const edgeKey = `${e.source}|${e.target}|${e.kind}|${e.identifier}|${depth}`;
+      if (visitedEdges.has(edgeKey)) continue;
+      visitedEdges.add(edgeKey);
+      const srcSite = e.sites && e.sites[0] || void 0;
+      const tgtSite = e.targetSites && e.targetSites[0] || void 0;
+      steps.push({
+        depth: depth + 1,
+        fromService: e.source,
+        toService: e.target,
+        kind: e.kind,
+        identifier: e.identifier,
+        httpMethod: e.httpMethod,
+        fromMethod: srcSite?.method,
+        toMethod: tgtSite?.method,
+        fromSite: srcSite ? `${srcSite.filePath}:${srcSite.line}` : void 0,
+        toSite: tgtSite ? `${tgtSite.filePath}:${tgtSite.line}` : void 0,
+        confidence: e.confidence
+      });
+      if (!reached.has(peer)) {
+        reached.add(peer);
+        queue.push({ service: peer, depth: depth + 1 });
+      } else {
+        queue.push({ service: peer, depth: depth + 1 });
+      }
+    }
+  }
+  return {
+    start: startService,
+    startFilter: options.filter,
+    direction,
+    steps,
+    reachedServices: [...reached]
+  };
+}
+function renderFlowText(result) {
+  const lines = [];
+  lines.push("");
+  lines.push(`Impact flow (${result.direction}) from: ${result.start}${result.startFilter ? ` [filter: ${result.startFilter}]` : ""}`);
+  lines.push("\u2550".repeat(78));
+  if (result.steps.length === 0) {
+    lines.push("No cross-service flows found.");
+    lines.push("");
+    return lines.join("\n");
+  }
+  const byDepth = /* @__PURE__ */ new Map();
+  for (const s of result.steps) {
+    const list = byDepth.get(s.depth) ?? [];
+    list.push(s);
+    byDepth.set(s.depth, list);
+  }
+  for (const depth of [...byDepth.keys()].sort((a, b) => a - b)) {
+    lines.push("");
+    lines.push(`\u2500\u2500 hop ${depth} ${"\u2500".repeat(60)}`);
+    for (const s of byDepth.get(depth)) {
+      const arrowLabel = s.kind === "rest" ? `REST ${s.httpMethod ?? ""}`.trim() : s.kind;
+      const fromM = s.fromMethod ? `${s.fromService}.${s.fromMethod}()` : s.fromService;
+      const toM = s.toMethod ? `${s.toService}.${s.toMethod}()` : s.toService;
+      const conf = s.confidence === "low" ? " (low)" : "";
+      lines.push(`  ${fromM}`);
+      lines.push(`    \u2500\u2500 ${arrowLabel} : ${s.identifier}${conf} \u2500\u2500\u25B6`);
+      lines.push(`  ${toM}`);
+      if (s.fromSite) lines.push(`       producer: ${s.fromSite}`);
+      if (s.toSite) lines.push(`       consumer: ${s.toSite}`);
+    }
+  }
+  lines.push("");
+  lines.push(`Reached ${result.reachedServices.length} services: ${result.reachedServices.join(", ")}`);
+  lines.push("");
+  return lines.join("\n");
+}
+
+// src/commands/services.ts
+async function servicesCommand(parentPath, options) {
+  const root = resolve6(parentPath || ".");
+  const format = options.format ?? "text";
+  const graph = await analyzeServices(root, {
+    configRepos: options.configRepo?.map((p) => resolve6(p)),
+    profiles: options.profile,
+    showExternalSources: options.externalSources,
+    minConfidence: options.minConfidence,
+    includeNested: options.includeNested,
+    includeTests: options.includeTests,
+    maxDepth: options.maxDepth ? parseInt(options.maxDepth, 10) : void 0,
+    verbose: options.verbose
+  });
+  let output;
+  switch (format) {
+    case "json":
+      output = JSON.stringify(graph, null, 2);
+      break;
+    case "mermaid":
+      output = renderMermaid(graph);
+      break;
+    case "dot":
+      output = renderDot(graph);
+      break;
+    case "html":
+      output = renderHtml(graph);
+      break;
+    case "text":
+    default:
+      output = renderText(graph);
+      break;
+  }
+  if (options.output) {
+    writeFileSync(resolve6(options.output), output, "utf-8");
+    console.error(`Wrote ${format} output to ${options.output}`);
+    if (format === "html" && options.open !== false) {
+      try {
+        const open3 = (await import("open")).default;
+        await open3(resolve6(options.output));
+      } catch {
+      }
+    }
+  } else if (format === "html") {
+    const { tmpdir } = await import("os");
+    const path = resolve6(tmpdir(), `depwire-services-${Date.now()}.html`);
+    writeFileSync(path, output, "utf-8");
+    console.error(`Wrote ${format} output to ${path}`);
+    if (options.open !== false) {
+      try {
+        const open3 = (await import("open")).default;
+        await open3(path);
+      } catch {
+        console.error(`Open it manually: ${path}`);
+      }
+    }
+  } else {
+    console.log(output);
+  }
+}
+async function servicesFlowCommand(parentPath, options) {
+  const root = resolve6(parentPath || ".");
+  if (!options.service) {
+    console.error("Error: --service <name> is required (the service that owns the method you are changing).");
+    process.exitCode = 1;
+    return;
+  }
+  const graph = await analyzeServices(root, {
+    configRepos: options.configRepo?.map((p) => resolve6(p)),
+    profiles: options.profile,
+    showExternalSources: options.externalSources,
+    includeNested: options.includeNested,
+    includeTests: options.includeTests,
+    maxDepth: options.maxDepth ? parseInt(options.maxDepth, 10) : void 0,
+    verbose: options.verbose
+  });
+  const match = graph.services.find((s) => s.name === options.service) ?? graph.services.find((s) => s.name.toLowerCase().includes(options.service.toLowerCase()));
+  if (!match) {
+    console.error(`Error: service "${options.service}" not found. Available services:`);
+    for (const s of graph.services) console.error("  " + s.name);
+    process.exitCode = 1;
+    return;
+  }
+  const symbol = options.symbol || options.method;
+  if (symbol) {
+    const result2 = await traceMethodFlow(graph, match.name, symbol, {
+      maxDepth: options.depth ? parseInt(options.depth, 10) : void 0,
+      verbose: options.verbose
+    });
+    const output2 = options.format === "json" ? JSON.stringify(result2, null, 2) : renderMethodFlow(result2);
+    if (options.output) {
+      writeFileSync(resolve6(options.output), output2, "utf-8");
+      console.error(`Wrote flow output to ${options.output}`);
+    } else {
+      console.log(output2);
+    }
+    return;
+  }
+  const result = traceFlow(graph, match.name, {
+    filter: options.method,
+    direction: options.direction ?? "downstream",
+    maxDepth: options.depth ? parseInt(options.depth, 10) : void 0
+  });
+  const output = options.format === "json" ? JSON.stringify(result, null, 2) : renderFlowText(result);
+  if (options.output) {
+    writeFileSync(resolve6(options.output), output, "utf-8");
+    console.error(`Wrote flow output to ${options.output}`);
+  } else {
+    console.log(output);
+  }
+}
+async function servicesDriftCommand(parentPath, options) {
+  const root = resolve6(parentPath || ".");
+  const { drift } = await analyzeServicesWithDrift(root, {
+    configRepos: options.configRepo?.map((p) => resolve6(p)),
+    profiles: options.profile,
+    includeNested: options.includeNested,
+    includeTests: options.includeTests,
+    maxDepth: options.maxDepth ? parseInt(options.maxDepth, 10) : void 0,
+    verbose: options.verbose
+  });
+  const output = options.format === "json" ? JSON.stringify(drift, null, 2) : renderDriftText(drift);
+  if (options.output) {
+    writeFileSync(resolve6(options.output), output, "utf-8");
+    console.error(`Wrote drift report to ${options.output}`);
+  } else {
+    console.log(output);
+  }
+  if (options.failOnDrift && (drift.stats.configOnly > 0 || drift.stats.codeOnly > 0)) {
+    process.exitCode = 1;
+  }
+}
+
 // src/index.ts
 var __filename4 = fileURLToPath4(import.meta.url);
 var __dirname4 = dirname4(__filename4);
@@ -1855,7 +2423,7 @@ program.command("parse").description("Parse a project and build dependency graph
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1865,7 +2433,7 @@ program.command("parse").description("Parse a project and build dependency graph
     const graph = buildGraph(parsedFiles, projectRoot);
     const projectGraph = exportToJSON(graph, projectRoot);
     const json = options.pretty ? JSON.stringify(projectGraph, null, 2) : JSON.stringify(projectGraph);
-    writeFileSync(options.output, json, "utf-8");
+    writeFileSync2(options.output, json, "utf-8");
     console.log(`Graph exported to: ${options.output}`);
     if (options.stats) {
       const elapsed = Date.now() - startTime;
@@ -1894,8 +2462,8 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   trackCommand("query", packageJson.version);
   try {
-    const projectRoot = resolve6(directory);
-    const cacheFile = resolve6("depwire-output.json");
+    const projectRoot = resolve7(directory);
+    const cacheFile = resolve7("depwire-output.json");
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");
@@ -1943,7 +2511,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("viz", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1966,7 +2534,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
   trackCommand("temporal", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
       commits: parseInt(options.commits, 10),
       strategy: options.strategy,
@@ -1986,7 +2554,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     const state = createEmptyState();
     let projectRootToConnect = null;
     if (directory) {
-      projectRootToConnect = resolve6(directory);
+      projectRootToConnect = resolve7(directory);
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
@@ -2047,8 +2615,8 @@ program.command("docs").description("Generate comprehensive codebase documentati
   trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve6(options.output) : join5(projectRoot, ".depwire");
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
+    const outputDir = options.output ? resolve7(options.output) : join5(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -2110,11 +2678,11 @@ async function promptGitignore() {
     input: process.stdin,
     output: process.stdout
   });
-  return new Promise((resolve7) => {
+  return new Promise((resolve8) => {
     rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve7(normalized === "" || normalized === "y" || normalized === "yes");
+      resolve8(normalized === "" || normalized === "y" || normalized === "yes");
     });
   });
 }
@@ -2144,7 +2712,7 @@ ${pattern}
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   trackCommand("health", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -2168,7 +2736,7 @@ program.command("health").description("Analyze dependency architecture health (0
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   trackCommand("dead-code", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -2219,6 +2787,33 @@ program.command("verify-change").description("Verify a proposed code change is s
     await verifyChangeCommand(directory || ".", options);
   } catch (err) {
     console.error("Error running verify-change:", err);
+    process.exit(1);
+  }
+});
+program.command("services").description("Build a deterministic service-to-service graph across multiple repos (REST, Kafka, RabbitMQ, SQS)").argument("[directory]", "Parent directory containing service repos (defaults to current directory)").option("--config-repo <paths...>", "External Spring config repo(s) to use for property resolution").option("--profile <profiles...>", "Restrict config loading to files matching these Spring profile tokens (e.g. prod, qa)").option("--external-sources", 'Add synthetic "external:<topic>" nodes for inbound channels with no UCC-internal producer (visualizes upstream Kafka feeds, etc.)').option("--min-confidence <level>", "Drop edges below this confidence: low (default) | medium | high", "low").option("--format <format>", "Output format: text | json | mermaid | dot | html", "text").option("-o, --output <file>", "Write output to a file instead of stdout").option("--no-open", "Do not open the html viewer in a browser (with --format html)").option("--include-nested", "Recurse into nested services (multi-module Gradle builds)").option("--include-tests", "Include test sources during detection").option("--max-depth <n>", "Maximum directory depth when scanning for services", "2").option("--unresolved", "Show unresolved outbound channels (no matching listener)").option("--verbose", "Show progress to stderr").action(async (directory, options) => {
+  trackCommand("services", packageJson.version);
+  try {
+    await servicesCommand(directory, options);
+  } catch (err) {
+    console.error("Error analyzing services:", err);
+    process.exit(1);
+  }
+});
+program.command("services-flow").description("Trace cross-service impact: if you touch a method/service, which UCC flows are affected").argument("[directory]", "Parent directory containing service repos (defaults to current directory)").requiredOption("--service <name>", "Service that owns the symbol you are changing (name or substring)").option("--symbol <name>", "Symbol you are changing \u2014 class, method, field, constant, or interface (name or Class.member)").option("--method <name>", "Alias for --symbol (kept for convenience)").option("--direction <dir>", "downstream (what this affects) or upstream (what affects this)", "downstream").option("--depth <n>", "Max hop depth", "10").option("--config-repo <paths...>", "External Spring config repo(s) for property resolution").option("--profile <profiles...>", "Restrict config loading to Spring profile tokens (e.g. prod)").option("--external-sources", "Include external upstream feeds (Kafka topics, etc.) as flow sources").option("--format <format>", "Output format: text | json", "text").option("-o, --output <file>", "Write output to a file instead of stdout").option("--include-nested", "Recurse into nested services").option("--include-tests", "Include test sources during detection").option("--max-depth <n>", "Maximum directory depth when scanning for services", "2").option("--verbose", "Show progress to stderr").action(async (directory, options) => {
+  trackCommand("services-flow", packageJson.version);
+  try {
+    await servicesFlowCommand(directory, options);
+  } catch (err) {
+    console.error("Error tracing service flow:", err);
+    process.exit(1);
+  }
+});
+program.command("services-drift").description("Report where config-declared stream bindings disagree with channels detected in code").argument("[directory]", "Parent directory containing service repos (defaults to current directory)").option("--config-repo <paths...>", "External Spring config repo(s) for property resolution").option("--profile <profiles...>", "Restrict config loading to Spring profile tokens (e.g. prod)").option("--format <format>", "Output format: text | json", "text").option("-o, --output <file>", "Write output to a file instead of stdout").option("--include-nested", "Recurse into nested services").option("--include-tests", "Include test sources during detection").option("--max-depth <n>", "Maximum directory depth when scanning for services", "2").option("--fail-on-drift", "Exit 1 if any drift is found (for CI)").option("--verbose", "Show progress to stderr").action(async (directory, options) => {
+  trackCommand("services-drift", packageJson.version);
+  try {
+    await servicesDriftCommand(directory, options);
+  } catch (err) {
+    console.error("Error detecting service drift:", err);
     process.exit(1);
   }
 });

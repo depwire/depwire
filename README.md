@@ -6,7 +6,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/depwire-cli?color=00d4aa&label=downloads%2Fmonth)](https://www.npmjs.com/package/depwire-cli)
 [![GitHub stars](https://img.shields.io/github/stars/depwire/depwire?color=00d4aa&style=flat)](https://github.com/depwire/depwire/stargazers)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
-[![MCP Compatible](https://img.shields.io/badge/MCP-23%20tools-00d4aa)](https://github.com/depwire/depwire)
+[![MCP Compatible](https://img.shields.io/badge/MCP-26%20tools-00d4aa)](https://github.com/depwire/depwire)
 
 [![Languages](https://img.shields.io/badge/languages-16-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
@@ -89,7 +89,7 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 Depwire is the context and safety layer for AI-generated code.
 
-Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 23 MCP tools.
+Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 26 MCP tools.
 
 Four guarantees:
 
@@ -295,15 +295,71 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 | `depwire temporal` | Visualize architecture evolution over git history |
 | `depwire parse` | Parse and export dependency graph as JSON |
 | `depwire diff` | Structural diff between two git commits — symbols, edges, health, security |
+| `depwire services` | Cross-service dependency graph across many repos — REST, Kafka, RabbitMQ, SQS, Kinesis, Spring Cloud Stream |
+| `depwire services-flow` | Symbol-level cross-service impact — if you touch a class/method/field, which service flows break |
+| `depwire services-drift` | Config vs code drift — bindings declared but unused, destinations used but undeclared |
 | `depwire mcp` | Start MCP server for AI coding assistants |
 
 All commands auto-detect your project root. No path configuration needed.
 
 ---
 
+## Multi-service analysis (microservice estates)
+
+The commands above analyze a single repo. `services`, `services-flow`, and `services-drift` analyze an entire folder of service repos and map the connections **between** them — deterministically, from source plus Spring config.
+
+```bash
+# Cross-service graph across all repos under ./git
+depwire services ./git --config-repo ./git/config-repo --profile prod
+
+# Output formats: text (default), json, mermaid, dot, html
+depwire services ./git --config-repo ./git/config-repo --profile prod --format html -o services.html
+
+# Only keep high-confidence (exact-match) edges
+depwire services ./git --config-repo ./git/config-repo --profile prod --min-confidence high
+
+# Show inbound external feeds (e.g. upstream Kafka topics) as source nodes
+depwire services ./git --config-repo ./git/config-repo --profile prod --external-sources
+```
+
+What it detects between services (generic Spring patterns, no hardcoded names):
+
+- **REST** — Spring MVC routes (`@GetMapping`/`@PostMapping`/`@RequestMapping`), JAX-RS, `@FeignClient`, and outbound `RestTemplate` / `WebClient` calls. Matched by path, Kubernetes service hostname, or API-gateway prefix.
+- **Messaging** — Kafka (`@KafkaListener`, `KafkaTemplate`), RabbitMQ (`@RabbitListener`, `RabbitTemplate`), AWS SQS / Kinesis, and Spring Cloud Stream functional consumers/`StreamBridge`. Named binders are resolved to their broker type, and binding names are resolved two-hop to their underlying destination.
+- **Configured URLs** — callback / webhook / deep-link URLs held in config and embedded into payloads (not made through an HTTP client), matched to the route that owns them.
+
+Property resolution handles `@Value`, SpEL maps, `@ConfigurationProperties` prefixes, getter chains, class/interface constants, local-assignment chains, and `${placeholder}` references resolved against an external Spring Cloud Config repo. Use `--profile prod` to pin a single environment.
+
+### Symbol-level impact flow
+
+```bash
+# If I change this symbol, what flows across services are impacted?
+depwire services-flow ./git \
+  --service my-billing-service \
+  --symbol processPayment \
+  --config-repo ./git/config-repo --profile prod
+```
+
+`--symbol` accepts a class, method, field, or constant. It walks the service's internal call graph to find which inbound channel handlers reach the symbol (upstream) and which outbound channel emitters it can trigger (downstream), then hops across services. Every hop reports the producer and consumer file:line.
+
+### Config ↔ code drift
+
+```bash
+depwire services-drift ./git --config-repo ./git/config-repo --profile prod
+depwire services-drift ./git --config-repo ./git/config-repo --profile prod --fail-on-drift  # CI gate
+```
+
+Reports two kinds of mismatch: stream bindings declared in config but never published/consumed in code (stale config), and broker destinations used in code with no matching config binding (missing config).
+
+### Determinism
+
+Output is canonically sorted (services, edges, channels, sites) and byte-identical across runs and across machines — suitable for diffing in CI or by an AI agent.
+
+---
+
 ## MCP server — AI integration
 
-Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call autonomously.
+Connect Depwire to any MCP-compatible AI tool. Your AI gets 26 tools it can call autonomously.
 
 **Claude Desktop** — add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -324,7 +380,7 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call
 
 ![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
-### 23 MCP tools
+### 26 MCP tools
 
 | Tool | Description |
 |------|-------------|
@@ -351,6 +407,9 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call
 | `get_active_claims` | Query who is currently working on what. |
 | `record_decision` | Save a structured decision for future sessions to reference. |
 | `get_decisions` | Retrieve past decisions by query, session, file, or tag. |
+| `service_graph` | Cross-service dependency graph across many repos — REST, Kafka, RabbitMQ, SQS, Kinesis, stream bindings. Edges include producer/consumer file:line and confidence. |
+| `service_flow` | Symbol-level cross-service impact — if you touch a class/method/field, which service flows break (upstream + downstream). |
+| `service_drift` | Config vs code drift — bindings declared but unused, destinations used but undeclared. |
 
 #### `.depwire/` runtime state
 
@@ -531,7 +590,8 @@ Block PRs that hurt your architecture:
 
 **Shipped**
 - Arc diagram visualization
-- 23 MCP tools
+- 26 MCP tools
+- Cross-service analysis — service graph, symbol-level impact flow, config/code drift across multi-repo microservice estates
 - Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R)
 - Architecture health score
 - Dead code detection
