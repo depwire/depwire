@@ -118,11 +118,16 @@ depwire viz        # see your entire architecture instantly
 
 ## Tested on real-world projects
 
-| Project | Language | Files | Symbols | Edges | Health Score |
-|---------|----------|-------|---------|-------|--------------|
-| [honojs/hono](https://github.com/honojs/hono) | TypeScript | 352 | 6,245 | 3,100+ | 41/100 |
-| [CodeGraphContext/CodeGraphContext](https://github.com/CodeGraphContext/CodeGraphContext) | Python/TS | 398 | 12,001 | 5,406 | 66/100 |
-| [dart-lang/shelf](https://github.com/dart-lang/shelf) | Dart | 32 | 284 | 145 | 72/100 |
+| Project | Language | Files | Symbols | Edges | Health |
+|---------|----------|-------|---------|-------|--------|
+| [google/guice](https://github.com/google/guice) | Java (multi-module, 13 modules) | 647 | 30,592 | 10,081 | 31/100 |
+| [honojs/hono](https://github.com/honojs/hono) | TypeScript | 352 | 6,462 | 2,194 | 41/100 |
+| [apache/commons-lang](https://github.com/apache/commons-lang) | Java (single-module) | 624 | 29,723 | 9,037 | — |
+| [pallets/flask](https://github.com/pallets/flask) | Python | 79 | 2,005 | 851 | — |
+| [dart-lang/shelf](https://github.com/dart-lang/shelf) | Dart | 108 | 1,639 | 219 | — |
+| [rstudio/plumber](https://github.com/rstudio/plumber) | R | 197 | 1,194 | 219 | — |
+
+> Numbers from real `depwire parse` runs on public repositories. Last validated: v1.7.1 (June 2026).
 
 ---
 
@@ -158,6 +163,30 @@ depwire whatif . --simulate merge --target src/utils/helpers.ts --merge-target s
 ```
 
 Run without `--simulate` to open the browser UI — side-by-side arc diagrams showing current vs simulated state.
+
+---
+
+## Cross-module dependency intelligence
+
+For multi-module Maven and Gradle projects, Depwire resolves imports across module boundaries — not just within a single module.
+
+Example: simulating deletion of `Injector.java` in google/guice (a 13-module Java DI framework):
+
+```
+$ depwire whatif . --simulate delete --target core/src/com/google/inject/Injector.java
+
+Action:          DELETE core/src/com/google/inject/Injector.java
+Affected Nodes:  128
+Broken Imports:  124  (cross-module: 106 across 10 extension modules)
+```
+
+Without this, your AI agent has no visibility into cross-module blast radius. With it, dangerous changes are caught before they happen.
+
+Supported build systems:
+- Maven (`pom.xml` with `<modules>` declarations, recursive nested modules)
+- Gradle (`settings.gradle` / `settings.gradle.kts` with `include()` declarations)
+
+Both standard (`src/main/java`) and non-standard (`src/`) source layouts are supported.
 
 ---
 
@@ -442,6 +471,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 | Cross-language | REST + subprocess edges | None | None |
 | Security scanner | Graph-aware severity | None | None |
 | What If simulation | Before touching code | None | None |
+| Multi-module JVM support | Full cross-module resolution | None | None |
 | Runs locally | Always | Varies | Never |
 
 ---
