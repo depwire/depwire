@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.7.1] - 2026-06-11
+
+### Bug Fixes
+- **Fix cross-module Java/Kotlin import resolution** (#7) — Java and Kotlin imports between Maven modules and Gradle subprojects now resolve correctly. Previously, `resolveJavaImport` and `resolveKotlinImport` only checked hardcoded source roots relative to the project root, missing files in module subdirectories like `module-b/src/main/java/`. The parser now runs a pre-pass that discovers Maven modules from `<module>` entries in `pom.xml` and Gradle subprojects from `include()` entries in `settings.gradle` / `settings.gradle.kts`. Supports recursive nested modules and both standard and non-standard source layouts. Tested on google/guice (13 modules, 647 files): cross-file Java edges went from 0 to 2,247, with 759 cross-module edges and 124 dependents detected on the Injector class.
+
+### Testing
+- Added vitest test runner with `npm test` script
+- Added unit tests for JVM module discovery (jvm-modules.test.ts)
+- Added integration tests for cross-module Java and Kotlin import resolution
+- Added cross-project isolation test (no state leaks between parseProject calls)
+
+Thanks to @asaarela-bw for the detailed bug report.
+
+---
+
 ## [1.7.0] - 2026-05-29
 
 ### Added
@@ -213,6 +228,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - [Website](https://depwire.dev)
 - [MCP Registry](https://registry.modelcontextprotocol.io)
 
+[1.7.1]: https://github.com/depwire/depwire/compare/v1.7.0...v1.7.1
 [0.2.6]: https://github.com/depwire/depwire/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/depwire/depwire/compare/v0.2.0...v0.2.5
 [0.2.0]: https://github.com/depwire/depwire/compare/v0.1.0...v0.2.0

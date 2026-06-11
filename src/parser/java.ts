@@ -3,6 +3,32 @@ import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 
+// ─── Multi-module source root state ──────────────────────────
+// Populated by parseProject() pre-pass via setModuleSourceRoots().
+// Must be reset between parseProject() calls to ensure isolation
+// when parsing multiple projects in the same Node process.
+let moduleSourceRoots: string[] = [];
+let verifiedRootSet: Set<string> = new Set();
+
+/**
+ * Set discovered JVM module source roots for cross-module import resolution.
+ * Called by parseProject() after running discoverJvmModuleRoots().
+ */
+export function setModuleSourceRoots(roots: string[], verified: Set<string>): void {
+  moduleSourceRoots = roots;
+  verifiedRootSet = verified;
+}
+
+/**
+ * Reset module source roots between parseProject() calls.
+ * Ensures isolation when parsing multiple projects in the same Node process
+ * (e.g., MCP server switching between repos, or test suites).
+ */
+export function resetModuleSourceRoots(): void {
+  moduleSourceRoots = [];
+  verifiedRootSet = new Set();
+}
+
 interface Context {
   filePath: string;
   projectRoot: string;
@@ -820,19 +846,31 @@ function resolveJavaImport(
   const cleanPath = importPath.replace(/\.\*$/, '');
   const javaPath = cleanPath.replace(/\./g, '/') + '.java';
 
-  // Common source roots to check
-  const sourceRoots = [
+  // Discovered multi-module source roots (from pom.xml / settings.gradle pre-pass)
+  // are prepended to the hardcoded fallback roots. This ensures cross-module imports
+  // resolve while preserving single-module project behavior.
+  const hardcodedRoots = [
     '',
     'src/main/java',
+    'src/test/java',
     'src',
     'app/src/main/java',
   ];
+  const sourceRoots = [...moduleSourceRoots, ...hardcodedRoots];
 
   for (const root of sourceRoots) {
     const candidate = root ? join(root, javaPath) : javaPath;
     const fullPath = join(projectRoot, candidate);
-    if (existsSync(fullPath)) {
-      return candidate;
+
+    // Use pre-verified set for discovered module roots (avoids redundant existsSync
+    // across 1,800+ files). Fall back to existsSync for hardcoded roots.
+    const rootAbsolute = root ? join(projectRoot, root) : projectRoot;
+    const isVerifiedRoot = verifiedRootSet.has(rootAbsolute);
+
+    if (isVerifiedRoot || !root || hardcodedRoots.includes(root)) {
+      if (existsSync(fullPath)) {
+        return candidate;
+      }
     }
   }
 

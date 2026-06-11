@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Dependency graph + 23 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
   "type": "module",
   "bin": {
@@ -15,6 +15,7 @@
     "copy-static": "mkdir -p dist/viz/public dist/parser/grammars && cp -r src/viz/public/* dist/viz/public/ && cp src/parser/grammars/*.wasm dist/parser/grammars/",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
+    "test": "vitest run",
     "build:mcpb": "npm run build && ./scripts/build-mcpb.sh",
     "postversion": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('./package.json','utf8'));const s=JSON.parse(fs.readFileSync('./server.json','utf8'));s.version=p.version;s.packages[0].version=p.version;fs.writeFileSync('./server.json',JSON.stringify(s,null,2)+'\\n');console.log('server.json updated to '+p.version);\" && git add server.json"
   },
@@ -102,7 +103,8 @@
     "@types/ws": "8.18.1",
     "sharp": "0.34.5",
     "tsup": "8.5.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.1.8"
   },
   "mcpName": "io.github.atef-ataya/depwire"
 }

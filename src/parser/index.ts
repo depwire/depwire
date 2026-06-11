@@ -11,6 +11,15 @@ import { getParserForFile } from './detect.js';
 import { ParsedFile } from './types.js';
 import { minimatch } from 'minimatch';
 import { initParser } from './wasm-init.js';
+import { discoverJvmModuleRoots } from './jvm-modules.js';
+import {
+  setModuleSourceRoots as setJavaModuleRoots,
+  resetModuleSourceRoots as resetJavaModuleRoots,
+} from './java.js';
+import {
+  setModuleSourceRoots as setKotlinModuleRoots,
+  resetModuleSourceRoots as resetKotlinModuleRoots,
+} from './kotlin.js';
 
 const MAX_FILE_SIZE = 1_000_000; // 1MB — files larger than this are likely generated
 
@@ -33,6 +42,24 @@ export async function parseProject(
 ): Promise<ParsedFile[]> {
   // Initialize WASM parsers (no-op if already initialized)
   await initParser();
+
+  // ─── JVM multi-module pre-pass ─────────────────────────────
+  // Reset module roots from any previous parseProject() call in this process
+  // (ensures isolation when MCP server switches repos, or in test suites).
+  resetJavaModuleRoots();
+  resetKotlinModuleRoots();
+
+  // Discover Maven/Gradle module source roots before parsing files.
+  // This allows cross-module Java/Kotlin imports to resolve correctly.
+  const jvmModules = discoverJvmModuleRoots(projectRoot);
+  if (jvmModules.roots.length > 0) {
+    setJavaModuleRoots(jvmModules.roots, jvmModules.verifiedRootSet);
+    setKotlinModuleRoots(jvmModules.roots, jvmModules.verifiedRootSet);
+    if (options?.verbose) {
+      console.error(`[Parser] Discovered ${jvmModules.roots.length} JVM module source roots`);
+    }
+  }
+  // ───────────────────────────────────────────────────────────
   
   const files = scanDirectory(projectRoot);
   const parsedFiles: ParsedFile[] = [];
