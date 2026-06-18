@@ -46,14 +46,9 @@ Change Date:          February 25, 2029
 
 Change License:       Apache License, Version 2.0
 
-Extension Notice:    The Depwire VSCode Extension
-                      (marketplace.visualstudio.com/items?
-                      itemName=depwire.depwire-vscode) is a
-                      separate commercial product governed by
-                      the Depwire End User License Agreement
-                      available at depwire.dev/eula. Use of
-                      the VSCode Extension is subject to that
-                      agreement and not this License.
+Extension Notice:     The Depwire VSCode Extension is a separate
+                      commercial product with its own terms of use.
+                      Contact atef@depwire.dev for details.
 
 For information about alternative licensing arrangements for the Licensed Work,
 please contact: atef@depwire.dev
