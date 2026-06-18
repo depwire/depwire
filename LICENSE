@@ -7,17 +7,53 @@ Parameters
 Licensor:             ATEF ATAYA LLC
 Licensed Work:        Depwire
                       The Licensed Work is (c) 2026 ATEF ATAYA LLC
-Additional Use Grant: You may make use of the Licensed Work, provided that
-                      you may not use the Licensed Work for a Code Analysis
-                      Service. A "Code Analysis Service" is a commercial
-                      offering that allows third parties to access the
-                      functionality of the Licensed Work by providing
-                      dependency graph analysis, code visualization, or
-                      MCP-based code context as a managed service.
+Additional Use Grant: You may make use of the Licensed Work for the following
+                      permitted purposes:
+
+                      (a) Internal use: Individual developers and companies
+                          may use the Licensed Work to analyze their own
+                          codebases, integrate with AI coding agents for
+                          internal development purposes, and run the MCP
+                          server for their own internal tooling.
+
+                      (b) Evaluation and research: You may use the Licensed
+                          Work for non-commercial evaluation, academic
+                          research, and open source projects.
+
+                      (c) Contribution: You may modify and contribute to the
+                          Licensed Work subject to the terms of this License.
+
+                      You may not use the Licensed Work for a Code Analysis
+                      Service. A "Code Analysis Service" means any commercial
+                      offering in which you (i) allow third parties to submit
+                      or provide access to their source code repositories for
+                      analysis using the Licensed Work, (ii) resell,
+                      sublicense, or provide access to the Licensed Work's
+                      functionality — including dependency graph analysis,
+                      code health scoring, security scanning, dead code
+                      detection, or MCP-based code context — as a hosted,
+                      managed, embedded, or API-based service, or (iii) build
+                      a product or workflow that analyzes third-party client
+                      repositories using the Licensed Work as part of a
+                      commercial offering.
+
+                      If your use case falls under the definition of a Code
+                      Analysis Service, you must obtain a commercial license
+                      from the Licensor before any such use. To inquire about
+                      commercial licensing, contact: atef@depwire.dev
 
 Change Date:          February 25, 2029
 
 Change License:       Apache License, Version 2.0
+
+Extension Notice:    The Depwire VSCode Extension
+                      (marketplace.visualstudio.com/items?
+                      itemName=depwire.depwire-vscode) is a
+                      separate commercial product governed by
+                      the Depwire End User License Agreement
+                      available at depwire.dev/eula. Use of
+                      the VSCode Extension is subject to that
+                      agreement and not this License.
 
 For information about alternative licensing arrangements for the Licensed Work,
 please contact: atef@depwire.dev
@@ -39,9 +75,14 @@ comes first, the Licensor hereby grants you rights under the terms of the
 Change License, and the rights granted in the paragraph above terminate.
 
 If your use of the Licensed Work does not comply with the requirements
-currently in effect as described in this License, you must purchase a
-commercial license from the Licensor, its affiliated entities, or authorized
-resellers, or you must refrain from using the Licensed Work.
+currently in effect as described in this License, including but not limited to
+operating a Code Analysis Service without a commercial license, you must
+immediately either (i) purchase a commercial license from the Licensor by
+contacting atef@depwire.dev, or (ii) cease all use of the Licensed Work.
+Continued use in violation of this License constitutes copyright infringement
+and may subject you to legal liability. The Licensor reserves all rights to
+seek injunctive relief, damages, and any other remedies available under
+applicable law.
 
 All copies of the original and modified Licensed Work, and derivative works of
 the Licensed Work, are subject to this License. This License applies separately
