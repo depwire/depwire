@@ -9,10 +9,13 @@
  */
 
 /** Current SDK version — matches depwire-cli npm version */
-export const DepwireSDKVersion: string = '1.7.3';
+export const DepwireSDKVersion: string = '1.7.4';
 
 /** Parse a codebase directory and return raw parsed data */
 export { parseProject } from './parser/index.js';
+
+/** Parse cache controls — clear the on-disk cache / inspect cache stats */
+export { clearCache, getCacheStats } from './parser/cache.js';
 
 /** Build a graphology DirectedGraph from parsed data */
 export { buildGraph } from './graph/index.js';

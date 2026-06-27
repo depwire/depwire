@@ -1,7 +1,10 @@
 /**
- * SECURITY: All parser operations are READ-ONLY.
- * Depwire never writes to, modifies, or deletes any file in the user's project.
- * The only file system writes are to os.tmpdir() for cloned repos.
+ * SECURITY: Parsing is READ-ONLY with respect to your source code.
+ * Depwire never modifies or deletes any of your source files.
+ * The only writes are: os.tmpdir() for cloned repos, and a local, git-ignored
+ * parse cache at {projectRoot}/.depwire/cache.db used to skip re-parsing
+ * unchanged files. The cache contains only derived data and is safe to delete;
+ * disable it with parseProject(root, { useCache: false }).
  */
 
 import { readFileSync, statSync } from 'fs';
@@ -9,6 +12,7 @@ import { join, resolve } from 'path';
 import { scanDirectory } from '../utils/files.js';
 import { getParserForFile } from './detect.js';
 import { ParsedFile } from './types.js';
+import { openCache, getCachedFiles, updateCache } from './cache.js';
 import { minimatch } from 'minimatch';
 import { initParser } from './wasm-init.js';
 import { discoverJvmModuleRoots } from './jvm-modules.js';
@@ -38,7 +42,7 @@ function shouldParseFile(fullPath: string): boolean {
 
 export async function parseProject(
   projectRoot: string,
-  options?: { exclude?: string[]; verbose?: boolean }
+  options?: { exclude?: string[]; verbose?: boolean; useCache?: boolean }
 ): Promise<ParsedFile[]> {
   // Initialize WASM parsers (no-op if already initialized)
   await initParser();
@@ -65,7 +69,27 @@ export async function parseProject(
   const parsedFiles: ParsedFile[] = [];
   let skippedFiles = 0;
   let errorFiles = 0;
-  
+
+  // ─── Parse cache (opt-in, on by default) ───────────────────
+  // Restore unchanged files from {projectRoot}/.depwire/cache.db so only
+  // new/modified files are re-parsed. Any cache failure falls back to a
+  // full cold parse, so this can never break parsing.
+  const useCache = options?.useCache !== false;
+  let cacheDb: ReturnType<typeof openCache> | undefined;
+  let cachedMap = new Map<string, ParsedFile>();
+  const newlyParsed: ParsedFile[] = [];
+  if (useCache) {
+    try {
+      cacheDb = openCache(projectRoot);
+      cachedMap = getCachedFiles(cacheDb, projectRoot, files);
+    } catch (err) {
+      console.error(`[Parser] Cache disabled (open failed): ${err instanceof Error ? err.message : err}`);
+      cacheDb = undefined;
+      cachedMap = new Map();
+    }
+  }
+  // ───────────────────────────────────────────────────────────
+
   for (const file of files) {
     try {
       const fullPath = join(projectRoot, file);
@@ -95,6 +119,13 @@ export async function parseProject(
         skippedFiles++;
         continue;
       }
+
+      // Reuse the cached result for unchanged files.
+      const cached = cachedMap.get(file);
+      if (cached) {
+        parsedFiles.push(cached);
+        continue;
+      }
       
       if (options?.verbose) {
         console.error(`[Parser] Parsing: ${file}`);
@@ -112,10 +143,23 @@ export async function parseProject(
       
       const parsed = parser.parseFile(file, sourceCode, projectRoot);
       parsedFiles.push(parsed);
+      newlyParsed.push(parsed);
     } catch (err) {
       errorFiles++;
       console.error(`Error parsing file ${file}:`, err instanceof Error ? err.message : err);
     }
+  }
+
+  // Persist newly parsed files and report cache effectiveness.
+  if (cacheDb) {
+    try {
+      updateCache(cacheDb, projectRoot, newlyParsed);
+    } catch (err) {
+      console.error(`[Parser] Cache update failed: ${err instanceof Error ? err.message : err}`);
+    } finally {
+      try { cacheDb.close(); } catch { /* ignore */ }
+    }
+    console.error(`[Parser] Cache: ${parsedFiles.length - newlyParsed.length} hits, ${newlyParsed.length} files re-parsed`);
   }
   
   if (options?.verbose || errorFiles > 0) {
