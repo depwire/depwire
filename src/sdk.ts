@@ -8,16 +8,8 @@
  * do not reach into internal paths.
  */
 
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const packageJson = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
-
 /** Current SDK version — matches depwire-cli npm version */
-export const DepwireSDKVersion: string = packageJson.version;
+export const DepwireSDKVersion: string = '1.7.3';
 
 /** Parse a codebase directory and return raw parsed data */
 export { parseProject } from './parser/index.js';

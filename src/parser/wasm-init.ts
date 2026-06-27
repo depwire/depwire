@@ -10,65 +10,58 @@ const languages: Map<string, Language> = new Map();
 /**
  * Detect whether we're running inside a webpack bundle.
  * Webpack defines __webpack_require__ on the module scope.
+ * NOTE: Do NOT use __dirname for this check — vitest/jest also define __dirname.
  */
 function isWebpackBundled(): boolean {
-  // @ts-ignore — only exists in webpack bundles
+  // @ts-ignore — __webpack_require__ only exists in webpack bundles
   return typeof __webpack_require__ !== 'undefined';
 }
 
 /**
- * Resolve the directory of this file, working in both:
- * - Native ESM (CLI usage): import.meta.url is a real file:// URL
- * - Webpack-bundled (VSCode extension): __dirname is set by webpack
+ * Resolve the directory of this file.
+ * - Webpack bundle: __dirname points to dist/
+ * - Native ESM / vitest: use import.meta.url
  */
 function resolveThisDir(): string {
-  // Webpack-bundled context: __dirname points to dist/
-  // @ts-ignore — __dirname may not exist in pure ESM but webpack provides it
-  if (typeof __dirname !== 'undefined') {
+  if (isWebpackBundled()) {
     // @ts-ignore
     return __dirname;
   }
-
-  // Native ESM context: import.meta.url is a real file:// URL
   return path.dirname(fileURLToPath(import.meta.url));
 }
 
 /**
  * Initialize web-tree-sitter and load all language grammars.
- * Must be called once before any parsing.
  */
 export async function initParser(): Promise<void> {
   if (initialized) return;
 
-  const thisDir = resolveThisDir();
-
   if (isWebpackBundled()) {
-    // In a webpack bundle (VSCode extension), import.meta.url is emulated
-    // and may produce invalid file URLs on Windows. Override locateFile
-    // to use __dirname which webpack sets to the dist/ output directory.
+    // Webpack bundle: override locateFile so web-tree-sitter uses the
+    // actual dist/ directory (via __dirname), not import.meta.url which
+    // webpack bakes in as the build machine's literal path.
+    const dir = resolveThisDir();
     await Parser.init({
       locateFile(scriptName: string) {
-        return path.join(thisDir, scriptName);
+        return path.join(dir, scriptName);
       }
     });
   } else {
-    // Native ESM (CLI): let web-tree-sitter resolve its own WASM
-    // using its own import.meta.url — this works correctly.
+    // Native ESM (CLI / tests): let web-tree-sitter find its own WASM
+    // via its own import.meta.url — works correctly in real Node ESM.
     await Parser.init();
   }
 
-  // Try multiple possible locations for the grammars directory
+  // Locate grammar WASM files
+  const thisDir = resolveThisDir();
   let grammarsDir = path.join(thisDir, 'parser', 'grammars');
   if (!existsSync(grammarsDir)) {
-    // Might be in a sibling "parser" directory
     grammarsDir = path.join(path.dirname(thisDir), 'parser', 'grammars');
   }
   if (!existsSync(grammarsDir)) {
-    // Last resort: same directory as this file
     grammarsDir = path.join(thisDir, 'grammars');
   }
 
-  // Load all language grammars
   const grammarFiles = {
     'typescript': 'tree-sitter-typescript.wasm',
     'tsx': 'tree-sitter-tsx.wasm',
@@ -84,9 +77,6 @@ export async function initParser(): Promise<void> {
     'php': 'tree-sitter-php.wasm',
     'swift': 'tree-sitter-swift.wasm',
     'ruby': 'tree-sitter-ruby.wasm',
-    // Note: Mojo uses a pattern-based parser (no tree-sitter-mojo WASM available)
-    // Note: Dart uses a pattern-based parser (no tree-sitter-dart WASM available)
-    // Note: R uses a pattern-based parser (tree-sitter-r on npm is a security placeholder, not a real grammar)
   };
 
   for (const [name, file] of Object.entries(grammarFiles)) {
@@ -98,27 +88,19 @@ export async function initParser(): Promise<void> {
   initialized = true;
 }
 
-/**
- * Get a parser instance configured for a specific language.
- */
 export function getParser(language: 'typescript' | 'tsx' | 'javascript' | 'python' | 'go' | 'rust' | 'c' | 'c_sharp' | 'java' | 'cpp' | 'kotlin' | 'php' | 'swift' | 'ruby'): Parser {
   if (!initialized) {
     throw new Error('Parser not initialized. Call initParser() first.');
   }
-
   const lang = languages.get(language);
   if (!lang) {
     throw new Error(`Language '${language}' not loaded.`);
   }
-
   const parser = new Parser();
   parser.setLanguage(lang);
   return parser;
 }
 
-/**
- * Check if the parser system has been initialized.
- */
 export function isInitialized(): boolean {
   return initialized;
 }
