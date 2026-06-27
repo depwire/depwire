@@ -8,30 +8,64 @@ let initialized = false;
 const languages: Map<string, Language> = new Map();
 
 /**
+ * Detect whether we're running inside a webpack bundle.
+ * Webpack defines __webpack_require__ on the module scope.
+ */
+function isWebpackBundled(): boolean {
+  // @ts-ignore — only exists in webpack bundles
+  return typeof __webpack_require__ !== 'undefined';
+}
+
+/**
+ * Resolve the directory of this file, working in both:
+ * - Native ESM (CLI usage): import.meta.url is a real file:// URL
+ * - Webpack-bundled (VSCode extension): __dirname is set by webpack
+ */
+function resolveThisDir(): string {
+  // Webpack-bundled context: __dirname points to dist/
+  // @ts-ignore — __dirname may not exist in pure ESM but webpack provides it
+  if (typeof __dirname !== 'undefined') {
+    // @ts-ignore
+    return __dirname;
+  }
+
+  // Native ESM context: import.meta.url is a real file:// URL
+  return path.dirname(fileURLToPath(import.meta.url));
+}
+
+/**
  * Initialize web-tree-sitter and load all language grammars.
  * Must be called once before any parsing.
  */
 export async function initParser(): Promise<void> {
   if (initialized) return;
 
-  await Parser.init();
+  const thisDir = resolveThisDir();
 
-  // Resolve the path to the grammars directory
-  // This needs to work both in development (src/) and production (dist/)
-  // In development: src/parser/wasm-init.ts -> src/parser/grammars/
-  // In production:  dist/chunk-xxx.js -> dist/parser/grammars/
-  // But since the code is bundled, we need to find where the grammars actually are
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  
+  if (isWebpackBundled()) {
+    // In a webpack bundle (VSCode extension), import.meta.url is emulated
+    // and may produce invalid file URLs on Windows. Override locateFile
+    // to use __dirname which webpack sets to the dist/ output directory.
+    await Parser.init({
+      locateFile(scriptName: string) {
+        return path.join(thisDir, scriptName);
+      }
+    });
+  } else {
+    // Native ESM (CLI): let web-tree-sitter resolve its own WASM
+    // using its own import.meta.url — this works correctly.
+    await Parser.init();
+  }
+
   // Try multiple possible locations for the grammars directory
-  let grammarsDir = path.join(__dirname, 'parser', 'grammars');
+  let grammarsDir = path.join(thisDir, 'parser', 'grammars');
   if (!existsSync(grammarsDir)) {
     // Might be in a sibling "parser" directory
-    grammarsDir = path.join(path.dirname(__dirname), 'parser', 'grammars');
+    grammarsDir = path.join(path.dirname(thisDir), 'parser', 'grammars');
   }
   if (!existsSync(grammarsDir)) {
     // Last resort: same directory as this file
-    grammarsDir = path.join(__dirname, 'grammars');
+    grammarsDir = path.join(thisDir, 'grammars');
   }
 
   // Load all language grammars
