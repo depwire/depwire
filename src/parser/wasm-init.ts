@@ -27,6 +27,9 @@ function resolveThisDir(): string {
     // @ts-ignore
     return __dirname;
   }
+  // Native ESM: import.meta.url is a real file:// URL.
+  // In webpack bundles, this branch is dead code — isWebpackBundled()
+  // returns true, so __dirname is used instead.
   return path.dirname(fileURLToPath(import.meta.url));
 }
 
