@@ -16,7 +16,8 @@
  *   - miss  : mtime differs and content hash differs
  */
 
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
+import { createRequire } from 'node:module';
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, openSync, readSync, closeSync, statSync, rmSync } from 'fs';
 import { join } from 'path';
@@ -54,6 +55,13 @@ function hashFileHead(absPath: string): string {
  * Creates the .depwire/ directory and required tables if missing.
  */
 export function openCache(projectRoot: string): Database.Database {
+  // Lazy-load better-sqlite3 via createRequire so the native addon is only
+  // resolved when the cache is actually used. This keeps the static module
+  // graph free of better-sqlite3, so bundlers (e.g. the VSCode extension's
+  // webpack build) never pull in its native bindings when useCache is false.
+  const nodeRequire = createRequire(import.meta.url);
+  const Database = nodeRequire('better-sqlite3') as typeof import('better-sqlite3');
+
   const dir = cacheDir(projectRoot);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
