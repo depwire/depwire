@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "Dependency graph + 23 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
   "type": "module",
   "bin": {
@@ -79,7 +79,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.26.0",
-    "better-sqlite3": "^12.11.1",
     "chalk": "5.6.2",
     "chokidar": "^4.0.3",
     "commander": "14.0.3",
@@ -97,6 +96,9 @@
     "web-tree-sitter": "0.26.6",
     "ws": "8.19.0",
     "zod": "4.3.6"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.11.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

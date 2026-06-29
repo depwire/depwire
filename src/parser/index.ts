@@ -75,17 +75,22 @@ export async function parseProject(
   // new/modified files are re-parsed. Any cache failure falls back to a
   // full cold parse, so this can never break parsing.
   const useCache = options?.useCache !== false;
-  let cacheDb: ReturnType<typeof openCache> | undefined;
+  let cacheDb: ReturnType<typeof openCache> | null = null;
   let cachedMap = new Map<string, ParsedFile>();
   const newlyParsed: ParsedFile[] = [];
   if (useCache) {
     try {
       cacheDb = openCache(projectRoot);
-      cachedMap = getCachedFiles(cacheDb, projectRoot, files);
     } catch (err) {
       console.error(`[Parser] Cache disabled (open failed): ${err instanceof Error ? err.message : err}`);
-      cacheDb = undefined;
-      cachedMap = new Map();
+      cacheDb = null;
+    }
+    if (cacheDb) {
+      cachedMap = getCachedFiles(cacheDb, projectRoot, files);
+    } else {
+      // better-sqlite3 unavailable (e.g. Windows without build tools) — the
+      // full parse below still produces correct results.
+      console.error('[Parser] Cache unavailable — full parse mode');
     }
   }
   // ───────────────────────────────────────────────────────────

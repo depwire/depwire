@@ -16,12 +16,34 @@
  *   - miss  : mtime differs and content hash differs
  */
 
-import type Database from 'better-sqlite3';
 import { createRequire } from 'node:module';
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, openSync, readSync, closeSync, statSync, rmSync } from 'fs';
 import { join } from 'path';
 import { ParsedFile } from './types.js';
+
+/**
+ * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms
+ * where it cannot be installed or compiled (e.g. Windows without Visual Studio
+ * build tools), the require fails and `Database` stays null. The cache then
+ * degrades gracefully to a no-op and parsing falls back to a full cold parse.
+ *
+ * createRequire is used (instead of a static import) so the native binding is
+ * resolved at runtime and bundlers (e.g. the VSCode extension's webpack build)
+ * never pull it into the static module graph.
+ */
+let Database: any = null;
+try {
+  const nodeRequire = createRequire(import.meta.url);
+  Database = nodeRequire('better-sqlite3');
+} catch {
+  // better-sqlite3 unavailable — cache disabled, full parse still works.
+}
+
+/** Whether the SQLite parse cache is available in this environment. */
+export function isCacheAvailable(): boolean {
+  return Database !== null;
+}
 
 /** Number of leading bytes of a file hashed for the secondary content check. */
 const HASH_BYTES = 4096;
@@ -53,14 +75,12 @@ function hashFileHead(absPath: string): string {
 /**
  * Open (or create) the parse cache for a project.
  * Creates the .depwire/ directory and required tables if missing.
+ *
+ * Returns null when better-sqlite3 is unavailable, so callers must treat a null
+ * db as "cache disabled" and fall back to a full parse.
  */
-export function openCache(projectRoot: string): Database.Database {
-  // Lazy-load better-sqlite3 via createRequire so the native addon is only
-  // resolved when the cache is actually used. This keeps the static module
-  // graph free of better-sqlite3, so bundlers (e.g. the VSCode extension's
-  // webpack build) never pull in its native bindings when useCache is false.
-  const nodeRequire = createRequire(import.meta.url);
-  const Database = nodeRequire('better-sqlite3') as typeof import('better-sqlite3');
+export function openCache(projectRoot: string): any {
+  if (!Database) return null;
 
   const dir = cacheDir(projectRoot);
   if (!existsSync(dir)) {
@@ -108,17 +128,18 @@ interface CacheRow {
  * needs an absolute path.
  */
 export function getCachedFiles(
-  db: Database.Database,
+  db: any,
   projectRoot: string,
   relativePaths: string[]
 ): Map<string, ParsedFile> {
   const result = new Map<string, ParsedFile>();
-  const select = db.prepare<[string], CacheRow>(
+  if (!db) return result;
+  const select = db.prepare(
     'SELECT mtime, size, content_hash, parsed_data FROM file_cache WHERE file_path = ?'
   );
 
   for (const relPath of relativePaths) {
-    const row = select.get(relPath);
+    const row = select.get(relPath) as CacheRow | undefined;
     if (!row) continue;
 
     const absPath = join(projectRoot, relPath);
@@ -164,10 +185,11 @@ export function getCachedFiles(
  * @param parsedFiles Newly parsed files to persist.
  */
 export function updateCache(
-  db: Database.Database,
+  db: any,
   projectRoot: string,
   parsedFiles: ParsedFile[]
 ): void {
+  if (!db) return;
   const upsert = db.prepare(
     `INSERT INTO file_cache (file_path, mtime, size, content_hash, parsed_data)
      VALUES (@file_path, @mtime, @size, @content_hash, @parsed_data)
@@ -207,8 +229,11 @@ export function updateCache(
 }
 
 /** Cache statistics: number of cached files and the on-disk db size in bytes. */
-export function getCacheStats(db: Database.Database): { totalFiles: number; cacheSize: number } {
-  const row = db.prepare<[], { count: number }>('SELECT COUNT(*) AS count FROM file_cache').get();
+export function getCacheStats(db: any): { totalFiles: number; cacheSize: number } {
+  if (!db) return { totalFiles: 0, cacheSize: 0 };
+  const row = db.prepare('SELECT COUNT(*) AS count FROM file_cache').get() as
+    | { count: number }
+    | undefined;
   const totalFiles = row?.count ?? 0;
 
   let cacheSize = 0;
@@ -226,6 +251,7 @@ export function getCacheStats(db: Database.Database): { totalFiles: number; cach
  * Safe to call when no cache exists.
  */
 export function clearCache(projectRoot: string): void {
+  if (!Database) return;
   const base = cacheDbPath(projectRoot);
   for (const suffix of ['', '-wal', '-shm', '-journal']) {
     rmSync(base + suffix, { force: true });
