@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && npm run copy-static",
+    "prepublishOnly": "npm run build",
     "copy-static": "mkdir -p dist/viz/public dist/parser/grammars && cp -r src/viz/public/* dist/viz/public/ && cp src/parser/grammars/*.wasm dist/parser/grammars/",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
