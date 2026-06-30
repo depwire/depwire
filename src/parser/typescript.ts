@@ -10,6 +10,7 @@ interface Context {
   edges: SymbolEdge[];
   currentScope: string[];
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
+  externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
 }
 
 export function parseTypeScriptFile(
@@ -30,6 +31,7 @@ export function parseTypeScriptFile(
     edges: [],
     currentScope: [],
     imports: new Map(),
+    externalImports: new Map(),
   };
   
   walkNode(tree.rootNode, context);
@@ -127,6 +129,109 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   context.currentScope.pop();
 }
 
+const PRIMITIVE_TYPES = new Set([
+  'string', 'number', 'boolean', 'any', 'void', 'unknown', 'never',
+  'object', 'symbol', 'bigint', 'null', 'undefined', 'true', 'false', 'this',
+]);
+
+/**
+ * Resolve a type name to a graph node id.
+ * - Imported from another local file -> that file's symbol id (via context.imports)
+ * - Imported from node_modules / ambient -> "external::<Type>" marker
+ * - Otherwise assume a same-file symbol.
+ */
+function resolveTypeTarget(typeName: string, context: Context): string {
+  const localImport = context.imports.get(typeName);
+  if (localImport) return localImport;
+  if (context.externalImports.has(typeName)) return `external::${typeName}`;
+  return `${context.filePath}::${typeName}`;
+}
+
+/** Extract the base type identifier from a type or type_annotation node. */
+function extractBaseTypeName(typeNode: Parser.SyntaxNode | null): string | null {
+  if (!typeNode) return null;
+  switch (typeNode.type) {
+    case 'type_annotation':
+    case 'opting_type_annotation':
+      return extractBaseTypeName(typeNode.namedChild(0));
+    case 'type_identifier':
+    case 'identifier':
+      return typeNode.text;
+    case 'generic_type':
+      return extractBaseTypeName(typeNode.childForFieldName('name'));
+    case 'nested_type_identifier':
+      return typeNode.lastNamedChild ? typeNode.lastNamedChild.text : null;
+    default:
+      return null;
+  }
+}
+
+/** Emit a single 'injects' edge for a discovered dependency type. */
+function emitInjectEdge(
+  typeNode: Parser.SyntaxNode | null,
+  classId: string,
+  context: Context,
+  line: number,
+  seen: Set<string>
+): void {
+  const typeName = extractBaseTypeName(typeNode);
+  if (!typeName || PRIMITIVE_TYPES.has(typeName)) return;
+  const targetId = resolveTypeTarget(typeName, context);
+  if (seen.has(targetId)) return;
+  seen.add(targetId);
+  context.edges.push({
+    source: classId,
+    target: targetId,
+    kind: 'injects',
+    filePath: context.filePath,
+    line,
+  });
+}
+
+/**
+ * Parse constructor parameters and typed class fields into 'injects' edges
+ * sourced from the class node — this surfaces Angular service dependencies
+ * (constructor(private svc: FooService)) in get_dependencies.
+ */
+function processClassDependencyInjection(
+  node: Parser.SyntaxNode,
+  classId: string,
+  context: Context
+): void {
+  const body = node.childForFieldName('body');
+  if (!body) return;
+  const seen = new Set<string>();
+
+  for (let i = 0; i < body.childCount; i++) {
+    const member = body.child(i);
+    if (!member) continue;
+
+    // Constructor parameter injection
+    if (member.type === 'method_definition') {
+      const nameNode = member.childForFieldName('name');
+      if (nameNode && nameNode.text === 'constructor') {
+        const params = member.childForFieldName('parameters');
+        if (params) {
+          for (let p = 0; p < params.childCount; p++) {
+            const param = params.child(p);
+            if (!param) continue;
+            if (param.type === 'required_parameter' || param.type === 'optional_parameter') {
+              const typeAnno = param.childForFieldName('type');
+              emitInjectEdge(typeAnno, classId, context, param.startPosition.row + 1, seen);
+            }
+          }
+        }
+      }
+    }
+
+    // Field injection: typed class properties (private svc: FooService;)
+    if (member.type === 'public_field_definition' || member.type === 'field_definition') {
+      const typeAnno = member.childForFieldName('type');
+      emitInjectEdge(typeAnno, classId, context, member.startPosition.row + 1, seen);
+    }
+  }
+}
+
 function processClassDeclaration(node: Parser.SyntaxNode, context: Context): void {
   const nameNode = node.childForFieldName('name');
   if (!nameNode) return;
@@ -158,7 +263,9 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
           const typeNode = extendsClause.child(j);
           if (typeNode && typeNode.type === 'identifier') {
             const targetName = typeNode.text;
-            const targetId = `${context.filePath}::${targetName}`;
+            // Resolve through imports so imported base classes point to their
+            // real defining file instead of an assumed local symbol.
+            const targetId = resolveTypeTarget(targetName, context);
             
             context.edges.push({
               source: symbolId,
@@ -178,7 +285,9 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
           const typeNode = implementsClause.child(j);
           if (typeNode && typeNode.type === 'type_identifier') {
             const targetName = typeNode.text;
-            const targetId = `${context.filePath}::${targetName}`;
+            // Resolve through imports (e.g. OnInit from '@angular/core')
+            // instead of always assuming a local symbol.
+            const targetId = resolveTypeTarget(targetName, context);
             
             context.edges.push({
               source: symbolId,
@@ -192,6 +301,9 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
       }
     }
   }
+  
+  // Process constructor + field dependency injection (Angular services, etc.)
+  processClassDependencyInjection(node, symbolId, context);
   
   // Enter class scope for processing methods
   context.currentScope.push(name);
@@ -439,6 +551,14 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
         filePath: context.filePath,
         line: node.startPosition.row + 1,
       });
+    }
+  } else {
+    // Unresolved (node_modules / ambient) — remember the names so dependency
+    // injection resolution can mark them as external rather than local.
+    for (const importedName of importedNames) {
+      if (!context.externalImports.has(importedName)) {
+        context.externalImports.set(importedName, importPath);
+      }
     }
   }
 }

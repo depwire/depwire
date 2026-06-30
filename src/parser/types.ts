@@ -32,7 +32,8 @@ export type EdgeKind =
   | 'inherits'       // Python: class inheritance
   | 'decorates'      // Python: decorator application
   | 'references'
-  | 'type_references';
+  | 'type_references'
+  | 'injects';       // TS/Angular: constructor/field dependency injection
 
 export interface SymbolEdge {
   source: string;      // Source symbol ID

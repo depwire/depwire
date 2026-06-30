@@ -11,7 +11,7 @@ interface SymbolNode {
     exported: boolean;
     scope?: string;
 }
-type EdgeKind = 'imports' | 'calls' | 'extends' | 'implements' | 'inherits' | 'decorates' | 'references' | 'type_references';
+type EdgeKind = 'imports' | 'calls' | 'extends' | 'implements' | 'inherits' | 'decorates' | 'references' | 'type_references' | 'injects';
 interface SymbolEdge {
     source: string;
     target: string;
