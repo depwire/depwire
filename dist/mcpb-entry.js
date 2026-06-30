@@ -4,7 +4,7 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-OLIMZG6K.js";
+} from "./chunk-V5XK3HFM.js";
 import {
   buildGraph,
   parseProject

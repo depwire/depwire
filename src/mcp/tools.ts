@@ -48,6 +48,20 @@ interface ToolDefinition {
   };
 }
 
+/**
+ * Centralized path normalizer for all inbound MCP file-path arguments.
+ * Graph keys are stored POSIX-style (forward slashes, no leading "./").
+ * Windows clients may pass backslash paths (e.g. "src\app\component.ts"),
+ * which would otherwise never match. Normalize before any graph lookup.
+ */
+function normalizePath(p: string | undefined): string | undefined {
+  if (!p) return p;
+  return p
+    .replace(/\\/g, '/')   // backslash → forward slash
+    .replace(/^\.\//, '')  // strip leading ./
+    .replace(/\/+$/, '');  // strip trailing slash
+}
+
 export function getToolsList(): ToolDefinition[] {
   return [
     {
@@ -610,7 +624,7 @@ export async function handleToolCall(
         };
       } else {
         result = await scanSecurity(state.projectRoot!, state.graph!, {
-          target: args.target,
+          target: normalizePath(args.target),
           classes: args.classes as VulnerabilityClass[] | undefined,
           graphAware: args.graphAware !== false,
         });
@@ -622,7 +636,10 @@ export async function handleToolCall(
           message: "Use connect_repo to connect to a codebase first",
         };
       } else {
-        result = await handleVerifyChange(args as any, state);
+        result = await handleVerifyChange(
+          { ...args, file_path: normalizePath(args.file_path) } as any,
+          state
+        );
       }
     } else if (name === "claim_files") {
       if (!isProjectLoaded(state)) {
@@ -690,16 +707,16 @@ export async function handleToolCall(
             result = handleGetDependents(args.symbol, graph);
             break;
           case "impact_analysis":
-            result = handleImpactAnalysis(args.symbol, graph, args.file);
+            result = handleImpactAnalysis(args.symbol, graph, normalizePath(args.file));
             break;
           case "get_file_context":
-            result = handleGetFileContext(args.filePath, graph);
+            result = handleGetFileContext(normalizePath(args.filePath), graph);
             break;
           case "search_symbols":
             result = handleSearchSymbols(args.query, args.limit || 20, graph);
             break;
           case "list_files":
-            result = handleListFiles(args.directory, graph);
+            result = handleListFiles(normalizePath(args.directory), graph);
             break;
           default:
             result = { error: `Unknown tool: ${name}` };
@@ -928,7 +945,11 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph, file?: strin
   // If file parameter is provided, filter matches to that file
   let filteredMatches = matches;
   if (file) {
-    filteredMatches = matches.filter(m => m.filePath === file || m.filePath.endsWith(file));
+    const normalizedFile = normalizePath(file)!;
+    filteredMatches = matches.filter(m => {
+      const mfp = normalizePath(m.filePath)!;
+      return mfp === normalizedFile || mfp.endsWith(normalizedFile);
+    });
     if (filteredMatches.length === 0) {
       return {
         error: `Symbol '${symbol}' not found in file '${file}'`,
@@ -988,12 +1009,13 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph, file?: strin
   };
 }
 
-function handleGetFileContext(filePath: string, graph: DirectedGraph) {
+function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph) {
+  const normalized = normalizePath(filePath);
   // Find all symbols in this file
   const fileSymbols: any[] = [];
   
   graph.forEachNode((nodeId, attrs) => {
-    if (attrs.filePath === filePath) {
+    if (normalizePath(attrs.filePath) === normalized) {
       fileSymbols.push({
         name: attrs.name,
         kind: attrs.kind,
@@ -1016,10 +1038,10 @@ function handleGetFileContext(filePath: string, graph: DirectedGraph) {
   const importsMap = new Map<string, Set<string>>();
   
   graph.forEachNode((nodeId, attrs) => {
-    if (attrs.filePath === filePath) {
+    if (normalizePath(attrs.filePath) === normalized) {
       graph.forEachOutEdge(nodeId, (edge, edgeAttrs, source, target) => {
         const targetAttrs = graph.getNodeAttributes(target);
-        if (targetAttrs.filePath !== filePath) {
+        if (normalizePath(targetAttrs.filePath) !== normalized) {
           if (!importsMap.has(targetAttrs.filePath)) {
             importsMap.set(targetAttrs.filePath, new Set());
           }
@@ -1038,10 +1060,10 @@ function handleGetFileContext(filePath: string, graph: DirectedGraph) {
   const importedByMap = new Map<string, Set<string>>();
   
   graph.forEachNode((nodeId, attrs) => {
-    if (attrs.filePath === filePath) {
+    if (normalizePath(attrs.filePath) === normalized) {
       graph.forEachInEdge(nodeId, (edge, edgeAttrs, source, target) => {
         const sourceAttrs = graph.getNodeAttributes(source);
-        if (sourceAttrs.filePath !== filePath) {
+        if (normalizePath(sourceAttrs.filePath) !== normalized) {
           if (!importedByMap.has(sourceAttrs.filePath)) {
             importedByMap.set(sourceAttrs.filePath, new Set());
           }
@@ -1056,10 +1078,10 @@ function handleGetFileContext(filePath: string, graph: DirectedGraph) {
     symbols: Array.from(symbols),
   }));
   
-  const summary = `${filePath} defines ${fileSymbols.length} symbol(s), imports from ${imports.length} file(s), and is imported by ${importedBy.length} file(s).`;
+  const summary = `${normalized} defines ${fileSymbols.length} symbol(s), imports from ${imports.length} file(s), and is imported by ${importedBy.length} file(s).`;
   
   return {
-    filePath,
+    filePath: normalized,
     symbols: fileSymbols,
     imports,
     importedBy,
@@ -1165,7 +1187,8 @@ function handleListFiles(directory: string | undefined, graph: DirectedGraph) {
   
   let filtered = fileSummary;
   if (directory) {
-    filtered = fileSummary.filter(f => f.filePath.startsWith(directory));
+    const normalizedDir = normalizePath(directory)!;
+    filtered = fileSummary.filter(f => normalizePath(f.filePath)!.startsWith(normalizedDir));
   }
   
   const files = filtered.map(f => ({
@@ -1533,7 +1556,10 @@ function handleFindDeadCode(state: DepwireState, confidence: string): any {
 }
 
 function handleSimulateChange(args: Record<string, any>, state: DepwireState): any {
-  const { operation, target, destination, symbols, mergeTarget } = args;
+  const { operation, symbols } = args;
+  const target = normalizePath(args.target)!;
+  const destination = normalizePath(args.destination);
+  const mergeTarget = normalizePath(args.mergeTarget);
   const graph = state.graph!;
 
   // Validate required fields per operation
