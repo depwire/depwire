@@ -325,6 +325,7 @@ function capitalizeKind(kind: SymbolKind): string {
     property: 'Property',
     decorator: 'Decorator',
     module: 'Module',
+    template: 'Template',
   };
   return map[kind] || kind;
 }

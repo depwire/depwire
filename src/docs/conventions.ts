@@ -372,6 +372,7 @@ function generateSymbolDistribution(graph: DirectedGraph): string {
     property: 0,
     decorator: 0,
     module: 0,
+    template: 0,
   };
   
   graph.forEachNode((node, attrs) => {

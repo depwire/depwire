@@ -232,6 +232,55 @@ function processClassDependencyInjection(
   }
 }
 
+/**
+ * Extract the `selector` string from an Angular @Component({ ... }) decorator
+ * attached to a class declaration, e.g. `selector: 'app-user-branch'`.
+ * Returns null when the class has no @Component decorator or no selector.
+ */
+function extractAngularSelector(classNode: Parser.SyntaxNode): string | null {
+  // Decorators may be direct children of the class node, or siblings under an
+  // export_statement wrapper — scan both.
+  const decorators: Parser.SyntaxNode[] = [];
+  const collect = (n: Parser.SyntaxNode | null) => {
+    if (!n) return;
+    for (let i = 0; i < n.childCount; i++) {
+      const c = n.child(i);
+      if (c && c.type === 'decorator') decorators.push(c);
+    }
+  };
+  collect(classNode);
+  collect(classNode.parent);
+
+  for (const dec of decorators) {
+    if (!/@Component\b/.test(dec.text)) continue;
+    const selector = findSelectorString(dec);
+    if (selector) return selector;
+  }
+  return null;
+}
+
+/** Recursively find a `selector: '<value>'` pair and return its string value. */
+function findSelectorString(node: Parser.SyntaxNode): string | null {
+  if (node.type === 'pair') {
+    const key = node.childForFieldName('key');
+    const keyText = key ? key.text.replace(/['"]/g, '') : '';
+    if (keyText === 'selector') {
+      const value = node.childForFieldName('value');
+      if (value && (value.type === 'string' || value.type === 'template_string')) {
+        return value.text.slice(1, -1);
+      }
+    }
+  }
+  for (let i = 0; i < node.childCount; i++) {
+    const child = node.child(i);
+    if (child) {
+      const found = findSelectorString(child);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 function processClassDeclaration(node: Parser.SyntaxNode, context: Context): void {
   const nameNode = node.childForFieldName('name');
   if (!nameNode) return;
@@ -243,6 +292,10 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   
   const symbolId = `${context.filePath}::${name}`;
   
+  // Angular: capture the @Component({ selector: '...' }) value so the HTML
+  // template pairing pass can resolve template tags back to this class.
+  const angularSelector = extractAngularSelector(node);
+  
   context.symbols.push({
     id: symbolId,
     name,
@@ -251,6 +304,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     startLine,
     endLine,
     exported,
+    ...(angularSelector ? { metadata: { angularSelector } } : {}),
   });
   
   // Process extends clause

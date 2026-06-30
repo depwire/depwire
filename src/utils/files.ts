@@ -60,8 +60,9 @@ export function scanDirectory(
         const isDart = entry.endsWith('.dart') || entry === 'pubspec.yaml' || entry === 'pubspec.lock';
         const isR = entry.endsWith('.R') || entry.endsWith('.r') || entry.endsWith('.Rmd') || entry.endsWith('.rmd') || entry === 'DESCRIPTION' || entry === 'NAMESPACE' || entry === 'renv.lock';
         const isCppBuild = entry === 'CMakeLists.txt' || entry === 'conanfile.txt' || entry === 'vcpkg.json';
+        const isHtml = entry.endsWith('.html');
         
-        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isDart || isR || isCppBuild) {
+        if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isDart || isR || isCppBuild || isHtml) {
           // Return path relative to root
           files.push(relative(rootDir, fullPath));
         }

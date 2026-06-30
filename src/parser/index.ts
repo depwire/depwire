@@ -167,6 +167,13 @@ export async function parseProject(
     console.error(`[Parser] Cache: ${parsedFiles.length - newlyParsed.length} hits, ${newlyParsed.length} files re-parsed`);
   }
   
+  // ─── Angular component/template pairing ────────────────────
+  // Runs on the full set (cached + freshly parsed) every call, so it never
+  // depends on cache state. Adds `uses` edges from *.component.html templates
+  // to their sibling component class and to referenced selectors/pipes.
+  pairTemplatesWithComponents(parsedFiles);
+  // ───────────────────────────────────────────────────────────
+
   if (options?.verbose || errorFiles > 0) {
     console.error(`\n[Parser] Summary:`);
     console.error(`  Parsed: ${parsedFiles.length} files`);
@@ -179,4 +186,84 @@ export async function parseProject(
   }
   
   return parsedFiles;
+}
+
+/**
+ * Angular component/template pairing pass.
+ *
+ * For each `*.component.html` template, finds the sibling `*.component.ts` in
+ * the same directory and emits `uses` edges:
+ *   1. template -> component class
+ *   2. template -> each referenced symbol (component selector / directive /
+ *      pipe). References whose selector matches a project @Component decorator
+ *      resolve to that component class node; everything else points at an
+ *      `external::<name>` marker that buildGraph drops (both-endpoints rule).
+ *
+ * Edges are appended to the template's ParsedFile so they flow through the
+ * normal buildGraph pipeline. Recomputed every parse — independent of cache.
+ */
+function pairTemplatesWithComponents(parsedFiles: ParsedFile[]): void {
+  // selector string -> component class node id (built from @Component metadata)
+  const selectorIndex = new Map<string, string>();
+  for (const file of parsedFiles) {
+    for (const symbol of file.symbols) {
+      const selector = symbol.metadata?.angularSelector;
+      if (typeof selector === 'string' && selector.length > 0) {
+        for (const part of selector.split(',')) {
+          const key = part.trim();
+          if (key && !selectorIndex.has(key)) {
+            selectorIndex.set(key, symbol.id);
+          }
+        }
+      }
+    }
+  }
+
+  // Fast lookup of a file's parsed result by relative path.
+  const byPath = new Map<string, ParsedFile>();
+  for (const file of parsedFiles) byPath.set(file.filePath, file);
+
+  for (const file of parsedFiles) {
+    if (!/\.component\.html$/.test(file.filePath)) continue;
+
+    const templateSymbol = file.symbols.find(s => s.id.endsWith('::__template__'));
+    if (!templateSymbol) continue;
+    const templateId = templateSymbol.id;
+
+    // Locate the sibling component class.
+    const tsPath = file.filePath.replace(/\.component\.html$/, '.component.ts');
+    const tsFile = byPath.get(tsPath);
+    if (tsFile) {
+      const classSymbol =
+        tsFile.symbols.find(s => s.kind === 'class' && s.metadata?.angularSelector) ||
+        tsFile.symbols.find(s => s.kind === 'class' && s.exported) ||
+        tsFile.symbols.find(s => s.kind === 'class');
+      if (classSymbol) {
+        file.edges.push({
+          source: templateId,
+          target: classSymbol.id,
+          kind: 'uses',
+          filePath: file.filePath,
+          line: 1,
+        });
+      }
+    }
+
+    // Emit uses edges for each extracted template reference.
+    const references = (templateSymbol.metadata?.references ?? []) as Array<{
+      type: string;
+      name: string;
+      line: number;
+    }>;
+    for (const ref of references) {
+      const target = selectorIndex.get(ref.name) ?? `external::${ref.name}`;
+      file.edges.push({
+        source: templateId,
+        target,
+        kind: 'uses',
+        filePath: file.filePath,
+        line: ref.line,
+      });
+    }
+  }
 }

@@ -11,7 +11,8 @@ export type SymbolKind =
   | 'method'
   | 'property'
   | 'decorator'      // Python: @decorator definitions
-  | 'module';        // Python: module-level scope
+  | 'module'         // Python: module-level scope
+  | 'template';      // HTML/Angular: a template file pseudo-node
 
 export interface SymbolNode {
   id: string;          // Unique ID: "relative/path.ts::symbolName"
@@ -22,6 +23,7 @@ export interface SymbolNode {
   endLine: number;
   exported: boolean;
   scope?: string;      // Parent class/namespace if nested (e.g., "MyClass")
+  metadata?: Record<string, unknown>; // Optional parser-specific data (e.g. Angular selector, template refs)
 }
 
 export type EdgeKind =
@@ -33,7 +35,8 @@ export type EdgeKind =
   | 'decorates'      // Python: decorator application
   | 'references'
   | 'type_references'
-  | 'injects';       // TS/Angular: constructor/field dependency injection
+  | 'injects'        // TS/Angular: constructor/field dependency injection
+  | 'uses';          // HTML/Angular: template -> component/directive/pipe usage
 
 export interface SymbolEdge {
   source: string;      // Source symbol ID
