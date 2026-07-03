@@ -18,26 +18,28 @@ import {
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-5Y4DGNZ5.js";
+} from "./chunk-IG4AE2V4.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
   buildGraph,
   calculateHealthScore,
+  findOutputJson,
   findProjectRoot,
   generateDocs,
   getArchitectureSummary,
   getHealthTrend,
   getImpact,
+  loadParsedFilesFromJson,
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-ENUYUDUG.js";
+} from "./chunk-A5A5DKT4.js";
 
 // src/index.ts
 import { Command } from "commander";
 import { resolve as resolve6, dirname as dirname4, join as join5 } from "path";
-import { writeFileSync, readFileSync as readFileSync4, existsSync } from "fs";
+import { writeFileSync, readFileSync as readFileSync4, existsSync, statSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
 // src/graph/serializer.ts
@@ -1980,10 +1982,12 @@ program.command("temporal").description("Visualize how the dependency graph evol
     process.exit(1);
   }
 });
-program.command("mcp").description("Start MCP server for AI coding tools").argument("[directory]", "Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)").action(async (directory) => {
+program.command("mcp").description("Start MCP server for AI coding tools").argument("[directory]", "Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)").option("--from-cache", "Load graph from depwire-output.json (skip parsing, error if file not found)").option("--no-cache", "Force full re-parse even if depwire-output.json exists").action(async (directory, options) => {
   trackCommand("mcp", packageJson.version);
   try {
     const state = createEmptyState();
+    const fromCache = options.fromCache === true;
+    const noCache = options.cache === false;
     let projectRootToConnect = null;
     if (directory) {
       projectRootToConnect = resolve6(directory);
@@ -1995,9 +1999,47 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
       }
     }
     if (projectRootToConnect) {
-      console.error(`Parsing project: ${projectRootToConnect}`);
-      const parsedFiles = await parseProject(projectRootToConnect);
-      console.error(`Parsed ${parsedFiles.length} files`);
+      let parsedFiles = null;
+      if (!noCache) {
+        const candidates = findOutputJson(projectRootToConnect);
+        for (const jsonPath of candidates) {
+          if (existsSync(jsonPath)) {
+            console.error(`[Depwire] Loading graph from ${jsonPath}...`);
+            parsedFiles = await loadParsedFilesFromJson(jsonPath);
+            if (parsedFiles) {
+              console.error(
+                `[Depwire] Loaded ${parsedFiles.length} files from cache. Run 'depwire parse .' to refresh.`
+              );
+              try {
+                const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
+                const ageHours = ageMs / (1e3 * 60 * 60);
+                if (ageHours > 24) {
+                  console.error(
+                    `[Depwire] Warning: depwire-output.json is ${Math.round(ageHours)} hours old. Run 'depwire parse .' to refresh.`
+                  );
+                }
+              } catch {
+              }
+              break;
+            } else {
+              console.error(
+                `[Depwire] Could not load ${jsonPath} (invalid or empty).`
+              );
+            }
+          }
+        }
+      }
+      if (!parsedFiles) {
+        if (fromCache) {
+          console.error(
+            "[Depwire] Error: --from-cache specified but no depwire-output.json found. Run depwire parse . first."
+          );
+          process.exit(1);
+        }
+        console.error(`[Depwire] Parsing project: ${projectRootToConnect}`);
+        parsedFiles = await parseProject(projectRootToConnect, { useCache: true });
+        console.error(`Parsed ${parsedFiles.length} files`);
+      }
       const graph = buildGraph(parsedFiles, projectRootToConnect);
       console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
       state.graph = graph;

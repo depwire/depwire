@@ -2,9 +2,10 @@
 
 import { Command } from 'commander';
 import { resolve, dirname, join } from 'path';
-import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { parseProject } from './parser/index.js';
+import { parseProject, loadParsedFilesFromJson, findOutputJson } from './parser/index.js';
+import type { ParsedFile } from './parser/types.js';
 import { buildGraph } from './graph/index.js';
 import { exportToJSON, importFromJSON } from './graph/serializer.js';
 import { getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
@@ -248,10 +249,17 @@ program
   .command('mcp')
   .description('Start MCP server for AI coding tools')
   .argument('[directory]', 'Project directory to analyze (optional - auto-detects project root or use connect_repo tool to connect later)')
-  .action(async (directory?: string) => {
+  .option('--from-cache', 'Load graph from depwire-output.json (skip parsing, error if file not found)')
+  .option('--no-cache', 'Force full re-parse even if depwire-output.json exists')
+  .action(async (directory: string | undefined, options: { fromCache?: boolean; cache?: boolean }) => {
     trackCommand('mcp', packageJson.version);
     try {
       const state = createEmptyState();
+
+      // Commander maps --from-cache -> options.fromCache and --no-cache ->
+      // options.cache === false (default true when omitted).
+      const fromCache = options.fromCache === true;
+      const noCache = options.cache === false;
       
       // Auto-detect project root if no directory provided
       let projectRootToConnect: string | null = null;
@@ -271,14 +279,62 @@ program
       }
 
       if (projectRootToConnect) {
-        
+
         // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
-        console.error(`Parsing project: ${projectRootToConnect}`);
-        
-        // Parse all source files
-        const parsedFiles = await parseProject(projectRootToConnect);
-        console.error(`Parsed ${parsedFiles.length} files`);
-        
+        let parsedFiles: ParsedFile[] | null = null;
+
+        // Try loading a pre-parsed graph from depwire-output.json first, so
+        // large projects start near-instantly instead of re-parsing.
+        if (!noCache) {
+          const candidates = findOutputJson(projectRootToConnect);
+          for (const jsonPath of candidates) {
+            if (existsSync(jsonPath)) {
+              console.error(`[Depwire] Loading graph from ${jsonPath}...`);
+              parsedFiles = await loadParsedFilesFromJson(jsonPath);
+              if (parsedFiles) {
+                console.error(
+                  `[Depwire] Loaded ${parsedFiles.length} files from cache. ` +
+                  `Run 'depwire parse .' to refresh.`
+                );
+
+                // Warn if the cached output is stale.
+                try {
+                  const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
+                  const ageHours = ageMs / (1000 * 60 * 60);
+                  if (ageHours > 24) {
+                    console.error(
+                      `[Depwire] Warning: depwire-output.json is ` +
+                      `${Math.round(ageHours)} hours old. ` +
+                      `Run 'depwire parse .' to refresh.`
+                    );
+                  }
+                } catch { /* ignore stat failure */ }
+
+                break;
+              } else {
+                console.error(
+                  `[Depwire] Could not load ${jsonPath} (invalid or empty).`
+                );
+              }
+            }
+          }
+        }
+
+        if (!parsedFiles) {
+          if (fromCache) {
+            console.error(
+              '[Depwire] Error: --from-cache specified but no ' +
+              'depwire-output.json found. Run depwire parse . first.'
+            );
+            process.exit(1);
+          }
+
+          // Fall back to a full parse.
+          console.error(`[Depwire] Parsing project: ${projectRootToConnect}`);
+          parsedFiles = await parseProject(projectRootToConnect, { useCache: true });
+          console.error(`Parsed ${parsedFiles.length} files`);
+        }
+
         // Build the graph
         const graph = buildGraph(parsedFiles, projectRootToConnect);
         console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);

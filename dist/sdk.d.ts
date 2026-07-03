@@ -1,6 +1,6 @@
 import { DirectedGraph } from 'graphology';
 
-type SymbolKind = 'function' | 'class' | 'variable' | 'constant' | 'type_alias' | 'interface' | 'enum' | 'import' | 'export' | 'method' | 'property' | 'decorator' | 'module';
+type SymbolKind = 'function' | 'class' | 'variable' | 'constant' | 'type_alias' | 'interface' | 'enum' | 'import' | 'export' | 'method' | 'property' | 'decorator' | 'module' | 'template';
 interface SymbolNode {
     id: string;
     name: string;
@@ -10,8 +10,9 @@ interface SymbolNode {
     endLine: number;
     exported: boolean;
     scope?: string;
+    metadata?: Record<string, unknown>;
 }
-type EdgeKind = 'imports' | 'calls' | 'extends' | 'implements' | 'inherits' | 'decorates' | 'references' | 'type_references' | 'injects';
+type EdgeKind = 'imports' | 'calls' | 'extends' | 'implements' | 'inherits' | 'decorates' | 'references' | 'type_references' | 'injects' | 'uses';
 interface SymbolEdge {
     source: string;
     target: string;

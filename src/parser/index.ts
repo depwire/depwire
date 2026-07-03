@@ -8,10 +8,11 @@
  */
 
 import { readFileSync, statSync } from 'fs';
+import { readFile } from 'fs/promises';
 import { join, resolve } from 'path';
 import { scanDirectory } from '../utils/files.js';
 import { getParserForFile } from './detect.js';
-import { ParsedFile } from './types.js';
+import { ParsedFile, SymbolNode, SymbolEdge } from './types.js';
 import { openCache, getCachedFiles, updateCache } from './cache.js';
 import { minimatch } from 'minimatch';
 import { initParser } from './wasm-init.js';
@@ -266,4 +267,110 @@ function pairTemplatesWithComponents(parsedFiles: ParsedFile[]): void {
       });
     }
   }
+}
+
+/**
+ * Candidate paths for a previously written `depwire parse` output file, in
+ * priority order. `depwire mcp` probes these to load a pre-parsed graph on
+ * startup instead of re-parsing from scratch.
+ */
+export function findOutputJson(projectRoot: string): string[] {
+  return [
+    join(projectRoot, '.depwire', 'depwire-output.json'),
+    join(projectRoot, 'depwire-output.json'),
+  ];
+}
+
+/**
+ * Load a previously exported graph from a `depwire parse` JSON file and
+ * reconstruct it as `ParsedFile[]` so it can flow through the normal
+ * `buildGraph()` pipeline.
+ *
+ * `depwire parse` writes a serialized ProjectGraph — the on-disk shape is
+ *   { projectRoot, files: string[], nodes: SymbolNode[], edges: SymbolEdge[], metadata }
+ * (NOT a ParsedFile[]). This loader primarily handles that ProjectGraph shape
+ * by grouping nodes/edges back into per-file ParsedFile records. As a
+ * convenience it also accepts a raw ParsedFile[] or a { files: ParsedFile[] }
+ * wrapper, in case the format changes.
+ *
+ * Returns null on any failure (missing file, invalid JSON, empty/unknown
+ * shape) so callers can fall back to a full re-parse.
+ */
+export async function loadParsedFilesFromJson(
+  jsonPath: string
+): Promise<ParsedFile[] | null> {
+  try {
+    const content = await readFile(jsonPath, 'utf-8');
+    const data = JSON.parse(content);
+
+    // Shape 1: serialized ProjectGraph (what `depwire parse` actually writes).
+    // Detected by node/edge arrays at the top level. Reconstruct ParsedFile[]
+    // by grouping nodes and edges by their filePath.
+    if (Array.isArray(data?.nodes) && Array.isArray(data?.edges)) {
+      const files = reconstructParsedFiles(
+        data.nodes as SymbolNode[],
+        data.edges as SymbolEdge[]
+      );
+      return files.length > 0 ? files : null;
+    }
+
+    // Shape 2: raw ParsedFile[] written directly.
+    if (Array.isArray(data)) {
+      const files = data as ParsedFile[];
+      if (files.length > 0 && Array.isArray(files[0]?.symbols)) {
+        return files;
+      }
+      return null;
+    }
+
+    // Shape 3: { files: ParsedFile[] } wrapper.
+    if (Array.isArray(data?.files) && Array.isArray(data.files[0]?.symbols)) {
+      const files = data.files as ParsedFile[];
+      return files.length > 0 ? files : null;
+    }
+
+    return null;
+  } catch {
+    // File not found or invalid JSON — return null to trigger fallback.
+    return null;
+  }
+}
+
+/**
+ * Group a flat list of graph nodes/edges (as exported by exportToJSON) back
+ * into per-file ParsedFile records keyed by filePath. Every filePath seen on
+ * either a node or an edge gets a ParsedFile entry so no edge is dropped when
+ * the graph is later rebuilt.
+ */
+function reconstructParsedFiles(
+  nodes: SymbolNode[],
+  edges: SymbolEdge[]
+): ParsedFile[] {
+  const byPath = new Map<string, ParsedFile>();
+
+  const ensure = (filePath: string): ParsedFile => {
+    let file = byPath.get(filePath);
+    if (!file) {
+      file = { filePath, symbols: [], edges: [] };
+      byPath.set(filePath, file);
+    }
+    return file;
+  };
+
+  for (const node of nodes) {
+    if (!node || typeof node.filePath !== 'string') continue;
+    // `::__file__` pseudo-nodes are never emitted as ParsedFile symbols by the
+    // parsers; buildGraph synthesizes them from edges in a dedicated pass. If
+    // we re-added them here they would collide with that pass, so skip them and
+    // let buildGraph recreate them exactly as it does for a fresh parse.
+    if (typeof node.id === 'string' && node.id.endsWith('::__file__')) continue;
+    ensure(node.filePath).symbols.push(node);
+  }
+
+  for (const edge of edges) {
+    if (!edge || typeof edge.filePath !== 'string') continue;
+    ensure(edge.filePath).edges.push(edge);
+  }
+
+  return Array.from(byPath.values());
 }
