@@ -5,8 +5,8 @@ import { resolve, dirname, join } from 'path';
 import { writeFileSync, readFileSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { parseProject, loadParsedFilesFromJson, findOutputJson } from './parser/index.js';
-import type { ParsedFile } from './parser/types.js';
 import { buildGraph } from './graph/index.js';
+import type { DirectedGraph } from 'graphology';
 import { exportToJSON, importFromJSON } from './graph/serializer.js';
 import { getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
 import { prepareVizData } from './viz/data.js';
@@ -281,46 +281,69 @@ program
       if (projectRootToConnect) {
 
         // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
-        let parsedFiles: ParsedFile[] | null = null;
+        let graph: DirectedGraph | null = null;
 
         // Try loading a pre-parsed graph from depwire-output.json first, so
         // large projects start near-instantly instead of re-parsing.
         if (!noCache) {
           const candidates = findOutputJson(projectRootToConnect);
           for (const jsonPath of candidates) {
-            if (existsSync(jsonPath)) {
-              console.error(`[Depwire] Loading graph from ${jsonPath}...`);
-              parsedFiles = await loadParsedFilesFromJson(jsonPath);
+            if (!existsSync(jsonPath)) continue;
+
+            console.error(`[Depwire] Loading graph from ${jsonPath}...`);
+
+            // Warn if the cached output is stale.
+            try {
+              const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
+              const ageHours = ageMs / (1000 * 60 * 60);
+              if (ageHours > 24) {
+                console.error(
+                  `[Depwire] Warning: depwire-output.json is ` +
+                  `${Math.round(ageHours)} hours old. ` +
+                  `Run 'depwire parse .' to refresh.`
+                );
+              }
+            } catch { /* ignore stat failure */ }
+
+            // Fastest path: import the fully-built graph directly. Skips both
+            // buildGraph() and its cross-language disk scan, and preserves
+            // every node exactly as exported.
+            try {
+              const data = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+              if (data.nodes && data.edges && data.projectRoot) {
+                graph = importFromJSON(data);
+                console.error(
+                  `[Depwire] Loaded graph from ${jsonPath} — ` +
+                  `${graph.order} nodes, ${graph.size} edges. ` +
+                  `Run 'depwire parse .' to refresh.`
+                );
+              }
+            } catch {
+              graph = null; // fall through to reconstruct + buildGraph
+            }
+
+            // Fallback: reconstruct ParsedFile[] then buildGraph (handles
+            // non-ProjectGraph shapes / malformed direct-import cases).
+            if (!graph) {
+              const parsedFiles = await loadParsedFilesFromJson(jsonPath);
               if (parsedFiles) {
+                graph = buildGraph(parsedFiles, projectRootToConnect);
                 console.error(
                   `[Depwire] Loaded ${parsedFiles.length} files from cache. ` +
                   `Run 'depwire parse .' to refresh.`
                 );
-
-                // Warn if the cached output is stale.
-                try {
-                  const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
-                  const ageHours = ageMs / (1000 * 60 * 60);
-                  if (ageHours > 24) {
-                    console.error(
-                      `[Depwire] Warning: depwire-output.json is ` +
-                      `${Math.round(ageHours)} hours old. ` +
-                      `Run 'depwire parse .' to refresh.`
-                    );
-                  }
-                } catch { /* ignore stat failure */ }
-
-                break;
               } else {
                 console.error(
                   `[Depwire] Could not load ${jsonPath} (invalid or empty).`
                 );
               }
             }
+
+            if (graph) break;
           }
         }
 
-        if (!parsedFiles) {
+        if (!graph) {
           if (fromCache) {
             console.error(
               '[Depwire] Error: --from-cache specified but no ' +
@@ -331,12 +354,11 @@ program
 
           // Fall back to a full parse.
           console.error(`[Depwire] Parsing project: ${projectRootToConnect}`);
-          parsedFiles = await parseProject(projectRootToConnect, { useCache: true });
+          const parsedFiles = await parseProject(projectRootToConnect, { useCache: true });
           console.error(`Parsed ${parsedFiles.length} files`);
+          graph = buildGraph(parsedFiles, projectRootToConnect);
         }
 
-        // Build the graph
-        const graph = buildGraph(parsedFiles, projectRootToConnect);
         console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
         
         // Set initial state

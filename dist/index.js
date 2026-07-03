@@ -1999,37 +1999,50 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
       }
     }
     if (projectRootToConnect) {
-      let parsedFiles = null;
+      let graph = null;
       if (!noCache) {
         const candidates = findOutputJson(projectRootToConnect);
         for (const jsonPath of candidates) {
-          if (existsSync(jsonPath)) {
-            console.error(`[Depwire] Loading graph from ${jsonPath}...`);
-            parsedFiles = await loadParsedFilesFromJson(jsonPath);
+          if (!existsSync(jsonPath)) continue;
+          console.error(`[Depwire] Loading graph from ${jsonPath}...`);
+          try {
+            const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
+            const ageHours = ageMs / (1e3 * 60 * 60);
+            if (ageHours > 24) {
+              console.error(
+                `[Depwire] Warning: depwire-output.json is ${Math.round(ageHours)} hours old. Run 'depwire parse .' to refresh.`
+              );
+            }
+          } catch {
+          }
+          try {
+            const data = JSON.parse(readFileSync4(jsonPath, "utf-8"));
+            if (data.nodes && data.edges && data.projectRoot) {
+              graph = importFromJSON(data);
+              console.error(
+                `[Depwire] Loaded graph from ${jsonPath} \u2014 ${graph.order} nodes, ${graph.size} edges. Run 'depwire parse .' to refresh.`
+              );
+            }
+          } catch {
+            graph = null;
+          }
+          if (!graph) {
+            const parsedFiles = await loadParsedFilesFromJson(jsonPath);
             if (parsedFiles) {
+              graph = buildGraph(parsedFiles, projectRootToConnect);
               console.error(
                 `[Depwire] Loaded ${parsedFiles.length} files from cache. Run 'depwire parse .' to refresh.`
               );
-              try {
-                const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
-                const ageHours = ageMs / (1e3 * 60 * 60);
-                if (ageHours > 24) {
-                  console.error(
-                    `[Depwire] Warning: depwire-output.json is ${Math.round(ageHours)} hours old. Run 'depwire parse .' to refresh.`
-                  );
-                }
-              } catch {
-              }
-              break;
             } else {
               console.error(
                 `[Depwire] Could not load ${jsonPath} (invalid or empty).`
               );
             }
           }
+          if (graph) break;
         }
       }
-      if (!parsedFiles) {
+      if (!graph) {
         if (fromCache) {
           console.error(
             "[Depwire] Error: --from-cache specified but no depwire-output.json found. Run depwire parse . first."
@@ -2037,10 +2050,10 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
           process.exit(1);
         }
         console.error(`[Depwire] Parsing project: ${projectRootToConnect}`);
-        parsedFiles = await parseProject(projectRootToConnect, { useCache: true });
+        const parsedFiles = await parseProject(projectRootToConnect, { useCache: true });
         console.error(`Parsed ${parsedFiles.length} files`);
+        graph = buildGraph(parsedFiles, projectRootToConnect);
       }
-      const graph = buildGraph(parsedFiles, projectRootToConnect);
       console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
       state.graph = graph;
       state.projectRoot = projectRootToConnect;
