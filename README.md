@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/depwire-cli?color=00d4aa&label=npm)](https://www.npmjs.com/package/depwire-cli)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
-[![VSCode Marketplace](https://img.shields.io/visual-studio-marketplace/v/depwire.depwire-vscode?label=VSCode&color=00d4aa)](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/depwire.depwire-vscode?label=VSCode&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
 
 Depwire builds a deterministic dependency graph of your codebase and exposes it through 23 MCP tools — so AI agents navigate instead of explore.
 
@@ -31,6 +31,8 @@ Search "Depwire" in the VSCode Extensions panel, or:
 ```
 ext install depwire.depwire-vscode
 ```
+
+Or install directly from the marketplace: [https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
 
 ### Cloud App
 
