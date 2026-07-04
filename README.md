@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
 [![MCP Compatible](https://img.shields.io/badge/MCP-23%20tools-00d4aa)](https://github.com/depwire/depwire)
 
-[![Languages](https://img.shields.io/badge/languages-16-0a1a14?style=flat)](https://github.com/depwire/depwire)
+[![Languages](https://img.shields.io/badge/languages-17-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
 [![Python](https://img.shields.io/badge/Python-✓-3776ab?style=flat)](https://github.com/depwire/depwire)
 [![Go](https://img.shields.io/badge/Go-✓-00add8?style=flat)](https://github.com/depwire/depwire)
@@ -19,10 +19,12 @@
 [![Dart](https://img.shields.io/badge/Dart-✓-0175c2?style=flat)](https://github.com/depwire/depwire)
 [![R](https://img.shields.io/badge/R-✓-276dc3?style=flat)](https://github.com/depwire/depwire)
 [![+7 more](https://img.shields.io/badge/+7_more-C%2B%2B%20%7C%20C%23%20%7C%20Kotlin%20%7C%20Swift%20%7C%20Mojo%20%7C%20C%20%7C%20JS-555?style=flat)](https://github.com/depwire/depwire)
+[![HTML/Angular](https://img.shields.io/badge/HTML%2FAngular-✓-e34c26?style=flat)](https://github.com/depwire/depwire)
 
 [![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
 [![YouTube Cloud Tutorial](https://img.shields.io/badge/YouTube-Cloud%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=wdTJfSRTQu8)
 [![Cloud](https://img.shields.io/badge/cloud-app.depwire.dev-00d4aa)](https://app.depwire.dev)
+[![VS Code](https://img.shields.io/visual-studio-marketplace/v/depwire.depwire-vscode?label=VSCode&logo=visualstudiocode&color=00d4aa)](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
 
 </div>
 
@@ -34,7 +36,7 @@
   <img src="./assets/deterministic_vs_rag_diagram.svg" alt="Depwire deterministic graph vs RAG probabilistic approach" width="680" />
 </p>
 
-Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 16 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
+Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 17 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
 
 **Not a build graph either.** Tools like Nx, Turborepo, and Grapher track package-level dependencies for build caching. Depwire tracks symbol-level dependencies — every function, class, and import relationship — which is what makes What If simulation, graph-aware security scanning, and exact blast radius analysis possible.
 
@@ -127,7 +129,7 @@ depwire viz        # see your entire architecture instantly
 | [dart-lang/shelf](https://github.com/dart-lang/shelf) | Dart | 108 | 1,639 | 219 | — |
 | [rstudio/plumber](https://github.com/rstudio/plumber) | R | 197 | 1,194 | 219 | — |
 
-> Numbers from real `depwire parse` runs on public repositories. Last validated: v1.7.1 (June 2026).
+> Numbers from real `depwire parse` runs on public repositories. Last validated: v1.8.2 (June 2026).
 
 ---
 
@@ -347,6 +349,20 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call
 }
 ```
 
+**For large projects — instant MCP startup:**
+
+```bash
+# Parse once (writes depwire-output.json)
+depwire parse .
+
+# MCP starts instantly from cached graph (<100ms)
+depwire mcp .
+
+# Flags:
+depwire mcp . --from-cache   # error if no cache found
+depwire mcp . --no-cache     # force full re-parse
+```
+
 **Cursor** — Settings → Features → Experimental → Enable MCP → Add Server:
 - Command: `npx`
 - Args: `-y depwire-cli mcp`
@@ -500,6 +516,8 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, 
 
 **R / Statistics & Data Science** — functions (including anonymous functions and closures), S3/S4/R5/R6 class definitions, methods, variable assignments (both `<-` and `=` forms), library/require/source dependency edges, NAMESPACE import/export directives, DESCRIPTION file dependency parsing. Pattern-based parser (tree-sitter-r unavailable on npm). Cross-language edge detection: plumber HTTP API route definitions (`@get`, `@post`, `@put`, `@delete`, `@patch` decorators) matched to client callers; Shiny reactive graph edges (server/UI function wiring, `observe`, `reactive`, `eventReactive`, `renderXxx` output bindings); outgoing HTTP client edges via httr (`GET`, `POST`, `PUT`, `DELETE`) and httr2 (`request` + `req_perform`); DBI database connection edges (`dbConnect`, `dbGetQuery`, `dbExecute`); reticulate Python interop edges (`import_from_path`, `source_python`, `py_run_file`). Dead code detection with S3/S4 generic registration exclusions, Shiny module server/UI functions, and testthat/RUnit test block exclusions. Security scanner: string interpolation in database query calls, `system`/`system2`/`shell` execution safety patterns, `eval`/`parse` runtime evaluation safety, file path handling safety, credential management patterns, weak PRNG in statistical-security contexts (`sample`/`runif` vs `openssl` for key material), and unvalidated input in plumber route handlers.
 
+**HTML / Angular templates** — Angular component template parsing (*.component.html). Pairs each template with its sibling *.component.ts component automatically. Extracts component selectors (custom element tags), structural directives, attribute directives, event bindings, and pipe references from Angular template syntax. Emits `uses` edges from the template to the components and pipes it references. External/library components (Angular built-ins, PrimeNG, ngx-translate etc.) resolve to `external::` markers and are excluded from the graph to avoid phantom nodes. Pattern-based parser (regex extraction of Angular template syntax).
+
 ---
 
 ## GitHub Action — PR Impact Analysis
@@ -553,7 +571,40 @@ Block PRs that hurt your architecture:
 [app.depwire.dev](https://app.depwire.dev) — full dependency graph, health score, dead code report, and AI codebase chat in the browser. No local setup required.
 
 - Free for public repos
-- Pro ($19/month) — unlimited repos, private repo support, AI codebase chat
+- Pro ($9.99/month) — unlimited repos, private repo support, AI codebase chat
+
+---
+
+## VSCode Extension
+
+Search **Depwire** in the VSCode Extensions panel or:
+
+    ext install depwire.depwire-vscode
+
+[View on Marketplace](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
+
+Working on Mac and Windows. Free to install.
+
+**Free features:**
+- Interactive dependency arc diagram
+- File and symbol counts
+- Architecture health score
+
+**Pro features ($9.99/month):**
+- Health dimension breakdown (6 metrics)
+- Security scanner with graph-aware severity
+- Dead code detection
+- What If simulation
+- Verify Change — safety checks before committing
+- Structural diff between git commits
+- File context and dependency mapping
+- Temporal graph
+- Multi-agent coordination
+- Decision log
+
+Subscribe at [app.depwire.dev/subscribe](https://app.depwire.dev/subscribe).
+
+Your license key works in both the VSCode extension and the Cloud app — one subscription, both surfaces.
 
 ---
 
@@ -562,7 +613,7 @@ Block PRs that hurt your architecture:
 **Shipped**
 - Arc diagram visualization
 - 23 MCP tools
-- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R)
+- Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R, HTML/Angular)
 - Architecture health score
 - Dead code detection
 - Temporal graph
@@ -573,10 +624,16 @@ Block PRs that hurt your architecture:
 - Public SDK — `depwire-cli/sdk`
 - Cloud dashboard — app.depwire.dev
 - PR Impact GitHub Action
+- VSCode extension — v1.0.13, Mac + Windows, [marketplace](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
+- HTML/Angular template parsing
+- Constructor/field dependency injection parsing (Angular services, `injects` edge kind)
+- Windows path normalization for all MCP tools
+- `verify_change` diff-based (no more false positives)
+- SQLite graph cache — 6× faster warm parse
+- Fast MCP startup — loads from depwire-output.json in <100ms regardless of project size
 
 **Coming next**
 - AI-suggested refactors
-- VSCode extension
 - Natural language architecture queries
 
 ---
@@ -609,7 +666,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 **Atef Ataya** — AI architect, author, and creator of Depwire.
 
-- [YouTube](https://www.youtube.com/@atefataya) — 600K+ subscribers covering AI agents, MCP, and LLMs
+- [YouTube](https://www.youtube.com/@atefataya) — 650K+ subscribers covering AI agents, MCP, and LLMs
 - [The Architect's Playbook: 5 Pillars](https://www.amazon.com/dp/B0GCHNW2W8)
 - [LinkedIn](https://www.linkedin.com/in/atefataya/)
 
