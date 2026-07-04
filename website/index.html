@@ -973,6 +973,7 @@
                         <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a>
                         <a href="https://github.com/marketplace/actions/depwire-pr-impact" target="_blank">GitHub Action</a>
                         <a href="#subscribe" class="nav-subscribe">Stay updated</a>
+                        <a href="https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode" target="_blank" class="nav-cloud">VSCode ↗</a>
                         <a href="https://app.depwire.dev" target="_blank" class="nav-cloud">Cloud ↗</a>
                         <a href="/privacy">Privacy</a>
                     </div>
@@ -1011,6 +1012,7 @@
 
             <div class="cta-buttons">
                 <a href="#install" class="btn btn-primary">Install in 10 seconds</a>
+                <a href="https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode" target="_blank" class="btn btn-secondary">VSCode Extension</a>
                 <a href="https://github.com/depwire/depwire" target="_blank" class="btn btn-secondary">View on GitHub</a>
             </div>
             <div class="hero-image">
@@ -1025,7 +1027,7 @@
         <div class="container" style="text-align: center;">
             <h2 class="section-title scroll-reveal" style="color: #00d4aa; font-size: clamp(1.8rem, 4vw, 2.8rem);">DETERMINISTIC, NOT PROBABILISTIC</h2>
             <p class="scroll-reveal" style="font-size: clamp(1.2rem, 2.5vw, 1.6rem); color: var(--text-primary); font-weight: 700; margin-bottom: 1.5rem;">This is not RAG.</p>
-            <p class="scroll-reveal" style="max-width: 800px; margin: 0 auto 2.5rem; color: var(--text-secondary); font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.8;">No embeddings. No similarity scores. No guesses. Depwire uses tree-sitter to parse every file and extract exact symbol-level facts — every function, class, interface, and import relationship across 16 languages. The result is a compiler-grade dependency graph that AI tools can query for exact answers, not probabilistic estimates.</p>
+            <p class="scroll-reveal" style="max-width: 800px; margin: 0 auto 2.5rem; color: var(--text-secondary); font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.8;">No embeddings. No similarity scores. No guesses. Depwire uses tree-sitter to parse every file and extract exact symbol-level facts — every function, class, interface, and import relationship across 17 languages including HTML/Angular templates. The result is a compiler-grade dependency graph that AI tools can query for exact answers, not probabilistic estimates.</p>
             <img src="assets/deterministic_vs_rag_diagram.svg" alt="Depwire: Deterministic vs RAG architecture comparison" style="width:100%;max-width:680px;margin:2rem auto;display:block;">
         </div>
     </section>
@@ -1151,7 +1153,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🌍</div>
                     <h3>Multi-Language</h3>
-                    <p>TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, and R. Mixed-language monorepos supported. Tree-sitter parsing for deterministic accuracy.</p>
+                    <p>TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R, and HTML/Angular. Mixed-language monorepos supported. Tree-sitter parsing for deterministic accuracy.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">⚡</div>
@@ -1465,8 +1467,26 @@
             <h2 class="section-title scroll-reveal">Install in 10 seconds</h2>
             <div class="code-block-wrapper">
                 <div class="code-block scroll-reveal">
-                    <div class="code-block-title">NPM Install</div>
+                    <div class="code-block-title">Option 1 — CLI + MCP Server</div>
                     <pre><code>npm install -g depwire-cli</code></pre>
+                </div>
+
+                <div class="code-block scroll-reveal" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <div class="code-block-title">Option 2 — VSCode Extension</div>
+                        <pre><code>ext install depwire.depwire-vscode</code></pre>
+                        <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Or search <strong style="color: var(--text-secondary);">Depwire</strong> in VSCode Extensions panel. Free to install. Pro features at $9.99/month.</p>
+                    </div>
+                    <a href="https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode" target="_blank" class="btn btn-secondary" style="white-space: nowrap;">View on Marketplace →</a>
+                </div>
+
+                <div class="code-block scroll-reveal" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <div class="code-block-title">Option 3 — Cloud App (no local setup)</div>
+                        <pre><code>app.depwire.dev</code></pre>
+                        <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Connect a GitHub repo. Get a hosted MCP endpoint in 60 seconds. Works with Claude, Cursor, any MCP client.</p>
+                    </div>
+                    <a href="https://app.depwire.dev" target="_blank" class="btn btn-secondary" style="white-space: nowrap; color: var(--accent-cyan); border-color: var(--accent-cyan);">Open Cloud App →</a>
                 </div>
 
                 <div class="code-block scroll-reveal">
@@ -1779,7 +1799,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 <div class="author-links">
                     <a href="https://www.youtube.com/@atefataya" target="_blank" class="author-link">
                         <span class="author-link-icon">🎥</span>
-                        <span>YouTube (600K+ subscribers)</span>
+                        <span>YouTube (650K+ subscribers)</span>
                     </a>
                     <a href="https://www.amazon.com/dp/B0GCHNW2W8" target="_blank" class="author-link">
                         <span class="author-link-icon">📖</span>
@@ -1842,6 +1862,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         <li><a href="#install">Install</a></li>
                         <li><a href="https://github.com/depwire/depwire" target="_blank">GitHub</a></li>
                         <li><a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode" target="_blank">VSCode Extension</a></li>
+                        <li><a href="https://app.depwire.dev" target="_blank">Cloud App</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -1861,7 +1883,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>Latest: v1.7.0 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
+                <p>Latest: v1.8.2 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
             </div>
         </div>
     </footer>
@@ -1930,7 +1952,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
             msg.textContent = '';
 
             try {
-              const res = await fetch('https://depwire-api.atef-ataya.workers.dev/subscribe', {
+              const res = await fetch('https://api.depwire.dev/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, source: 'website' }),
