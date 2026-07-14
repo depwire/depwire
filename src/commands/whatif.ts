@@ -6,6 +6,7 @@ import { findProjectRoot } from '../utils/files.js';
 import { SimulationEngine, SimulationAction, SimulationResult } from '../simulation/engine.js';
 import { prepareVizData } from '../viz/data.js';
 import { serveWhatIfViz } from '../viz/whatif-server.js';
+import { trackCloudCta } from '../telemetry.js';
 
 export interface WhatIfOptions {
   simulate?: string;
@@ -77,6 +78,7 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
     console.error(
       '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
     );
+    trackCloudCta('whatif');
 
     // Open browser UI with simulation results pre-loaded
     const currentVizData = prepareVizData(graph, projectRoot);

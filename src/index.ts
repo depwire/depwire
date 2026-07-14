@@ -23,7 +23,7 @@ import { createInterface } from 'readline';
 import { findProjectRoot } from './utils/files.js';
 import { runTemporalAnalysis } from './temporal/index.js';
 import { analyzeDeadCode } from './dead-code/index.js';
-import { trackCommand } from './telemetry.js';
+import { trackCommand, trackCloudCta } from './telemetry.js';
 import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
 import { verifyChangeCommand } from './commands/verify-change.js';
@@ -582,6 +582,12 @@ program
         
         const totalTime = Date.now() - startTime;
         console.log(`Analysis completed in ${(totalTime / 1000).toFixed(2)}s (parse: ${(parseTime / 1000).toFixed(2)}s)\n`);
+
+        // Cloud upsell (stderr)
+        console.error(
+          '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
+        );
+        trackCloudCta('health', packageJson.version);
       }
     } catch (err) {
       console.error('Error analyzing health:', err);

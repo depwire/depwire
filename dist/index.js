@@ -487,22 +487,35 @@ function printStats(snapshots) {
 // src/telemetry.ts
 import os from "os";
 var TELEMETRY_URL = "https://telemetry.depwire.dev/event";
-async function trackCommand(command, version = "unknown") {
-  if (process.env.DEPWIRE_NO_TELEMETRY === "1" || process.env.DEPWIRE_NO_TELEMETRY === "true" || process.env.DO_NOT_TRACK === "1") {
-    return;
-  }
-  const payload = {
-    command,
-    version,
-    os: os.platform(),
-    node: process.version
-  };
+function isOptedOut() {
+  return process.env.DEPWIRE_NO_TELEMETRY === "1" || process.env.DEPWIRE_NO_TELEMETRY === "true" || process.env.DO_NOT_TRACK === "1";
+}
+function sendEvent(payload) {
   fetch(TELEMETRY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(2e3)
   }).catch(() => {
+  });
+}
+async function trackCommand(command, version = "unknown") {
+  if (isOptedOut()) return;
+  sendEvent({
+    command,
+    version,
+    os: os.platform(),
+    node: process.version
+  });
+}
+async function trackCloudCta(command, version = "unknown") {
+  if (isOptedOut()) return;
+  sendEvent({
+    event: "cloud_cta_shown",
+    command,
+    version,
+    os: os.platform(),
+    node: process.version
   });
 }
 
@@ -953,6 +966,7 @@ async function whatif(dir, options) {
     console.error(
       "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
     );
+    trackCloudCta("whatif");
     const currentVizData = prepareVizData(graph, projectRoot);
     const simulatedVizData = result.simulatedGraphInstance ? prepareVizData(result.simulatedGraphInstance, projectRoot) : currentVizData;
     const { simulatedGraphInstance, ...serializableResult } = result;
@@ -1232,6 +1246,7 @@ async function securityCommand(dir, options) {
     console.error(
       "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
     );
+    trackCloudCta("security");
   }
   if (options.failOn) {
     const threshold = options.failOn;
@@ -1275,6 +1290,7 @@ async function verifyChangeCommand(dir, options) {
     console.error(
       "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
     );
+    trackCloudCta("verify-change");
   }
   if (options.failOnWarnings) {
     if (result.risk_level === "high") {
@@ -2227,6 +2243,10 @@ program.command("health").description("Analyze dependency architecture health (0
       const totalTime = Date.now() - startTime;
       console.log(`Analysis completed in ${(totalTime / 1e3).toFixed(2)}s (parse: ${(parseTime / 1e3).toFixed(2)}s)
 `);
+      console.error(
+        "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
+      );
+      trackCloudCta("health", packageJson.version);
     }
   } catch (err) {
     console.error("Error analyzing health:", err);
