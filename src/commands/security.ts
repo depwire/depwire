@@ -71,6 +71,13 @@ export async function securityCommand(
     console.log(formatTable(result, elapsedMs));
   }
 
+  // Cloud upsell (stderr, skip for machine-readable output)
+  if (format === 'table') {
+    console.error(
+      '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
+    );
+  }
+
   // Fail on severity threshold
   if (options.failOn) {
     const threshold = options.failOn as Severity;

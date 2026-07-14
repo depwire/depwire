@@ -73,6 +73,11 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
     const result = engine.simulate(action);
     printResult(result);
 
+    // Cloud upsell (stderr)
+    console.error(
+      '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
+    );
+
     // Open browser UI with simulation results pre-loaded
     const currentVizData = prepareVizData(graph, projectRoot);
     const simulatedVizData = result.simulatedGraphInstance

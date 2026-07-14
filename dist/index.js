@@ -950,6 +950,9 @@ async function whatif(dir, options) {
   try {
     const result = engine.simulate(action);
     printResult(result);
+    console.error(
+      "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
+    );
     const currentVizData = prepareVizData(graph, projectRoot);
     const simulatedVizData = result.simulatedGraphInstance ? prepareVizData(result.simulatedGraphInstance, projectRoot) : currentVizData;
     const { simulatedGraphInstance, ...serializableResult } = result;
@@ -1225,6 +1228,11 @@ async function securityCommand(dir, options) {
   } else {
     console.log(formatTable(result, elapsedMs));
   }
+  if (format === "table") {
+    console.error(
+      "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
+    );
+  }
   if (options.failOn) {
     const threshold = options.failOn;
     const thresholdIdx = SEVERITY_ORDER.indexOf(threshold);
@@ -1262,6 +1270,11 @@ async function verifyChangeCommand(dir, options) {
     printVerdict(result, options);
   } else {
     printHumanReadable(result, options);
+  }
+  if (!options.json && !options.quiet) {
+    console.error(
+      "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
+    );
   }
   if (options.failOnWarnings) {
     if (result.risk_level === "high") {

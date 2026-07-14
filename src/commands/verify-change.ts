@@ -49,6 +49,13 @@ export async function verifyChangeCommand(
     printHumanReadable(result, options);
   }
 
+  // Cloud upsell (stderr, skip for machine-readable output)
+  if (!options.json && !options.quiet) {
+    console.error(
+      '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
+    );
+  }
+
   // Exit code
   if (options.failOnWarnings) {
     if (result.risk_level === 'high') {
