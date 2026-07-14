@@ -287,6 +287,92 @@ export function searchSymbols(graph: DirectedGraph, query: string): SymbolNode[]
   return results;
 }
 
+// ── Test-file heuristics ───────────────────────────────────────────
+const TEST_PATH_SEGMENTS = /[/\\](tests?|__tests__|spec)[/\\]/i;
+const TEST_FILE_PATTERNS = /\.(test|spec)\.[jt]sx?$|_test\.(go|py)$|^test_.*\.py$/i;
+
+function isTestFile(filePath: string): boolean {
+  return TEST_PATH_SEGMENTS.test(filePath) || TEST_FILE_PATTERNS.test(filePath);
+}
+
+export interface AffectedFile {
+  filePath: string;
+  depth: number;
+  reason: string;
+  isTest: boolean;
+}
+
+/**
+ * Given a target file path, BFS-traverse reverse edges (dependents) to find
+ * every file transitively affected by a change, including test files.
+ */
+export function getAffectedFiles(
+  graph: DirectedGraph,
+  targetFilePath: string,
+  options: { maxDepth?: number; testsOnly?: boolean } = {},
+): { affected: AffectedFile[]; testFiles: AffectedFile[]; totalCount: number } {
+  const maxDepth = options.maxDepth ?? 5;
+
+  // Collect all node IDs that live in the target file
+  const seedNodes: string[] = [];
+  graph.forEachNode((nodeId, attrs) => {
+    if (attrs.filePath === targetFilePath) {
+      seedNodes.push(nodeId);
+    }
+  });
+
+  if (seedNodes.length === 0) return { affected: [], testFiles: [], totalCount: 0 };
+
+  // BFS on reverse edges (inNeighbors)
+  const visited = new Set<string>(seedNodes);
+  const fileMap = new Map<string, { depth: number; reason: string }>();
+
+  interface QueueItem { nodeId: string; depth: number }
+  let queue: QueueItem[] = seedNodes.map(n => ({ nodeId: n, depth: 0 }));
+
+  while (queue.length > 0) {
+    const next: QueueItem[] = [];
+    for (const { nodeId, depth } of queue) {
+      if (depth >= maxDepth) continue;
+      for (const neighborId of graph.inNeighbors(nodeId)) {
+        if (visited.has(neighborId)) continue;
+        visited.add(neighborId);
+        const attrs = graph.getNodeAttributes(neighborId);
+        const srcAttrs = graph.getNodeAttributes(nodeId);
+        const newDepth = depth + 1;
+
+        // Track file at minimum depth
+        if (!fileMap.has(attrs.filePath) || fileMap.get(attrs.filePath)!.depth > newDepth) {
+          const relation = newDepth === 1 ? 'direct' : `indirect — depth ${newDepth}`;
+          fileMap.set(attrs.filePath, {
+            depth: newDepth,
+            reason: `${relation} — imports ${srcAttrs.name} from ${srcAttrs.filePath}`,
+          });
+        }
+
+        next.push({ nodeId: neighborId, depth: newDepth });
+      }
+    }
+    queue = next;
+  }
+
+  // Remove the target file itself from the results
+  fileMap.delete(targetFilePath);
+
+  const affected: AffectedFile[] = Array.from(fileMap.entries())
+    .map(([filePath, info]) => ({
+      filePath,
+      depth: info.depth,
+      reason: info.reason,
+      isTest: isTestFile(filePath),
+    }))
+    .sort((a, b) => a.depth - b.depth || a.filePath.localeCompare(b.filePath));
+
+  const testFiles = affected.filter(f => f.isTest);
+
+  return { affected, testFiles, totalCount: affected.length };
+}
+
 export function getArchitectureSummary(graph: DirectedGraph): {
   fileCount: number;
   symbolCount: number;

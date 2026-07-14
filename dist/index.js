@@ -18,7 +18,7 @@ import {
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-IG4AE2V4.js";
+} from "./chunk-S5ZDU3Y4.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -27,6 +27,7 @@ import {
   findOutputJson,
   findProjectRoot,
   generateDocs,
+  getAffectedFiles,
   getArchitectureSummary,
   getHealthTrend,
   getImpact,
@@ -34,11 +35,11 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-A5A5DKT4.js";
+} from "./chunk-ES4KPGHT.js";
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve6, dirname as dirname4, join as join5 } from "path";
+import { resolve as resolve7, dirname as dirname4, join as join5 } from "path";
 import { writeFileSync, readFileSync as readFileSync4, existsSync, statSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
@@ -309,10 +310,10 @@ async function findAvailablePort(startPort) {
   const net = await import("net");
   for (let attempt = 0; attempt < 10; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve7) => {
-      const server = net.createServer().once("error", () => resolve7(false)).once("listening", () => {
+    const isAvailable = await new Promise((resolve8) => {
+      const server = net.createServer().once("error", () => resolve8(false)).once("listening", () => {
         server.close();
-        resolve7(true);
+        resolve8(true);
       }).listen(testPort, "127.0.0.1");
     });
     if (isAvailable) {
@@ -356,13 +357,13 @@ async function startTemporalServer(snapshots, projectRoot, preferredPort = 3334)
       console.log("  (Could not open browser automatically)");
     });
   });
-  await new Promise((resolve7, reject) => {
+  await new Promise((resolve8, reject) => {
     server.on("error", reject);
     process.on("SIGINT", () => {
       console.log("\n\nShutting down temporal server...");
       server.close(() => {
         console.log("Server stopped");
-        resolve7();
+        resolve8();
         process.exit(0);
       });
     });
@@ -865,14 +866,14 @@ async function findAvailablePort2(startPort, maxAttempts = 10) {
   const net = await import("net");
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const testPort = startPort + attempt;
-    const isAvailable = await new Promise((resolve7) => {
+    const isAvailable = await new Promise((resolve8) => {
       const server = net.createServer();
       server.once("error", () => {
-        resolve7(false);
+        resolve8(false);
       });
       server.once("listening", () => {
         server.close();
-        resolve7(true);
+        resolve8(true);
       });
       server.listen(testPort, "127.0.0.1");
     });
@@ -1875,6 +1876,113 @@ function printHumanReadable2(result, options) {
   console.log("");
 }
 
+// src/commands/affected.ts
+import { resolve as resolve6, relative } from "path";
+import { execSync as execSync2 } from "child_process";
+import chalk5 from "chalk";
+async function affectedCommand(fileOrSymbol, dir, options) {
+  const projectRoot = dir === "." ? findProjectRoot() : resolve6(dir);
+  const maxDepth = options.depth ? parseInt(options.depth, 10) : 5;
+  let changedFiles;
+  if (options.gitDiff) {
+    const ref = options.gitDiff;
+    try {
+      const raw = execSync2(`git diff --name-only ${ref}`, {
+        cwd: projectRoot,
+        encoding: "utf-8"
+      }).trim();
+      changedFiles = raw.split("\n").map((f) => f.trim()).filter((f) => f.length > 0);
+    } catch {
+      console.error(chalk5.red(`Failed to run git diff with ref: ${ref}`));
+      process.exit(1);
+    }
+    if (changedFiles.length === 0) {
+      console.log("No changed files found.");
+      return;
+    }
+  } else if (fileOrSymbol) {
+    changedFiles = [fileOrSymbol];
+  } else {
+    console.error(chalk5.red("Provide a file path or use --git-diff <ref>"));
+    process.exit(1);
+  }
+  console.error(`Parsing project: ${projectRoot}`);
+  const parsedFiles = await parseProject(projectRoot);
+  const graph = buildGraph(parsedFiles, projectRoot);
+  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  const allAffected = /* @__PURE__ */ new Map();
+  const allTestFiles = /* @__PURE__ */ new Map();
+  for (const changedFile of changedFiles) {
+    const relPath = changedFile.startsWith("/") ? relative(projectRoot, changedFile) : changedFile;
+    const result = getAffectedFiles(graph, relPath, { maxDepth });
+    for (const af of result.affected) {
+      if (!allAffected.has(af.filePath) || allAffected.get(af.filePath).depth > af.depth) {
+        allAffected.set(af.filePath, af);
+      }
+    }
+    for (const tf of result.testFiles) {
+      if (!allTestFiles.has(tf.filePath) || allTestFiles.get(tf.filePath).depth > tf.depth) {
+        allTestFiles.set(tf.filePath, tf);
+      }
+    }
+  }
+  const affected = Array.from(allAffected.values()).sort(
+    (a, b) => a.depth - b.depth || a.filePath.localeCompare(b.filePath)
+  );
+  const testFiles = Array.from(allTestFiles.values()).sort(
+    (a, b) => a.depth - b.depth || a.filePath.localeCompare(b.filePath)
+  );
+  if (options.json) {
+    console.log(JSON.stringify({
+      target: changedFiles.length === 1 ? changedFiles[0] : changedFiles,
+      affected_files: affected,
+      test_files: testFiles,
+      total_affected: affected.length,
+      total_tests: testFiles.length
+    }, null, 2));
+    return;
+  }
+  const line = "\u2500".repeat(50);
+  if (options.tests) {
+    console.log("");
+    console.log(chalk5.bold(`Test files that cover affected code (${testFiles.length}):`));
+    console.log(chalk5.dim(line));
+    if (testFiles.length === 0) {
+      console.log(chalk5.dim("  No test files found in the affected graph."));
+    } else {
+      for (const tf of testFiles) {
+        console.log(`  ${chalk5.green("\u2022")} ${tf.filePath} ${chalk5.dim(`(depth ${tf.depth})`)}`);
+      }
+    }
+  } else {
+    console.log("");
+    console.log(chalk5.bold(`Affected files (${affected.length}):`));
+    console.log(chalk5.dim(line));
+    if (affected.length === 0) {
+      console.log(chalk5.dim("  No affected files found."));
+    } else {
+      for (const af of affected) {
+        const icon = af.isTest ? chalk5.yellow("\u2298") : chalk5.blue("\u2022");
+        console.log(`  ${icon} ${af.filePath} ${chalk5.dim(`(${af.reason})`)}`);
+      }
+    }
+    if (testFiles.length > 0) {
+      console.log("");
+      console.log(chalk5.bold(`Test files that cover affected code (${testFiles.length}):`));
+      console.log(chalk5.dim(line));
+      for (const tf of testFiles) {
+        console.log(`  ${chalk5.green("\u2022")} ${tf.filePath} ${chalk5.dim(`(depth ${tf.depth})`)}`);
+      }
+    }
+  }
+  console.log(chalk5.dim(line));
+  console.log("");
+  console.error(
+    "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
+  );
+  trackCloudCta("affected");
+}
+
 // src/index.ts
 var __filename4 = fileURLToPath4(import.meta.url);
 var __dirname4 = dirname4(__filename4);
@@ -1886,7 +1994,7 @@ program.command("parse").description("Parse a project and build dependency graph
   trackCommand("parse", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1925,8 +2033,8 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
 program.command("query").description("Query impact analysis for a symbol").argument("<directory>", "Project directory").argument("<symbol-name>", "Symbol name to query").action(async (directory, symbolName) => {
   trackCommand("query", packageJson.version);
   try {
-    const projectRoot = resolve6(directory);
-    const cacheFile = resolve6("depwire-output.json");
+    const projectRoot = resolve7(directory);
+    const cacheFile = resolve7("depwire-output.json");
     let graph;
     if (existsSync(cacheFile)) {
       console.log("Loading from cache...");
@@ -1974,7 +2082,7 @@ Total Transitive Dependents: ${impact.transitiveDependents.length}`);
 program.command("viz").description("Launch interactive arc diagram visualization").argument("[directory]", "Project directory to visualize (defaults to current directory or auto-detected project root)").option("-p, --port <number>", "Server port", "3333").option("--no-open", "Don't auto-open browser").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
   trackCommand("viz", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     console.log(`Parsing project: ${projectRoot}`);
     const parsedFiles = await parseProject(projectRoot, {
       exclude: options.exclude,
@@ -1997,7 +2105,7 @@ program.command("viz").description("Launch interactive arc diagram visualization
 program.command("temporal").description("Visualize how the dependency graph evolved over git history").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--commits <number>", "Number of commits to sample", "20").option("--strategy <type>", "Sampling strategy: even, weekly, monthly", "even").option("-p, --port <number>", "Server port", "3334").option("--output <path>", "Save snapshots to custom path (default: .depwire/temporal/)").option("--verbose", "Show progress for each commit being parsed").option("--stats", "Show summary statistics at end").action(async (directory, options) => {
   trackCommand("temporal", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     await runTemporalAnalysis(projectRoot, {
       commits: parseInt(options.commits, 10),
       strategy: options.strategy,
@@ -2019,7 +2127,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     const noCache = options.cache === false;
     let projectRootToConnect = null;
     if (directory) {
-      projectRootToConnect = resolve6(directory);
+      projectRootToConnect = resolve7(directory);
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
@@ -2131,8 +2239,8 @@ program.command("docs").description("Generate comprehensive codebase documentati
   trackCommand("docs", packageJson.version);
   const startTime = Date.now();
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve6(options.output) : join5(projectRoot, ".depwire");
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
+    const outputDir = options.output ? resolve7(options.output) : join5(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -2194,11 +2302,11 @@ async function promptGitignore() {
     input: process.stdin,
     output: process.stdout
   });
-  return new Promise((resolve7) => {
+  return new Promise((resolve8) => {
     rl.question("Add .depwire/ to .gitignore? [Y/n] ", (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve7(normalized === "" || normalized === "y" || normalized === "yes");
+      resolve8(normalized === "" || normalized === "y" || normalized === "yes");
     });
   });
 }
@@ -2228,7 +2336,7 @@ ${pattern}
 program.command("health").description("Analyze dependency architecture health (0-100 score)").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--json", "Output as JSON").option("--verbose", "Show detailed breakdown").action(async (directory, options) => {
   trackCommand("health", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -2256,7 +2364,7 @@ program.command("health").description("Analyze dependency architecture health (0
 program.command("dead-code").description("Identify dead code - symbols defined but never referenced").argument("[directory]", "Project directory to analyze (defaults to current directory or auto-detected project root)").option("--confidence <level>", "Minimum confidence level to show: high, medium, low (default: medium)", "medium").option("--json", "Output as JSON (for CI/automation)").option("--verbose", "Show detailed info for each dead symbol").option("--stats", "Show summary statistics").option("--include-tests", "Include test files in analysis").option("--include-low", "Shortcut for --confidence low").option("--debug", "Show debug information (exclusion stats)").action(async (directory, options) => {
   trackCommand("dead-code", packageJson.version);
   try {
-    const projectRoot = directory ? resolve6(directory) : findProjectRoot();
+    const projectRoot = directory ? resolve7(directory) : findProjectRoot();
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
@@ -2316,6 +2424,15 @@ program.command("diff").description("Compare dependency graph between two git co
     await diffCommand(commitA, commitB, ".", options);
   } catch (err) {
     console.error("Error running diff:", err);
+    process.exit(1);
+  }
+});
+program.command("affected").description("Find all files affected by a change, including test files").argument("[file]", "File path that changed").option("--depth <n>", "Max traversal depth (default: 5)").option("--tests", "Show only test files").option("--json", "Output as JSON").option("--git-diff <ref>", "Read changed files from git diff (e.g., HEAD~1)").action(async (file, options) => {
+  trackCommand("affected", packageJson.version);
+  try {
+    await affectedCommand(file, ".", options);
+  } catch (err) {
+    console.error("Error running affected:", err);
     process.exit(1);
   }
 });

@@ -28,6 +28,7 @@ import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
 import { verifyChangeCommand } from './commands/verify-change.js';
 import { diffCommand } from './commands/diff.js';
+import { affectedCommand } from './commands/affected.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -724,6 +725,25 @@ program
       await diffCommand(commitA, commitB, '.', options);
     } catch (err) {
       console.error('Error running diff:', err);
+      process.exit(1);
+    }
+  });
+
+// Affected files command
+program
+  .command('affected')
+  .description('Find all files affected by a change, including test files')
+  .argument('[file]', 'File path that changed')
+  .option('--depth <n>', 'Max traversal depth (default: 5)')
+  .option('--tests', 'Show only test files')
+  .option('--json', 'Output as JSON')
+  .option('--git-diff <ref>', 'Read changed files from git diff (e.g., HEAD~1)')
+  .action(async (file: string | undefined, options: any) => {
+    trackCommand('affected', packageJson.version);
+    try {
+      await affectedCommand(file, '.', options);
+    } catch (err) {
+      console.error('Error running affected:', err);
       process.exit(1);
     }
   });

@@ -8,6 +8,7 @@ import {
   getImpact,
   getFileSummary,
   getArchitectureSummary,
+  getAffectedFiles,
   findSymbols,
   type SymbolMatch,
 } from "../graph/queries.js";
@@ -528,6 +529,28 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
         },
       },
     },
+    {
+      name: "affected_files",
+      description: "Find all files affected by a change to a specific file or symbol. Includes test files that cover the affected code. Use this before running tests to know which test files to execute.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          file_path: {
+            type: "string",
+            description: "Relative path of the changed file (e.g., 'src/auth/token.ts')",
+          },
+          max_depth: {
+            type: "number",
+            description: "Maximum traversal depth (default: 5)",
+          },
+          tests_only: {
+            type: "boolean",
+            description: "Return only test files (default: false)",
+          },
+        },
+        required: ["file_path"],
+      },
+    },
   ];
 }
 
@@ -717,6 +740,9 @@ export async function handleToolCall(
             break;
           case "list_files":
             result = handleListFiles(normalizePath(args.directory), graph);
+            break;
+          case "affected_files":
+            result = handleAffectedFiles(normalizePath(args.file_path)!, graph, args.max_depth, args.tests_only);
             break;
           default:
             result = { error: `Unknown tool: ${name}` };
@@ -1125,6 +1151,40 @@ function handleSearchSymbols(query: string, limit: number, graph: DirectedGraph)
     })),
     totalMatches: results.length,
     showing,
+  };
+}
+
+function handleAffectedFiles(
+  filePath: string,
+  graph: DirectedGraph,
+  maxDepth?: number,
+  testsOnly?: boolean,
+) {
+  const result = getAffectedFiles(graph, filePath, {
+    maxDepth: maxDepth ?? 5,
+    testsOnly: testsOnly ?? false,
+  });
+
+  if (result.totalCount === 0) {
+    return {
+      target: filePath,
+      affected_files: [],
+      test_files: [],
+      total_affected: 0,
+      total_tests: 0,
+      message: `No affected files found for '${filePath}'. Check the path is relative to the project root.`,
+    };
+  }
+
+  const files = testsOnly ? result.testFiles : result.affected;
+
+  return {
+    target: filePath,
+    affected_files: testsOnly ? [] : result.affected,
+    test_files: result.testFiles,
+    total_affected: result.affected.length,
+    total_tests: result.testFiles.length,
+    summary: `Changing ${filePath} affects ${result.affected.length} file(s), including ${result.testFiles.length} test file(s).`,
   };
 }
 
