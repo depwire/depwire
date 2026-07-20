@@ -29,6 +29,8 @@ import { securityCommand } from './commands/security.js';
 import { verifyChangeCommand } from './commands/verify-change.js';
 import { diffCommand } from './commands/diff.js';
 import { affectedCommand } from './commands/affected.js';
+import { promptCommand } from './commands/prompt.js';
+import { writeAgentsMd } from './commands/agents-md.js';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -98,6 +100,11 @@ program
           }
         }
       } catch { /* ignore gitignore check errors */ }
+      
+      // Auto-generate .depwire/AGENTS.md
+      try {
+        writeAgentsMd(graph, projectRoot, packageJson.version);
+      } catch { /* non-fatal */ }
       
       // Print stats if requested
       if (options.stats) {
@@ -770,6 +777,16 @@ program
       console.error('Error running affected:', err);
       process.exit(1);
     }
+  });
+
+// Prompt command — output workflow prompt for AI agents
+program
+  .command('prompt')
+  .description('Output Depwire MCP workflow prompt for AI agents')
+  .option('--tool <name>', 'Agent tool: claude, cline, codex, generic (default: generic)', 'generic')
+  .action((options: any) => {
+    trackCommand('prompt', packageJson.version);
+    promptCommand(options);
   });
 
 program.parse();

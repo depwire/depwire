@@ -39,8 +39,8 @@ import {
 
 // src/index.ts
 import { Command } from "commander";
-import { resolve as resolve7, dirname as dirname4, join as join5 } from "path";
-import { writeFileSync, readFileSync as readFileSync4, existsSync, statSync } from "fs";
+import { resolve as resolve7, dirname as dirname4, join as join6 } from "path";
+import { writeFileSync as writeFileSync2, readFileSync as readFileSync5, existsSync as existsSync2, statSync } from "fs";
 import { fileURLToPath as fileURLToPath4 } from "url";
 
 // src/graph/serializer.ts
@@ -2071,11 +2071,285 @@ async function affectedCommand(fileOrSymbol, dir, options) {
   trackCloudCta("affected");
 }
 
+// src/commands/prompt.ts
+var WORKFLOW_PROMPTS = {
+  generic: `DEPWIRE WORKFLOW \u2014 You have access to Depwire MCP tools.
+Follow this decision tree exactly:
+
+## BEFORE touching any file
+
+Run these in order:
+1. connect_repo <project_root> \u2014 initialize the graph
+2. get_architecture_summary \u2014 understand module structure
+3. get_health_score \u2014 baseline health score
+
+For EACH file you plan to modify:
+4. get_file_context <file> \u2014 understand its symbols, imports, and who depends on it
+5. get_dependents <symbol> \u2014 what depends on each symbol you plan to change?
+6. impact_analysis <file> \u2014 full blast radius before making changes
+
+## BEFORE writing any code
+
+7. search_symbols <name> \u2014 find the exact symbol definition you need to modify
+8. simulate_change \u2014 preview what happens if you move/delete/rename a file
+9. get_dependencies <symbol> \u2014 understand what the symbol depends on
+
+## AFTER making changes
+
+10. verify_change \u2014 verify your changes don't break imports or degrade health
+11. security_scan \u2014 check for newly introduced vulnerabilities
+12. get_health_score \u2014 confirm health score didn't regress
+13. affected_files <changed_file> \u2014 find all test files that need to run
+
+## MULTI-AGENT COORDINATION
+
+When multiple agents work on the same repo:
+14. claim_files [files] \u2014 lock files you're editing to prevent conflicts
+15. get_active_claims \u2014 see what other agents are working on
+16. release_files [files] \u2014 release your locks when done
+17. record_decision <decision> \u2014 document architectural decisions for other agents
+18. get_decisions \u2014 review decisions made by other agents
+
+## KEY RULES
+
+- ALWAYS run impact_analysis before deleting or moving files
+- ALWAYS run verify_change after modifying imports or exports
+- NEVER skip get_file_context \u2014 it reveals hidden dependencies
+- If health score drops by more than 3 points, reconsider the change
+- Use affected_files to run only the tests that matter
+- Claim files before editing in multi-agent setups`,
+  claude: `DEPWIRE WORKFLOW (Claude/Cursor)
+You have Depwire MCP tools. Use them before and after every code change.
+
+## Start of session
+\`\`\`
+connect_repo .
+get_architecture_summary
+get_health_score
+\`\`\`
+
+## Before editing a file
+\`\`\`
+get_file_context <file>          # symbols, imports, dependents
+impact_analysis <file>           # blast radius
+search_symbols <name>            # find exact definitions
+\`\`\`
+
+## After editing
+\`\`\`
+verify_change --file <file>      # import safety check
+security_scan                    # no new vulnerabilities
+get_health_score                 # no regression
+affected_files <file>            # which tests to run
+\`\`\`
+
+## Before moving/deleting files
+\`\`\`
+simulate_change --type delete --target <file>    # preview impact
+simulate_change --type move --target <file> --destination <new_path>
+\`\`\`
+
+## Multi-agent
+\`\`\`
+claim_files [files]              # lock before editing
+release_files [files]            # unlock when done
+record_decision <text>           # share decisions
+\`\`\`
+
+KEY: Always check impact_analysis before destructive changes. Never skip verify_change after modifying exports.`,
+  cline: `DEPWIRE WORKFLOW (Cline)
+You have Depwire MCP tools available. Follow this workflow for every task.
+
+STEP 1 \u2014 CONNECT: connect_repo .
+STEP 2 \u2014 ORIENT: get_architecture_summary, get_health_score
+STEP 3 \u2014 INVESTIGATE: For each file you'll touch:
+  - get_file_context <file>
+  - impact_analysis <file>
+  - get_dependents <symbol> (for each symbol you'll change)
+STEP 4 \u2014 PLAN: If moving/deleting files, run simulate_change first
+STEP 5 \u2014 EXECUTE: Make your code changes
+STEP 6 \u2014 VERIFY:
+  - verify_change --file <file>
+  - security_scan
+  - get_health_score (compare to Step 2 baseline)
+  - affected_files <file> (run those tests)
+STEP 7 \u2014 COORDINATE (multi-agent):
+  - claim_files before editing, release_files when done
+  - record_decision for architectural choices
+
+RULES:
+- Never skip Step 3 \u2014 hidden dependencies cause cascading breakage
+- If health drops >3 points, stop and reconsider
+- Always run verify_change after modifying imports/exports`,
+  codex: `DEPWIRE WORKFLOW (Codex/CLI)
+Depwire MCP tools are available. Use this linear workflow:
+
+1. connect_repo .
+2. get_architecture_summary
+3. get_health_score \u2192 save as BASELINE
+4. For each target file:
+   a. get_file_context <file>
+   b. impact_analysis <file>
+   c. search_symbols <name> \u2192 find definitions
+5. simulate_change before move/delete/rename
+6. Make code changes
+7. verify_change --file <changed_file>
+8. security_scan
+9. get_health_score \u2192 compare to BASELINE
+10. affected_files <changed_file> \u2192 run those tests
+
+Multi-agent: claim_files \u2192 edit \u2192 release_files
+Decisions: record_decision / get_decisions
+
+EXIT CONDITIONS:
+- Health regression >3 points \u2192 revert and rethink
+- verify_change fails \u2192 fix broken imports before continuing
+- security_scan HIGH findings \u2192 address before merging`
+};
+function promptCommand(options) {
+  const tool = (options.tool || "generic").toLowerCase();
+  const prompt = WORKFLOW_PROMPTS[tool];
+  if (!prompt) {
+    const valid = Object.keys(WORKFLOW_PROMPTS).join(", ");
+    console.error(`Unknown tool: ${tool}. Valid options: ${valid}`);
+    process.exit(1);
+  }
+  console.log(prompt);
+}
+
+// src/commands/agents-md.ts
+import { join as join5 } from "path";
+import { mkdirSync, writeFileSync, existsSync, readFileSync as readFileSync4 } from "fs";
+function generateAgentsMd(graph, projectRoot, version) {
+  const summary = getArchitectureSummary(graph);
+  const extCounts = /* @__PURE__ */ new Map();
+  graph.forEachNode((_nodeId, attrs) => {
+    const ext = attrs.filePath.split(".").pop() || "";
+    extCounts.set(ext, (extCounts.get(ext) || 0) + 1);
+  });
+  const topExts = [...extCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([ext]) => ext);
+  const languageMap = {
+    ts: "TypeScript",
+    tsx: "TypeScript (React)",
+    js: "JavaScript",
+    jsx: "JavaScript (React)",
+    py: "Python",
+    go: "Go",
+    rs: "Rust",
+    java: "Java",
+    kt: "Kotlin",
+    rb: "Ruby",
+    cs: "C#",
+    cpp: "C++",
+    c: "C",
+    swift: "Swift",
+    dart: "Dart",
+    php: "PHP",
+    scala: "Scala",
+    vue: "Vue",
+    svelte: "Svelte"
+  };
+  const languages = topExts.map((ext) => languageMap[ext] || ext.toUpperCase()).filter((v, i, a) => a.indexOf(v) === i);
+  const dirSet = /* @__PURE__ */ new Set();
+  graph.forEachNode((_nodeId, attrs) => {
+    const parts = attrs.filePath.split("/");
+    if (parts.length > 1) {
+      dirSet.add(parts[0]);
+    }
+  });
+  const topDirs = [...dirSet].sort();
+  const lines = [];
+  lines.push("# AGENTS.md");
+  lines.push("");
+  lines.push(`> Auto-generated by Depwire v${version}. Re-run \`depwire parse\` to refresh.`);
+  lines.push("");
+  lines.push("## Project Overview");
+  lines.push("");
+  lines.push(`- **Languages:** ${languages.join(", ")}`);
+  lines.push(`- **Files:** ${summary.fileCount}`);
+  lines.push(`- **Symbols:** ${summary.symbolCount}`);
+  lines.push(`- **Cross-file edges:** ${summary.edgeCount}`);
+  lines.push("");
+  if (topDirs.length > 0) {
+    lines.push("## Module Structure");
+    lines.push("");
+    for (const dir of topDirs.slice(0, 15)) {
+      lines.push(`- \`${dir}/\``);
+    }
+    lines.push("");
+  }
+  if (summary.mostConnectedFiles.length > 0) {
+    lines.push("## Key Files (most connections)");
+    lines.push("");
+    for (const file of summary.mostConnectedFiles) {
+      lines.push(`- \`${file.filePath}\` \u2014 ${file.connections} connections`);
+    }
+    lines.push("");
+  }
+  if (summary.orphanFiles.length > 0) {
+    lines.push(`## Orphan Files (${summary.orphanFiles.length} files with no cross-references)`);
+    lines.push("");
+    const shown = summary.orphanFiles.slice(0, 10);
+    for (const file of shown) {
+      lines.push(`- \`${file}\``);
+    }
+    if (summary.orphanFiles.length > 10) {
+      lines.push(`- ... (${summary.orphanFiles.length - 10} more)`);
+    }
+    lines.push("");
+  }
+  lines.push("## Depwire MCP Workflow");
+  lines.push("");
+  lines.push("Before modifying any file, run:");
+  lines.push("");
+  lines.push("```");
+  lines.push("connect_repo .");
+  lines.push("get_file_context <file>     # understand symbols & dependents");
+  lines.push("impact_analysis <file>      # blast radius");
+  lines.push("```");
+  lines.push("");
+  lines.push("After changes:");
+  lines.push("");
+  lines.push("```");
+  lines.push("verify_change --file <file> # check import safety");
+  lines.push("get_health_score            # confirm no regression");
+  lines.push("affected_files <file>       # find tests to run");
+  lines.push("```");
+  lines.push("");
+  lines.push("For destructive operations (move/delete/rename):");
+  lines.push("");
+  lines.push("```");
+  lines.push("simulate_change --type <action> --target <file>");
+  lines.push("```");
+  lines.push("");
+  lines.push("Full prompt: `depwire prompt` or `depwire prompt --tool claude`");
+  lines.push("");
+  return lines.join("\n");
+}
+function writeAgentsMd(graph, projectRoot, version) {
+  const depwireDir = join5(projectRoot, ".depwire");
+  const agentsPath = join5(depwireDir, "AGENTS.md");
+  const content = generateAgentsMd(graph, projectRoot, version);
+  try {
+    if (!existsSync(depwireDir)) {
+      mkdirSync(depwireDir, { recursive: true });
+    }
+    if (existsSync(agentsPath)) {
+      const existing = readFileSync4(agentsPath, "utf-8");
+      if (existing === content) return;
+    }
+    writeFileSync(agentsPath, content, "utf-8");
+    console.error("\x1B[2mGenerated .depwire/AGENTS.md\x1B[0m");
+  } catch (err) {
+    console.error(`Warning: Could not write AGENTS.md: ${err instanceof Error ? err.message : err}`);
+  }
+}
+
 // src/index.ts
 var __filename4 = fileURLToPath4(import.meta.url);
 var __dirname4 = dirname4(__filename4);
-var packageJsonPath = join5(__dirname4, "../package.json");
-var packageJson = JSON.parse(readFileSync4(packageJsonPath, "utf-8"));
+var packageJsonPath = join6(__dirname4, "../package.json");
+var packageJson = JSON.parse(readFileSync5(packageJsonPath, "utf-8"));
 var program = new Command();
 program.name("depwire").description("Code cross-reference graph builder for multi-language projects").version(packageJson.version);
 program.command("parse").description("Parse a project and build dependency graph").argument("[directory]", "Project directory to parse (defaults to current directory or auto-detected project root)").option("-o, --output <path>", "Output JSON file path", "depwire-output.json").option("--pretty", "Pretty-print JSON output").option("--stats", "Print summary statistics").option("--exclude <patterns...>", 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")').option("--verbose", "Show detailed parsing progress").action(async (directory, options) => {
@@ -2092,12 +2366,12 @@ program.command("parse").description("Parse a project and build dependency graph
     const graph = buildGraph(parsedFiles, projectRoot);
     const projectGraph = exportToJSON(graph, projectRoot);
     const json = options.pretty ? JSON.stringify(projectGraph, null, 2) : JSON.stringify(projectGraph);
-    writeFileSync(options.output, json, "utf-8");
+    writeFileSync2(options.output, json, "utf-8");
     console.log(`Graph exported to: ${options.output}`);
     try {
-      const gitignorePath = join5(projectRoot, ".gitignore");
-      if (existsSync(gitignorePath)) {
-        const gitignoreContent = readFileSync4(gitignorePath, "utf-8");
+      const gitignorePath = join6(projectRoot, ".gitignore");
+      if (existsSync2(gitignorePath)) {
+        const gitignoreContent = readFileSync5(gitignorePath, "utf-8");
         const hasDepwire = gitignoreContent.includes(".depwire") || gitignoreContent.includes("depwire-output.json");
         if (!hasDepwire) {
           console.error(
@@ -2105,6 +2379,10 @@ program.command("parse").description("Parse a project and build dependency graph
           );
         }
       }
+    } catch {
+    }
+    try {
+      writeAgentsMd(graph, projectRoot, packageJson.version);
     } catch {
     }
     if (options.stats) {
@@ -2137,9 +2415,9 @@ program.command("query").description("Query impact analysis for a symbol").argum
     const projectRoot = resolve7(directory);
     const cacheFile = resolve7("depwire-output.json");
     let graph;
-    if (existsSync(cacheFile)) {
+    if (existsSync2(cacheFile)) {
       console.log("Loading from cache...");
-      const json = JSON.parse(readFileSync4(cacheFile, "utf-8"));
+      const json = JSON.parse(readFileSync5(cacheFile, "utf-8"));
       graph = importFromJSON(json);
     } else {
       console.log("Parsing project...");
@@ -2232,7 +2510,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
     } else {
       const detectedRoot = findProjectRoot();
       const cwd = process.cwd();
-      if (detectedRoot !== cwd || existsSync(join5(cwd, "package.json")) || existsSync(join5(cwd, "tsconfig.json")) || existsSync(join5(cwd, "go.mod")) || existsSync(join5(cwd, "pyproject.toml")) || existsSync(join5(cwd, "setup.py")) || existsSync(join5(cwd, ".git"))) {
+      if (detectedRoot !== cwd || existsSync2(join6(cwd, "package.json")) || existsSync2(join6(cwd, "tsconfig.json")) || existsSync2(join6(cwd, "go.mod")) || existsSync2(join6(cwd, "pyproject.toml")) || existsSync2(join6(cwd, "setup.py")) || existsSync2(join6(cwd, ".git"))) {
         projectRootToConnect = detectedRoot;
       }
     }
@@ -2241,7 +2519,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
       if (!noCache) {
         const candidates = findOutputJson(projectRootToConnect);
         for (const jsonPath of candidates) {
-          if (!existsSync(jsonPath)) continue;
+          if (!existsSync2(jsonPath)) continue;
           console.error(`[Depwire] Loading graph from ${jsonPath}...`);
           try {
             const ageMs = Date.now() - statSync(jsonPath).mtimeMs;
@@ -2254,7 +2532,7 @@ program.command("mcp").description("Start MCP server for AI coding tools").argum
           } catch {
           }
           try {
-            const data = JSON.parse(readFileSync4(jsonPath, "utf-8"));
+            const data = JSON.parse(readFileSync5(jsonPath, "utf-8"));
             if (data.nodes && data.edges && data.projectRoot) {
               graph = importFromJSON(data);
               console.error(
@@ -2341,7 +2619,7 @@ program.command("docs").description("Generate comprehensive codebase documentati
   const startTime = Date.now();
   try {
     const projectRoot = directory ? resolve7(directory) : findProjectRoot();
-    const outputDir = options.output ? resolve7(options.output) : join5(projectRoot, ".depwire");
+    const outputDir = options.output ? resolve7(options.output) : join6(projectRoot, ".depwire");
     const includeList = options.include.split(",").map((s) => s.trim());
     const onlyList = options.only ? options.only.split(",").map((s) => s.trim()) : void 0;
     if (options.gitignore === void 0 && !existsSyncNode(outputDir)) {
@@ -2412,7 +2690,7 @@ async function promptGitignore() {
   });
 }
 function addToGitignore(projectRoot, pattern) {
-  const gitignorePath = join5(projectRoot, ".gitignore");
+  const gitignorePath = join6(projectRoot, ".gitignore");
   try {
     let content = "";
     if (existsSyncNode(gitignorePath)) {
@@ -2539,5 +2817,9 @@ program.command("affected").description("Find all files affected by a change, in
     console.error("Error running affected:", err);
     process.exit(1);
   }
+});
+program.command("prompt").description("Output Depwire MCP workflow prompt for AI agents").option("--tool <name>", "Agent tool: claude, cline, codex, generic (default: generic)", "generic").action((options) => {
+  trackCommand("prompt", packageJson.version);
+  promptCommand(options);
 });
 program.parse();
