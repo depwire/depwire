@@ -64,6 +64,34 @@ const PATTERNS: InjectionPattern[] = [
     attackScenario: 'An attacker could inject shell metacharacters if user input reaches the command string.',
     suggestedFix: 'Use subprocess.run with shell=False and pass arguments as a list.',
   },
+  // Python cursor.execute SQL injection (only flag when building SQL unsafely)
+  {
+    regex: /cursor\s*\.\s*execute\s*\(\s*f["']/,
+    title: 'Python SQL injection via cursor.execute with f-string',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'cursor.execute() called with an f-string — user input interpolated directly into SQL.',
+    attackScenario: 'An attacker could inject SQL through interpolated variables to read, modify, or delete database data.',
+    suggestedFix: 'Use parameterized queries: cursor.execute("SELECT ... WHERE id = %s", (user_id,))',
+  },
+  {
+    regex: /cursor\s*\.\s*execute\s*\(\s*["'].*["']\s*\+/,
+    title: 'Python SQL injection via cursor.execute with string concatenation',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'cursor.execute() called with string concatenation — vulnerable to SQL injection.',
+    attackScenario: 'An attacker could inject SQL through concatenated user input to read, modify, or delete database data.',
+    suggestedFix: 'Use parameterized queries: cursor.execute("SELECT ... WHERE id = %s", (user_id,))',
+  },
+  {
+    regex: /cursor\s*\.\s*execute\s*\(\s*["'][^"']*%s[^"']*["']\s*%\s/,
+    title: 'Python SQL injection via cursor.execute with % formatting',
+    vulnClass: 'code-injection',
+    baseSeverity: 'high',
+    description: 'cursor.execute() called with Python %-formatting for SQL — vulnerable to SQL injection.',
+    attackScenario: 'An attacker could inject SQL through the formatted values.',
+    suggestedFix: 'Use parameterized queries: cursor.execute("SELECT ... WHERE id = %s", (user_id,)) — pass params as the second argument, not via % operator.',
+  },
   {
     regex: /eval\s*\(/,
     title: 'eval() usage detected',
@@ -487,7 +515,7 @@ const PATTERNS: InjectionPattern[] = [
   },
   // Dart injection patterns
   {
-    regex: /(?:rawQuery|rawInsert|rawUpdate|rawDelete|execute)\s*\(\s*['"`].*\$/,
+    regex: /(?:rawQuery|rawInsert|rawUpdate|rawDelete)\s*\(\s*['"`].*\$/,
     title: 'Dart database query with string interpolation',
     vulnClass: 'code-injection',
     baseSeverity: 'high',

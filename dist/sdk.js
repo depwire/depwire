@@ -12,7 +12,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-ES4KPGHT.js";
+} from "./chunk-WZMPK23A.js";
 
 // src/sdk.ts
 var DepwireSDKVersion = "1.7.4";
