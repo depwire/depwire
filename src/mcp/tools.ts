@@ -145,13 +145,21 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "get_file_context",
-      description: "Get complete context about a file — all symbols defined in it, all imports, all exports, and all files that import from it. Includes cross-language connections (REST API calls, subprocess invocations).",
+      description: "Get complete context about a file — all symbols defined in it, all imports, all exports, and all files that import from it. Includes cross-language connections (REST API calls, subprocess invocations). Supports startLine/endLine for reading large files in chunks.",
       inputSchema: {
         type: "object",
         properties: {
           filePath: {
             type: "string",
             description: "Relative file path (e.g., 'services/UserService.ts')",
+          },
+          startLine: {
+            type: "number",
+            description: "Optional: start line number (1-based) to return only a slice of file content",
+          },
+          endLine: {
+            type: "number",
+            description: "Optional: end line number (1-based, inclusive) to return only a slice of file content",
           },
         },
         required: ["filePath"],
@@ -733,7 +741,7 @@ export async function handleToolCall(
             result = handleImpactAnalysis(args.symbol, graph, normalizePath(args.file));
             break;
           case "get_file_context":
-            result = handleGetFileContext(normalizePath(args.filePath), graph);
+            result = handleGetFileContext(normalizePath(args.filePath), graph, args.startLine, args.endLine);
             break;
           case "search_symbols":
             result = handleSearchSymbols(args.query, args.limit || 20, graph);
@@ -1035,7 +1043,9 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph, file?: strin
   };
 }
 
-function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph) {
+const MAX_CONTENT_BYTES = 32768; // 32KB limit for MCP responses
+
+function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph, startLine?: number, endLine?: number) {
   const normalized = normalizePath(filePath);
   // Find all symbols in this file
   const fileSymbols: any[] = [];
@@ -1058,6 +1068,24 @@ function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph
       error: `File '${filePath}' not found`,
       suggestion: "Use list_files to see available files",
     };
+  }
+
+  // If startLine/endLine provided, filter symbols to those in range
+  let filteredSymbols = fileSymbols;
+  if (startLine !== undefined || endLine !== undefined) {
+    const sl = startLine ?? 1;
+    const el = endLine ?? Number.MAX_SAFE_INTEGER;
+    filteredSymbols = fileSymbols.filter(s => {
+      return (s.startLine >= sl && s.startLine <= el) ||
+             (s.endLine >= sl && s.endLine <= el) ||
+             (s.startLine <= sl && s.endLine >= el);
+    });
+
+    // Add line numbers to output for context
+    filteredSymbols = filteredSymbols.map(s => ({
+      ...s,
+      lineRange: `${s.startLine}-${s.endLine}`,
+    }));
   }
   
   // Find imports (outgoing cross-file edges)
@@ -1103,16 +1131,39 @@ function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph
     file,
     symbols: Array.from(symbols),
   }));
+
+  const lineRangeNote = (startLine !== undefined || endLine !== undefined)
+    ? ` (showing lines ${startLine ?? 1}-${endLine ?? 'end'})`
+    : '';
   
-  const summary = `${normalized} defines ${fileSymbols.length} symbol(s), imports from ${imports.length} file(s), and is imported by ${importedBy.length} file(s).`;
+  const summary = `${normalized} defines ${fileSymbols.length} symbol(s), imports from ${imports.length} file(s), and is imported by ${importedBy.length} file(s).${lineRangeNote}`;
   
-  return {
+  const result = {
     filePath: normalized,
-    symbols: fileSymbols,
+    symbols: filteredSymbols,
     imports,
     importedBy,
     summary,
+    ...(startLine !== undefined || endLine !== undefined
+      ? { lineRange: { startLine: startLine ?? 1, endLine: endLine ?? 'end' }, totalSymbols: fileSymbols.length }
+      : {}),
   };
+
+  // Smart truncation: check serialized size
+  const serialized = JSON.stringify(result, null, 2);
+  if (serialized.length > MAX_CONTENT_BYTES && startLine === undefined && endLine === undefined) {
+    const totalKB = Math.round(serialized.length / 1024);
+    const truncated = serialized.slice(0, MAX_CONTENT_BYTES);
+    return JSON.parse(JSON.stringify({
+      ...result,
+      _truncated: true,
+      _note: `Response truncated — full output is ${totalKB} KB. Use startLine/endLine params to read specific sections: get_file_context("${filePath}", startLine, endLine)`,
+      symbols: filteredSymbols.slice(0, Math.max(10, Math.floor(filteredSymbols.length / 2))),
+      importedBy: importedBy.slice(0, 20),
+    }));
+  }
+  
+  return result;
 }
 
 function handleSearchSymbols(query: string, limit: number, graph: DirectedGraph) {

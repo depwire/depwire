@@ -7,6 +7,22 @@ import { SimulationEngine, SimulationAction, SimulationResult } from '../simulat
 import { prepareVizData } from '../viz/data.js';
 import { serveWhatIfViz } from '../viz/whatif-server.js';
 import { trackCloudCta } from '../telemetry.js';
+import type http from 'http';
+
+// Track active server for cleanup
+let activeServer: http.Server | null = null;
+
+const cleanup = () => {
+  if (activeServer) {
+    activeServer.close();
+    activeServer = null;
+  }
+};
+
+// Register cleanup handlers once
+process.on('SIGINT', () => { cleanup(); process.exit(0); });
+process.on('SIGTERM', () => { cleanup(); process.exit(0); });
+process.on('exit', cleanup);
 
 export interface WhatIfOptions {
   simulate?: string;
@@ -16,10 +32,19 @@ export interface WhatIfOptions {
   source?: string;
   newFile?: string;
   symbols?: string;
+  json?: boolean;
+  noBrowser?: boolean;
+  timeout?: string;
 }
 
 export async function whatif(dir: string, options: WhatIfOptions): Promise<void> {
+  const textOnly = options.json || options.noBrowser;
+
   if (!options.simulate) {
+    if (textOnly) {
+      console.error('--json and --no-browser require --simulate <action>');
+      process.exit(1);
+    }
     // Phase B: open browser UI
     const projectRoot = dir === '.' ? findProjectRoot() : resolve(dir);
     console.error(`Parsing project: ${projectRoot}`);
@@ -39,7 +64,8 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
       healthDelta: { before: 0, after: 0, delta: 0, improved: false, dimensionChanges: [] },
     };
 
-    await serveWhatIfViz(vizData, vizData, emptyResult, 'none', '');
+    const server = await serveWhatIfViz(vizData, vizData, emptyResult, 'none', '');
+    activeServer = server;
     return;
   }
 
@@ -72,6 +98,88 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
 
   try {
     const result = engine.simulate(action);
+
+    // Determine risk level from health delta and broken imports
+    const brokenCount = result.diff.brokenImports.length;
+    const affectedCount = result.diff.affectedNodes.length;
+    const riskLevel = brokenCount > 5 || affectedCount > 20 || result.healthDelta.delta < -5
+      ? 'HIGH'
+      : brokenCount > 0 || affectedCount > 5 || result.healthDelta.delta < -2
+        ? 'MEDIUM'
+        : 'LOW';
+
+    // --json: machine-readable JSON output
+    if (options.json) {
+      const affected = result.diff.affectedNodes.map((nodeId: string) => {
+        const attrs = graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : null;
+        const depth = result.diff.brokenImports.some(bi => bi.file === attrs?.filePath) ? 1 : 2;
+        const symbols = attrs ? [attrs.name] : [];
+        return {
+          filePath: attrs?.filePath || nodeId,
+          depth,
+          symbols,
+          risk: depth === 1 ? riskLevel : 'LOW',
+        };
+      });
+
+      const jsonOutput = {
+        target: action.target,
+        mode: action.type,
+        affected,
+        total_affected: affectedCount,
+        risk_level: riskLevel,
+        health_before: result.healthDelta.before,
+        health_after: result.healthDelta.after,
+      };
+
+      console.log(JSON.stringify(jsonOutput, null, 2));
+      process.exit(riskLevel === 'HIGH' || riskLevel === 'CRITICAL' ? 1 : 0);
+      return;
+    }
+
+    // --no-browser: human-readable text output
+    if (options.noBrowser) {
+      printResult(result);
+
+      // Additional structured text output
+      const directImports = result.diff.brokenImports;
+      const indirectNodes = result.diff.affectedNodes.filter(
+        nodeId => !directImports.some(bi => {
+          const attrs = graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : null;
+          return attrs && bi.file === attrs.filePath;
+        })
+      );
+
+      console.log('');
+      console.log(`Risk: ${riskLevel}`);
+      console.log(`Affected files: ${affectedCount}`);
+
+      if (directImports.length > 0) {
+        console.log('  Direct (depth 1):');
+        for (const bi of directImports) {
+          console.log(`    ${bi.file} — imports ${bi.importedSymbol}`);
+        }
+      }
+
+      if (indirectNodes.length > 0) {
+        console.log('  Indirect (depth 2+):');
+        const shown = indirectNodes.slice(0, 10);
+        for (const nodeId of shown) {
+          const attrs = graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : null;
+          console.log(`    ${attrs?.filePath || nodeId}`);
+        }
+        if (indirectNodes.length > 10) {
+          console.log(`    ... (${indirectNodes.length - 10} more)`);
+        }
+      }
+
+      console.log(`  Health: ${result.healthDelta.before} → ${result.healthDelta.after} (${result.healthDelta.delta >= 0 ? '+' : ''}${result.healthDelta.delta} points)`);
+
+      process.exit(riskLevel === 'HIGH' || riskLevel === 'CRITICAL' ? 1 : 0);
+      return;
+    }
+
+    // Default: print result then launch browser UI
     printResult(result);
 
     // Cloud upsell (stderr)
@@ -89,13 +197,24 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
     // Strip the graph instance before passing to the server (not JSON-serializable)
     const { simulatedGraphInstance, ...serializableResult } = result;
 
-    await serveWhatIfViz(
+    const server = await serveWhatIfViz(
       currentVizData,
       simulatedVizData,
       serializableResult as SimulationResult,
       action.type,
       action.target
     );
+    activeServer = server;
+
+    // Auto-timeout: close server after --timeout seconds (default 300)
+    const timeoutSec = parseInt(options.timeout || '300', 10);
+    if (timeoutSec > 0) {
+      setTimeout(() => {
+        console.error(`\nServer timed out after ${timeoutSec}s. Shutting down.`);
+        cleanup();
+        process.exit(0);
+      }, timeoutSec * 1000).unref();
+    }
   } catch (err: any) {
     console.error(chalk.red(`Simulation failed: ${err.message}`));
     process.exit(1);

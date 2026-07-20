@@ -82,6 +82,23 @@ program
       writeFileSync(options.output, json, 'utf-8');
       console.log(`Graph exported to: ${options.output}`);
       
+      // Suggest .gitignore entries if not already present
+      try {
+        const gitignorePath = join(projectRoot, '.gitignore');
+        if (existsSync(gitignorePath)) {
+          const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
+          const hasDepwire = gitignoreContent.includes('.depwire') || gitignoreContent.includes('depwire-output.json');
+          if (!hasDepwire) {
+            console.error(
+              '\n\x1b[2mTip: Add these to .gitignore to keep ' +
+              'your repo clean:\n' +
+              '  .depwire/\n' +
+              '  depwire-output.json\x1b[0m\n'
+            );
+          }
+        }
+      } catch { /* ignore gitignore check errors */ }
+      
       // Print stats if requested
       if (options.stats) {
         const elapsed = Date.now() - startTime;
@@ -654,9 +671,16 @@ program
   .option('--source <file>', 'Source file (for merge action)')
   .option('--new-file <file>', 'New file path (for split action)')
   .option('--symbols <symbols>', 'Comma-separated symbol names (for split action)')
+  .option('--json', 'Output blast radius as JSON to stdout (no browser)')
+  .option('--no-browser', 'Output blast radius as text to stdout (no browser)')
+  .option('--timeout <seconds>', 'Auto-close browser server after N seconds (default: 300)')
   .action(async (directory: string | undefined, options: any) => {
     trackCommand('whatif', packageJson.version);
     try {
+      // Commander maps --no-browser to options.browser=false
+      if (options.browser === false) {
+        options.noBrowser = true;
+      }
       await whatif(directory || '.', options);
     } catch (err) {
       console.error('Error running simulation:', err);

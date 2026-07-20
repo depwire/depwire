@@ -18,7 +18,7 @@ import {
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-S5ZDU3Y4.js";
+} from "./chunk-ZKN54YJ6.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -917,17 +917,33 @@ Opening What If UI at ${url}`);
     console.error("Press Ctrl+C to stop\n");
     open2(url);
   });
-  process.on("SIGINT", () => {
-    console.error("\nShutting down What If server...");
-    server.close(() => {
-      process.exit(0);
-    });
-  });
+  return server;
 }
 
 // src/commands/whatif.ts
+var activeServer = null;
+var cleanup = () => {
+  if (activeServer) {
+    activeServer.close();
+    activeServer = null;
+  }
+};
+process.on("SIGINT", () => {
+  cleanup();
+  process.exit(0);
+});
+process.on("SIGTERM", () => {
+  cleanup();
+  process.exit(0);
+});
+process.on("exit", cleanup);
 async function whatif(dir, options) {
+  const textOnly = options.json || options.noBrowser;
   if (!options.simulate) {
+    if (textOnly) {
+      console.error("--json and --no-browser require --simulate <action>");
+      process.exit(1);
+    }
     const projectRoot2 = dir === "." ? findProjectRoot() : resolve2(dir);
     console.error(`Parsing project: ${projectRoot2}`);
     const parsedFiles2 = await parseProject(projectRoot2);
@@ -941,7 +957,8 @@ async function whatif(dir, options) {
       diff: { addedEdges: [], removedEdges: [], affectedNodes: [], brokenImports: [], circularDepsIntroduced: [], circularDepsResolved: [] },
       healthDelta: { before: 0, after: 0, delta: 0, improved: false, dimensionChanges: [] }
     };
-    await serveWhatIfViz(vizData, vizData, emptyResult, "none", "");
+    const server = await serveWhatIfViz(vizData, vizData, emptyResult, "none", "");
+    activeServer = server;
     return;
   }
   const validActions = ["move", "delete", "rename", "split", "merge"];
@@ -963,6 +980,67 @@ async function whatif(dir, options) {
   const engine = new SimulationEngine(graph);
   try {
     const result = engine.simulate(action);
+    const brokenCount = result.diff.brokenImports.length;
+    const affectedCount = result.diff.affectedNodes.length;
+    const riskLevel = brokenCount > 5 || affectedCount > 20 || result.healthDelta.delta < -5 ? "HIGH" : brokenCount > 0 || affectedCount > 5 || result.healthDelta.delta < -2 ? "MEDIUM" : "LOW";
+    if (options.json) {
+      const affected = result.diff.affectedNodes.map((nodeId) => {
+        const attrs = graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : null;
+        const depth = result.diff.brokenImports.some((bi) => bi.file === attrs?.filePath) ? 1 : 2;
+        const symbols = attrs ? [attrs.name] : [];
+        return {
+          filePath: attrs?.filePath || nodeId,
+          depth,
+          symbols,
+          risk: depth === 1 ? riskLevel : "LOW"
+        };
+      });
+      const jsonOutput = {
+        target: action.target,
+        mode: action.type,
+        affected,
+        total_affected: affectedCount,
+        risk_level: riskLevel,
+        health_before: result.healthDelta.before,
+        health_after: result.healthDelta.after
+      };
+      console.log(JSON.stringify(jsonOutput, null, 2));
+      process.exit(riskLevel === "HIGH" || riskLevel === "CRITICAL" ? 1 : 0);
+      return;
+    }
+    if (options.noBrowser) {
+      printResult(result);
+      const directImports = result.diff.brokenImports;
+      const indirectNodes = result.diff.affectedNodes.filter(
+        (nodeId) => !directImports.some((bi) => {
+          const attrs = graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : null;
+          return attrs && bi.file === attrs.filePath;
+        })
+      );
+      console.log("");
+      console.log(`Risk: ${riskLevel}`);
+      console.log(`Affected files: ${affectedCount}`);
+      if (directImports.length > 0) {
+        console.log("  Direct (depth 1):");
+        for (const bi of directImports) {
+          console.log(`    ${bi.file} \u2014 imports ${bi.importedSymbol}`);
+        }
+      }
+      if (indirectNodes.length > 0) {
+        console.log("  Indirect (depth 2+):");
+        const shown = indirectNodes.slice(0, 10);
+        for (const nodeId of shown) {
+          const attrs = graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : null;
+          console.log(`    ${attrs?.filePath || nodeId}`);
+        }
+        if (indirectNodes.length > 10) {
+          console.log(`    ... (${indirectNodes.length - 10} more)`);
+        }
+      }
+      console.log(`  Health: ${result.healthDelta.before} \u2192 ${result.healthDelta.after} (${result.healthDelta.delta >= 0 ? "+" : ""}${result.healthDelta.delta} points)`);
+      process.exit(riskLevel === "HIGH" || riskLevel === "CRITICAL" ? 1 : 0);
+      return;
+    }
     printResult(result);
     console.error(
       "\n\x1B[2m\u2192 Full report at app.depwire.dev \u2014 free to sign up\x1B[0m"
@@ -971,13 +1049,23 @@ async function whatif(dir, options) {
     const currentVizData = prepareVizData(graph, projectRoot);
     const simulatedVizData = result.simulatedGraphInstance ? prepareVizData(result.simulatedGraphInstance, projectRoot) : currentVizData;
     const { simulatedGraphInstance, ...serializableResult } = result;
-    await serveWhatIfViz(
+    const server = await serveWhatIfViz(
       currentVizData,
       simulatedVizData,
       serializableResult,
       action.type,
       action.target
     );
+    activeServer = server;
+    const timeoutSec = parseInt(options.timeout || "300", 10);
+    if (timeoutSec > 0) {
+      setTimeout(() => {
+        console.error(`
+Server timed out after ${timeoutSec}s. Shutting down.`);
+        cleanup();
+        process.exit(0);
+      }, timeoutSec * 1e3).unref();
+    }
   } catch (err) {
     console.error(chalk.red(`Simulation failed: ${err.message}`));
     process.exit(1);
@@ -2006,6 +2094,19 @@ program.command("parse").description("Parse a project and build dependency graph
     const json = options.pretty ? JSON.stringify(projectGraph, null, 2) : JSON.stringify(projectGraph);
     writeFileSync(options.output, json, "utf-8");
     console.log(`Graph exported to: ${options.output}`);
+    try {
+      const gitignorePath = join5(projectRoot, ".gitignore");
+      if (existsSync(gitignorePath)) {
+        const gitignoreContent = readFileSync4(gitignorePath, "utf-8");
+        const hasDepwire = gitignoreContent.includes(".depwire") || gitignoreContent.includes("depwire-output.json");
+        if (!hasDepwire) {
+          console.error(
+            "\n\x1B[2mTip: Add these to .gitignore to keep your repo clean:\n  .depwire/\n  depwire-output.json\x1B[0m\n"
+          );
+        }
+      }
+    } catch {
+    }
     if (options.stats) {
       const elapsed = Date.now() - startTime;
       const summary = getArchitectureSummary(graph);
@@ -2391,9 +2492,12 @@ Analysis completed in ${(totalTime / 1e3).toFixed(2)}s
     process.exit(1);
   }
 });
-program.command("whatif").description("Simulate architectural changes before touching code").argument("[directory]", "Project directory (defaults to auto-detected project root)").option("--simulate <action>", "Action to simulate: move, delete, rename, split, merge").option("--target <file>", "File to apply the action to").option("--destination <file>", "Destination path (for move action)").option("--new-name <name>", "New name (for rename action)").option("--source <file>", "Source file (for merge action)").option("--new-file <file>", "New file path (for split action)").option("--symbols <symbols>", "Comma-separated symbol names (for split action)").action(async (directory, options) => {
+program.command("whatif").description("Simulate architectural changes before touching code").argument("[directory]", "Project directory (defaults to auto-detected project root)").option("--simulate <action>", "Action to simulate: move, delete, rename, split, merge").option("--target <file>", "File to apply the action to").option("--destination <file>", "Destination path (for move action)").option("--new-name <name>", "New name (for rename action)").option("--source <file>", "Source file (for merge action)").option("--new-file <file>", "New file path (for split action)").option("--symbols <symbols>", "Comma-separated symbol names (for split action)").option("--json", "Output blast radius as JSON to stdout (no browser)").option("--no-browser", "Output blast radius as text to stdout (no browser)").option("--timeout <seconds>", "Auto-close browser server after N seconds (default: 300)").action(async (directory, options) => {
   trackCommand("whatif", packageJson.version);
   try {
+    if (options.browser === false) {
+      options.noBrowser = true;
+    }
     await whatif(directory || ".", options);
   } catch (err) {
     console.error("Error running simulation:", err);

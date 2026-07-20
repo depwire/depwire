@@ -47,7 +47,7 @@ export async function serveWhatIfViz(
   simulationResult: SimulationResult,
   operation: string,
   target: string
-): Promise<void> {
+): Promise<import('http').Server> {
   const availablePort = await findAvailablePort(3335);
 
   const app = express();
@@ -90,11 +90,5 @@ export async function serveWhatIfViz(
     open(url);
   });
 
-  // Graceful shutdown
-  process.on('SIGINT', () => {
-    console.error('\nShutting down What If server...');
-    server.close(() => {
-      process.exit(0);
-    });
-  });
+  return server;
 }
