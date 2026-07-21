@@ -71,7 +71,7 @@ Depwire is the infrastructure layer between your AI coding assistant and your co
 
 ## Benchmark Results
 
-Tested on [payloadcms/payload](https://github.com/payloadcms/payload) — 645 files, 9,292 symbols, 80-file cascading refactor (adding a required parameter to a core error class used across the entire codebase).
+Tested on [payloadcms/payload](https://github.com/payloadcms/payload) using **Claude Code (claude-opus-4-8)** — 645 files, 9,292 symbols, 80-file cascading refactor (adding a required parameter to a core error class used across the entire codebase). 3 modes tested: without Depwire, Depwire with no guidance, and Depwire with guided workflow prompt.
 
 | Mode | Duration | API Calls | Tokens | Cost | Correctness |
 |------|----------|-----------|--------|------|-------------|
@@ -90,6 +90,8 @@ Tested on [payloadcms/payload](https://github.com/payloadcms/payload) — 645 fi
 > **How it works:** `affected_files src/errors/APIError.ts` returned the complete 84-file blast radius in one tool call, eliminating all exploratory loops. The agent went straight to fixing files instead of discovering them.
 
 [Full benchmark methodology and scripts →](https://github.com/depwire/depwire-benchmark)
+
+> Agent: Claude Code (claude-opus-4-8) | Repo: payloadcms/payload @ commit 1545e87 | Benchmark scripts: [github.com/depwire/depwire-benchmark](https://github.com/depwire/depwire-benchmark)
 
 ---
 
