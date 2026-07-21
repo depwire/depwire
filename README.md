@@ -69,6 +69,30 @@ Depwire is the infrastructure layer between your AI coding assistant and your co
 
 ---
 
+## Benchmark Results
+
+Tested on [payloadcms/payload](https://github.com/payloadcms/payload) — 645 files, 9,292 symbols, 80-file cascading refactor (adding a required parameter to a core error class used across the entire codebase).
+
+| Mode | Duration | API Calls | Tokens | Cost | Correctness |
+|------|----------|-----------|--------|------|-------------|
+| Without Depwire | 16m 46s | 40 | 2,959,169 | $9.03 | 100% |
+| Depwire (no guidance) | 11m 20s | 46 | 3,399,822 | $9.80 | 100% |
+| Depwire + workflow | **10m 43s** | **26** | **2,165,356** | **$7.35** | 100% |
+
+**Depwire + guided workflow vs no Depwire:**
+- 36% faster
+- 35% fewer API calls
+- 27% fewer tokens
+- 19% lower cost
+
+> **Key finding:** Depwire without an explicit workflow prompt performed worse than no Depwire — the agent had tools available but didn't use them. The improvement only manifests when agents follow the `depwire prompt` workflow. Run `depwire prompt` to get the proven workflow for your agent.
+
+> **How it works:** `affected_files src/errors/APIError.ts` returned the complete 84-file blast radius in one tool call, eliminating all exploratory loops. The agent went straight to fixing files instead of discovering them.
+
+[Full benchmark methodology and scripts →](https://github.com/depwire/depwire-benchmark)
+
+---
+
 ## The problem
 
 AI coding tools are getting smarter. But they still have a fundamental blind spot: they don't know your architecture before they touch it.
@@ -128,6 +152,7 @@ depwire viz        # see your entire architecture instantly
 | [pallets/flask](https://github.com/pallets/flask) | Python | 79 | 2,005 | 851 | — |
 | [dart-lang/shelf](https://github.com/dart-lang/shelf) | Dart | 108 | 1,639 | 219 | — |
 | [rstudio/plumber](https://github.com/rstudio/plumber) | R | 197 | 1,194 | 219 | — |
+| [payloadcms/payload](https://github.com/payloadcms/payload) | TypeScript | 645 | 9,292 | 3,511 | — |
 
 > Numbers from real `depwire parse` runs on public repositories. Last validated: v1.8.2 (June 2026).
 
@@ -325,10 +350,23 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 | `depwire docs` | Generate 13 architecture documents |
 | `depwire temporal` | Visualize architecture evolution over git history |
 | `depwire parse` | Parse and export dependency graph as JSON |
+| `depwire prompt` | Get the proven workflow prompt for your AI agent |
 | `depwire diff` | Structural diff between two git commits — symbols, edges, health, security |
 | `depwire mcp` | Start MCP server for AI coding assistants |
 
 All commands auto-detect your project root. No path configuration needed.
+
+### `depwire prompt` — proven workflow for AI agents
+
+```bash
+# Get the proven workflow prompt for your agent
+depwire prompt                    # generic
+depwire prompt --tool claude      # Claude Code optimized
+depwire prompt --tool cline       # Cline optimized
+depwire prompt --tool codex       # Codex optimized
+```
+
+The guided workflow reduced cost by 19% and time by 36% in benchmarks. Paste the output as your agent's system context before starting any complex task.
 
 ---
 
@@ -366,6 +404,20 @@ depwire mcp . --no-cache     # force full re-parse
 **Cursor** — Settings → Features → Experimental → Enable MCP → Add Server:
 - Command: `npx`
 - Args: `-y depwire-cli mcp`
+
+### Auto-generated project context
+
+After running `depwire parse .`, Depwire generates `.depwire/AGENTS.md` — a project-specific context file containing module structure, key files, health summary, and MCP quick-start commands.
+
+Claude Code reads `AGENTS.md` automatically when present. Add it to your `CLAUDE.md`:
+
+```bash
+# In your project root CLAUDE.md:
+echo "## Depwire Context" >> CLAUDE.md
+echo "Read .depwire/AGENTS.md for codebase architecture." >> CLAUDE.md
+```
+
+This gives every Claude Code session instant orientation without any tool calls — the benchmark showed this alone reduces exploratory iterations.
 
 ![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
@@ -631,6 +683,8 @@ Your license key works in both the VSCode extension and the Cloud app — one su
 - `verify_change` diff-based (no more false positives)
 - SQLite graph cache — 6× faster warm parse
 - Fast MCP startup — loads from depwire-output.json in <100ms regardless of project size
+- `depwire prompt` — proven workflow prompt for AI agents (19% cheaper, 36% faster in benchmarks)
+- Auto-generated `.depwire/AGENTS.md` project context after `depwire parse`
 
 **Coming next**
 - AI-suggested refactors

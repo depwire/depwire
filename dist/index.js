@@ -2073,138 +2073,192 @@ async function affectedCommand(fileOrSymbol, dir, options) {
 
 // src/commands/prompt.ts
 var WORKFLOW_PROMPTS = {
-  generic: `DEPWIRE WORKFLOW \u2014 You have access to Depwire MCP tools.
-Follow this decision tree exactly:
+  generic: `DEPWIRE WORKFLOW \u2014 Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
 
-## BEFORE touching any file
+## STEP 1 \u2014 Orient (before touching anything)
 
-Run these in order:
-1. connect_repo <project_root> \u2014 initialize the graph
-2. get_architecture_summary \u2014 understand module structure
-3. get_health_score \u2014 baseline health score
+connect_repo <project_root>
+get_architecture_summary
 
-For EACH file you plan to modify:
-4. get_file_context <file> \u2014 understand its symbols, imports, and who depends on it
-5. get_dependents <symbol> \u2014 what depends on each symbol you plan to change?
-6. impact_analysis <file> \u2014 full blast radius before making changes
+\u2192 Understand the module structure. Note which packages
+  and directories exist.
 
-## BEFORE writing any code
+## STEP 2 \u2014 Get the blast radius FIRST
 
-7. search_symbols <name> \u2014 find the exact symbol definition you need to modify
-8. simulate_change \u2014 preview what happens if you move/delete/rename a file
-9. get_dependencies <symbol> \u2014 understand what the symbol depends on
+affected_files <target_file> --depth 5
 
-## AFTER making changes
+\u2192 This is the most important step.
+\u2192 Save the COMPLETE list of affected files.
+\u2192 Do not write a single line of code until you have this.
+\u2192 This list tells you every file you must update.
 
-10. verify_change \u2014 verify your changes don't break imports or degrade health
-11. security_scan \u2014 check for newly introduced vulnerabilities
-12. get_health_score \u2014 confirm health score didn't regress
-13. affected_files <changed_file> \u2014 find all test files that need to run
+## STEP 3 \u2014 Understand each affected file
 
-## MULTI-AGENT COORDINATION
+For each file in the affected list:
+get_file_context <file>
 
-When multiple agents work on the same repo:
-14. claim_files [files] \u2014 lock files you're editing to prevent conflicts
-15. get_active_claims \u2014 see what other agents are working on
-16. release_files [files] \u2014 release your locks when done
-17. record_decision <decision> \u2014 document architectural decisions for other agents
-18. get_decisions \u2014 review decisions made by other agents
+\u2192 Understand how it uses the target symbol
+\u2192 Note what change is needed
 
-## KEY RULES
+## STEP 4 \u2014 Make the core change first
 
-- ALWAYS run impact_analysis before deleting or moving files
-- ALWAYS run verify_change after modifying imports or exports
-- NEVER skip get_file_context \u2014 it reveals hidden dependencies
-- If health score drops by more than 3 points, reconsider the change
-- Use affected_files to run only the tests that matter
-- Claim files before editing in multi-agent setups`,
-  claude: `DEPWIRE WORKFLOW (Claude/Cursor)
-You have Depwire MCP tools. Use them before and after every code change.
+Change only the target file/symbol first.
+Then use the compiler as your oracle:
+  npx tsc --noEmit    (TypeScript)
+  python -m mypy .    (Python)
+  go build ./...      (Go)
 
-## Start of session
+\u2192 Each error = one file you missed
+\u2192 Fix files in order of depth (direct callers first)
+
+## STEP 5 \u2014 Verify completeness
+
+verify_change <target_file> <new_content>
+
+\u2192 Confirm the change is safe
+\u2192 Zero broken imports = you got everything
+
+## STEP 6 \u2014 Run tests
+
+npm test / pytest / go test
+
+\u2192 Tests failing after 0 compiler errors =
+  runtime dependency Depwire can't detect
+\u2192 Fix those manually
+
+## CRITICAL RULES
+
+1. Run affected_files BEFORE writing any code
+   (not after \u2014 this is the key insight)
+2. DW Basic (Depwire available but no workflow)
+   performs WORSE than no Depwire \u2014 you must follow
+   this workflow for the benefit to materialize
+3. Depwire finds static dependencies only.
+   Runtime concerns (ORM registries, module caching,
+   dynamic imports) are invisible to Depwire.
+   Use the compiler/test suite for those.
+4. AGENTS.md in .depwire/ contains project-specific
+   context. Read it first before any analysis.`,
+  claude: `DEPWIRE WORKFLOW (Claude/Cursor) \u2014 Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
+
+## STEP 1 \u2014 Orient (before touching anything)
 \`\`\`
 connect_repo .
 get_architecture_summary
-get_health_score
 \`\`\`
+\u2192 Understand the module structure. Note which packages and directories exist.
+\u2192 Read .depwire/AGENTS.md if present \u2014 it has project-specific context.
 
-## Before editing a file
+## STEP 2 \u2014 Get the blast radius FIRST
 \`\`\`
-get_file_context <file>          # symbols, imports, dependents
-impact_analysis <file>           # blast radius
-search_symbols <name>            # find exact definitions
+affected_files <target_file> --depth 5
 \`\`\`
+\u2192 This is the most important step.
+\u2192 Save the COMPLETE list of affected files.
+\u2192 Do not write a single line of code until you have this.
+\u2192 This list tells you every file you must update.
 
-## After editing
+## STEP 3 \u2014 Understand each affected file
 \`\`\`
-verify_change --file <file>      # import safety check
-security_scan                    # no new vulnerabilities
-get_health_score                 # no regression
-affected_files <file>            # which tests to run
+get_file_context <file>
 \`\`\`
+\u2192 For each file in the affected list
+\u2192 Understand how it uses the target symbol
+\u2192 Note what change is needed
 
-## Before moving/deleting files
+## STEP 4 \u2014 Make the core change first
+Change only the target file/symbol first.
+Then use the compiler as your oracle:
 \`\`\`
-simulate_change --type delete --target <file>    # preview impact
-simulate_change --type move --target <file> --destination <new_path>
+npx tsc --noEmit    # TypeScript
+python -m mypy .    # Python
+go build ./...      # Go
 \`\`\`
+\u2192 Each error = one file you missed
+\u2192 Fix files in order of depth (direct callers first)
 
-## Multi-agent
+## STEP 5 \u2014 Verify completeness
 \`\`\`
-claim_files [files]              # lock before editing
-release_files [files]            # unlock when done
-record_decision <text>           # share decisions
+verify_change <target_file> <new_content>
 \`\`\`
+\u2192 Confirm the change is safe
+\u2192 Zero broken imports = you got everything
 
-KEY: Always check impact_analysis before destructive changes. Never skip verify_change after modifying exports.`,
-  cline: `DEPWIRE WORKFLOW (Cline)
-You have Depwire MCP tools available. Follow this workflow for every task.
+## STEP 6 \u2014 Run tests
+\`\`\`
+npm test / pytest / go test
+\`\`\`
+\u2192 Tests failing after 0 compiler errors = runtime dependency Depwire can't detect
+\u2192 Fix those manually
 
-STEP 1 \u2014 CONNECT: connect_repo .
-STEP 2 \u2014 ORIENT: get_architecture_summary, get_health_score
-STEP 3 \u2014 INVESTIGATE: For each file you'll touch:
+## CRITICAL RULES
+1. Run affected_files BEFORE writing any code (not after \u2014 this is the key insight)
+2. DW Basic (Depwire available but no workflow) performs WORSE than no Depwire \u2014 you must follow this workflow for the benefit to materialize
+3. Depwire finds static dependencies only. Runtime concerns (ORM registries, module caching, dynamic imports) are invisible to Depwire. Use the compiler/test suite for those.
+4. AGENTS.md in .depwire/ contains project-specific context. Read it first before any analysis.`,
+  cline: `DEPWIRE WORKFLOW (Cline) \u2014 Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
+
+STEP 1 \u2014 ORIENT: connect_repo . then get_architecture_summary
+  \u2192 Understand the module structure. Note which packages and directories exist.
+  \u2192 Read .depwire/AGENTS.md if present for project-specific context.
+
+STEP 2 \u2014 BLAST RADIUS FIRST: affected_files <target_file> --depth 5
+  \u2192 This is the most important step.
+  \u2192 Save the COMPLETE list of affected files.
+  \u2192 Do not write a single line of code until you have this.
+  \u2192 This list tells you every file you must update.
+
+STEP 3 \u2014 UNDERSTAND: For each file in the affected list:
   - get_file_context <file>
-  - impact_analysis <file>
-  - get_dependents <symbol> (for each symbol you'll change)
-STEP 4 \u2014 PLAN: If moving/deleting files, run simulate_change first
-STEP 5 \u2014 EXECUTE: Make your code changes
-STEP 6 \u2014 VERIFY:
-  - verify_change --file <file>
-  - security_scan
-  - get_health_score (compare to Step 2 baseline)
-  - affected_files <file> (run those tests)
-STEP 7 \u2014 COORDINATE (multi-agent):
-  - claim_files before editing, release_files when done
-  - record_decision for architectural choices
+  - Understand how it uses the target symbol
+  - Note what change is needed
+
+STEP 4 \u2014 CHANGE: Make the core change first (target file/symbol only).
+  Then use the compiler as your oracle:
+  - npx tsc --noEmit (TypeScript)
+  - python -m mypy . (Python)
+  - go build ./... (Go)
+  \u2192 Each error = one file you missed
+  \u2192 Fix files in order of depth (direct callers first)
+
+STEP 5 \u2014 VERIFY: verify_change <target_file> <new_content>
+  \u2192 Confirm the change is safe
+  \u2192 Zero broken imports = you got everything
+
+STEP 6 \u2014 TEST: npm test / pytest / go test
+  \u2192 Tests failing after 0 compiler errors = runtime dependency Depwire can't detect
+  \u2192 Fix those manually
 
 RULES:
-- Never skip Step 3 \u2014 hidden dependencies cause cascading breakage
-- If health drops >3 points, stop and reconsider
-- Always run verify_change after modifying imports/exports`,
-  codex: `DEPWIRE WORKFLOW (Codex/CLI)
-Depwire MCP tools are available. Use this linear workflow:
+- Run affected_files BEFORE writing any code (not after \u2014 this is the key insight)
+- DW Basic (Depwire available but no workflow) performs WORSE than no Depwire \u2014 follow this workflow
+- Depwire finds static dependencies only. Runtime concerns are invisible to Depwire. Use the compiler/test suite.
+- AGENTS.md in .depwire/ contains project-specific context. Read it first.`,
+  codex: `DEPWIRE WORKFLOW (Codex/CLI) \u2014 Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
 
 1. connect_repo .
-2. get_architecture_summary
-3. get_health_score \u2192 save as BASELINE
-4. For each target file:
-   a. get_file_context <file>
-   b. impact_analysis <file>
-   c. search_symbols <name> \u2192 find definitions
-5. simulate_change before move/delete/rename
-6. Make code changes
-7. verify_change --file <changed_file>
-8. security_scan
-9. get_health_score \u2192 compare to BASELINE
-10. affected_files <changed_file> \u2192 run those tests
+2. get_architecture_summary \u2192 understand module structure
+3. Read .depwire/AGENTS.md if present \u2192 project-specific context
+4. affected_files <target_file> --depth 5 \u2192 COMPLETE blast radius
+   THIS IS THE MOST IMPORTANT STEP. Do not write code until you have this list.
+5. For each affected file:
+   a. get_file_context <file> \u2192 understand usage of target symbol
+   b. Note what change is needed
+6. Make the core change (target file/symbol only)
+7. Compiler as oracle:
+   - npx tsc --noEmit (TypeScript)
+   - python -m mypy . (Python)
+   - go build ./... (Go)
+   \u2192 Each error = one file you missed
+   \u2192 Fix in order of depth (direct callers first)
+8. verify_change <target_file> <new_content> \u2192 zero broken imports = done
+9. npm test / pytest / go test \u2192 runtime deps Depwire can't detect
 
-Multi-agent: claim_files \u2192 edit \u2192 release_files
-Decisions: record_decision / get_decisions
-
-EXIT CONDITIONS:
-- Health regression >3 points \u2192 revert and rethink
-- verify_change fails \u2192 fix broken imports before continuing
-- security_scan HIGH findings \u2192 address before merging`
+CRITICAL RULES:
+- Run affected_files BEFORE writing any code (not after \u2014 key insight)
+- DW Basic (tools available, no workflow) performs WORSE than no Depwire
+- Depwire finds static dependencies only. Runtime concerns invisible. Use compiler/tests.
+- AGENTS.md in .depwire/ has project context. Read it first.`
 };
 function promptCommand(options) {
   const tool = (options.tool || "generic").toLowerCase();
