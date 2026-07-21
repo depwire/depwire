@@ -85,9 +85,7 @@ Tested on [payloadcms/payload](https://github.com/payloadcms/payload) using **Cl
 - 27% fewer tokens
 - 19% lower cost
 
-> **Key finding:** Depwire without an explicit workflow prompt performed worse than no Depwire — the agent had tools available but didn't use them. The improvement only manifests when agents follow the `depwire prompt` workflow. Run `depwire prompt` to get the proven workflow for your agent.
-
-> **How it works:** `affected_files src/errors/APIError.ts` returned the complete 84-file blast radius in one tool call, eliminating all exploratory loops. The agent went straight to fixing files instead of discovering them.
+> **Key finding:** Depwire without workflow guidance performed worse than no Depwire — agents had the tools but didn't use them unprompted, paying MCP overhead without getting any benefit. The `affected_files` command returned the complete 84-file blast radius in one call, but only when the agent was explicitly told to run it first. This is why we built `depwire prompt` — not as boilerplate, but because the benchmark showed agents need an explicit decision tree to use graph tools effectively.
 
 [Full benchmark methodology and scripts →](https://github.com/depwire/depwire-benchmark)
 
