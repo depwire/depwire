@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## 1.9.1
+## 1.9.2
+
+> 1.9.1 was tagged but never published to npm; superseded by 1.9.2.
+> The two are functionally identical.
 
 ### Fixed — no more false green on empty projects
 
