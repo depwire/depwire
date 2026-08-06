@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.9.1
+
+### Fixed — no more false green on empty projects
+
+`depwire health` reported **100/100 Grade A** for directories it parsed nothing from —
+an empty folder, an unsupported language, or a failed parse all produced "Excellent
+architecture," and the CLI exited 0 so CI read it as a pass.
+
+Depwire now refuses to score when there is no data: it names the directory, lists the
+extensions it supports, and exits 2. The same refusal applies to `security` and
+`dead-code`, and to the `get_health_score`, `find_dead_code` and `security_scan` MCP
+tools, which previously returned success-shaped results an agent would read as a clean
+bill of health.
+
+Also: the SimulationEngine test suite now runs under vitest, so `npm test` exits 0.
+
+---
+
 ## 1.9.0
 
 ### Fixed — parser correctness
