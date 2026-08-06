@@ -73,6 +73,8 @@ Depwire is the infrastructure layer between your AI coding assistant and your co
 
 Tested on [payloadcms/payload](https://github.com/payloadcms/payload) using **Claude Code (claude-opus-4-8)** — 645 files, 9,292 symbols, 80-file cascading refactor (adding a required parameter to a core error class used across the entire codebase). 3 modes tested: without Depwire, Depwire with no guidance, and Depwire with guided workflow prompt.
 
+> **Pre-1.9.0 measurement.** The 9,292-symbol figure was produced by a parser with confirmed double-emission and false-orphan bugs (fixed in v1.9.0 — see [CHANGELOG](CHANGELOG.md)); the real symbol count is lower. The benchmark itself (timing, cost, tokens, correctness) is unaffected — it measures agent behavior, not graph size — but this specific number has not been re-measured on the corrected parser.
+
 | Mode | Duration | API Calls | Tokens | Cost | Correctness |
 |------|----------|-----------|--------|------|-------------|
 | Without Depwire | 16m 46s | 40 | 2,959,169 | $9.03 | 100% |
@@ -155,6 +157,8 @@ depwire viz        # see your entire architecture instantly
 | [payloadcms/payload](https://github.com/payloadcms/payload) | TypeScript | 645 | 9,292 | 3,511 | — |
 
 > Numbers from real `depwire parse` runs on public repositories. Last validated: v1.8.2 (June 2026).
+>
+> **Pre-1.9.0 measurement.** v1.9.0 fixed parser bugs (double-emitted symbols in the TypeScript/Python/C#/C++/Java parsers, dropped type-only-import edges, false orphans) that directly affect symbol counts, edge counts, and health scores. These numbers were captured before that fix and have not been re-measured — they are directionally useful but not exact under v1.9.0+.
 
 ---
 
@@ -176,6 +180,8 @@ Real output on [honojs/hono](https://github.com/honojs/hono) — 352 files, 6,24
     • src/utils/basic-auth.ts imports decodeBase64
     [27 more...]
     Removed Edges:   32
+
+> Pre-1.9.0 measurement — captured before the v1.9.0 parser fixes; not re-measured.
 
 Before touching a single file. Zero file I/O. Pure in-memory simulation.
 
@@ -206,6 +212,8 @@ Action:          DELETE core/src/com/google/inject/Injector.java
 Affected Nodes:  128
 Broken Imports:  124  (cross-module: 106 across 10 extension modules)
 ```
+
+> Pre-1.9.0 measurement — google/guice is a Java project; the Java parser's double-emission bug (fixed in v1.9.0) affects this figure. Not re-measured.
 
 Without this, your AI agent has no visibility into cross-module blast radius. With it, dangerous changes are caught before they happen.
 

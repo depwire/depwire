@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.9.0
+
+### Fixed — parser correctness
+
+Depwire was under-reporting its own dependency graph. Four parser bugs, all found by
+running Depwire against itself:
+
+- **Type-only imports produced no edges.** `import type { X } from './y'` was silently
+  dropped — the `type` keyword shifts the import clause by one AST slot and the parser
+  read the wrong node. On this repo that was 70 of 512 imports (13.7%) contributing
+  nothing to the graph. Files consisting only of exported types were reported as
+  orphans, and every type they declared was reported as dead code.
+- **Aliased imports bound the wrong name.** `import { alpha as beta }` registered
+  `alpha`, so calls to `beta()` never resolved across files.
+- **Function and method bodies were walked twice** — once scoped, once unscoped. This
+  inflated symbol counts and, worse, produced ids that collided with real top-level
+  symbols. Fixed in the TypeScript, Python, C#, C++ and Java parsers.
+- **Function-local declarations were marked as exported**, because the export check
+  walked past enclosing scopes.
+
+Also fixed: forward-referenced local calls now resolve correctly; Python symbol ids are
+now scope-qualified (`file::Class.method`) instead of flat; test fixtures and static
+HTML entry points are no longer counted as orphans, and all orphan-reporting paths now
+share one definition.
+
+### ⚠️ Your numbers will change
+
+Health scores, symbol counts, orphan lists and dead-code results will differ from 1.8.x
+on unchanged source. The previous numbers were wrong. If you gate CI on a health
+threshold, re-baseline it.
+
+### Known limitations
+
+- Symbol ids are function-scoped, not block-scoped, so repeated names in sibling blocks
+  within one function share an id.
+- The Dart and R parsers still emit some call sites as declarations.
+- Symbol extraction depth varies by language; C++ coverage is thin.
+
+---
+
 ## [1.7.1] - 2026-06-11
 
 ### Bug Fixes
