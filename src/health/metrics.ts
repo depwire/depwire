@@ -1,7 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { HealthDimension } from './types.js';
-import { dirname } from 'path';
-import { findDeadSymbols } from '../dead-code/detector.js';
+import { dirname, relative } from 'path';
+import { findDeadSymbols, isFixtureOrStaticAsset } from '../dead-code/detector.js';
 
 /**
  * Calculate the letter grade from a 0-100 score
@@ -344,11 +344,18 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
  * other internal implementation details are excluded — they are not
  * meaningful candidates for "dead code" at the architecture level.
  */
-export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string): HealthDimension {
+export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string, includeFixtures = false): HealthDimension {
   const files = new Set<string>();
   const connectedFiles = new Set<string>();
   
   graph.forEachNode((node, attrs) => {
+    // Test fixtures (deliberately standalone sample projects) and static
+    // HTML entry points have no real importer by design and inflate the
+    // orphan count if counted — exclude them unless explicitly requested.
+    if (!includeFixtures && projectRoot) {
+      const relativePath = relative(projectRoot, attrs.filePath);
+      if (isFixtureOrStaticAsset(relativePath)) return;
+    }
     files.add(attrs.filePath);
   });
   
@@ -362,7 +369,15 @@ export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string
     }
   });
   
-  const orphanCount = files.size - connectedFiles.size;
+  // Count membership directly rather than subtracting set sizes:
+  // `connectedFiles` can contain fixture/HTML paths that were filtered out
+  // of `files` above (e.g. a real source file importing a static asset),
+  // which would otherwise make connectedFiles.size exceed files.size and
+  // produce a nonsensical negative orphan count.
+  let orphanCount = 0;
+  for (const file of files) {
+    if (!connectedFiles.has(file)) orphanCount++;
+  }
   const orphanPercent = files.size > 0 ? (orphanCount / files.size) * 100 : 0;
   
   // Use the dead-code detector for accurate dead symbol counting.
@@ -372,7 +387,7 @@ export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string
   let totalExportedSymbols = 0;
   
   if (projectRoot) {
-    const result = findDeadSymbols(graph, projectRoot, false, false);
+    const result = findDeadSymbols(graph, projectRoot, false, false, includeFixtures);
     deadSymbolCount = result.symbols.length;
     
     // Count total exported symbols of relevant kinds for percentage calculation

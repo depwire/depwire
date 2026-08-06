@@ -7,7 +7,8 @@ export function findDeadSymbols(
   graph: Graph,
   projectRoot: string,
   includeTests = false,
-  debug = false
+  debug = false,
+  includeFixtures = false
 ): { symbols: DeadSymbol[]; stats: ExclusionStats } {
   const deadSymbols: DeadSymbol[] = [];
   const context: ExclusionContext = { graph, projectRoot };
@@ -77,7 +78,7 @@ export function findDeadSymbols(
     if (inDegree === 0) {
       stats.total++;
       
-      const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints);
+      const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures);
       
       if (exclusionReason) {
         switch (exclusionReason) {
@@ -194,7 +195,8 @@ function shouldExclude(
   attrs: any,
   context: ExclusionContext,
   includeTests: boolean,
-  packageEntryPoints: Set<string>
+  packageEntryPoints: Set<string>,
+  includeFixtures = false
 ): string | null {
   const filePath = attrs.file || attrs.filePath;
   
@@ -205,6 +207,10 @@ function shouldExclude(
   const relativePath = path.relative(context.projectRoot, filePath);
 
   if (!includeTests && isTestFile(relativePath)) {
+    return "test";
+  }
+
+  if (!includeFixtures && isFixtureOrStaticAsset(relativePath)) {
     return "test";
   }
 
@@ -294,6 +300,22 @@ function isTestFile(filePath: string): boolean {
     filePath.includes("/test/") ||
     filePath.includes("/tests/")
   );
+}
+
+/**
+ * Test fixtures (deliberately standalone sample projects used by parser
+ * tests) and static HTML entry points have no real importer by design and
+ * should not be reported as orphans or dead code. Exported so the health
+ * metrics orphan-file count can apply the same exclusion.
+ */
+export function isFixtureOrStaticAsset(filePath: string): boolean {
+  if (filePath.includes("/fixtures/") || filePath.includes("/__fixtures__/")) {
+    return true;
+  }
+  if (filePath.endsWith(".html")) {
+    return true;
+  }
+  return isTestFile(filePath);
 }
 
 function isConfigFile(filePath: string): boolean {

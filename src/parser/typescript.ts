@@ -11,6 +11,7 @@ interface Context {
   currentScope: string[];
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
+  declaredSymbolIds: Set<string>; // every symbol id declared so far, used to resolve calls to nested/scoped functions
 }
 
 export function parseTypeScriptFile(
@@ -32,6 +33,7 @@ export function parseTypeScriptFile(
     currentScope: [],
     imports: new Map(),
     externalImports: new Map(),
+    declaredSymbolIds: new Set(),
   };
   
   walkNode(tree.rootNode, context);
@@ -44,8 +46,15 @@ export function parseTypeScriptFile(
 }
 
 function walkNode(node: any, context: Context): void {
-  // Process current node
-  processNode(node, context);
+  // Process current node. `processNode` returns `true` when it has taken
+  // full responsibility for traversing its own subtree (e.g. function and
+  // class bodies are walked explicitly, with scope pushed/popped around
+  // them) — in that case the generic recursion below must NOT also walk
+  // those children, or every nested symbol gets visited twice: once with
+  // the correct scope, and once after the scope has already been popped,
+  // producing duplicate/colliding symbol ids.
+  const handledChildren = processNode(node, context);
+  if (handledChildren) return;
   
   // Recursively process children
   for (let i = 0; i < node.childCount; i++) {
@@ -56,20 +65,20 @@ function walkNode(node: any, context: Context): void {
   }
 }
 
-function processNode(node: Parser.SyntaxNode, context: Context): void {
+function processNode(node: Parser.SyntaxNode, context: Context): boolean {
   const type = node.type;
   
   switch (type) {
     case 'function_declaration':
       processFunctionDeclaration(node, context);
-      break;
+      return true;
     case 'class_declaration':
       processClassDeclaration(node, context);
-      break;
+      return true;
     case 'variable_declaration':
     case 'lexical_declaration':
       processVariableDeclaration(node, context);
-      break;
+      return true;
     case 'type_alias_declaration':
       processTypeAliasDeclaration(node, context);
       break;
@@ -92,6 +101,7 @@ function processNode(node: Parser.SyntaxNode, context: Context): void {
       processNewExpression(node, context);
       break;
   }
+  return false;
 }
 
 function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): void {
@@ -106,7 +116,7 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   
   const symbolId = `${context.filePath}::${scope ? scope + '.' : ''}${name}`;
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'function',
@@ -119,6 +129,14 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   
   // Enter function scope for processing nested calls
   context.currentScope.push(name);
+  
+  // Walk default parameter values (e.g. `function f(x = init())`) — the
+  // outer generic recursion no longer reaches these now that this
+  // function owns its entire subtree.
+  const params = node.childForFieldName('parameters');
+  if (params) {
+    walkNode(params, context);
+  }
   
   // Process function body
   const body = node.childForFieldName('body');
@@ -296,7 +314,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   // template pairing pass can resolve template tags back to this class.
   const angularSelector = extractAngularSelector(node);
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'class',
@@ -375,6 +393,49 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
         }
       }
     }
+    
+    // Now that class_declaration owns its entire subtree (the outer generic
+    // recursion no longer descends into it), explicitly walk anything the
+    // member-by-member loop above doesn't already reach: field initializer
+    // values (e.g. `foo = bar();`) and decorator argument lists on members
+    // and on the class itself — both previously discovered incidentally by
+    // the generic recursion.
+    for (let i = 0; i < body.childCount; i++) {
+      const child = body.child(i);
+      if (!child) continue;
+      
+      if (child.type === 'public_field_definition' || child.type === 'field_definition') {
+        const value = child.childForFieldName('value');
+        if (value) {
+          walkNode(value, context);
+        }
+      }
+      
+      for (let j = 0; j < child.childCount; j++) {
+        const maybeDecorator = child.child(j);
+        if (maybeDecorator && maybeDecorator.type === 'decorator') {
+          walkNode(maybeDecorator, context);
+        }
+      }
+    }
+  }
+  
+  // Class-level decorators (e.g. @Component({...})) may live as direct
+  // children of the class node, or as siblings under an export_statement
+  // wrapper — walk both so decorator argument call expressions are reached.
+  const classLevelDecorators: Parser.SyntaxNode[] = [];
+  for (let i = 0; i < node.childCount; i++) {
+    const child = node.child(i);
+    if (child && child.type === 'decorator') classLevelDecorators.push(child);
+  }
+  if (node.parent) {
+    for (let i = 0; i < node.parent.childCount; i++) {
+      const sibling = node.parent.child(i);
+      if (sibling && sibling.type === 'decorator') classLevelDecorators.push(sibling);
+    }
+  }
+  for (const decorator of classLevelDecorators) {
+    walkNode(decorator, context);
   }
   
   context.currentScope.pop();
@@ -391,7 +452,7 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
   
   const symbolId = `${context.filePath}::${className}.${name}`;
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'method',
@@ -425,7 +486,7 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
   
   const symbolId = `${context.filePath}::${className}.${name}`;
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'property',
@@ -446,7 +507,11 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       if (!nameNode) continue;
       
       const name = nameNode.text;
-      const exported = isExported(node.parent);
+      // Pass the declaration node itself, not its parent — isExported now
+      // stops at scope boundaries (e.g. statement_block), so ascending from
+      // the declaration correctly finds `export const x = ...` while never
+      // escaping the enclosing function body for a local declaration.
+      const exported = isExported(node);
       const startLine = child.startPosition.row + 1;
       const endLine = child.endPosition.row + 1;
       const scope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
@@ -457,7 +522,7 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       
       const symbolId = `${context.filePath}::${scope ? scope + '.' : ''}${name}`;
       
-      context.symbols.push({
+      pushSymbol(context, {
         id: symbolId,
         name,
         kind,
@@ -468,11 +533,20 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
         scope,
       });
       
-      // If it's a function, process its body
-      if (kind === 'function' && value) {
-        context.currentScope.push(name);
-        walkNode(value, context);
-        context.currentScope.pop();
+      // If it's an arrow function, process its body with the declared name
+      // pushed as scope. Otherwise (e.g. `const x = foo();`), still walk the
+      // initializer — with the scope unchanged — so call expressions inside
+      // non-arrow initializers keep producing `calls` edges now that this
+      // function owns its entire subtree (the outer generic recursion no
+      // longer reaches it).
+      if (value) {
+        if (kind === 'function') {
+          context.currentScope.push(name);
+          walkNode(value, context);
+          context.currentScope.pop();
+        } else {
+          walkNode(value, context);
+        }
       }
     }
   }
@@ -489,7 +563,7 @@ function processTypeAliasDeclaration(node: Parser.SyntaxNode, context: Context):
   
   const symbolId = `${context.filePath}::${name}`;
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'type_alias',
@@ -511,7 +585,7 @@ function processInterfaceDeclaration(node: Parser.SyntaxNode, context: Context):
   
   const symbolId = `${context.filePath}::${name}`;
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'interface',
@@ -533,7 +607,7 @@ function processEnumDeclaration(node: Parser.SyntaxNode, context: Context): void
   
   const symbolId = `${context.filePath}::${name}`;
   
-  context.symbols.push({
+  pushSymbol(context, {
     id: symbolId,
     name,
     kind: 'enum',
@@ -544,6 +618,11 @@ function processEnumDeclaration(node: Parser.SyntaxNode, context: Context): void
   });
 }
 
+interface ImportBinding {
+  importedName: string; // the name as exported by the source module
+  localName: string;    // the name bound in this file's scope
+}
+
 function processImportStatement(node: Parser.SyntaxNode, context: Context): void {
   // Get the import source
   const source = node.childForFieldName('source');
@@ -552,23 +631,30 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   const importPath = source.text.slice(1, -1); // Remove quotes
   const resolvedPath = resolveImportPath(importPath, context.filePath, context.projectRoot);
   
-  // Extract imported names
-  const importClause = node.child(1);
+  // Locate the clause by node type rather than positional index — `import
+  // type { ... }` shifts every subsequent child by one slot because `type`
+  // occupies index 1, so `node.child(1)` would grab the `type` keyword
+  // instead of the `import_clause`.
+  const importClause = findChildByType(node, 'import_clause');
   if (!importClause) return;
   
-  const importedNames: string[] = [];
+  const importBindings: ImportBinding[] = [];
   
-  // Handle named imports
+  // Handle named imports (including `import { type A, B } from ...`)
   const namedImports = findChildByType(importClause, 'named_imports');
   if (namedImports) {
     for (let i = 0; i < namedImports.childCount; i++) {
       const child = namedImports.child(i);
       if (child && child.type === 'import_specifier') {
-        // import_specifier contains an identifier child
-        const identifier = findChildByType(child, 'identifier');
-        if (identifier) {
-          importedNames.push(identifier.text);
-        }
+        // Use the named fields rather than first-identifier scanning so
+        // aliased imports (`alpha as beta`) register the local binding
+        // `beta`, not the first identifier encountered (`alpha`).
+        const nameNode = child.childForFieldName('name');
+        const aliasNode = child.childForFieldName('alias');
+        if (!nameNode) continue;
+        const importedName = nameNode.text;
+        const localName = aliasNode ? aliasNode.text : importedName;
+        importBindings.push({ importedName, localName });
       }
     }
   }
@@ -576,7 +662,7 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   // Handle default import
   const identifier = findChildByType(importClause, 'identifier');
   if (identifier) {
-    importedNames.push(identifier.text);
+    importBindings.push({ importedName: identifier.text, localName: identifier.text });
   }
   
   // Handle namespace import (import * as X)
@@ -584,7 +670,7 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   if (namespaceImport) {
     const alias = findChildByType(namespaceImport, 'identifier');
     if (alias) {
-      importedNames.push(alias.text);
+      importBindings.push({ importedName: alias.text, localName: alias.text });
     }
   }
   
@@ -592,11 +678,12 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   if (resolvedPath) {
     const currentSymbolId = getCurrentSymbolId(context);
     
-    for (const importedName of importedNames) {
+    for (const { importedName, localName } of importBindings) {
       const targetId = `${resolvedPath}::${importedName}`;
       
-      // Track the import for later call resolution
-      context.imports.set(importedName, targetId);
+      // Track the import for later call resolution, keyed by the local
+      // binding so calls to `beta()` resolve correctly for `alpha as beta`.
+      context.imports.set(localName, targetId);
       
       context.edges.push({
         source: currentSymbolId || `${context.filePath}::__file__`,
@@ -607,11 +694,12 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
       });
     }
   } else {
-    // Unresolved (node_modules / ambient) — remember the names so dependency
-    // injection resolution can mark them as external rather than local.
-    for (const importedName of importedNames) {
-      if (!context.externalImports.has(importedName)) {
-        context.externalImports.set(importedName, importPath);
+    // Unresolved (node_modules / ambient) — remember the local names so
+    // dependency injection resolution can mark them as external rather
+    // than local.
+    for (const { localName } of importBindings) {
+      if (!context.externalImports.has(localName)) {
+        context.externalImports.set(localName, importPath);
       }
     }
   }
@@ -624,7 +712,9 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     const importPath = source.text.slice(1, -1);
     const resolvedPath = resolveImportPath(importPath, context.filePath, context.projectRoot);
     
-    const exportClause = node.child(1);
+    // Locate the clause by node type — `export type { ... } from` shifts the
+    // export_clause by one slot, same issue as Bug 1 for imports.
+    const exportClause = findChildByType(node, 'export_clause');
     if (exportClause && resolvedPath) {
       const exportedNames: string[] = [];
       
@@ -646,7 +736,7 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
       for (const exportedName of exportedNames) {
         // Create a symbol node for the re-exported symbol
         const symbolId = `${context.filePath}::${exportedName}`;
-        context.symbols.push({
+        pushSymbol(context, {
           id: symbolId,
           name: exportedName,
           kind: 'export',
@@ -694,8 +784,10 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
       if (context.imports.has(functionName)) {
         targetId = context.imports.get(functionName)!;
       } else {
-        // Assume it's in the current file
-        targetId = `${context.filePath}::${functionName}`;
+        // Resolve against the current scope chain first (e.g. a recursive
+        // call to a nested function like `dfs` inside an enclosing
+        // function), falling back to the flat same-file id.
+        targetId = resolveLocalCallTarget(functionName, context);
       }
       
       context.edges.push({
@@ -718,7 +810,7 @@ function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
   const currentSymbolId = getCurrentSymbolId(context);
   
   if (currentSymbolId) {
-    const targetId = `${context.filePath}::${className}`;
+    const targetId = resolveLocalCallTarget(className, context);
     
     context.edges.push({
       source: currentSymbolId,
@@ -729,6 +821,15 @@ function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
     });
   }
 }
+
+const SCOPE_BOUNDARIES = new Set([
+  'statement_block',
+  'class_body',
+  'arrow_function',
+  'function_expression',
+  'generator_function',
+  'generator_function_declaration',
+]);
 
 function isExported(node: Parser.SyntaxNode | null): boolean {
   if (!node) return false;
@@ -742,8 +843,10 @@ function isExported(node: Parser.SyntaxNode | null): boolean {
     if (child && child.type === 'export') return true;
   }
   
-  // Check parent
-  return isExported(node.parent);
+  const parent = node.parent;
+  if (!parent) return false;
+  if (SCOPE_BOUNDARIES.has(parent.type)) return false; // never escape a scope
+  return isExported(parent);
 }
 
 function findChildByType(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode | null {
@@ -759,6 +862,34 @@ function findChildByType(node: Parser.SyntaxNode, type: string): Parser.SyntaxNo
 function getCurrentSymbolId(context: Context): string | null {
   if (context.currentScope.length === 0) return null;
   return `${context.filePath}::${context.currentScope.join('.')}`;
+}
+
+// Records a symbol and tracks its id so nested/scoped functions (e.g. a
+// recursive helper declared inside another function) can still be resolved
+// as call targets — see resolveLocalCallTarget.
+function pushSymbol(context: Context, symbol: SymbolNode): void {
+  context.symbols.push(symbol);
+  context.declaredSymbolIds.add(symbol.id);
+}
+
+// Resolves a call to `functionName` against the current scope chain,
+// innermost first, so a nested function (e.g. `dfs` declared inside
+// `calculateCircularDepsScore`) resolves to its own scoped id rather than a
+// non-existent flat `${file}::functionName` id. Falls back to the flat id
+// (existing behavior) when no scoped declaration matches, e.g. for
+// top-level or not-yet-analyzed functions.
+function resolveLocalCallTarget(functionName: string, context: Context): string {
+  const scope = context.currentScope;
+  for (let i = scope.length; i >= 0; i--) {
+    const candidateId =
+      i > 0
+        ? `${context.filePath}::${scope.slice(0, i).join('.')}.${functionName}`
+        : `${context.filePath}::${functionName}`;
+    if (context.declaredSymbolIds.has(candidateId)) {
+      return candidateId;
+    }
+  }
+  return `${context.filePath}::${functionName}`;
 }
 
 // Export as LanguageParser interface
