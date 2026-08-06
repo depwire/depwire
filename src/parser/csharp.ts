@@ -52,7 +52,9 @@ export function parseCSharpFile(
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {
-  processNode(node, context);
+  const handledChildren = processNode(node, context);
+
+  if (handledChildren) return;
 
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
@@ -62,56 +64,58 @@ function walkNode(node: Parser.SyntaxNode, context: Context): void {
   }
 }
 
-function processNode(node: Parser.SyntaxNode, context: Context): void {
+function processNode(node: Parser.SyntaxNode, context: Context): boolean {
   switch (node.type) {
     case 'namespace_declaration':
       processNamespaceDeclaration(node, context);
-      break;
+      return true;
     case 'file_scoped_namespace_declaration':
       processFileScopedNamespace(node, context);
-      break;
+      return false;
     case 'class_declaration':
       processClassDeclaration(node, context);
-      break;
+      return true;
     case 'interface_declaration':
       processInterfaceDeclaration(node, context);
-      break;
+      return true;
     case 'struct_declaration':
       processStructDeclaration(node, context);
-      break;
+      return true;
     case 'enum_declaration':
       processEnumDeclaration(node, context);
-      break;
+      return false;
     case 'record_declaration':
       processRecordDeclaration(node, context);
-      break;
+      return true;
     case 'delegate_declaration':
       processDelegateDeclaration(node, context);
-      break;
+      return false;
     case 'method_declaration':
       processMethodDeclaration(node, context);
-      break;
+      return true;
     case 'constructor_declaration':
       processConstructorDeclaration(node, context);
-      break;
+      return true;
     case 'property_declaration':
       processPropertyDeclaration(node, context);
-      break;
+      return false;
     case 'event_field_declaration':
       processEventFieldDeclaration(node, context);
-      break;
+      return false;
     case 'indexer_declaration':
       processIndexerDeclaration(node, context);
-      break;
+      return false;
     case 'using_directive':
       processUsingDirective(node, context);
-      break;
+      return false;
     case 'global_statement':
       processGlobalStatement(node, context);
-      break;
+      return false;
     case 'invocation_expression':
       processCallExpression(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 
@@ -354,6 +358,12 @@ function processMethodDeclaration(node: Parser.SyntaxNode, context: Context): vo
   const scopeName = scope ? `${scope}.${name}` : name;
   context.currentScope.push(scopeName);
 
+  // Walk parameter list too (default parameter values may contain calls)
+  const parameterList = node.childForFieldName('parameters');
+  if (parameterList) {
+    walkNode(parameterList, context);
+  }
+
   const body = node.childForFieldName('body');
   if (body) {
     walkNode(body, context);
@@ -387,6 +397,12 @@ function processConstructorDeclaration(node: Parser.SyntaxNode, context: Context
   // Enter constructor scope
   const scopeName = scope ? `${scope}.${name}` : name;
   context.currentScope.push(scopeName);
+
+  // Walk parameter list too (default parameter values may contain calls)
+  const parameterList = node.childForFieldName('parameters');
+  if (parameterList) {
+    walkNode(parameterList, context);
+  }
 
   const body = node.childForFieldName('body');
   if (body) {

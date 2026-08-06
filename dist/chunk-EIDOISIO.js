@@ -19,7 +19,7 @@ import {
   parseTypeScriptFile,
   scanSecurity,
   searchSymbols
-} from "./chunk-SKSEAGWF.js";
+} from "./chunk-UE6PV3BW.js";
 
 // src/viz/data.ts
 import { basename } from "path";

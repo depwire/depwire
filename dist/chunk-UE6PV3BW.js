@@ -1166,7 +1166,8 @@ function parsePythonFile(filePath, sourceCode, projectRoot) {
   };
 }
 function walkNode2(node, context) {
-  processNode2(node, context);
+  const handledChildren = processNode2(node, context);
+  if (handledChildren) return;
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child) {
@@ -1179,25 +1180,27 @@ function processNode2(node, context) {
   switch (type) {
     case "function_definition":
       processFunctionDefinition(node, context);
-      break;
+      return true;
     case "class_definition":
       processClassDefinition(node, context);
-      break;
+      return true;
     case "expression_statement":
       processExpressionStatement(node, context);
-      break;
+      return false;
     case "import_statement":
       processImportStatement2(node, context);
-      break;
+      return false;
     case "import_from_statement":
       processImportFromStatement(node, context);
-      break;
+      return false;
     case "decorated_definition":
       processDecoratedDefinition(node, context);
-      break;
+      return true;
     case "call":
       processCallExpression2(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 function processFunctionDefinition(node, context) {
@@ -1208,7 +1211,7 @@ function processFunctionDefinition(node, context) {
   const kind = context.currentClass ? "method" : "function";
   const scope = context.currentClass || void 0;
   const exported = context.currentScope.length === 0 && !context.currentClass;
-  const symbolId = `${context.filePath}::${name}`;
+  const symbolId = `${context.filePath}::${scope ? scope + "." : ""}${name}`;
   context.symbols.push({
     id: symbolId,
     name,
@@ -1220,6 +1223,10 @@ function processFunctionDefinition(node, context) {
     scope
   });
   context.currentScope.push(name);
+  const parameters = findChildByType2(node, "parameters");
+  if (parameters) {
+    walkNode2(parameters, context);
+  }
   const body = findChildByType2(node, "block");
   if (body) {
     walkNode2(body, context);
@@ -1231,7 +1238,8 @@ function processClassDefinition(node, context) {
   if (!nameNode) return;
   const name = nodeText(nameNode, context);
   const exported = context.currentScope.length === 0;
-  const symbolId = `${context.filePath}::${name}`;
+  const outerScope = context.currentClass || void 0;
+  const symbolId = `${context.filePath}::${outerScope ? outerScope + "." : ""}${name}`;
   context.symbols.push({
     id: symbolId,
     name,
@@ -1239,7 +1247,8 @@ function processClassDefinition(node, context) {
     filePath: context.filePath,
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
-    exported
+    exported,
+    scope: outerScope
   });
   const argumentList = findChildByType2(node, "argument_list");
   if (argumentList) {
@@ -1259,6 +1268,7 @@ function processClassDefinition(node, context) {
         }
       }
     }
+    walkNode2(argumentList, context);
   }
   const oldClass = context.currentClass;
   context.currentClass = name;
@@ -1357,15 +1367,20 @@ function processImportFromStatement(node, context) {
   }
 }
 function processDecoratedDefinition(node, context) {
+  const decoratorNodes = [];
   const decorators = [];
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child && child.type === "decorator") {
+      decoratorNodes.push(child);
       const decoratorName = extractDecoratorName(child, context);
       if (decoratorName) {
         decorators.push(decoratorName);
       }
     }
+  }
+  for (const decoratorNode of decoratorNodes) {
+    walkNode2(decoratorNode, context);
   }
   const definition = findChildByType2(node, "function_definition") || findChildByType2(node, "class_definition");
   if (definition) {
@@ -1373,7 +1388,8 @@ function processDecoratedDefinition(node, context) {
     const nameNode = findChildByType2(definition, "identifier");
     if (nameNode) {
       const targetName = nodeText(nameNode, context);
-      const targetId = `${context.filePath}::${targetName}`;
+      const targetScope = context.currentClass || void 0;
+      const targetId = `${context.filePath}::${targetScope ? targetScope + "." : ""}${targetName}`;
       for (const decoratorName of decorators) {
         const decoratorId = resolveSymbol(decoratorName, context);
         if (decoratorId) {
@@ -3246,7 +3262,8 @@ function parseCSharpFile(filePath, sourceCode, projectRoot) {
   };
 }
 function walkNode7(node, context) {
-  processNode7(node, context);
+  const handledChildren = processNode7(node, context);
+  if (handledChildren) return;
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child) {
@@ -3258,52 +3275,54 @@ function processNode7(node, context) {
   switch (node.type) {
     case "namespace_declaration":
       processNamespaceDeclaration(node, context);
-      break;
+      return true;
     case "file_scoped_namespace_declaration":
       processFileScopedNamespace(node, context);
-      break;
+      return false;
     case "class_declaration":
       processClassDeclaration3(node, context);
-      break;
+      return true;
     case "interface_declaration":
       processInterfaceDeclaration2(node, context);
-      break;
+      return true;
     case "struct_declaration":
       processStructDeclaration(node, context);
-      break;
+      return true;
     case "enum_declaration":
       processEnumDeclaration2(node, context);
-      break;
+      return false;
     case "record_declaration":
       processRecordDeclaration(node, context);
-      break;
+      return true;
     case "delegate_declaration":
       processDelegateDeclaration(node, context);
-      break;
+      return false;
     case "method_declaration":
       processMethodDeclaration2(node, context);
-      break;
+      return true;
     case "constructor_declaration":
       processConstructorDeclaration(node, context);
-      break;
+      return true;
     case "property_declaration":
       processPropertyDeclaration(node, context);
-      break;
+      return false;
     case "event_field_declaration":
       processEventFieldDeclaration(node, context);
-      break;
+      return false;
     case "indexer_declaration":
       processIndexerDeclaration(node, context);
-      break;
+      return false;
     case "using_directive":
       processUsingDirective(node, context);
-      break;
+      return false;
     case "global_statement":
       processGlobalStatement(node, context);
-      break;
+      return false;
     case "invocation_expression":
       processCallExpression7(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 function processNamespaceDeclaration(node, context) {
@@ -3485,6 +3504,10 @@ function processMethodDeclaration2(node, context) {
   });
   const scopeName = scope ? `${scope}.${name}` : name;
   context.currentScope.push(scopeName);
+  const parameterList = node.childForFieldName("parameters");
+  if (parameterList) {
+    walkNode7(parameterList, context);
+  }
   const body = node.childForFieldName("body");
   if (body) {
     walkNode7(body, context);
@@ -3510,6 +3533,10 @@ function processConstructorDeclaration(node, context) {
   });
   const scopeName = scope ? `${scope}.${name}` : name;
   context.currentScope.push(scopeName);
+  const parameterList = node.childForFieldName("parameters");
+  if (parameterList) {
+    walkNode7(parameterList, context);
+  }
   const body = node.childForFieldName("body");
   if (body) {
     walkNode7(body, context);
@@ -3817,7 +3844,8 @@ function parseJavaFile(filePath, sourceCode, projectRoot) {
   };
 }
 function walkNode8(node, context) {
-  processNode8(node, context);
+  const handledChildren = processNode8(node, context);
+  if (handledChildren) return;
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child) {
@@ -3829,49 +3857,50 @@ function processNode8(node, context) {
   switch (node.type) {
     case "package_declaration":
       processPackageDeclaration(node, context);
-      break;
+      return false;
     case "import_declaration":
       processImportDeclaration2(node, context);
-      break;
+      return false;
     case "class_declaration":
       processClassDeclaration4(node, context);
-      break;
+      return true;
     case "interface_declaration":
       processInterfaceDeclaration3(node, context);
-      break;
+      return true;
     case "enum_declaration":
       processEnumDeclaration3(node, context);
-      break;
+      return true;
     case "annotation_type_declaration":
       processAnnotationTypeDeclaration(node, context);
-      break;
+      return true;
     case "record_declaration":
       processRecordDeclaration2(node, context);
-      break;
+      return true;
     case "method_declaration":
       processMethodDeclaration3(node, context);
-      break;
+      return true;
     case "constructor_declaration":
       processConstructorDeclaration2(node, context);
-      break;
+      return true;
     case "field_declaration":
       processFieldDeclaration(node, context);
-      break;
+      return false;
     case "constant_declaration":
       processConstantDeclaration(node, context);
-      break;
+      return false;
     case "annotation_type_element_declaration":
       processAnnotationElement(node, context);
-      break;
+      return false;
     case "method_invocation":
       processCallExpression8(node, context);
-      break;
+      return false;
     case "object_creation_expression":
-      processObjectCreation(node, context);
-      break;
+      return processObjectCreation(node, context);
     case "lambda_expression":
       processLambdaExpression(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 function processPackageDeclaration(node, context) {
@@ -4225,11 +4254,11 @@ function processCallExpression8(node, context) {
 }
 function processObjectCreation(node, context) {
   const typeNode = node.childForFieldName("type");
-  if (!typeNode) return;
+  if (!typeNode) return false;
   const typeName = extractTypeName3(typeNode, context);
-  if (!typeName) return;
+  if (!typeName) return false;
   const callerId = getCurrentSymbolId8(context);
-  if (!callerId) return;
+  if (!callerId) return false;
   const targetId = resolveSymbol7(typeName, context);
   if (targetId) {
     context.edges.push({
@@ -4254,13 +4283,19 @@ function processObjectCreation(node, context) {
       exported: false,
       scope: context.currentClass || void 0
     });
+    const argumentList = findChildByType8(node, "argument_list");
+    if (argumentList) {
+      walkNode8(argumentList, context);
+    }
     const oldClass = context.currentClass;
     context.currentClass = anonName;
     context.currentScope.push(anonName);
     walkNode8(classBody, context);
     context.currentScope.pop();
     context.currentClass = oldClass;
+    return true;
   }
+  return false;
 }
 function processLambdaExpression(node, context) {
   const parent = node.parent;
@@ -4574,7 +4609,8 @@ function parseCppFile(filePath, sourceCode, projectRoot) {
   };
 }
 function walkNode9(node, context) {
-  processNode9(node, context);
+  const handledChildren = processNode9(node, context);
+  if (handledChildren) return;
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child) {
@@ -4586,47 +4622,49 @@ function processNode9(node, context) {
   switch (node.type) {
     case "namespace_definition":
       processNamespaceDefinition(node, context);
-      break;
+      return true;
     case "class_specifier":
       processClassSpecifier(node, context);
-      break;
+      return true;
     case "struct_specifier":
       processStructSpecifier2(node, context);
-      break;
+      return true;
     case "union_specifier":
       processUnionSpecifier(node, context);
-      break;
+      return true;
     case "enum_specifier":
       processEnumSpecifier2(node, context);
-      break;
+      return false;
     case "function_definition":
       processFunctionDefinition3(node, context);
-      break;
+      return true;
     case "declaration":
       processDeclaration2(node, context);
-      break;
+      return false;
     case "alias_declaration":
       processAliasDeclaration(node, context);
-      break;
+      return false;
     case "type_definition":
       processTypeDefinition2(node, context);
-      break;
+      return false;
     case "preproc_include":
       processIncludeDirective2(node, context);
-      break;
+      return false;
     case "preproc_def":
     case "preproc_function_def":
       processMacroDefinition2(node, context);
-      break;
+      return false;
     case "template_declaration":
       processTemplateDeclaration(node, context);
-      break;
+      return false;
     case "call_expression":
       processCallExpression9(node, context);
-      break;
+      return false;
     case "static_assert_declaration":
       processStaticAssert(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 function processNamespaceDefinition(node, context) {
@@ -4818,6 +4856,10 @@ function processFunctionDefinition3(node, context) {
   });
   const scopeName = scope ? `${scope}.${name}` : name;
   context.currentScope.push(scopeName);
+  const parameterList = findChildByType9(declarator, "parameter_list");
+  if (parameterList) {
+    walkNode9(parameterList, context);
+  }
   const body = node.childForFieldName("body");
   if (body) {
     walkNode9(body, context);

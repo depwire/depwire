@@ -45,8 +45,10 @@ export function parsePythonFile(
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {
   // Process current node
-  processNode(node, context);
-  
+  const handledChildren = processNode(node, context);
+
+  if (handledChildren) return;
+
   // Recursively process children
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
@@ -56,31 +58,33 @@ function walkNode(node: Parser.SyntaxNode, context: Context): void {
   }
 }
 
-function processNode(node: Parser.SyntaxNode, context: Context): void {
+function processNode(node: Parser.SyntaxNode, context: Context): boolean {
   const type = node.type;
   
   switch (type) {
     case 'function_definition':
       processFunctionDefinition(node, context);
-      break;
+      return true;
     case 'class_definition':
       processClassDefinition(node, context);
-      break;
+      return true;
     case 'expression_statement':
       processExpressionStatement(node, context);
-      break;
+      return false;
     case 'import_statement':
       processImportStatement(node, context);
-      break;
+      return false;
     case 'import_from_statement':
       processImportFromStatement(node, context);
-      break;
+      return false;
     case 'decorated_definition':
       processDecoratedDefinition(node, context);
-      break;
+      return true;
     case 'call':
       processCallExpression(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 
@@ -98,7 +102,7 @@ function processFunctionDefinition(node: Parser.SyntaxNode, context: Context): v
   // Check if it's exported (module-level for Python)
   const exported = context.currentScope.length === 0 && !context.currentClass;
   
-  const symbolId = `${context.filePath}::${name}`;
+  const symbolId = `${context.filePath}::${scope ? scope + '.' : ''}${name}`;
   
   context.symbols.push({
     id: symbolId,
@@ -113,6 +117,12 @@ function processFunctionDefinition(node: Parser.SyntaxNode, context: Context): v
   
   // Enter function scope
   context.currentScope.push(name);
+  
+  // Process default parameter values (e.g. def f(x=foo()):) for call edges
+  const parameters = findChildByType(node, 'parameters');
+  if (parameters) {
+    walkNode(parameters, context);
+  }
   
   // Process function body for calls
   const body = findChildByType(node, 'block');
@@ -130,8 +140,9 @@ function processClassDefinition(node: Parser.SyntaxNode, context: Context): void
   
   const name = nodeText(nameNode, context);
   const exported = context.currentScope.length === 0; // Module-level classes are exported
+  const outerScope = context.currentClass || undefined;
   
-  const symbolId = `${context.filePath}::${name}`;
+  const symbolId = `${context.filePath}::${outerScope ? outerScope + '.' : ''}${name}`;
   
   context.symbols.push({
     id: symbolId,
@@ -141,6 +152,7 @@ function processClassDefinition(node: Parser.SyntaxNode, context: Context): void
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
     exported,
+    scope: outerScope,
   });
   
   // Process base classes (inheritance)
@@ -164,6 +176,9 @@ function processClassDefinition(node: Parser.SyntaxNode, context: Context): void
         }
       }
     }
+    // Walk the argument list itself so any call expressions inside base
+    // class arguments (e.g. metaclass factories) still produce edges.
+    walkNode(argumentList, context);
   }
   
   // Enter class scope
@@ -319,15 +334,25 @@ function processDecoratedDefinition(node: Parser.SyntaxNode, context: Context): 
   // def function(): ...
   
   // Get all decorators
+  const decoratorNodes: Parser.SyntaxNode[] = [];
   const decorators: string[] = [];
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child && child.type === 'decorator') {
+      decoratorNodes.push(child);
       const decoratorName = extractDecoratorName(child, context);
       if (decoratorName) {
         decorators.push(decoratorName);
       }
     }
+  }
+  
+  // Walk each decorator node so call expressions inside decorator
+  // arguments (e.g. @app.route('/x')) still produce 'calls' edges. The
+  // generic recursion no longer reaches these once this node claims its
+  // children, so we must do it explicitly.
+  for (const decoratorNode of decoratorNodes) {
+    walkNode(decoratorNode, context);
   }
   
   // Process the definition (function or class)
@@ -340,7 +365,8 @@ function processDecoratedDefinition(node: Parser.SyntaxNode, context: Context): 
     const nameNode = findChildByType(definition, 'identifier');
     if (nameNode) {
       const targetName = nodeText(nameNode, context);
-      const targetId = `${context.filePath}::${targetName}`;
+      const targetScope = context.currentClass || undefined;
+      const targetId = `${context.filePath}::${targetScope ? targetScope + '.' : ''}${targetName}`;
       
       for (const decoratorName of decorators) {
         const decoratorId = resolveSymbol(decoratorName, context);

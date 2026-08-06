@@ -83,7 +83,9 @@ export function parseJavaFile(
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {
-  processNode(node, context);
+  const handledChildren = processNode(node, context);
+
+  if (handledChildren) return;
 
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
@@ -93,53 +95,54 @@ function walkNode(node: Parser.SyntaxNode, context: Context): void {
   }
 }
 
-function processNode(node: Parser.SyntaxNode, context: Context): void {
+function processNode(node: Parser.SyntaxNode, context: Context): boolean {
   switch (node.type) {
     case 'package_declaration':
       processPackageDeclaration(node, context);
-      break;
+      return false;
     case 'import_declaration':
       processImportDeclaration(node, context);
-      break;
+      return false;
     case 'class_declaration':
       processClassDeclaration(node, context);
-      break;
+      return true;
     case 'interface_declaration':
       processInterfaceDeclaration(node, context);
-      break;
+      return true;
     case 'enum_declaration':
       processEnumDeclaration(node, context);
-      break;
+      return true;
     case 'annotation_type_declaration':
       processAnnotationTypeDeclaration(node, context);
-      break;
+      return true;
     case 'record_declaration':
       processRecordDeclaration(node, context);
-      break;
+      return true;
     case 'method_declaration':
       processMethodDeclaration(node, context);
-      break;
+      return true;
     case 'constructor_declaration':
       processConstructorDeclaration(node, context);
-      break;
+      return true;
     case 'field_declaration':
       processFieldDeclaration(node, context);
-      break;
+      return false;
     case 'constant_declaration':
       processConstantDeclaration(node, context);
-      break;
+      return false;
     case 'annotation_type_element_declaration':
       processAnnotationElement(node, context);
-      break;
+      return false;
     case 'method_invocation':
       processCallExpression(node, context);
-      break;
+      return false;
     case 'object_creation_expression':
-      processObjectCreation(node, context);
-      break;
+      return processObjectCreation(node, context);
     case 'lambda_expression':
       processLambdaExpression(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 
@@ -582,15 +585,15 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   }
 }
 
-function processObjectCreation(node: Parser.SyntaxNode, context: Context): void {
+function processObjectCreation(node: Parser.SyntaxNode, context: Context): boolean {
   const typeNode = node.childForFieldName('type');
-  if (!typeNode) return;
+  if (!typeNode) return false;
 
   const typeName = extractTypeName(typeNode, context);
-  if (!typeName) return;
+  if (!typeName) return false;
 
   const callerId = getCurrentSymbolId(context);
-  if (!callerId) return;
+  if (!callerId) return false;
 
   const targetId = resolveSymbol(typeName, context);
   if (targetId) {
@@ -620,6 +623,13 @@ function processObjectCreation(node: Parser.SyntaxNode, context: Context): void 
       scope: context.currentClass || undefined,
     });
 
+    // Walk constructor arguments too — once this node claims its
+    // children (returns true) the generic recursion no longer reaches them.
+    const argumentList = findChildByType(node, 'argument_list');
+    if (argumentList) {
+      walkNode(argumentList, context);
+    }
+
     // Walk anonymous class body
     const oldClass = context.currentClass;
     context.currentClass = anonName;
@@ -629,7 +639,11 @@ function processObjectCreation(node: Parser.SyntaxNode, context: Context): void 
 
     context.currentScope.pop();
     context.currentClass = oldClass;
+
+    return true;
   }
+
+  return false;
 }
 
 function processLambdaExpression(node: Parser.SyntaxNode, context: Context): void {

@@ -62,7 +62,9 @@ export function parseCppFile(
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {
-  processNode(node, context);
+  const handledChildren = processNode(node, context);
+
+  if (handledChildren) return;
 
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
@@ -72,51 +74,53 @@ function walkNode(node: Parser.SyntaxNode, context: Context): void {
   }
 }
 
-function processNode(node: Parser.SyntaxNode, context: Context): void {
+function processNode(node: Parser.SyntaxNode, context: Context): boolean {
   switch (node.type) {
     case 'namespace_definition':
       processNamespaceDefinition(node, context);
-      break;
+      return true;
     case 'class_specifier':
       processClassSpecifier(node, context);
-      break;
+      return true;
     case 'struct_specifier':
       processStructSpecifier(node, context);
-      break;
+      return true;
     case 'union_specifier':
       processUnionSpecifier(node, context);
-      break;
+      return true;
     case 'enum_specifier':
       processEnumSpecifier(node, context);
-      break;
+      return false;
     case 'function_definition':
       processFunctionDefinition(node, context);
-      break;
+      return true;
     case 'declaration':
       processDeclaration(node, context);
-      break;
+      return false;
     case 'alias_declaration':
       processAliasDeclaration(node, context);
-      break;
+      return false;
     case 'type_definition':
       processTypeDefinition(node, context);
-      break;
+      return false;
     case 'preproc_include':
       processIncludeDirective(node, context);
-      break;
+      return false;
     case 'preproc_def':
     case 'preproc_function_def':
       processMacroDefinition(node, context);
-      break;
+      return false;
     case 'template_declaration':
       processTemplateDeclaration(node, context);
-      break;
+      return false;
     case 'call_expression':
       processCallExpression(node, context);
-      break;
+      return false;
     case 'static_assert_declaration':
       processStaticAssert(node, context);
-      break;
+      return false;
+    default:
+      return false;
   }
 }
 
@@ -371,6 +375,12 @@ function processFunctionDefinition(node: Parser.SyntaxNode, context: Context): v
   // Enter function scope
   const scopeName = scope ? `${scope}.${name}` : name;
   context.currentScope.push(scopeName);
+
+  // Walk the parameter list too (default parameter values may contain calls)
+  const parameterList = findChildByType(declarator, 'parameter_list');
+  if (parameterList) {
+    walkNode(parameterList, context);
+  }
 
   const body = node.childForFieldName('body');
   if (body) {
