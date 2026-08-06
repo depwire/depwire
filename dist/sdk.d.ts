@@ -165,7 +165,7 @@ declare function getImpact(graph: DirectedGraph, symbolId: string): {
     affectedFiles: string[];
 };
 declare function searchSymbols(graph: DirectedGraph, query: string): SymbolNode[];
-declare function getArchitectureSummary(graph: DirectedGraph): {
+declare function getArchitectureSummary(graph: DirectedGraph, projectRoot?: string, includeFixtures?: boolean): {
     fileCount: number;
     symbolCount: number;
     edgeCount: number;

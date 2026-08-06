@@ -2,6 +2,7 @@ import type { Graph } from "graphology";
 import path from "node:path";
 import { readFileSync, existsSync } from "node:fs";
 import type { DeadSymbol, ExclusionContext, ExclusionStats } from "./types.js";
+import { isExcludedFromOrphanReporting } from "../core/exclusions.js";
 
 export function findDeadSymbols(
   graph: Graph,
@@ -210,7 +211,7 @@ function shouldExclude(
     return "test";
   }
 
-  if (!includeFixtures && isFixtureOrStaticAsset(relativePath)) {
+  if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) {
     return "test";
   }
 
@@ -300,22 +301,6 @@ function isTestFile(filePath: string): boolean {
     filePath.includes("/test/") ||
     filePath.includes("/tests/")
   );
-}
-
-/**
- * Test fixtures (deliberately standalone sample projects used by parser
- * tests) and static HTML entry points have no real importer by design and
- * should not be reported as orphans or dead code. Exported so the health
- * metrics orphan-file count can apply the same exclusion.
- */
-export function isFixtureOrStaticAsset(filePath: string): boolean {
-  if (filePath.includes("/fixtures/") || filePath.includes("/__fixtures__/")) {
-    return true;
-  }
-  if (filePath.endsWith(".html")) {
-    return true;
-  }
-  return isTestFile(filePath);
 }
 
 function isConfigFile(filePath: string): boolean {

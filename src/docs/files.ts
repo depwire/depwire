@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
-import { dirname, basename } from 'path';
+import { dirname, basename, relative } from 'path';
 import { header, timestamp, table, formatNumber, formatPercent, unorderedList } from './templates.js';
+import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
 
 /**
  * Generate FILES.md - complete file catalog
@@ -34,7 +35,7 @@ export function generateFiles(
   
   // 4. Orphan Files
   output += header('Orphan Files', 2);
-  output += generateOrphanFiles(graph);
+  output += generateOrphanFiles(graph, projectRoot);
   
   // 5. Hub Files
   output += header('Hub Files', 2);
@@ -258,11 +259,17 @@ function generateFileSizeDistribution(graph: DirectedGraph): string {
   return output;
 }
 
-function generateOrphanFiles(graph: DirectedGraph): string {
+function generateOrphanFiles(graph: DirectedGraph, projectRoot: string): string {
   const fileStats = getFileStats(graph);
   
-  // Find files with zero connections
-  const orphans = fileStats.filter(f => f.totalConnections === 0);
+  // Find files with zero connections, excluding test fixtures and static
+  // HTML entry points (which have no real importer by design)
+  const orphans = fileStats.filter(f => {
+    if (f.totalConnections !== 0) return false;
+    const relativePath = relative(projectRoot, f.filePath);
+    if (isExcludedFromOrphanReporting(relativePath)) return false;
+    return true;
+  });
   
   if (orphans.length === 0) {
     return '✅ No orphan files detected. All files are connected.\n\n';

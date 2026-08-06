@@ -15,7 +15,7 @@ export function generateAgentsMd(
   projectRoot: string,
   version: string,
 ): string {
-  const summary = getArchitectureSummary(graph);
+  const summary = getArchitectureSummary(graph, projectRoot);
 
   // Detect languages from file extensions
   const extCounts = new Map<string, number>();

@@ -580,7 +580,7 @@ export async function handleToolCall(
           message: "No project loaded. Use connect_repo to analyze a codebase.",
         };
       } else {
-        result = handleGetArchitectureSummary(state.graph!);
+        result = handleGetArchitectureSummary(state.graph!, state.projectRoot);
       }
     } else if (name === "visualize_graph") {
       if (!isProjectLoaded(state)) {
@@ -1239,8 +1239,8 @@ function handleAffectedFiles(
   };
 }
 
-function handleGetArchitectureSummary(graph: DirectedGraph) {
-  const summary = getArchitectureSummary(graph);
+function handleGetArchitectureSummary(graph: DirectedGraph, projectRoot?: string) {
+  const summary = getArchitectureSummary(graph, projectRoot);
   const fileSummary = getFileSummary(graph);
   
   // Group by directory

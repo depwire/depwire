@@ -12,6 +12,7 @@ interface Context {
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
   declaredSymbolIds: Set<string>; // every symbol id declared so far, used to resolve calls to nested/scoped functions
+  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[]}>; // buffered call edges waiting for forward-reference resolution
 }
 
 export function parseTypeScriptFile(
@@ -34,9 +35,13 @@ export function parseTypeScriptFile(
     imports: new Map(),
     externalImports: new Map(),
     declaredSymbolIds: new Set(),
+    unresolvedCallEdges: [],
   };
   
   walkNode(tree.rootNode, context);
+  
+  // Resolve all buffered call edges now that all symbols have been declared
+  resolveUnresolvedCallEdges(context);
   
   return {
     filePath,
@@ -780,23 +785,37 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     const currentSymbolId = getCurrentSymbolId(context);
     if (currentSymbolId) {
       // Check if this function is imported
-      let targetId: string;
       if (context.imports.has(functionName)) {
-        targetId = context.imports.get(functionName)!;
+        const targetId = context.imports.get(functionName)!;
+        context.edges.push({
+          source: currentSymbolId,
+          target: targetId,
+          kind: 'calls',
+          filePath: context.filePath,
+          line: node.startPosition.row + 1,
+        });
       } else {
-        // Resolve against the current scope chain first (e.g. a recursive
-        // call to a nested function like `dfs` inside an enclosing
-        // function), falling back to the flat same-file id.
-        targetId = resolveLocalCallTarget(functionName, context);
+        // Try to resolve immediately if the target is already declared
+        const targetId = resolveLocalCallTarget(functionName, context);
+        if (context.declaredSymbolIds.has(targetId)) {
+          // Target already declared, resolve immediately
+          context.edges.push({
+            source: currentSymbolId,
+            target: targetId,
+            kind: 'calls',
+            filePath: context.filePath,
+            line: node.startPosition.row + 1,
+          });
+        } else {
+          // Forward reference - buffer for later resolution with current scope chain
+          context.unresolvedCallEdges.push({
+            source: currentSymbolId,
+            functionName,
+            line: node.startPosition.row + 1,
+            scopeChain: [...context.currentScope],
+          });
+        }
       }
-      
-      context.edges.push({
-        source: currentSymbolId,
-        target: targetId,
-        kind: 'calls',
-        filePath: context.filePath,
-        line: node.startPosition.row + 1,
-      });
     }
   }
 }
@@ -890,6 +909,35 @@ function resolveLocalCallTarget(functionName: string, context: Context): string 
     }
   }
   return `${context.filePath}::${functionName}`;
+}
+
+// Resolves all buffered call edges after the entire file has been parsed.
+// This handles forward references where a function calls another function
+// that is declared later in the file.
+function resolveUnresolvedCallEdges(context: Context): void {
+  for (const unresolved of context.unresolvedCallEdges) {
+    // Temporarily set the scope chain to what it was when the call was made
+    const savedScope = context.currentScope;
+    context.currentScope = unresolved.scopeChain;
+    
+    // Resolve the target using the captured scope chain
+    const targetId = resolveLocalCallTarget(unresolved.functionName, context);
+    
+    // Restore the original scope
+    context.currentScope = savedScope;
+    
+    // Add the resolved edge
+    context.edges.push({
+      source: unresolved.source,
+      target: targetId,
+      kind: 'calls',
+      filePath: context.filePath,
+      line: unresolved.line,
+    });
+  }
+  
+  // Clear the buffer
+  context.unresolvedCallEdges = [];
 }
 
 // Export as LanguageParser interface

@@ -107,6 +107,22 @@ describe('TypeScript parser correctness (type-only imports, duplicate symbols, e
     );
     expect(callEdge).toBeDefined();
   });
+
+  it('resolves a call to a sibling nested function declared later', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const allEdges = parsedFiles.flatMap((f) => f.edges);
+
+    const callEdge = allEdges.find(
+      (e) =>
+        e.filePath === 'forward-reference.ts' &&
+        e.kind === 'calls' &&
+        e.source === 'forward-reference.ts::outer.first' &&
+        e.line === 3
+    );
+    expect(callEdge).toBeDefined();
+    expect(callEdge!.target).toBe('forward-reference.ts::outer.second');
+    expect(callEdge!.target).not.toBe('forward-reference.ts::second');
+  });
 });
 
 describe('Self-check: parsing this repo\'s own src/security/ directory', () => {

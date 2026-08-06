@@ -1,7 +1,8 @@
 import { DirectedGraph } from 'graphology';
 import { HealthDimension } from './types.js';
 import { dirname, relative } from 'path';
-import { findDeadSymbols, isFixtureOrStaticAsset } from '../dead-code/detector.js';
+import { findDeadSymbols } from '../dead-code/detector.js';
+import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
 
 /**
  * Calculate the letter grade from a 0-100 score
@@ -354,7 +355,7 @@ export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string
     // orphan count if counted — exclude them unless explicitly requested.
     if (!includeFixtures && projectRoot) {
       const relativePath = relative(projectRoot, attrs.filePath);
-      if (isFixtureOrStaticAsset(relativePath)) return;
+      if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) return;
     }
     files.add(attrs.filePath);
   });

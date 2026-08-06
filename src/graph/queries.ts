@@ -1,5 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { SymbolNode, EdgeKind } from '../parser/types.js';
+import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
+import { relative } from 'path';
 
 export interface SymbolMatch {
   id: string;
@@ -373,7 +375,7 @@ export function getAffectedFiles(
   return { affected, testFiles, totalCount: affected.length };
 }
 
-export function getArchitectureSummary(graph: DirectedGraph): {
+export function getArchitectureSummary(graph: DirectedGraph, projectRoot?: string, includeFixtures = false): {
   fileCount: number;
   symbolCount: number;
   edgeCount: number;
@@ -397,8 +399,18 @@ export function getArchitectureSummary(graph: DirectedGraph): {
   fileConnections.sort((a, b) => b.connections - a.connections);
   
   // Find orphan files (no cross-file references)
+  // Filter out test fixtures and static assets unless explicitly included
   const orphanFiles = fileSummary
-    .filter(f => f.incomingRefs === 0 && f.outgoingRefs === 0)
+    .filter(f => {
+      if (f.incomingRefs !== 0 || f.outgoingRefs !== 0) return false;
+      if (projectRoot && !includeFixtures) {
+        const relativePath = relative(projectRoot, f.filePath);
+        if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) {
+          return false;
+        }
+      }
+      return true;
+    })
     .map(f => f.filePath);
   
   return {

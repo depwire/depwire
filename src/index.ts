@@ -109,7 +109,7 @@ program
       // Print stats if requested
       if (options.stats) {
         const elapsed = Date.now() - startTime;
-        const summary = getArchitectureSummary(graph);
+        const summary = getArchitectureSummary(graph, projectRoot);
         
         console.log('\n=== Project Statistics ===');
         console.log(`Files: ${summary.fileCount}`);

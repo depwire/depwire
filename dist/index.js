@@ -18,7 +18,7 @@ import {
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-33GOMTFC.js";
+} from "./chunk-XRW3ZOAI.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -35,7 +35,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-WZMPK23A.js";
+} from "./chunk-SKSEAGWF.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -2275,7 +2275,7 @@ function promptCommand(options) {
 import { join as join5 } from "path";
 import { mkdirSync, writeFileSync, existsSync, readFileSync as readFileSync4 } from "fs";
 function generateAgentsMd(graph, projectRoot, version) {
-  const summary = getArchitectureSummary(graph);
+  const summary = getArchitectureSummary(graph, projectRoot);
   const extCounts = /* @__PURE__ */ new Map();
   graph.forEachNode((_nodeId, attrs) => {
     const ext = attrs.filePath.split(".").pop() || "";
@@ -2441,7 +2441,7 @@ program.command("parse").description("Parse a project and build dependency graph
     }
     if (options.stats) {
       const elapsed = Date.now() - startTime;
-      const summary = getArchitectureSummary(graph);
+      const summary = getArchitectureSummary(graph, projectRoot);
       console.log("\n=== Project Statistics ===");
       console.log(`Files: ${summary.fileCount}`);
       console.log(`Symbols: ${summary.symbolCount}`);
