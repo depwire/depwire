@@ -1,6 +1,22 @@
 import { HealthReport } from './types.js';
 
 /**
+ * Format the "nothing was analyzed" state plainly — no table, no grade,
+ * no claim of excellence. This is what a user (or CI log) sees when
+ * Depwire found zero parseable files.
+ */
+export function formatUnscoredHealthReport(report: HealthReport, projectRoot: string): string {
+  let output = '';
+
+  output += `\n${bold('No parseable files found')} in ${projectRoot}\n\n`;
+  output += `Depwire found 0 files it can analyze. Supported extensions:\n`;
+  output += `  ${(report.supportedExtensions || []).join(' ')}\n\n`;
+  output += `Nothing was analyzed, so no health score is reported.\n`;
+
+  return output;
+}
+
+/**
  * Format health report for CLI display with colors
  */
 export function formatHealthReport(report: HealthReport, trend: string | null, verbose: boolean): string {

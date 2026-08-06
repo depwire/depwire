@@ -9481,6 +9481,9 @@ function getParserForFile(filePath, content) {
   }
   return parsers.find((p) => p.extensions.includes(ext) || p.extensions.includes(fileName)) || null;
 }
+function getSupportedExtensions() {
+  return parsers.flatMap((p) => p.extensions);
+}
 
 // src/parser/index.ts
 import { minimatch } from "minimatch";
@@ -12338,6 +12341,25 @@ function calculateDepthScore(graph) {
 import { readFileSync as readFileSync18, writeFileSync, existsSync as existsSync20, mkdirSync as mkdirSync2 } from "fs";
 import { dirname as dirname19, resolve as resolve16 } from "path";
 function calculateHealthScore(graph, projectRoot) {
+  if (graph.order === 0) {
+    return {
+      status: "no_parseable_files",
+      overall: NaN,
+      grade: "N/A",
+      dimensions: [],
+      summary: "No parseable files found. Nothing was analyzed, so no health score is reported.",
+      recommendations: [],
+      projectStats: {
+        files: 0,
+        symbols: 0,
+        edges: 0,
+        languages: {}
+      },
+      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      message: "No parseable files found. Nothing was analyzed, so no health score is reported.",
+      supportedExtensions: getSupportedExtensions()
+    };
+  }
   const coupling = calculateCouplingScore(graph);
   const cohesion = calculateCohesionScore(graph);
   const circular = calculateCircularDepsScore(graph);
@@ -12403,6 +12425,7 @@ function calculateHealthScore(graph, projectRoot) {
     recommendations.push("No critical issues detected. Maintain current architecture quality.");
   }
   const report = {
+    status: "scored",
     overall,
     grade,
     dimensions,

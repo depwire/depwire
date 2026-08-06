@@ -11,11 +11,36 @@ import {
 } from './metrics.js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
+import { getSupportedExtensions } from '../parser/detect.js';
 
 /**
  * Calculate the overall health score for a project
  */
 export function calculateHealthScore(graph: DirectedGraph, projectRoot: string): HealthReport {
+  // Guard: if nothing was parsed, refuse to score rather than combining
+  // six dimension functions that would each report a fake perfect score
+  // for an absence of data. Never call the dimension functions below for
+  // this case — that is the class of bug this guard exists to prevent.
+  if (graph.order === 0) {
+    return {
+      status: 'no_parseable_files',
+      overall: NaN,
+      grade: 'N/A',
+      dimensions: [],
+      summary: 'No parseable files found. Nothing was analyzed, so no health score is reported.',
+      recommendations: [],
+      projectStats: {
+        files: 0,
+        symbols: 0,
+        edges: 0,
+        languages: {}
+      },
+      timestamp: new Date().toISOString(),
+      message: 'No parseable files found. Nothing was analyzed, so no health score is reported.',
+      supportedExtensions: getSupportedExtensions()
+    };
+  }
+
   // Calculate all 6 dimensions
   const coupling = calculateCouplingScore(graph);
   const cohesion = calculateCohesionScore(graph);
@@ -103,6 +128,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   }
   
   const report: HealthReport = {
+    status: 'scored',
     overall,
     grade,
     dimensions,

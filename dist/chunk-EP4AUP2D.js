@@ -19,7 +19,7 @@ import {
   parseTypeScriptFile,
   scanSecurity,
   searchSymbols
-} from "./chunk-UE6PV3BW.js";
+} from "./chunk-5MPJHYJM.js";
 
 // src/viz/data.ts
 import { basename } from "path";
@@ -2000,6 +2000,12 @@ async function handleToolCall(name, args, state) {
           error: "No project loaded",
           message: "Use connect_repo to connect to a codebase first"
         };
+      } else if (state.graph.order === 0) {
+        result = {
+          status: "no_parseable_files",
+          message: "No parseable files found. Nothing was analyzed, so no security scan was performed.",
+          findings: []
+        };
       } else {
         result = await scanSecurity(state.projectRoot, state.graph, {
           target: normalizePath(args.target),
@@ -2508,7 +2514,8 @@ function handleGetArchitectureSummary(graph, projectRoot) {
     mostConnectedFiles: summary.mostConnectedFiles.slice(0, 10),
     directories: directories.slice(0, 10),
     orphanFiles: summary.orphanFiles,
-    summary: summaryText
+    summary: summaryText,
+    ...summary.fileCount === 0 ? { note: "No parseable files found. Nothing was analyzed." } : {}
   };
 }
 function handleListFiles(directory, graph) {
@@ -2677,6 +2684,14 @@ function handleGetHealthScore(state) {
   const graph = state.graph;
   const projectRoot = state.projectRoot;
   const report = calculateHealthScore(graph, projectRoot);
+  if (report.status === "no_parseable_files") {
+    return {
+      status: "no_parseable_files",
+      message: "No parseable files found. Nothing was analyzed, so no health score is available.",
+      filesScanned: 0,
+      supportedExtensions: report.supportedExtensions || []
+    };
+  }
   return report;
 }
 async function handleGetTemporalGraph(state, commits, strategy) {
@@ -2764,6 +2779,14 @@ function handleFindDeadCode(state, confidence) {
     return {
       error: "No project loaded",
       message: "Use connect_repo to connect to a codebase first"
+    };
+  }
+  if (state.graph.order === 0) {
+    return {
+      status: "no_parseable_files",
+      message: "No parseable files found. Nothing was analyzed, so no dead-code report is available.",
+      totalSymbols: 0,
+      deadSymbols: 0
     };
   }
   try {

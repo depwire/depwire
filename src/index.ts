@@ -17,7 +17,7 @@ import { watchProject } from './watcher.js';
 import { updateFileInGraph } from './graph/updater.js';
 import { generateDocs } from './docs/index.js';
 import { calculateHealthScore, getHealthTrend } from './health/index.js';
-import { formatHealthReport } from './health/display.js';
+import { formatHealthReport, formatUnscoredHealthReport } from './health/display.js';
 import { readFileSync as readFileSyncNode, appendFileSync, existsSync as existsSyncNode } from 'fs';
 import { createInterface } from 'readline';
 import { findProjectRoot } from './utils/files.js';
@@ -595,6 +595,16 @@ program
       
       // Calculate health score
       const report = calculateHealthScore(graph, projectRoot);
+
+      if (report.status === 'no_parseable_files') {
+        if (options.json) {
+          console.log(JSON.stringify(report, null, 2));
+        } else {
+          console.log(formatUnscoredHealthReport(report, projectRoot));
+        }
+        process.exit(2);
+      }
+
       const trend = getHealthTrend(projectRoot, report.overall);
       
       if (options.json) {
@@ -640,6 +650,14 @@ program
       
       const parsedFiles = await parseProject(projectRoot);
       const graph = buildGraph(parsedFiles, projectRoot);
+
+      if (graph.order === 0) {
+        console.error(`No parseable files found in ${projectRoot}. Nothing was analyzed, so no dead-code report is available.`);
+        if (options.json) {
+          console.log(JSON.stringify({ status: 'no_parseable_files', totalSymbols: 0, deadSymbols: 0 }, null, 2));
+        }
+        process.exit(2);
+      }
       
       const confidence = options.includeLow ? 'low' : (options.confidence || 'medium');
       

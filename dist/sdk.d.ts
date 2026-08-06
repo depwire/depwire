@@ -84,6 +84,7 @@ interface HealthDimension {
     metrics: Record<string, number | string>;
 }
 interface HealthReport {
+    status: 'scored' | 'no_parseable_files';
     overall: number;
     grade: string;
     dimensions: HealthDimension[];
@@ -96,6 +97,8 @@ interface HealthReport {
         languages: Record<string, number>;
     };
     timestamp: string;
+    message?: string;
+    supportedExtensions?: string[];
 }
 
 /**

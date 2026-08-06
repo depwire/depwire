@@ -18,7 +18,7 @@ import {
   updateFileInGraph,
   verifyChange,
   watchProject
-} from "./chunk-EIDOISIO.js";
+} from "./chunk-EP4AUP2D.js";
 import {
   SimulationEngine,
   analyzeDeadCode,
@@ -35,7 +35,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-UE6PV3BW.js";
+} from "./chunk-5MPJHYJM.js";
 
 // src/index.ts
 import { Command } from "commander";
@@ -110,6 +110,21 @@ function importFromJSON(json) {
 }
 
 // src/health/display.ts
+function formatUnscoredHealthReport(report, projectRoot) {
+  let output = "";
+  output += `
+${bold("No parseable files found")} in ${projectRoot}
+
+`;
+  output += `Depwire found 0 files it can analyze. Supported extensions:
+`;
+  output += `  ${(report.supportedExtensions || []).join(" ")}
+
+`;
+  output += `Nothing was analyzed, so no health score is reported.
+`;
+  return output;
+}
 function formatHealthReport(report, trend, verbose) {
   let output = "";
   output += `
@@ -1316,6 +1331,13 @@ async function securityCommand(dir, options) {
   console.error(`Parsed ${parsedFiles.length} files`);
   const graph = buildGraph(parsedFiles, projectRoot);
   console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  if (graph.order === 0) {
+    console.error(`No parseable files found in ${projectRoot}. Nothing was analyzed, so no security scan was performed.`);
+    if ((options.format || "table") === "json") {
+      console.log(JSON.stringify({ status: "no_parseable_files", findings: [] }, null, 2));
+    }
+    process.exit(2);
+  }
   const result = await scanSecurity(projectRoot, graph, {
     target: options.target,
     classes: options.class,
@@ -2775,6 +2797,14 @@ program.command("health").description("Analyze dependency architecture health (0
     const graph = buildGraph(parsedFiles, projectRoot);
     const parseTime = Date.now() - startTime;
     const report = calculateHealthScore(graph, projectRoot);
+    if (report.status === "no_parseable_files") {
+      if (options.json) {
+        console.log(JSON.stringify(report, null, 2));
+      } else {
+        console.log(formatUnscoredHealthReport(report, projectRoot));
+      }
+      process.exit(2);
+    }
     const trend = getHealthTrend(projectRoot, report.overall);
     if (options.json) {
       console.log(JSON.stringify(report, null, 2));
@@ -2801,6 +2831,13 @@ program.command("dead-code").description("Identify dead code - symbols defined b
     const startTime = Date.now();
     const parsedFiles = await parseProject(projectRoot);
     const graph = buildGraph(parsedFiles, projectRoot);
+    if (graph.order === 0) {
+      console.error(`No parseable files found in ${projectRoot}. Nothing was analyzed, so no dead-code report is available.`);
+      if (options.json) {
+        console.log(JSON.stringify({ status: "no_parseable_files", totalSymbols: 0, deadSymbols: 0 }, null, 2));
+      }
+      process.exit(2);
+    }
     const confidence = options.includeLow ? "low" : options.confidence || "medium";
     const report = analyzeDeadCode(graph, projectRoot, {
       confidence,

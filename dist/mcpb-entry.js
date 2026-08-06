@@ -4,11 +4,11 @@ import {
   startMcpServer,
   updateFileInGraph,
   watchProject
-} from "./chunk-EIDOISIO.js";
+} from "./chunk-EP4AUP2D.js";
 import {
   buildGraph,
   parseProject
-} from "./chunk-UE6PV3BW.js";
+} from "./chunk-5MPJHYJM.js";
 
 // src/mcpb-entry.ts
 import { resolve } from "path";

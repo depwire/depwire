@@ -52,6 +52,14 @@ export async function securityCommand(
   const graph = buildGraph(parsedFiles, projectRoot);
   console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
 
+  if (graph.order === 0) {
+    console.error(`No parseable files found in ${projectRoot}. Nothing was analyzed, so no security scan was performed.`);
+    if ((options.format || 'table') === 'json') {
+      console.log(JSON.stringify({ status: 'no_parseable_files', findings: [] }, null, 2));
+    }
+    process.exit(2);
+  }
+
   const result = await scanSecurity(projectRoot, graph, {
     target: options.target,
     classes: options.class as VulnerabilityClass[] | undefined,

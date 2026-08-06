@@ -1,5 +1,4 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it, expect } from 'vitest';
 import { DirectedGraph } from 'graphology';
 import { SimulationEngine } from './engine.js';
 
@@ -45,9 +44,9 @@ describe('SimulationEngine', () => {
     const engine = new SimulationEngine(graph);
     engine.simulate({ type: 'delete', target: 'src/a.ts' });
 
-    assert.strictEqual(graph.order, originalOrder, 'Node count should be unchanged');
-    assert.strictEqual(graph.size, originalSize, 'Edge count should be unchanged');
-    assert.ok(graph.hasNode('src/a.ts::Foo'), 'Original node should still exist');
+    expect(graph.order).toBe(originalOrder); // Node count should be unchanged
+    expect(graph.size).toBe(originalSize); // Edge count should be unchanged
+    expect(graph.hasNode('src/a.ts::Foo')).toBeTruthy(); // Original node should still exist
   });
 
   it('should produce independent results across multiple simulate() calls', () => {
@@ -58,11 +57,11 @@ describe('SimulationEngine', () => {
     const r2 = engine.simulate({ type: 'delete', target: 'src/b.ts' });
 
     // Both should report the same original graph stats
-    assert.strictEqual(r1.originalGraph.nodeCount, r2.originalGraph.nodeCount);
-    assert.strictEqual(r1.originalGraph.edgeCount, r2.originalGraph.edgeCount);
+    expect(r1.originalGraph.nodeCount).toBe(r2.originalGraph.nodeCount);
+    expect(r1.originalGraph.edgeCount).toBe(r2.originalGraph.edgeCount);
 
     // But different simulated results
-    assert.notStrictEqual(r1.simulatedGraph.nodeCount, r2.simulatedGraph.nodeCount);
+    expect(r1.simulatedGraph.nodeCount).not.toBe(r2.simulatedGraph.nodeCount);
   });
 
   it('move action should relocate nodes and detect broken imports', () => {
@@ -76,15 +75,15 @@ describe('SimulationEngine', () => {
     });
 
     // Nodes moved: Foo and helperA from src/a.ts
-    assert.strictEqual(result.simulatedGraph.nodeCount, graph.order, 'Node count should stay the same');
+    expect(result.simulatedGraph.nodeCount).toBe(graph.order); // Node count should stay the same
 
     // Broken imports: B and C both imported from src/a.ts
-    assert.ok(result.diff.brokenImports.length > 0, 'Should have broken imports');
+    expect(result.diff.brokenImports.length).toBeGreaterThan(0); // Should have broken imports
 
     // Check that broken imports reference the correct files
     const brokenFiles = result.diff.brokenImports.map((bi) => bi.file);
-    assert.ok(brokenFiles.includes('src/b.ts'), 'src/b.ts should have broken imports');
-    assert.ok(brokenFiles.includes('src/c.ts'), 'src/c.ts should have broken imports');
+    expect(brokenFiles).toContain('src/b.ts'); // src/b.ts should have broken imports
+    expect(brokenFiles).toContain('src/c.ts'); // src/c.ts should have broken imports
   });
 
   it('delete action should remove nodes and flag all dependents as broken', () => {
@@ -94,11 +93,11 @@ describe('SimulationEngine', () => {
     const result = engine.simulate({ type: 'delete', target: 'src/a.ts' });
 
     // 2 nodes deleted (Foo, helperA), 2 remaining (Bar, Baz)
-    assert.strictEqual(result.simulatedGraph.nodeCount, 2);
+    expect(result.simulatedGraph.nodeCount).toBe(2);
 
     // Broken imports from B and C
-    assert.ok(result.diff.brokenImports.length > 0, 'Should have broken imports');
-    assert.ok(result.diff.removedEdges.length > 0, 'Should have removed edges');
+    expect(result.diff.brokenImports.length).toBeGreaterThan(0); // Should have broken imports
+    expect(result.diff.removedEdges.length).toBeGreaterThan(0); // Should have removed edges
   });
 
   it('rename action should work like move with dirname preserved', () => {
@@ -112,10 +111,10 @@ describe('SimulationEngine', () => {
     });
 
     // Node count should stay the same (renamed, not deleted)
-    assert.strictEqual(result.simulatedGraph.nodeCount, graph.order);
+    expect(result.simulatedGraph.nodeCount).toBe(graph.order);
 
     // Broken imports from B and C
-    assert.ok(result.diff.brokenImports.length > 0);
+    expect(result.diff.brokenImports.length).toBeGreaterThan(0);
   });
 
   it('health delta should be computed correctly', () => {
@@ -124,18 +123,18 @@ describe('SimulationEngine', () => {
 
     const result = engine.simulate({ type: 'delete', target: 'src/a.ts' });
 
-    assert.ok(typeof result.healthDelta.before === 'number');
-    assert.ok(typeof result.healthDelta.after === 'number');
-    assert.strictEqual(result.healthDelta.delta, result.healthDelta.after - result.healthDelta.before);
-    assert.strictEqual(result.healthDelta.improved, result.healthDelta.after > result.healthDelta.before);
-    assert.ok(result.healthDelta.dimensionChanges.length > 0, 'Should have dimension changes');
+    expect(typeof result.healthDelta.before).toBe('number');
+    expect(typeof result.healthDelta.after).toBe('number');
+    expect(result.healthDelta.delta).toBe(result.healthDelta.after - result.healthDelta.before);
+    expect(result.healthDelta.improved).toBe(result.healthDelta.after > result.healthDelta.before);
+    expect(result.healthDelta.dimensionChanges.length).toBeGreaterThan(0); // Should have dimension changes
 
     // Each dimension change should have valid fields
     for (const dc of result.healthDelta.dimensionChanges) {
-      assert.ok(typeof dc.name === 'string');
-      assert.ok(typeof dc.before === 'number');
-      assert.ok(typeof dc.after === 'number');
-      assert.strictEqual(dc.delta, dc.after - dc.before);
+      expect(typeof dc.name).toBe('string');
+      expect(typeof dc.before).toBe('number');
+      expect(typeof dc.after).toBe('number');
+      expect(dc.delta).toBe(dc.after - dc.before);
     }
   });
 
@@ -151,7 +150,7 @@ describe('SimulationEngine', () => {
 
     // src/b.ts node (Bar) moved into src/a.ts, so one fewer file
     // Total nodes stay same (Bar just gets new ID under src/a.ts)
-    assert.strictEqual(result.simulatedGraph.nodeCount, graph.order);
+    expect(result.simulatedGraph.nodeCount).toBe(graph.order);
   });
 
   it('merge action should fail on symbol name collision', () => {
@@ -167,8 +166,7 @@ describe('SimulationEngine', () => {
 
     const engine = new SimulationEngine(graph);
 
-    assert.throws(
-      () => engine.simulate({ type: 'merge', target: 'src/a.ts', source: 'src/b.ts' }),
+    expect(() => engine.simulate({ type: 'merge', target: 'src/a.ts', source: 'src/b.ts' })).toThrow(
       /Merge conflict.*Dup/
     );
   });
@@ -185,6 +183,6 @@ describe('SimulationEngine', () => {
     });
 
     // Node count stays same, but helperA is now under src/a-helpers.ts
-    assert.strictEqual(result.simulatedGraph.nodeCount, graph.order);
+    expect(result.simulatedGraph.nodeCount).toBe(graph.order);
   });
 });

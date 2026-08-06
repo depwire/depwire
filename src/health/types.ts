@@ -12,8 +12,14 @@ export interface HealthDimension {
 }
 
 export interface HealthReport {
-  overall: number;        // 0-100
-  grade: string;          // A-F
+  // 'scored' means the six dimensions were actually measured against real
+  // symbols/edges. 'no_parseable_files' means nothing was analyzed — the
+  // numeric fields below are placeholders, not a measurement, and must
+  // never be presented to a user or CI system as a passing (or failing)
+  // score. Always check `status` before trusting `overall`/`grade`.
+  status: 'scored' | 'no_parseable_files';
+  overall: number;        // 0-100 (NaN when status is 'no_parseable_files')
+  grade: string;          // A-F ('N/A' when status is 'no_parseable_files')
   dimensions: HealthDimension[];
   summary: string;        // Human-readable summary
   recommendations: string[];  // Actionable suggestions
@@ -24,6 +30,9 @@ export interface HealthReport {
     languages: Record<string, number>;
   };
   timestamp: string;
+  // Present only when status === 'no_parseable_files'.
+  message?: string;
+  supportedExtensions?: string[];
 }
 
 export interface HealthHistory {
