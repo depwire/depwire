@@ -8,8 +8,12 @@
  * do not reach into internal paths.
  */
 
+import { createRequire } from 'module';
+
 /** Current SDK version — matches depwire-cli npm version */
-export const DepwireSDKVersion: string = '1.7.4';
+export const DepwireSDKVersion: string = (
+  createRequire(import.meta.url)('../package.json') as { version: string }
+).version;
 
 /** Parse a codebase directory and return raw parsed data */
 export { parseProject } from './parser/index.js';
