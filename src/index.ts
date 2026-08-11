@@ -8,7 +8,7 @@ import { parseProject, loadParsedFilesFromJson, findOutputJson } from './parser/
 import { buildGraph } from './graph/index.js';
 import type { DirectedGraph } from 'graphology';
 import { exportToJSON, importFromJSON } from './graph/serializer.js';
-import { getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
+import { findSymbols, getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
 import { prepareVizData } from './viz/data.js';
 import { startVizServer } from './viz/server.js';
 import { startMcpServer } from './mcp/server.js';
@@ -137,25 +137,119 @@ program
 program
   .command('query')
   .description('Query impact analysis for a symbol')
-  .argument('<directory>', 'Project directory')
-  .argument('<symbol-name>', 'Symbol name to query')
-  .action(async (directory: string, symbolName: string) => {
+  .argument('<directory-or-symbol>', 'Project directory or symbol name to query')
+  .argument('[symbol-name]', 'Symbol name to query when a directory is provided')
+  .option('--json', 'Output as JSON')
+  .action(async (directoryOrSymbol: string, symbolArgument: string | undefined, options: { json?: boolean }) => {
     trackCommand('query', packageJson.version);
     try {
-      const projectRoot = resolve(directory);
+      const firstArgumentIsDirectory = symbolArgument !== undefined
+        && existsSync(directoryOrSymbol)
+        && statSync(directoryOrSymbol).isDirectory();
+      const projectRoot = firstArgumentIsDirectory ? resolve(directoryOrSymbol) : resolve('.');
+      const symbolName = firstArgumentIsDirectory ? symbolArgument! : directoryOrSymbol;
       const cacheFile = resolve('depwire-output.json');
       
       let graph;
       
       // Try to load from cache first
       if (existsSync(cacheFile)) {
-        console.log('Loading from cache...');
         const json = JSON.parse(readFileSync(cacheFile, 'utf-8'));
-        graph = importFromJSON(json);
-      } else {
-        console.log('Parsing project...');
+        const cacheMatchesProject = !options.json || resolve(json.projectRoot) === projectRoot;
+        if (cacheMatchesProject) {
+          options.json ? console.error('Loading from cache...') : console.log('Loading from cache...');
+          graph = importFromJSON(json);
+        }
+      }
+
+      if (!graph) {
+        options.json ? console.error('Parsing project...') : console.log('Parsing project...');
         const parsedFiles = await parseProject(projectRoot);
+
+        if (options.json && parsedFiles.length === 0) {
+          console.log(JSON.stringify({
+            error: 'no_parseable_files',
+            message: `No parseable files found in ${projectRoot}`,
+          }, null, 2));
+          process.exit(2);
+        }
+
         graph = buildGraph(parsedFiles, projectRoot);
+      }
+
+      if (options.json) {
+        if (graph.order === 0) {
+          console.log(JSON.stringify({
+            error: 'no_parseable_files',
+            message: `No parseable files found in ${projectRoot}`,
+          }, null, 2));
+          process.exit(2);
+        }
+
+        const matches = findSymbols(graph, symbolName);
+
+        if (matches.length === 0) {
+          console.log(JSON.stringify({
+            error: 'not_found',
+            message: `No symbols found matching '${symbolName}'`,
+          }, null, 2));
+          process.exit(1);
+        }
+
+        if (matches.length > 1) {
+          console.log(JSON.stringify({
+            error: 'ambiguous',
+            message: `Found ${matches.length} symbols matching '${symbolName}'`,
+            matches: matches.map(match => ({
+              id: match.id,
+              file: match.filePath,
+            })),
+          }, null, 2));
+          process.exit(3);
+        }
+
+        const match = matches[0];
+        const impact = getImpact(graph, match.id);
+        const depths = new Map<string, number>([[match.id, 0]]);
+        const queue: string[] = [match.id];
+
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          const nextDepth = depths.get(current)! + 1;
+
+          for (const dependentId of graph.inNeighbors(current)) {
+            if (!depths.has(dependentId)) {
+              depths.set(dependentId, nextDepth);
+              queue.push(dependentId);
+            }
+          }
+        }
+
+        const mapDependent = (dependent: typeof impact.directDependents[number]) => ({
+          id: dependent.id,
+          file: dependent.filePath,
+          name: dependent.name,
+          depth: depths.get(dependent.id)!,
+        });
+        const directDependents = impact.directDependents
+          .map(mapDependent)
+          .sort((a, b) => a.id.localeCompare(b.id));
+        const transitiveDependents = impact.transitiveDependents
+          .map(mapDependent)
+          .filter(dependent => dependent.depth >= 2)
+          .sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id));
+
+        console.log(JSON.stringify({
+          symbol: match.name,
+          file: match.filePath,
+          id: match.id,
+          directDependents,
+          transitiveDependents,
+          totalDirect: directDependents.length,
+          totalTransitive: transitiveDependents.length,
+          inDegree: graph.inDegree(match.id),
+        }, null, 2));
+        return;
       }
       
       // Search for the symbol
