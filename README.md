@@ -1,5 +1,7 @@
 # Depwire
 
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.atef-ataya%2Fdepwire.svg)](https://mcptoplist.com/server/io.github.atef-ataya%2Fdepwire)
+
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/depwire-cli?color=00d4aa&label=npm)](https://www.npmjs.com/package/depwire-cli)
