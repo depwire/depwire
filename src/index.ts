@@ -140,7 +140,12 @@ program
   .argument('<directory-or-symbol>', 'Project directory or symbol name to query')
   .argument('[symbol-name]', 'Symbol name to query when a directory is provided')
   .option('--json', 'Output as JSON')
-  .action(async (directoryOrSymbol: string, symbolArgument: string | undefined, options: { json?: boolean }) => {
+  .option('--include-file-nodes', 'Include file-level pseudo-nodes in JSON output')
+  .action(async (
+    directoryOrSymbol: string,
+    symbolArgument: string | undefined,
+    options: { json?: boolean; includeFileNodes?: boolean },
+  ) => {
     trackCommand('query', packageJson.version);
     try {
       const firstArgumentIsDirectory = symbolArgument !== undefined
@@ -231,13 +236,21 @@ program
           name: dependent.name,
           depth: depths.get(dependent.id)!,
         });
-        const directDependents = impact.directDependents
-          .map(mapDependent)
+        const mappedDirectDependents = impact.directDependents.map(mapDependent);
+        const fileLevelDependents = mappedDirectDependents
+          .filter(dependent => dependent.id.endsWith('::__file__'))
+          .length;
+        const includeDependent = (dependent: { id: string }) => options.includeFileNodes
+          || !dependent.id.endsWith('::__file__');
+        const directDependents = mappedDirectDependents
+          .filter(includeDependent)
           .sort((a, b) => a.id.localeCompare(b.id));
         const transitiveDependents = impact.transitiveDependents
           .map(mapDependent)
           .filter(dependent => dependent.depth >= 2)
+          .filter(includeDependent)
           .sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id));
+        const inDegreeRaw = graph.inDegree(match.id);
 
         console.log(JSON.stringify({
           symbol: match.name,
@@ -247,7 +260,9 @@ program
           transitiveDependents,
           totalDirect: directDependents.length,
           totalTransitive: transitiveDependents.length,
-          inDegree: graph.inDegree(match.id),
+          inDegree: directDependents.length,
+          fileLevelDependents,
+          inDegreeRaw,
         }, null, 2));
         return;
       }

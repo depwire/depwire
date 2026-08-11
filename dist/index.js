@@ -2486,7 +2486,7 @@ Orphan Files (no cross-references): ${summary.orphanFiles.length}`);
     process.exit(1);
   }
 });
-program.command("query").description("Query impact analysis for a symbol").argument("<directory-or-symbol>", "Project directory or symbol name to query").argument("[symbol-name]", "Symbol name to query when a directory is provided").option("--json", "Output as JSON").action(async (directoryOrSymbol, symbolArgument, options) => {
+program.command("query").description("Query impact analysis for a symbol").argument("<directory-or-symbol>", "Project directory or symbol name to query").argument("[symbol-name]", "Symbol name to query when a directory is provided").option("--json", "Output as JSON").option("--include-file-nodes", "Include file-level pseudo-nodes in JSON output").action(async (directoryOrSymbol, symbolArgument, options) => {
   trackCommand("query", packageJson.version);
   try {
     const firstArgumentIsDirectory = symbolArgument !== void 0 && existsSync2(directoryOrSymbol) && statSync(directoryOrSymbol).isDirectory();
@@ -2561,8 +2561,12 @@ program.command("query").description("Query impact analysis for a symbol").argum
         name: dependent.name,
         depth: depths.get(dependent.id)
       });
-      const directDependents = impact.directDependents.map(mapDependent).sort((a, b) => a.id.localeCompare(b.id));
-      const transitiveDependents = impact.transitiveDependents.map(mapDependent).filter((dependent) => dependent.depth >= 2).sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id));
+      const mappedDirectDependents = impact.directDependents.map(mapDependent);
+      const fileLevelDependents = mappedDirectDependents.filter((dependent) => dependent.id.endsWith("::__file__")).length;
+      const includeDependent = (dependent) => options.includeFileNodes || !dependent.id.endsWith("::__file__");
+      const directDependents = mappedDirectDependents.filter(includeDependent).sort((a, b) => a.id.localeCompare(b.id));
+      const transitiveDependents = impact.transitiveDependents.map(mapDependent).filter((dependent) => dependent.depth >= 2).filter(includeDependent).sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id));
+      const inDegreeRaw = graph.inDegree(match.id);
       console.log(JSON.stringify({
         symbol: match.name,
         file: match.filePath,
@@ -2571,7 +2575,9 @@ program.command("query").description("Query impact analysis for a symbol").argum
         transitiveDependents,
         totalDirect: directDependents.length,
         totalTransitive: transitiveDependents.length,
-        inDegree: graph.inDegree(match.id)
+        inDegree: directDependents.length,
+        fileLevelDependents,
+        inDegreeRaw
       }, null, 2));
       return;
     }

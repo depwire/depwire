@@ -133,6 +133,36 @@ describe('depwire query --json', () => {
     expect(output.transitiveDependents.every((dependent: { depth: number }) => dependent.depth >= 2)).toBe(true);
   });
 
+  it('filters file-level pseudo-nodes and reports raw incoming-edge counts', () => {
+    const result = runQuery(['authenticate', '--json'], uniqueDir);
+    const output = JSON.parse(result.stdout);
+    const allDependents = [...output.directDependents, ...output.transitiveDependents];
+
+    expect(allDependents.every((dependent: { id: string }) => !dependent.id.endsWith('::__file__'))).toBe(true);
+    expect(output.directDependents).toHaveLength(1);
+    expect(output.transitiveDependents).toHaveLength(1);
+    expect(output.totalDirect).toBe(1);
+    expect(output.totalTransitive).toBe(1);
+    expect(output.inDegree).toBe(1);
+    expect(output.fileLevelDependents).toBe(1);
+    expect(output.inDegreeRaw).toBe(2);
+  });
+
+  it('includes file-level pseudo-nodes when --include-file-nodes is set', () => {
+    const result = runQuery(['authenticate', '--json', '--include-file-nodes'], uniqueDir);
+    const output = JSON.parse(result.stdout);
+    const allDependents = [...output.directDependents, ...output.transitiveDependents];
+
+    expect(allDependents.some((dependent: { id: string }) => dependent.id.endsWith('::__file__'))).toBe(true);
+    expect(output.directDependents).toHaveLength(2);
+    expect(output.transitiveDependents).toHaveLength(2);
+    expect(output.totalDirect).toBe(2);
+    expect(output.totalTransitive).toBe(2);
+    expect(output.inDegree).toBe(2);
+    expect(output.fileLevelDependents).toBe(1);
+    expect(output.inDegreeRaw).toBe(2);
+  });
+
   it('preserves the existing human-readable output without --json', () => {
     const result = runQuery(['.', 'authenticate'], uniqueDir);
 
