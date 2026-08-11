@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.9.3
+
+### Added — `depwire query --json`
+
+Symbol-level impact analysis as structured JSON on stdout, for programmatic
+consumers and deterministic oracle verification. Facts go to stdout; progress,
+warnings and telemetry go to stderr.
+
+`<directory>` is now optional and defaults to the current directory, so
+`depwire query <symbol> --json` works from inside a project. The existing
+`depwire query <directory> <symbol>` form is unchanged.
+
+Exit codes:
+
+- `0` success
+
+- `1` symbol not found
+
+- `2` no parseable files
+
+- `3` ambiguous — a bare name matched multiple symbols; use `file.ts::symbol`
+
+File-level `::__file__` pseudo-nodes are excluded by default so counts reflect
+real symbols rather than import statements. `fileLevelDependents` and
+`inDegreeRaw` report what was filtered, and `--include-file-nodes` restores the
+unfiltered view. On this repository, `getImpact` reports 3 direct dependents
+filtered versus 6 unfiltered.
+
+Default (non-JSON) text output is unchanged.
+
+### Fixed — documentation
+
+Tool count corrected from 23 to 24 across README and `server.json`.
+`affected_files` shipped in v1.8.4 and the count was never updated.
+
 ## 1.9.2
 
 > 1.9.1 was tagged but never published to npm; superseded by 1.9.2.

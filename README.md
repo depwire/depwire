@@ -117,7 +117,7 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 Depwire is the context and safety layer for AI-generated code.
 
-Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 23 MCP tools.
+Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 24 MCP tools.
 
 Four guarantees:
 
@@ -429,7 +429,7 @@ This gives every Claude Code session instant orientation without any tool calls 
 
 ![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
-### 23 MCP tools
+### 24 MCP tools
 
 | Tool | Description |
 |------|-------------|
@@ -672,7 +672,7 @@ Your license key works in both the VSCode extension and the Cloud app — one su
 
 **Shipped**
 - Arc diagram visualization
-- 23 MCP tools
+- 24 MCP tools
 - Multi-language support (TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R, HTML/Angular)
 - Architecture health score
 - Dead code detection
