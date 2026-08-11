@@ -28,6 +28,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <style>
         :root {
@@ -678,6 +679,25 @@
         
         .email-input::placeholder {
             color: var(--text-muted);
+        }
+
+        .cf-turnstile {
+            margin: 1rem auto 0;
+            max-width: 100%;
+        }
+
+        .cf-turnstile iframe {
+            max-width: 100%;
+        }
+
+        .subscribe-consent {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .subscribe-consent a {
+            color: var(--text-secondary);
         }
         
         .btn-subscribe {
@@ -1822,10 +1842,13 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 1rem;">Get notified about team features, cloud dashboard, and major releases.</p>
                 <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1rem;">Prefer a browser? <a href="https://app.depwire.dev" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">app.depwire.dev</a> gives you the full dashboard without local setup.</p>
                 <form class="email-form">
-                    <input type="text" name="website" id="honeypot-field" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off" />
+                    <input type="text" name="dw-form-ref" id="dw-form-ref" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true" />
                     <input type="email" class="email-input" placeholder="your.email@company.com" required>
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAAELWOTmHVKm0Y6st" data-theme="dark" data-size="flexible"></div>
                     <button type="submit" class="btn-subscribe">Subscribe</button>
                 </form>
+                <p class="subscribe-consent">Occasional emails about releases and major features. Unsubscribe any time. See our <a href="privacy.html">Privacy Policy</a>.</p>
+                <p id="subscribe-msg" style="margin-top:8px;font-size:14px;min-height:20px;text-align:center;"></p>
             </div>
         </div>
     </section>
@@ -1872,6 +1895,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         <li><a href="https://github.com/depwire/depwire#readme" target="_blank">Documentation</a></li>
                         <li><a href="https://github.com/depwire/depwire/blob/main/SECURITY.md" target="_blank">Security</a></li>
                         <li><a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">License</a></li>
+                        <li><a href="privacy.html">Privacy</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -1944,8 +1968,8 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
             if (!email) return;
 
             // Honeypot check — bots fill hidden fields
-            const honeypot = document.getElementById('honeypot-field');
-            if (honeypot && honeypot.value) return;
+            const honeypotValue = document.getElementById('dw-form-ref')?.value || '';
+            const turnstileToken = form.querySelector('[name="cf-turnstile-response"]')?.value || '';
 
             btn.disabled = true;
             btn.textContent = 'Subscribing...';
@@ -1955,8 +1979,16 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
               const res = await fetch('https://api.depwire.dev/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, source: 'website' }),
+                body: JSON.stringify({
+                  email,
+                  source: 'website',
+                  website: honeypotValue, // JSON key must stay 'website' — server reads this
+                  turnstileToken,
+                }),
               });
+
+              // Let the server authoritatively process honeypot submissions, then stay silent.
+              if (honeypotValue && res.ok) return;
 
               const data = await res.json();
 
@@ -1966,12 +1998,14 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 input.value = '';
                 btn.textContent = 'Subscribed';
               } else {
+                window.turnstile?.reset();
                 msg.textContent = data.error || 'Something went wrong. Please try again.';
                 msg.style.color = '#f87171';
                 btn.disabled = false;
                 btn.textContent = 'Subscribe';
               }
             } catch {
+              window.turnstile?.reset();
               msg.textContent = 'Failed to subscribe. Please try again.';
               msg.style.color = '#f87171';
               btn.disabled = false;

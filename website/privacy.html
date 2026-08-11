@@ -1,0 +1,352 @@
+<!-- TODO: This page describes current implementation behaviour and has not been reviewed by a lawyer. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Depwire</title>
+    <meta name="description" content="Privacy information for the Depwire email announcement list.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300d4ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300d4aa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='20' cy='50' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='30' r='8' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='70' r='8' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='50' r='8' fill='url(%23g)'/%3E%3Cpath d='M 28 50 Q 39 40 50 30' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 28 50 Q 39 60 50 70' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 30 Q 69 40 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3Cpath d='M 58 70 Q 69 60 80 50' stroke='url(%23g)' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #13131a;
+            --bg-tertiary: #1a1a24;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #00d4aa;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6b6b80;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+            background: rgba(13, 13, 13, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo,
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo {
+            width: fit-content;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            flex: none;
+        }
+
+        main {
+            padding: 5rem 0 6rem;
+        }
+
+        .policy {
+            max-width: 760px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .updated {
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+        }
+
+        section + section {
+            margin-top: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+
+        p,
+        li {
+            color: var(--text-secondary);
+        }
+
+        ul {
+            padding-left: 1.25rem;
+        }
+
+        li + li {
+            margin-top: 0.5rem;
+        }
+
+        main a {
+            color: var(--accent-cyan);
+        }
+
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .footer-logo {
+            font-size: 1.3rem;
+        }
+
+        .footer-company,
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-links h4 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin: 0 0 0.75rem;
+        }
+
+        .footer-links a,
+        .footer-bottom a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover,
+        .footer-bottom a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+
+            main {
+                padding: 3.5rem 0 4rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-bottom {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="/" class="logo" aria-label="Depwire home">
+                <svg class="logo-icon" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gradient-header" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00d4ff"/>
+                            <stop offset="100%" style="stop-color:#00d4aa"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="20" cy="50" r="8" fill="url(#gradient-header)"/>
+                    <circle cx="50" cy="30" r="8" fill="url(#gradient-header)"/>
+                    <circle cx="50" cy="70" r="8" fill="url(#gradient-header)"/>
+                    <circle cx="80" cy="50" r="8" fill="url(#gradient-header)"/>
+                    <path d="M 28 50 Q 39 40 50 30" stroke="url(#gradient-header)" stroke-width="2" fill="none"/>
+                    <path d="M 28 50 Q 39 60 50 70" stroke="url(#gradient-header)" stroke-width="2" fill="none"/>
+                    <path d="M 58 30 Q 69 40 80 50" stroke="url(#gradient-header)" stroke-width="2" fill="none"/>
+                    <path d="M 58 70 Q 69 60 80 50" stroke="url(#gradient-header)" stroke-width="2" fill="none"/>
+                </svg>
+                Depwire
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <article class="policy">
+                <h1>Privacy Policy</h1>
+                <p class="updated">Last updated: August 9, 2026</p>
+
+                <section>
+                    <h2>Who controls your data</h2>
+                    <p>ATEF ATAYA LLC is the data controller for the Depwire announcement list.</p>
+                </section>
+
+                <section>
+                    <h2>What we collect</h2>
+                    <p>When you subscribe, we collect your email address, IP address, browser user agent, the timestamp of your consent, and the source of the signup.</p>
+                </section>
+
+                <section>
+                    <h2>Why we collect it</h2>
+                    <p>We use this information to send release and major feature announcements and to retain a record of how consent was given.</p>
+                </section>
+
+                <section>
+                    <h2>Service providers</h2>
+                    <ul>
+                        <li>Cloudflare provides site hosting, Workers, the D1 database, and Turnstile bot protection. Turnstile is used to block automated submissions.</li>
+                        <li>Resend provides email delivery.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Unsubscribing</h2>
+                    <p>Every announcement email contains an unsubscribe link. Unsubscribing marks your record inactive and stops all further mail.</p>
+                </section>
+
+                <section>
+                    <h2>Bounces and complaints</h2>
+                    <p>Email addresses that hard-bounce or report an announcement as spam are automatically deactivated.</p>
+                </section>
+
+                <section>
+                    <h2>Access, correction, and deletion</h2>
+                    <p>To request access to, correction of, or deletion of your information, email <a href="mailto:atef@depwire.dev">atef@depwire.dev</a>.</p>
+                </section>
+            </article>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <svg class="logo-icon" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="gradient-footer" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#00d4ff"/>
+                                    <stop offset="100%" style="stop-color:#00d4aa"/>
+                                </linearGradient>
+                            </defs>
+                            <circle cx="20" cy="50" r="8" fill="url(#gradient-footer)"/>
+                            <circle cx="50" cy="30" r="8" fill="url(#gradient-footer)"/>
+                            <circle cx="50" cy="70" r="8" fill="url(#gradient-footer)"/>
+                            <circle cx="80" cy="50" r="8" fill="url(#gradient-footer)"/>
+                            <path d="M 28 50 Q 39 40 50 30" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                            <path d="M 28 50 Q 39 60 50 70" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                            <path d="M 58 30 Q 69 40 80 50" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                            <path d="M 58 70 Q 69 60 80 50" stroke="url(#gradient-footer)" stroke-width="2" fill="none"/>
+                        </svg>
+                        Depwire
+                    </div>
+                    <p class="footer-company">Built by ATEF ATAYA LLC</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="/#install">Install</a></li>
+                        <li><a href="https://github.com/depwire/depwire" target="_blank">GitHub</a></li>
+                        <li><a href="https://www.npmjs.com/package/depwire-cli" target="_blank">npm</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode" target="_blank">VSCode Extension</a></li>
+                        <li><a href="https://app.depwire.dev" target="_blank">Cloud App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/depwire/depwire#readme" target="_blank">Documentation</a></li>
+                        <li><a href="https://github.com/depwire/depwire/blob/main/SECURITY.md" target="_blank">Security</a></li>
+                        <li><a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">License</a></li>
+                        <li><a href="privacy.html">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:atef@depwire.dev">atef@depwire.dev</a></li>
+                        <li><a href="https://github.com/depwire/depwire/issues" target="_blank">Report Issue</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Latest: v1.8.2 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
