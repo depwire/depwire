@@ -108,11 +108,11 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   }
   
   if (circular.score < 80 && typeof circular.metrics.cycles === 'number' && circular.metrics.cycles > 0) {
-    recommendations.push(`${circular.metrics.cycles} circular dependency cycle${circular.metrics.cycles === 1 ? '' : 's'} detected. Break cycles by introducing interfaces or extracting shared code.`);
+    recommendations.push(`${circular.metrics.cycles} circular dependency cycle${circular.metrics.cycles === 1 ? '' : 's'} detected (${Number(circular.metrics.cyclesPer100).toFixed(1)} per 100 files). Break cycles by introducing interfaces or extracting shared code.`);
   }
   
   if (godFiles.score < 80 && typeof godFiles.metrics.godFiles === 'number' && godFiles.metrics.godFiles > 0) {
-    recommendations.push(`${godFiles.metrics.godFiles} god file${godFiles.metrics.godFiles === 1 ? '' : 's'} detected with >${godFiles.metrics.threshold} connections. Split into smaller, focused modules.`);
+    recommendations.push(`${godFiles.metrics.godFiles} god file${godFiles.metrics.godFiles === 1 ? '' : 's'} detected with >${godFiles.metrics.threshold} connections (${Number(godFiles.metrics.godFilesPer100).toFixed(1)} per 100 files). Split into smaller, focused modules.`);
   }
   
   if (orphans.score < 80 && typeof orphans.metrics.orphans === 'number' && orphans.metrics.orphans > 0) {

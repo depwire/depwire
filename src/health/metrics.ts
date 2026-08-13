@@ -183,6 +183,23 @@ export function calculateCohesionScore(graph: DirectedGraph): HealthDimension {
  * Detects files that depend on each other in cycles
  */
 export function calculateCircularDepsScore(graph: DirectedGraph): HealthDimension {
+  const files = new Set<string>();
+
+  graph.forEachNode((node, attrs) => {
+    files.add(attrs.filePath);
+  });
+
+  if (files.size === 0) {
+    return {
+      name: 'Circular Dependencies',
+      score: 100,
+      weight: 0.20,
+      grade: 'A',
+      details: 'No files to analyze',
+      metrics: { cycles: 0, cyclesPer100: 0 }
+    };
+  }
+
   // Build file-level graph
   const fileGraph = new Map<string, Set<string>>();
   
@@ -245,15 +262,16 @@ export function calculateCircularDepsScore(graph: DirectedGraph): HealthDimensio
   }
   
   const cycleCount = uniqueCycles.size;
+  const cyclesPer100 = (cycleCount / files.size) * 100;
   
   let score = 100;
   if (cycleCount === 0) {
     score = 100;
-  } else if (cycleCount <= 2) {
+  } else if (cyclesPer100 <= 1) {
     score = 80;
-  } else if (cycleCount <= 5) {
+  } else if (cyclesPer100 <= 5) {
     score = 60;
-  } else if (cycleCount <= 10) {
+  } else if (cyclesPer100 <= 15) {
     score = 40;
   } else {
     score = 20;
@@ -265,7 +283,7 @@ export function calculateCircularDepsScore(graph: DirectedGraph): HealthDimensio
     weight: 0.20,
     grade: scoreToGrade(score),
     details: cycleCount === 0 ? 'No circular dependencies detected' : `${cycleCount} circular dependency cycle${cycleCount === 1 ? '' : 's'} detected`,
-    metrics: { cycles: cycleCount }
+    metrics: { cycles: cycleCount, cyclesPer100: parseFloat(cyclesPer100.toFixed(1)) }
   };
 }
 
@@ -288,7 +306,7 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
       weight: 0.15,
       grade: 'A',
       details: 'No files to analyze',
-      metrics: { godFiles: 0, threshold: 0 }
+      metrics: { godFiles: 0, threshold: 0, godFilesPer100: 0 }
     };
   }
   
@@ -308,15 +326,16 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
   const godThreshold = avgConnections * 3;
   
   const godFiles = connections.filter(c => c > godThreshold).length;
+  const godFilesPer100 = (godFiles / files.size) * 100;
   
   let score = 100;
   if (godFiles === 0) {
     score = 100;
-  } else if (godFiles === 1) {
+  } else if (godFilesPer100 <= 3) {
     score = 80;
-  } else if (godFiles <= 3) {
+  } else if (godFilesPer100 <= 6) {
     score = 60;
-  } else if (godFiles <= 5) {
+  } else if (godFilesPer100 <= 10) {
     score = 40;
   } else {
     score = 20;
@@ -328,7 +347,11 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
     weight: 0.15,
     grade: scoreToGrade(score),
     details: godFiles === 0 ? 'No god files detected' : `${godFiles} god file${godFiles === 1 ? '' : 's'} (>${godThreshold.toFixed(0)} connections)`,
-    metrics: { godFiles, threshold: parseFloat(godThreshold.toFixed(1)) }
+    metrics: {
+      godFiles,
+      threshold: parseFloat(godThreshold.toFixed(1)),
+      godFilesPer100: parseFloat(godFilesPer100.toFixed(1))
+    }
   };
 }
 

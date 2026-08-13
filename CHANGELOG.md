@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.9.5
+
+### Fixed — size-normalized health scoring
+
+God files and circular dependencies are now scored as densities per 100 files
+instead of absolute counts. Recommendations retain the absolute count and add
+the normalized density for project-size context.
+
 ## 1.9.3
 
 ### Added — `depwire query --json`
