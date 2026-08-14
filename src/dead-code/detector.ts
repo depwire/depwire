@@ -131,7 +131,7 @@ export function findDeadSymbols(
         if (graph.inDegree(node) === 0 && count < 10) {
           const attrs = graph.getNodeAttributes(node);
           const filePath = attrs.file || attrs.filePath || "unknown";
-          console.log(`  - ${attrs.name} (${attrs.kind}) in ${path.relative(projectRoot, filePath)}`);
+          console.log(`  - ${attrs.name} (${attrs.kind}) in ${path.relative(projectRoot, path.resolve(projectRoot, filePath))}`);
           count++;
         }
       });
@@ -313,7 +313,15 @@ function shouldExclude(
     return null;
   }
   
-  const relativePath = path.relative(context.projectRoot, filePath);
+  // filePath is project-relative by design (see ParsedFile.filePath contract
+  // in src/utils/files.ts and src/parser/cache.ts). Resolve it against
+  // projectRoot before any path.relative/comparison — passing a relative
+  // path straight to path.relative() makes Node silently resolve it against
+  // process.cwd() instead, which is environment-dependent and unrelated to
+  // the repo being analyzed. path.resolve() is a no-op if filePath is
+  // already absolute, so this is safe regardless of caller.
+  const absoluteFilePath = path.resolve(context.projectRoot, filePath);
+  const relativePath = path.relative(context.projectRoot, absoluteFilePath);
 
   if (!includeTests && isTestFile(relativePath)) {
     return "test";
@@ -323,7 +331,7 @@ function shouldExclude(
     return "test";
   }
 
-  if (isRealPackageEntryPoint(filePath, packageEntryPoints)) {
+  if (isRealPackageEntryPoint(absoluteFilePath, packageEntryPoints)) {
     return "entry";
   }
 

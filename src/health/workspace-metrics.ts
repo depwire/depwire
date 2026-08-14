@@ -1,5 +1,5 @@
 import { DirectedGraph } from 'graphology';
-import { relative } from 'path';
+import { relative, resolve } from 'path';
 import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
 import { findDeadSymbols } from '../dead-code/detector.js';
 import { calculateOrphansScoreFromMetrics } from './metrics.js';
@@ -24,7 +24,10 @@ export function calculateWorkspaceOrphansScore(
     // HTML entry points have no real importer by design and inflate the
     // orphan count if counted — exclude them unless explicitly requested.
     if (!includeFixtures) {
-      const relativePath = relative(projectRoot, attrs.filePath);
+      // attrs.filePath is project-relative by design; resolve against
+      // projectRoot before diffing so this doesn't silently fall back to
+      // process.cwd() (see detector.ts shouldExclude for the same fix).
+      const relativePath = relative(projectRoot, resolve(projectRoot, attrs.filePath));
       if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) return;
     }
     files.add(attrs.filePath);
