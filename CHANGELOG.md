@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.10.0
+
+### Added — Workers-compatible graph entry point
+
+Added `depwire-cli/graph`, a graph-only SDK surface for serialization, queries,
+architecture simulation, and pure health dimensions. The entry point performs
+no filesystem access and does not load parsers, tree-sitter, or native modules.
+
 ## 1.9.5
 
 ### Fixed — size-normalized health scoring

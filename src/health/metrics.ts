@@ -1,8 +1,6 @@
 import { DirectedGraph } from 'graphology';
 import { HealthDimension } from './types.js';
-import { dirname, relative } from 'path';
-import { findDeadSymbols } from '../dead-code/detector.js';
-import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
+import { dirname } from 'path';
 
 /**
  * Calculate the letter grade from a 0-100 score
@@ -294,7 +292,7 @@ export function calculateCircularDepsScore(graph: DirectedGraph): HealthDimensio
 export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
   const files = new Set<string>();
   const fileConnections = new Map<string, number>();
-  
+
   graph.forEachNode((node, attrs) => {
     files.add(attrs.filePath);
   });
@@ -368,18 +366,11 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
  * other internal implementation details are excluded — they are not
  * meaningful candidates for "dead code" at the architecture level.
  */
-export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string, includeFixtures = false): HealthDimension {
+export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
   const files = new Set<string>();
   const connectedFiles = new Set<string>();
   
   graph.forEachNode((node, attrs) => {
-    // Test fixtures (deliberately standalone sample projects) and static
-    // HTML entry points have no real importer by design and inflate the
-    // orphan count if counted — exclude them unless explicitly requested.
-    if (!includeFixtures && projectRoot) {
-      const relativePath = relative(projectRoot, attrs.filePath);
-      if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) return;
-    }
     files.add(attrs.filePath);
   });
   
@@ -393,6 +384,29 @@ export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string
     }
   });
   
+  let deadSymbolCount = 0;
+  const relevantExportedKinds = new Set([
+    'function', 'class', 'interface', 'type', 'type_alias',
+    'enum', 'const', 'constant', 'let', 'var', 'variable'
+  ]);
+
+  graph.forEachNode((node, attrs) => {
+    if (!attrs.exported) return;
+    if (!relevantExportedKinds.has(attrs.kind)) return;
+    if (graph.inDegree(node) === 0) {
+      deadSymbolCount++;
+    }
+  });
+
+  return calculateOrphansScoreFromMetrics(graph, files, connectedFiles, deadSymbolCount);
+}
+
+export function calculateOrphansScoreFromMetrics(
+  graph: DirectedGraph,
+  files: Set<string>,
+  connectedFiles: Set<string>,
+  deadSymbolCount: number,
+): HealthDimension {
   // Count membership directly rather than subtracting set sizes:
   // `connectedFiles` can contain fixture/HTML paths that were filtered out
   // of `files` above (e.g. a real source file importing a static asset),
@@ -403,45 +417,6 @@ export function calculateOrphansScore(graph: DirectedGraph, projectRoot?: string
     if (!connectedFiles.has(file)) orphanCount++;
   }
   const orphanPercent = files.size > 0 ? (orphanCount / files.size) * 100 : 0;
-  
-  // Use the dead-code detector for accurate dead symbol counting.
-  // It applies proper filters: relevant kinds, exported-only for vars,
-  // exclusion of test files, entry points, config files, framework dirs, etc.
-  let deadSymbolCount = 0;
-  let totalExportedSymbols = 0;
-  
-  if (projectRoot) {
-    const result = findDeadSymbols(graph, projectRoot, false, false, includeFixtures);
-    deadSymbolCount = result.symbols.length;
-    
-    // Count total exported symbols of relevant kinds for percentage calculation
-    const relevantExportedKinds = new Set([
-      'function', 'class', 'interface', 'type', 'type_alias',
-      'enum', 'const', 'constant', 'let', 'var', 'variable',
-      'method', 'property'
-    ]);
-    
-    graph.forEachNode((node, attrs) => {
-      if (!attrs.exported) return;
-      if (!relevantExportedKinds.has(attrs.kind)) return;
-      totalExportedSymbols++;
-    });
-  } else {
-    // Fallback if no projectRoot: count exported symbols with zero inDegree
-    const relevantExportedKinds = new Set([
-      'function', 'class', 'interface', 'type', 'type_alias',
-      'enum', 'const', 'constant', 'let', 'var', 'variable'
-    ]);
-    
-    graph.forEachNode((node, attrs) => {
-      if (!attrs.exported) return;
-      if (!relevantExportedKinds.has(attrs.kind)) return;
-      totalExportedSymbols++;
-      if (graph.inDegree(node) === 0) {
-        deadSymbolCount++;
-      }
-    });
-  }
   
   const deadCodePercent = graph.order > 0
     ? (deadSymbolCount / graph.order) * 100

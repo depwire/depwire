@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "1.9.5",
+  "version": "1.10.0",
   "description": "Dependency graph + 23 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
   "type": "module",
   "bin": {
@@ -8,10 +8,11 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./sdk": "./dist/sdk.js"
+    "./sdk": "./dist/sdk.js",
+    "./graph": "./dist/graph.js"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && npm run copy-static",
+    "build": "tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && tsup src/graph.ts --format esm --dts --no-splitting && npm run copy-static",
     "prepublishOnly": "npm run build",
     "copy-static": "mkdir -p dist/viz/public dist/parser/grammars && cp -r src/viz/public/* dist/viz/public/ && cp src/parser/grammars/*.wasm dist/parser/grammars/",
     "dev": "tsup src/index.ts --format esm --watch",

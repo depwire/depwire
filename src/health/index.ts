@@ -5,10 +5,10 @@ import {
   calculateCohesionScore,
   calculateCircularDepsScore,
   calculateGodFilesScore,
-  calculateOrphansScore,
   calculateDepthScore,
   scoreToGrade
 } from './metrics.js';
+import { calculateWorkspaceOrphansScore } from './workspace-metrics.js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { getSupportedExtensions } from '../parser/detect.js';
@@ -46,7 +46,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   const cohesion = calculateCohesionScore(graph);
   const circular = calculateCircularDepsScore(graph);
   const godFiles = calculateGodFilesScore(graph);
-  const orphans = calculateOrphansScore(graph, projectRoot);
+  const orphans = calculateWorkspaceOrphansScore(graph, projectRoot);
   const depth = calculateDepthScore(graph);
   
   const dimensions = [coupling, cohesion, circular, godFiles, orphans, depth];
