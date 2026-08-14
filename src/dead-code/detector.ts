@@ -4,15 +4,97 @@ import { readFileSync, existsSync } from "node:fs";
 import type { DeadSymbol, ExclusionContext, ExclusionStats } from "./types.js";
 import { isExcludedFromOrphanReporting } from "../core/exclusions.js";
 
+/**
+ * ── DIAGNOSTIC INSTRUMENTATION (deadcode-diagnosis) ──
+ *
+ * Temporary funnel counter for diagnosing why dead-code detection returns
+ * zero on some large repos (see deadcode-diagnosis branch). Gated behind
+ * DEPWIRE_DEBUG_FUNNEL=1 (or the `debug` param) so it never runs in normal
+ * production paths. DO NOT remove without re-running the diagnosis — this
+ * is the only instrument that shows *where* the candidate set collapses.
+ *
+ * Stages, in order, mirroring the loop below:
+ *   1. totalNodesExamined      — every node graph.nodes() yields
+ *   2. passedNameCheck         — attrs.name is truthy
+ *   3. passedFileCheck         — attrs.file || attrs.filePath is truthy
+ *   4. passedRelevantKind      — isRelevantForDeadCodeDetection(attrs) true
+ *      rejectedByKind          — breakdown of what got rejected at stage 4,
+ *                                keyed by attrs.kind
+ *   5. passedExportedCheck     — for const/let/var/variable, exported===true
+ *                                (folded into stage 4 in the real predicate;
+ *                                counted separately here for visibility)
+ *   6. passedInDegreeZero      — graph.inDegree(node) === 0
+ *   7. survivedExclusion       — shouldExclude(...) returned null
+ *      exclusionByReason       — per-reason breakdown of what got excluded
+ *   8. (see analyzeDeadCode in index.ts) survivedConfidenceFilter
+ */
+export interface DeadCodeFunnelStats {
+  totalNodesExamined: number;
+  passedNameCheck: number;
+  passedFileCheck: number;
+  passedRelevantKind: number;
+  rejectedByKind: Record<string, number>;
+  passedExportedCheck: number;
+  passedInDegreeZero: number;
+  survivedExclusion: number;
+  exclusionByReason: Record<string, number>;
+}
+
+function isFunnelDebugEnabled(debug: boolean): boolean {
+  return debug || process.env.DEPWIRE_DEBUG_FUNNEL === "1";
+}
+
+function newFunnelStats(): DeadCodeFunnelStats {
+  return {
+    totalNodesExamined: 0,
+    passedNameCheck: 0,
+    passedFileCheck: 0,
+    passedRelevantKind: 0,
+    rejectedByKind: {},
+    passedExportedCheck: 0,
+    passedInDegreeZero: 0,
+    survivedExclusion: 0,
+    exclusionByReason: {},
+  };
+}
+
+export function logFunnelStats(funnel: DeadCodeFunnelStats, label = "dead-code funnel"): void {
+  console.error(`\n🔬 Debug: ${label}`);
+  console.error(`  1. Total nodes examined:        ${funnel.totalNodesExamined}`);
+  console.error(`  2. Passed name check:           ${funnel.passedNameCheck}`);
+  console.error(`  3. Passed file check:           ${funnel.passedFileCheck}`);
+  console.error(`  4. Passed relevant-kind check:  ${funnel.passedRelevantKind}`);
+  const rejected = Object.entries(funnel.rejectedByKind).sort((a, b) => b[1] - a[1]);
+  if (rejected.length > 0) {
+    console.error(`     Rejected by kind:`);
+    for (const [kind, count] of rejected) {
+      console.error(`       - ${kind || "(no kind)"}: ${count}`);
+    }
+  }
+  console.error(`  5. Passed exported check:       ${funnel.passedExportedCheck}`);
+  console.error(`  6. Passed inDegree===0 check:   ${funnel.passedInDegreeZero}`);
+  console.error(`  7. Survived shouldExclude:      ${funnel.survivedExclusion}`);
+  const exclusions = Object.entries(funnel.exclusionByReason).sort((a, b) => b[1] - a[1]);
+  if (exclusions.length > 0) {
+    console.error(`     Excluded by reason:`);
+    for (const [reason, count] of exclusions) {
+      console.error(`       - ${reason}: ${count}`);
+    }
+  }
+}
+/* ── END DIAGNOSTIC INSTRUMENTATION HEADER ── */
+
 export function findDeadSymbols(
   graph: Graph,
   projectRoot: string,
   includeTests = false,
   debug = false,
   includeFixtures = false
-): { symbols: DeadSymbol[]; stats: ExclusionStats } {
+): { symbols: DeadSymbol[]; stats: ExclusionStats; funnel?: DeadCodeFunnelStats } {
   const deadSymbols: DeadSymbol[] = [];
   const context: ExclusionContext = { graph, projectRoot };
+  const funnelEnabled = isFunnelDebugEnabled(debug);
+  const funnel: DeadCodeFunnelStats | undefined = funnelEnabled ? newFunnelStats() : undefined;
   
   const stats: ExclusionStats = {
     total: 0,
@@ -59,7 +141,10 @@ export function findDeadSymbols(
   for (const node of graph.nodes()) {
     const attrs = graph.getNodeAttributes(node);
 
+    if (funnel) funnel.totalNodesExamined++;
+
     if (!attrs.name) continue;
+    if (funnel) funnel.passedNameCheck++;
     
     if (!attrs.file && !attrs.filePath) {
       if (debug) {
@@ -67,16 +152,30 @@ export function findDeadSymbols(
       }
       continue;
     }
+    if (funnel) funnel.passedFileCheck++;
     
     const filePath = attrs.file || attrs.filePath;
     
     if (!isRelevantForDeadCodeDetection(attrs)) {
+      if (funnel) {
+        const kind = attrs.kind || "(no kind)";
+        funnel.rejectedByKind[kind] = (funnel.rejectedByKind[kind] || 0) + 1;
+      }
       continue;
+    }
+    if (funnel) {
+      funnel.passedRelevantKind++;
+      // The exported-only check for const/let/var/variable is folded into
+      // isRelevantForDeadCodeDetection above (a node that reaches this point
+      // has already satisfied it for those kinds), so this counter mirrors
+      // passedRelevantKind for those kinds and equals it for all other kinds.
+      funnel.passedExportedCheck++;
     }
 
     const inDegree = graph.inDegree(node);
 
     if (inDegree === 0) {
+      if (funnel) funnel.passedInDegreeZero++;
       stats.total++;
       
       const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures);
@@ -90,8 +189,13 @@ export function findDeadSymbols(
           case "default": stats.excludedByDefaultExport++; break;
           case "framework": stats.excludedByFrameworkDir++; break;
         }
+        if (funnel) {
+          funnel.exclusionByReason[exclusionReason] = (funnel.exclusionByReason[exclusionReason] || 0) + 1;
+        }
         continue;
       }
+
+      if (funnel) funnel.survivedExclusion++;
 
       deadSymbols.push({
         name: attrs.name,
@@ -118,7 +222,11 @@ export function findDeadSymbols(
     console.log(`Remaining dead symbols: ${deadSymbols.length}\n`);
   }
 
-  return { symbols: deadSymbols, stats };
+  if (funnel) {
+    logFunnelStats(funnel);
+  }
+
+  return { symbols: deadSymbols, stats, funnel };
 }
 
 function isRelevantForDeadCodeDetection(attrs: any): boolean {

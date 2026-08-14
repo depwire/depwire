@@ -29,6 +29,14 @@ export function analyzeDeadCode(
 
   const filteredSymbols = filterByConfidence(classifiedSymbols, opts.confidence);
 
+  // ── DIAGNOSTIC INSTRUMENTATION (deadcode-diagnosis) ──
+  // Stage 8 of the funnel: how many symbols survive confidence filtering.
+  // Gated the same way as the detector-side funnel (findDeadSymbols logs
+  // stages 1-7 to stderr already when enabled).
+  if (opts.debug || process.env.DEPWIRE_DEBUG_FUNNEL === "1") {
+    console.error(`  8. Survived confidence filter:  ${filteredSymbols.length} (of ${classifiedSymbols.length} classified, min confidence = "${opts.confidence}")`);
+  }
+
   const totalSymbols = graph.order;
 
   const byConfidence = {
