@@ -1,6 +1,6 @@
 import { dirname } from 'path';
-import type { DepwireGraph } from './graph.js';
 import {
+  SimulationEngine,
   findSymbols,
   getAffectedFiles,
   getArchitectureSummary,
@@ -9,9 +9,11 @@ import {
   getFileSummary,
   getImpact,
   searchSymbols,
-  type SymbolMatch,
-} from './graph/queries.js';
-import { SimulationEngine, type SimulationAction } from './simulation/engine.js';
+  type DepwireGraph,
+} from './graph.js';
+
+type SymbolMatch = ReturnType<typeof findSymbols>[number];
+type SimulationAction = Parameters<SimulationEngine['simulate']>[0];
 
 export type PrecomputedResult<T> =
   | { status: 'available'; value: T; computedAt: string }

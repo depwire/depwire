@@ -19,6 +19,9 @@ export function serializeGraph(
 }
 
 export {
+  findSymbols,
+  getFileSummary,
+  getAffectedFiles,
   getImpact,
   searchSymbols,
   getArchitectureSummary,
