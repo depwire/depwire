@@ -14,6 +14,10 @@ Added `depwire-cli/graph`, a graph-only SDK surface for serialization, queries,
 architecture simulation, and pure health dimensions. The entry point performs
 no filesystem access and does not load parsers, tree-sitter, or native modules.
 
+Added `depwire-cli/tools`, a Workers-compatible registry containing the ten
+graph-only MCP tool definitions and handlers. Host surfaces provide repository
+metadata and explicit available, unavailable, or stale precomputed results.
+
 ## 1.9.5
 
 ### Fixed — size-normalized health scoring
