@@ -68,9 +68,16 @@ that `calls` edges, the majority, were still broken):
   completely invisible to the graph — previously masked because imports of
   them were unresolved anyway. Fixed by handling
   `abstract_class_declaration` identically to `class_declaration` (same AST
-  shape). This adds SymbolNodes for abstract classes on **every**
-  TypeScript repo, not just monorepos — a parser-level change, called out
-  explicitly here rather than folded silently into the resolution fix.
+  shape). **This is a parser-level change that raises symbol counts on
+  every TypeScript repo, not just monorepos** — measured on code-graph's
+  own self-scan (a single-package, non-monorepo repo with no path aliases
+  or workspaces): 5,861 → 5,983 symbols (+122). Every health dimension and
+  the overall score (71/C) were unaffected by this, because abstract
+  classes add nodes without changing file-level edges — but that means the
+  control validated *edge* correctness, not *node-count* invariance. A
+  repo whose symbol count is compared before/after this release will show
+  a rise attributable to this one change, independent of anything else in
+  this release.
 - Namespace imports (`import * as V1 from 'mod'`) were treated like named
   imports, creating an edge target `mod::V1` — a symbol name that almost
   never exists, since a namespace import binds the whole module object, not
@@ -91,6 +98,13 @@ SymbolNode to target regardless of alias handling — a different, narrower
 problem than either bug above, left unresolved rather than papered over
 with a guess.
 
+**Out-of-scope bug found by this same exhaustive check, filed separately:**
+built-in/global method and constructor calls (`.push()`, `new Error()`,
+`new Set()`, ...) misresolve as same-file local symbol references —
+~2,640 occurrences on drizzle-orm, confirmed pre-existing (present before
+this fix too, unrelated to #12/#14/#15). Not fixed here; filed as
+[depwire/depwire#14](https://github.com/depwire/depwire/issues/14).
+
 **Impact — graph edges change, and monorepo health scores move, mostly
 down.** Measured on drizzle-orm (968 files): edges 5,355 → 14,676
 (+9,321 real, correctly-declared cross-file connections instead of
@@ -103,6 +117,20 @@ health **57/F → 39/F**. `code-graph`'s own self-scan (no path aliases, no
 workspaces, no nested tsconfigs) is the control and is unchanged at 71/C —
 any movement there would mean the change leaked into single-package
 resolution.
+
+**A note on drizzle-orm's 39/F specifically, since it is a widely-used,
+well-regarded project and this drop is large enough to read as "the tool
+is broken" rather than "the tool got more accurate."** It is not a
+judgment on drizzle-orm's engineering quality. Every dimension that moved
+did so because edges that were previously silently missing (workspace
+imports, path-alias imports) are now present — the *coupling* and *cross-
+package cycles* were always there in the source code; this release is the
+first time the tool could see them. `DIMENSIONS_V` suppresses the
+before/after *delta* in the UI so it isn't read as a regression, but it
+does not annotate the *absolute* number. Health scores for monorepos
+computed before this release should not be compared, in either direction,
+against health scores computed after it without this context — the
+underlying methodology, not the codebase, changed.
 
 New regression test (`test/workspace-resolution.test.ts`) with a minimal
 two-package fixture monorepo covers the bare-specifier-through-a-barrel
