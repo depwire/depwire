@@ -64,6 +64,20 @@ export interface UnresolvedImport {
   reason: UnresolvedImportReason;
 }
 
+export type UnresolvedCallReason =
+  | 'unresolvable-receiver' // member call (`obj.method()`) whose receiver is not `this`/`super` --
+                             // resolving it would require a type checker, so no edge is guessed
+  | 'receiver-not-local';   // receiver IS known (`this`/`super`, i.e. the enclosing instance) but
+                             // the called property does not match any member declared on the
+                             // enclosing class within this file (inherited from outside the file,
+                             // dynamically added, or a typo) -- still not guessed
+
+export interface UnresolvedCall {
+  fromFile: string;
+  callee: string; // e.g. "arr.push", "this.unknownMethod"
+  reason: UnresolvedCallReason;
+}
+
 export interface ParsedFile {
   filePath: string;    // Relative to project root
   symbols: SymbolNode[];
@@ -77,6 +91,14 @@ export interface ParsedFile {
    * `symbols`/`edges` are unaffected.
    */
   unresolvedImports?: UnresolvedImport[];
+  /**
+   * Member-expression calls (`obj.method()`, `new a.b.Foo()`) whose receiver
+   * could not be resolved to a real declared symbol without guessing.
+   * Populated in place of the wrong same-file `calls` edge that earlier
+   * versions fabricated -- see UnresolvedCallReason for what was rejected
+   * and why.
+   */
+  unresolvedCalls?: UnresolvedCall[];
   /**
    * Resolved target file paths (relative to project root) that this file
    * wildcard re-exports from, e.g. `export * from './expressions'`. Used by
@@ -97,6 +119,18 @@ export function aggregateUnresolvedImports(parsedFiles: ParsedFile[]): Unresolve
   const out: UnresolvedImport[] = [];
   for (const file of parsedFiles) {
     if (file.unresolvedImports) out.push(...file.unresolvedImports);
+  }
+  return out;
+}
+
+/**
+ * Flattens `unresolvedCalls` across a full parse result into a single list,
+ * mirroring `aggregateUnresolvedImports`.
+ */
+export function aggregateUnresolvedCalls(parsedFiles: ParsedFile[]): UnresolvedCall[] {
+  const out: UnresolvedCall[] = [];
+  for (const file of parsedFiles) {
+    if (file.unresolvedCalls) out.push(...file.unresolvedCalls);
   }
   return out;
 }

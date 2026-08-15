@@ -1,11 +1,11 @@
 {
   "note": "Frozen graph snapshot for regression testing dead-code/health detector logic in isolation from live-tree drift (see fix/deadcode-relative-path-cwd-collision and fix/deadcode-relevantkinds-and-self-import). The graph is fixed; only the detector/scoring code under test should be able to move these numbers. Caveat 1: getPackageEntryPoints reads projectRoot's package.json from disk at test time (not frozen) -- if code-graph's own package.json 'exports' field changes, entry-point classification could shift independently of this snapshot. That's a narrow, deliberate-change-only risk, not the 'new files added elsewhere' drift this fixture is meant to guard against. Caveat 2: edge `key` strings in dead-code-snapshot.json (e.g. geid_<n>_<i>) embed a run-varying counter and are NOT byte-stable across regenerations from the same commit -- verified by regenerating twice and diffing: node keys and edge (source,target,attributes) tuples ignoring the key field were identical, as was this expected block. Detector/health logic reads edge attributes, not edge keys, so this does not affect test correctness -- do not byte-diff the raw snapshot JSON as a determinism check.",
-  "sourceCommit": "7115004bd60777b588c5d1a780b8d7ffe12bfd65",
+  "sourceCommit": "6d7dab32904bb081ff93fbf6f807a6738278580b",
   "sourceRepo": "code-graph (self-scan)",
   "generatorVersion": "depwire-cli 1.13.0 (package.json version at generation time)",
   "generatedWithNode": "v25.2.1",
-  "generatedAt": "2026-08-15T17:59:45.917Z",
-  "gitStatusAtGeneration": "M src/parser/reexport-chains.ts\n M src/parser/types.ts\n M src/parser/typescript.ts\n M test/fixtures/dead-code-snapshot.json\n M test/fixtures/dead-code-snapshot.manifest.json\n M test/fixtures/generate-dead-code-snapshot.mjs",
+  "generatedAt": "2026-08-15T19:39:42.988Z",
+  "gitStatusAtGeneration": "(clean)",
   "gitCleanAllowlistedExtras": [
     ".DS_Store",
     ".depwire/",
@@ -21,12 +21,12 @@
     "test/fixtures/kotlin-multimodule/.depwire/",
     "website/.DS_Store"
   ],
-  "nodeCount": 5983,
-  "edgeCount": 2356,
+  "nodeCount": 6024,
+  "edgeCount": 2279,
   "expected": {
-    "totalSymbols": 5983,
+    "totalSymbols": 6024,
     "deadSymbols": 168,
-    "deadPercentage": 2.8079558749791076,
+    "deadPercentage": 2.788844621513944,
     "byConfidence": {
       "high": 168,
       "medium": 0,

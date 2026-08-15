@@ -26,6 +26,15 @@ export { parseProject } from './parser/index.js';
 export { aggregateUnresolvedImports } from './parser/types.js';
 export type { UnresolvedImport, UnresolvedImportReason } from './parser/types.js';
 
+/**
+ * Flattens the per-file `unresolvedCalls` instrument across a parse
+ * result. Reasons: 'unresolvable-receiver' | 'receiver-not-local'.
+ * Populated for member-expression calls (`obj.method()`) whose receiver
+ * could not be resolved to a real declared symbol without guessing.
+ */
+export { aggregateUnresolvedCalls } from './parser/types.js';
+export type { UnresolvedCall, UnresolvedCallReason } from './parser/types.js';
+
 /** Parse cache controls — clear the on-disk cache / inspect cache stats */
 export { clearCache, getCacheStats } from './parser/cache.js';
 

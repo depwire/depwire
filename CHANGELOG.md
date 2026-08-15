@@ -6,6 +6,83 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.14.0
+
+### Fixed — no fabricated edge for unresolvable member calls (#14, builtin/global misresolution)
+
+`resolveLocalCallTarget` read only the `property` of a `member_expression`
+callee (`obj.method()`) — the receiver (`obj`) was never inspected — and
+**unconditionally constructed `${file}::propertyName` as the call target,
+whether or not that symbol actually existed.** Existence was checked only
+to choose immediate-vs-buffered resolution, never to reject the guess. The
+result: every `.push()`, `.map()`, `new Error()`, `new Set()`, and every
+third-party fluent-API/DSL call (`select()`, `where()`, `expect().toBe()`)
+that happened to share a name with *any* symbol declared anywhere in the
+same file produced a same-file `calls` edge to that unrelated symbol.
+Measured on drizzle-orm: **23,446 wrong same-file `calls` edges**, feeding
+directly into `calculateWorkspaceOrphansScore` (which is in-degree-based
+and kind-agnostic) — this is why `eq`/`and`, drizzle's most-used exports,
+still read as under-used after the 1.13.0 resolution fix: 551 wrong `calls`
+edges on `eq` alone were pointing at the unrewritten barrel.
+
+A stoplist was measured and rejected: 269 distinct names were needed for
+95% coverage of the wrong edges, and 71% of wrong names were not builtins
+at all — they were drizzle's own query-builder vocabulary and vitest
+assertion names, which no stoplist could anticipate. Receiver-type
+inference was also rejected for now: 48.6% of member-call receivers are
+chain expressions unresolvable without a type checker.
+
+**Fix: member-expression calls with an unresolvable receiver now produce NO
+edge instead of a guess.** `this.method()` and `super.method()` are the one
+exception — the receiver there is knowable (the enclosing instance) — and
+still resolve via the existing scope-chain walk, but with the unconditional
+flat-name fallback removed: only a real declared class member at some scope
+level counts as resolved. (Known gap, reported rather than hidden:
+`super.` does not follow `extends` to look up the base class, so
+`super.method()` calls that only exist on a base class are recorded
+unresolved rather than fabricated. This is a negligible population —
+`super.` calls measured at ~0.1% of member calls.)
+
+Bare-identifier calls (`foo()`) are **unaffected** — that is a structurally
+different, generally legitimate call shape and was left untouched.
+
+**New: `unresolvedCalls` instrument.** Rejected member calls are recorded,
+not silently dropped, via a new `unresolvedCalls` field on `ParsedFile`
+(mirroring `unresolvedImports` from 1.13.0) and an `aggregateUnresolvedCalls()`
+SDK export, with two reasons: `'unresolvable-receiver'` (receiver is not
+`this`/`super` — an identifier, chain expression, or call result) and
+`'receiver-not-local'` (receiver is `this`/`super` but no declared class
+member matched).
+
+**Impact — real, but smaller than the raw-edge count suggests.** Raw
+parsed `calls` edges drop sharply (drizzle-orm: 33,605 → 13,846, -19,759;
+nest: 10,009 → 4,802, -52%). Graph-level (deduplicated) edge count moves
+far less on both, because `buildGraph`'s `mergeEdge` already collapsed most
+fabricated same-source→target duplicates onto a pair that also existed for
+a legitimate reason (drizzle: 14,676 → 14,289, -387, -2.6%; nest: 10,049 →
+9,630, -419, -4.2%). Practically, that means most of this fix's value is
+in what it *prevents going forward* — every future call site that would
+have generated one of these fabricated edges no longer can — rather than
+in a large score movement today: on both drizzle-orm and nest only the
+Orphans/dead-code dimension moved (drizzle 63/D → 62/D, nest 65/D → 64/D;
+`graph.inDegree()` is a per-node count, so even a modest edge reduction can
+flip individual nodes across the `inDegree === 0` threshold), and the
+other five dimensions plus the overall score were unchanged on both
+repos. code-graph itself (near-zero same-file name collisions) is
+unaffected on every dimension, as a control. **Any repository with
+member-expression calls may still see its dead-code count move** — this
+is a `DIMENSIONS_V` boundary for downstream consumers (Cloud), not a
+`SCORING_VERSION` change (dead-code exclusion semantics are unchanged;
+what changed is which edges exist in the graph in the first place).
+
+Exhaustively verified: sampled 50 of the removed edges at random — in
+every case the previously-guessed target did not exist as a real symbol at
+all (not merely "different receiver," genuinely fabricated). Sampled the
+retained same-file `calls` edges — none was a member call with an
+unresolvable receiver.
+
+---
+
 ## 1.13.0
 
 ### Fixed — nested tsconfig paths, workspace package resolution, transitive re-export chains (#12, #14)

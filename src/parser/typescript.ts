@@ -1,5 +1,5 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 
 interface Context {
@@ -12,8 +12,13 @@ interface Context {
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
   declaredSymbolIds: Set<string>; // every symbol id declared so far, used to resolve calls to nested/scoped functions
-  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[]}>; // buffered call edges waiting for forward-reference resolution
+  // Buffered call edges waiting for forward-reference resolution. `scopedOnly` marks calls
+  // whose target must match a real declared symbol at some scope level (this./super. member
+  // calls) -- these get NO edge (recorded unresolved instead) if no level matches, unlike
+  // bare-identifier calls which keep the unconditional flat-id fallback.
+  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
+  unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   wildcardReExports: string[]; // resolved target files this file wildcard-re-exports from (`export * from`)
 }
 
@@ -39,6 +44,7 @@ export function parseTypeScriptFile(
     declaredSymbolIds: new Set(),
     unresolvedCallEdges: [],
     unresolvedImports: [],
+    unresolvedCalls: [],
     wildcardReExports: [],
   };
   
@@ -52,6 +58,7 @@ export function parseTypeScriptFile(
     symbols: context.symbols,
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
+    unresolvedCalls: context.unresolvedCalls,
     wildcardReExports: context.wildcardReExports,
   };
 }
@@ -844,56 +851,86 @@ function hasWildcardToken(node: Parser.SyntaxNode): boolean {
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
   const functionNode = node.childForFieldName('function');
   if (!functionNode) return;
-  
-  let functionName: string | null = null;
-  
+
+  const currentSymbolId = getCurrentSymbolId(context);
+  if (!currentSymbolId) return;
+
   if (functionNode.type === 'identifier') {
-    functionName = functionNode.text;
-  } else if (functionNode.type === 'member_expression') {
-    // Handle this.method() or object.method()
+    // Bare identifier call, e.g. `foo()`. UNCHANGED from prior behavior: this is a
+    // legitimate local-call shape (JS/TS scoping means an unimported bare name almost
+    // always refers to a same-file declaration), so the flat-id fallback stays.
+    const functionName = functionNode.text;
+
+    // Check if this function is imported
+    if (context.imports.has(functionName)) {
+      const targetId = context.imports.get(functionName)!;
+      context.edges.push({
+        source: currentSymbolId,
+        target: targetId,
+        kind: 'calls',
+        filePath: context.filePath,
+        line: node.startPosition.row + 1,
+      });
+      return;
+    }
+
+    // Try to resolve immediately if the target is already declared
+    const targetId = resolveLocalCallTarget(functionName, context);
+    if (context.declaredSymbolIds.has(targetId)) {
+      // Target already declared, resolve immediately
+      context.edges.push({
+        source: currentSymbolId,
+        target: targetId,
+        kind: 'calls',
+        filePath: context.filePath,
+        line: node.startPosition.row + 1,
+      });
+    } else {
+      // Forward reference - buffer for later resolution with current scope chain
+      context.unresolvedCallEdges.push({
+        source: currentSymbolId,
+        functionName,
+        line: node.startPosition.row + 1,
+        scopeChain: [...context.currentScope],
+      });
+    }
+    return;
+  }
+
+  if (functionNode.type === 'member_expression') {
+    const object = functionNode.childForFieldName('object');
     const property = functionNode.childForFieldName('property');
-    if (property) {
-      functionName = property.text;
+    if (!property) return;
+    const functionName = property.text;
+    const line = node.startPosition.row + 1;
+
+    if (object && (object.type === 'this' || object.type === 'super')) {
+      // The receiver IS known -- it's the enclosing class instance (or its base class).
+      // Always buffer: a sibling member declared LATER in the class body must not be
+      // mistaken for "not local" just because it hasn't been parsed yet. Resolution
+      // (match vs. no edge) happens once in resolveUnresolvedCallEdges, after every
+      // symbol in the file is declared -- see resolveScopedCallTarget.
+      context.unresolvedCallEdges.push({
+        source: currentSymbolId,
+        functionName,
+        line,
+        scopeChain: [...context.currentScope],
+        scopedOnly: true,
+        receiverKind: object.type as 'this' | 'super',
+      });
+      return;
     }
+
+    // Any other receiver (identifier, chain expression, call result, etc.) --
+    // unresolvable without a type checker. Do not guess; record instead.
+    const receiverText = object ? object.text : '?';
+    recordUnresolvedCall(context, `${receiverText}.${functionName}`, 'unresolvable-receiver');
+    return;
   }
-  
-  if (functionName) {
-    const currentSymbolId = getCurrentSymbolId(context);
-    if (currentSymbolId) {
-      // Check if this function is imported
-      if (context.imports.has(functionName)) {
-        const targetId = context.imports.get(functionName)!;
-        context.edges.push({
-          source: currentSymbolId,
-          target: targetId,
-          kind: 'calls',
-          filePath: context.filePath,
-          line: node.startPosition.row + 1,
-        });
-      } else {
-        // Try to resolve immediately if the target is already declared
-        const targetId = resolveLocalCallTarget(functionName, context);
-        if (context.declaredSymbolIds.has(targetId)) {
-          // Target already declared, resolve immediately
-          context.edges.push({
-            source: currentSymbolId,
-            target: targetId,
-            kind: 'calls',
-            filePath: context.filePath,
-            line: node.startPosition.row + 1,
-          });
-        } else {
-          // Forward reference - buffer for later resolution with current scope chain
-          context.unresolvedCallEdges.push({
-            source: currentSymbolId,
-            functionName,
-            line: node.startPosition.row + 1,
-            scopeChain: [...context.currentScope],
-          });
-        }
-      }
-    }
-  }
+}
+
+function recordUnresolvedCall(context: Context, callee: string, reason: 'unresolvable-receiver' | 'receiver-not-local'): void {
+  context.unresolvedCalls.push({ fromFile: context.filePath, callee, reason });
 }
 
 function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
@@ -987,6 +1024,23 @@ function resolveLocalCallTarget(functionName: string, context: Context): string 
   return `${context.filePath}::${functionName}`;
 }
 
+// Same scope-chain walk as resolveLocalCallTarget, but for this./super. member calls:
+// the receiver is known (the enclosing instance), so a match must be a real declared
+// member at SOME class/function scope level. The bare `${file}::functionName` guess
+// (i === 0, no scope qualifier at all) is excluded -- that would mean "this refers to
+// a module-level function," which is never true, and is exactly the wrong-edge shape
+// #14 identified. Returns null (no edge) when nothing at any qualified level matches.
+function resolveScopedCallTarget(functionName: string, context: Context): string | null {
+  const scope = context.currentScope;
+  for (let i = scope.length; i >= 1; i--) {
+    const candidateId = `${context.filePath}::${scope.slice(0, i).join('.')}.${functionName}`;
+    if (context.declaredSymbolIds.has(candidateId)) {
+      return candidateId;
+    }
+  }
+  return null;
+}
+
 // Resolves all buffered call edges after the entire file has been parsed.
 // This handles forward references where a function calls another function
 // that is declared later in the file.
@@ -995,7 +1049,31 @@ function resolveUnresolvedCallEdges(context: Context): void {
     // Temporarily set the scope chain to what it was when the call was made
     const savedScope = context.currentScope;
     context.currentScope = unresolved.scopeChain;
-    
+
+    if (unresolved.scopedOnly) {
+      // this./super. member call, buffered because its target wasn't declared yet at
+      // call time. Now that every symbol in the file is known, resolve for real -- if
+      // nothing matches, record unresolved instead of guessing (no flat fallback here).
+      const targetId = resolveScopedCallTarget(unresolved.functionName, context);
+      context.currentScope = savedScope;
+      if (targetId !== null) {
+        context.edges.push({
+          source: unresolved.source,
+          target: targetId,
+          kind: 'calls',
+          filePath: context.filePath,
+          line: unresolved.line,
+        });
+      } else {
+        context.unresolvedCalls.push({
+          fromFile: context.filePath,
+          callee: `${unresolved.receiverKind ?? 'this'}.${unresolved.functionName}`,
+          reason: 'receiver-not-local',
+        });
+      }
+      continue;
+    }
+
     // Resolve the target using the captured scope chain
     const targetId = resolveLocalCallTarget(unresolved.functionName, context);
     
