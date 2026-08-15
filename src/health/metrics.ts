@@ -354,26 +354,69 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
 }
 
 /**
+ * Optional filesystem-backed dependencies for {@link calculateOrphansScore}.
+ * `calculateWorkspaceOrphansScore` (workspace-metrics.ts) used to be a
+ * completely separate reimplementation of this dimension that silently
+ * diverged from this one (#11). It now injects the real fs-aware detector
+ * through this interface instead, so there is exactly one function that
+ * computes the Orphans dimension. When `deps` is omitted, this module
+ * (health/metrics.ts) still imports nothing from
+ * `node:fs` — required so `SimulationEngine` and the Workers-compatible
+ * `depwire-cli/graph` / `depwire-cli/tools` entry points (v1.10.0) can keep
+ * calling this function with zero filesystem dependency in their bundle.
+ */
+export interface OrphanScoreDependencies {
+  projectRoot: string;
+  /** Full, exclusion-aware dead-symbol detector (src/dead-code/detector.ts). */
+  findDeadSymbols: (graph: DirectedGraph, projectRoot: string) => { symbols: unknown[] };
+  /** Drops fixture/test/framework/entry-point files from orphan-file counting. */
+  isFileExcluded?: (relativeFilePath: string) => boolean;
+}
+
+/**
  * Dimension 5: Orphan Files & Dead Code (Weight: 10%)
  * Files with zero connections + Dead exported symbol percentage
  *
- * Dead code counting only considers symbols that are:
- * 1. Exported (visible outside their defining file)
- * 2. Of a relevant kind (function, class, interface, type_alias, enum, exported variable)
- * 3. Have zero incoming edges (no other symbol references them)
+ * Two modes, one function (#11 -- previously `calculateOrphansScore` and
+ * `calculateWorkspaceOrphansScore` were separate implementations that
+ * silently diverged; measured 15-19 points apart on real repos):
  *
- * Local variables, parameters, class methods, interface properties, and
- * other internal implementation details are excluded — they are not
- * meaningful candidates for "dead code" at the architecture level.
+ * - No `deps` (used by SimulationEngine / depwire-cli/graph, fs-free):
+ *   dead-symbol counting only considers symbols that are (1) exported,
+ *   (2) of a relevant top-level kind (function, class, interface,
+ *   type_alias, enum, exported variable), (3) zero incoming edges. Class
+ *   methods, interface properties, and other member-level details are
+ *   deliberately excluded — they are not meaningful "dead code" candidates
+ *   at the architecture level, and there is no filesystem access here to
+ *   apply test/framework/entry-point exclusions, so keeping the kind list
+ *   narrow limits false positives. Orphan-FILE counting includes every
+ *   file in the graph, including fixtures -- there is no fs access to
+ *   detect which directories are fixtures.
+ * - With `deps` (used by calculateWorkspaceOrphansScore, has a real repo):
+ *   dead-symbol counting delegates to the full detector (broader kind
+ *   list including methods/properties, exported-only for variable kinds,
+ *   full test/framework/entry-point/config exclusion). Orphan-FILE
+ *   counting also drops excluded files via `deps.isFileExcluded`.
+ *
+ * These two modes are NOT expected to produce the same absolute score on
+ * the same repo -- only the same scoring curve
+ * (`calculateOrphansScoreFromMetrics`). A repo with fixtures, test
+ * directories, or many non-exported dead methods will score differently
+ * under each mode; that is an inherent consequence of one mode having no
+ * filesystem access, not a bug to eliminate.
  */
-export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
+export function calculateOrphansScore(
+  graph: DirectedGraph,
+  deps?: OrphanScoreDependencies,
+): HealthDimension {
   const files = new Set<string>();
   const connectedFiles = new Set<string>();
-  
+
   graph.forEachNode((node, attrs) => {
+    if (deps?.isFileExcluded?.(attrs.filePath)) return;
     files.add(attrs.filePath);
   });
-  
+
   graph.forEachEdge((edge, attrs, source, target) => {
     const sourceFile = graph.getNodeAttributes(source).filePath;
     const targetFile = graph.getNodeAttributes(target).filePath;
@@ -383,20 +426,24 @@ export function calculateOrphansScore(graph: DirectedGraph): HealthDimension {
       connectedFiles.add(targetFile);
     }
   });
-  
-  let deadSymbolCount = 0;
-  const relevantExportedKinds = new Set([
-    'function', 'class', 'interface', 'type', 'type_alias',
-    'enum', 'const', 'constant', 'let', 'var', 'variable'
-  ]);
 
-  graph.forEachNode((node, attrs) => {
-    if (!attrs.exported) return;
-    if (!relevantExportedKinds.has(attrs.kind)) return;
-    if (graph.inDegree(node) === 0) {
-      deadSymbolCount++;
-    }
-  });
+  let deadSymbolCount: number;
+  if (deps) {
+    deadSymbolCount = deps.findDeadSymbols(graph, deps.projectRoot).symbols.length;
+  } else {
+    deadSymbolCount = 0;
+    const relevantExportedKinds = new Set([
+      'function', 'class', 'interface', 'type', 'type_alias',
+      'enum', 'const', 'constant', 'let', 'var', 'variable'
+    ]);
+    graph.forEachNode((node, attrs) => {
+      if (!attrs.exported) return;
+      if (!relevantExportedKinds.has(attrs.kind)) return;
+      if (graph.inDegree(node) === 0) {
+        deadSymbolCount++;
+      }
+    });
+  }
 
   return calculateOrphansScoreFromMetrics(graph, files, connectedFiles, deadSymbolCount);
 }

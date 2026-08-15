@@ -6,7 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## 1.14.0
+## 1.14.1
+
+### Fixed — single Orphans implementation (#11)
+
+`calculateOrphansScore` (src/health/metrics.ts, fs-free, used by `SimulationEngine`/`simulate_change` and the Workers-compatible `depwire-cli/graph` entry point) and `calculateWorkspaceOrphansScore` (src/health/workspace-metrics.ts, fs-aware, used by parse-time `calculateHealthScore`) were two **independent reimplementations** of the same named dimension — same seam introduced by the v1.10.0 SDK split to keep the graph core pure, but nothing kept them from drifting apart afterward. Measured divergence on real repos: 15 points on code-graph (73 pure vs. 88 workspace-aware), 19 points on drizzle-orm (81 vs. 62) — large, active, and in different directions depending on the repo, not latent.
+
+`calculateOrphansScore` is now the only implementation. `calculateWorkspaceOrphansScore` is a thin delegator that injects the real fs-backed dead-symbol detector and file-exclusion predicate into it via an optional `OrphanScoreDependencies` parameter, rather than reimplementing the counting logic. When the dependencies are omitted (`SimulationEngine`, `depwire-cli/graph`), the fs-free fallback runs exactly as before — `health/metrics.ts` still imports nothing from `node:fs`, confirmed by re-running the v1.10.0 closure check against `dist/graph.js` and `dist/tools.js` (zero references to `fs`, `child_process`, `os`, `worker_threads`, tree-sitter, or `better-sqlite3` in either bundle).
+
+**This does not eliminate the score divergence, and isn't meant to.** The fs-free mode (used where no checked-out repo is available, e.g. `simulate_change`) still can't apply test-file, framework-directory, or package-entry-point exclusions, and deliberately keeps a narrower "architecture-level" symbol-kind scope (excluding class methods/properties) than the full detector. That's now a documented, single-source-of-truth difference instead of two silently-diverging implementations — the two modes share one scoring curve and one counting function, and only differ in which inputs they're given.
+
+No real repo's score moved: code-graph stays 71/C with Orphans at 88/B; `simulate_change`'s Orphans component on a real delete simulation stays 73/73 (delta 0). Patch version per this project's own score-movement bump rule (same precedent as #15).
 
 ### Fixed — no fabricated edge for unresolvable member calls (#14, builtin/global misresolution)
 
