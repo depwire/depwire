@@ -475,6 +475,133 @@ export function calculateOrphansScoreFromMetrics(
  * Dimension 6: Dependency Depth (Weight: 10%)
  * Measures the longest dependency chains
  */
+/**
+ * Longest simple path in a general directed graph is NP-hard once cycles
+ * exist (it generalizes Hamiltonian path) -- there is no principled single
+ * answer to "how long is the chain through a cycle", since a cycle can be
+ * entered and exited at any of its member nodes. Rather than brute-force an
+ * intractable exact answer (the previous implementation's exhaustive
+ * backtracking search, which is exponential and can hang indefinitely on a
+ * cyclic file graph), this computes the longest path in the DAG of strongly
+ * connected components: each SCC -- including single-file SCCs on an
+ * acyclic graph -- collapses to one node, and a cycle contributes exactly
+ * one hop of depth regardless of its size. On an acyclic graph every SCC is
+ * a singleton, so this reduces to exactly the same computation as before
+ * (longest path on a DAG is unambiguous) -- acyclic repos get an identical
+ * score, not an approximately-similar one. Runs in O(V+E): Tarjan's SCC
+ * decomposition is linear, and the longest path over the resulting DAG is a
+ * single memoized pass in reverse topological order.
+ */
+function findStronglyConnectedComponents(fileGraph: Map<string, Set<string>>): Map<string, number> {
+  const indices = new Map<string, number>();
+  const lowlinks = new Map<string, number>();
+  const onStack = new Set<string>();
+  const stack: string[] = [];
+  const componentOf = new Map<string, number>();
+  let nextIndex = 0;
+  let nextComponent = 0;
+
+  // Iterative Tarjan (explicit work-stack) to avoid recursion-depth limits
+  // on large file graphs -- a real repo's file count can run into the
+  // thousands, and a pure recursive walk risks the JS call-stack limit on
+  // a long chain, independent of the cycle-blowup this function exists to
+  // fix.
+  for (const start of fileGraph.keys()) {
+    if (indices.has(start)) continue;
+
+    type Frame = { node: string; neighborIter: Iterator<string> };
+    const workStack: Frame[] = [{ node: start, neighborIter: (fileGraph.get(start) ?? new Set()).values() }];
+    indices.set(start, nextIndex);
+    lowlinks.set(start, nextIndex);
+    nextIndex++;
+    stack.push(start);
+    onStack.add(start);
+
+    while (workStack.length > 0) {
+      const frame = workStack[workStack.length - 1];
+      const { node } = frame;
+      const next = frame.neighborIter.next();
+
+      if (!next.done) {
+        const neighbor = next.value;
+        if (!indices.has(neighbor)) {
+          indices.set(neighbor, nextIndex);
+          lowlinks.set(neighbor, nextIndex);
+          nextIndex++;
+          stack.push(neighbor);
+          onStack.add(neighbor);
+          workStack.push({ node: neighbor, neighborIter: (fileGraph.get(neighbor) ?? new Set()).values() });
+        } else if (onStack.has(neighbor)) {
+          lowlinks.set(node, Math.min(lowlinks.get(node)!, indices.get(neighbor)!));
+        }
+      } else {
+        workStack.pop();
+        if (workStack.length > 0) {
+          const parent = workStack[workStack.length - 1].node;
+          lowlinks.set(parent, Math.min(lowlinks.get(parent)!, lowlinks.get(node)!));
+        }
+        if (lowlinks.get(node) === indices.get(node)) {
+          // Root of an SCC -- pop the stack down to (and including) `node`.
+          let member: string;
+          do {
+            member = stack.pop()!;
+            onStack.delete(member);
+            componentOf.set(member, nextComponent);
+          } while (member !== node);
+          nextComponent++;
+        }
+      }
+    }
+  }
+
+  return componentOf;
+}
+
+function longestPathThroughSccDag(fileGraph: Map<string, Set<string>>): { maxDepth: number; sccCount: number; nodeCount: number } {
+  const componentOf = findStronglyConnectedComponents(fileGraph);
+
+  // Condense to a DAG of components; an edge between components a->b is
+  // kept once (a cycle's internal edges collapse away entirely, by
+  // construction of SCC membership).
+  const condensedEdges = new Map<number, Set<number>>();
+  const allComponents = new Set<number>();
+  for (const [node, neighbors] of fileGraph) {
+    const from = componentOf.get(node)!;
+    allComponents.add(from);
+    for (const neighbor of neighbors) {
+      const to = componentOf.get(neighbor)!;
+      allComponents.add(to);
+      if (from !== to) {
+        if (!condensedEdges.has(from)) condensedEdges.set(from, new Set());
+        condensedEdges.get(from)!.add(to);
+      }
+    }
+  }
+
+  // The condensation is guaranteed acyclic (standard Tarjan property), so a
+  // single memoized DFS per node (each visited at most once) computes the
+  // longest path in O(V+E) total -- no backtracking, no re-exploration.
+  const longestFrom = new Map<number, number>();
+  function longest(component: number): number {
+    if (longestFrom.has(component)) return longestFrom.get(component)!;
+    let best = 0;
+    const neighbors = condensedEdges.get(component);
+    if (neighbors) {
+      for (const neighbor of neighbors) {
+        best = Math.max(best, 1 + longest(neighbor));
+      }
+    }
+    longestFrom.set(component, best);
+    return best;
+  }
+
+  let maxDepth = 0;
+  for (const component of allComponents) {
+    maxDepth = Math.max(maxDepth, longest(component));
+  }
+  return { maxDepth, sccCount: allComponents.size, nodeCount: fileGraph.size };
+}
+
 export function calculateDepthScore(graph: DirectedGraph): HealthDimension {
   // Build file-level graph
   const fileGraph = new Map<string, Set<string>>();
@@ -488,41 +615,16 @@ export function calculateDepthScore(graph: DirectedGraph): HealthDimension {
         fileGraph.set(sourceFile, new Set());
       }
       fileGraph.get(sourceFile)!.add(targetFile);
+      // Ensure the target is a key too, so it is included as its own
+      // SCC/DAG node even when it has no outgoing file-level edges.
+      if (!fileGraph.has(targetFile)) {
+        fileGraph.set(targetFile, new Set());
+      }
     }
   });
-  
-  // Find longest path using BFS from each node
-  function findLongestPath(start: string): number {
-    const visited = new Set<string>();
-    let maxDepth = 0;
-    
-    function dfs(node: string, depth: number): void {
-      if (visited.has(node)) {
-        return;
-      }
-      
-      visited.add(node);
-      maxDepth = Math.max(maxDepth, depth);
-      
-      const neighbors = fileGraph.get(node);
-      if (neighbors) {
-        for (const neighbor of neighbors) {
-          dfs(neighbor, depth + 1);
-        }
-      }
-      
-      visited.delete(node);
-    }
-    
-    dfs(start, 0);
-    return maxDepth;
-  }
-  
-  let maxDepth = 0;
-  for (const node of fileGraph.keys()) {
-    const depth = findLongestPath(node);
-    maxDepth = Math.max(maxDepth, depth);
-  }
+
+  const { maxDepth, sccCount, nodeCount } = longestPathThroughSccDag(fileGraph);
+  const hasCycles = sccCount < nodeCount;
   
   let score = 100;
   if (maxDepth <= 4) {
@@ -542,7 +644,9 @@ export function calculateDepthScore(graph: DirectedGraph): HealthDimension {
     score,
     weight: 0.10,
     grade: scoreToGrade(score),
-    details: `Maximum dependency chain: ${maxDepth} level${maxDepth === 1 ? '' : 's'}`,
+    details: hasCycles
+      ? `Maximum dependency chain: ${maxDepth} level${maxDepth === 1 ? '' : 's'} through the codebase's dependency clusters (cycles collapsed to one hop each)`
+      : `Maximum dependency chain: ${maxDepth} level${maxDepth === 1 ? '' : 's'}`,
     metrics: { maxDepth }
   };
 }
