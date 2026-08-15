@@ -11080,11 +11080,13 @@ function isExcludedFromOrphanReporting(filePath, options) {
   }
   return false;
 }
+var TEST_DIR_SEGMENTS = /* @__PURE__ */ new Set(["test", "tests", "__tests__", "spec"]);
 function isTestFile(filePath) {
-  if (filePath.includes("/test/") || filePath.includes("/tests/")) {
+  const segments = filePath.split("\\").join("/").split("/");
+  if (segments.some((seg) => TEST_DIR_SEGMENTS.has(seg))) {
     return true;
   }
-  const filename = filePath.split("/").pop() || "";
+  const filename = segments[segments.length - 1] || "";
   if (filename.endsWith(".test.ts") || filename.endsWith(".test.js")) {
     return true;
   }
@@ -11791,7 +11793,7 @@ import { relative as relative7, resolve as resolve16 } from "path";
 
 // src/dead-code/detector.ts
 import path2 from "path";
-import { readFileSync as readFileSync17, existsSync as existsSync19 } from "fs";
+import { readFileSync as readFileSync17, existsSync as existsSync19, readdirSync as readdirSync12 } from "fs";
 function isFunnelDebugEnabled(debug) {
   return debug || process.env.DEPWIRE_DEBUG_FUNNEL === "1";
 }
@@ -11848,6 +11850,7 @@ function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false
     excludedByFrameworkDir: 0
   };
   const packageEntryPoints = getPackageEntryPoints(projectRoot);
+  const frameworkMarkers = detectFrameworkMarkers(projectRoot);
   if (debug) {
     console.log("\n\u{1F50D} Debug: Graph Structure");
     console.log(`Total nodes in graph: ${graph.order}`);
@@ -11901,7 +11904,7 @@ function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false
     if (inDegree === 0) {
       if (funnel) funnel.passedInDegreeZero++;
       stats.total++;
-      const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures);
+      const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures, frameworkMarkers);
       if (exclusionReason) {
         switch (exclusionReason) {
           case "test":
@@ -12018,7 +12021,7 @@ function getPackageEntryPoints(projectRoot) {
   }
   return entryPoints;
 }
-function shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures = false) {
+function shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures = false, frameworkMarkers = NO_FRAMEWORK_MARKERS) {
   const filePath = attrs.file || attrs.filePath;
   if (!filePath) {
     return null;
@@ -12043,7 +12046,7 @@ function shouldExclude(attrs, context, includeTests, packageEntryPoints, include
   if (attrs.kind === "default") {
     return "default";
   }
-  if (isFrameworkAutoLoadedFile(relativePath)) {
+  if (isFrameworkAutoLoadedFile(relativePath, frameworkMarkers)) {
     return "framework";
   }
   if (isCppExcluded(attrs)) {
@@ -12082,8 +12085,14 @@ function isRealPackageEntryPoint(filePath, packageEntryPoints) {
   }
   return false;
 }
+var TEST_DIR_SEGMENTS2 = /* @__PURE__ */ new Set(["test", "tests", "__tests__", "spec"]);
 function isTestFile3(filePath) {
-  return filePath.includes("__tests__/") || filePath.includes(".test.") || filePath.includes(".spec.") || filePath.includes("/test/") || filePath.includes("/tests/");
+  const segments = filePath.split(path2.sep).join("/").split("/");
+  if (segments.some((seg) => TEST_DIR_SEGMENTS2.has(seg))) {
+    return true;
+  }
+  const filename = segments[segments.length - 1] || "";
+  return filename.includes(".test.") || filename.includes(".spec.");
 }
 function isConfigFile(filePath) {
   return filePath.includes(".config.") || filePath.includes("config/") || filePath.includes("vite.config") || filePath.includes("rollup.config") || filePath.includes("webpack.config");
@@ -12091,9 +12100,72 @@ function isConfigFile(filePath) {
 function isTypeDeclarationFile(filePath) {
   return filePath.endsWith(".d.ts");
 }
-function isFrameworkAutoLoadedFile(filePath) {
-  return filePath.includes("/pages/") || filePath.includes("/routes/") || filePath.includes("/middleware/") || filePath.includes("/commands/") || filePath.includes("/api/") || filePath.includes("/app/") || filePath.includes("/Controllers/") || filePath.includes("/Hubs/") || filePath.includes("/Migrations/") || // Java / Spring / Jakarta
-  filePath.includes("/controller/") || filePath.includes("/controllers/") || filePath.includes("/service/") || filePath.includes("/repository/") || filePath.includes("/config/") || filePath.includes("/configuration/");
+var NO_FRAMEWORK_MARKERS = {
+  nextOrNuxt: false,
+  nodeFramework: false,
+  rails: false,
+  dotnet: false,
+  javaSpring: false
+};
+var NODE_FRAMEWORK_DEPS = [
+  "express",
+  "koa",
+  "fastify",
+  "hapi",
+  "@hapi/hapi",
+  "@nestjs/core",
+  "commander",
+  "yargs",
+  "oclif"
+];
+function detectFrameworkMarkers(projectRoot) {
+  const resolvedRoot = path2.resolve(projectRoot);
+  const exists = (rel) => existsSync19(path2.join(resolvedRoot, rel));
+  const hasRootFileWithExt = (ext) => {
+    try {
+      return readdirSync12(resolvedRoot).some((f) => f.endsWith(ext));
+    } catch {
+      return false;
+    }
+  };
+  let deps = /* @__PURE__ */ new Set();
+  try {
+    const pkgPath = path2.join(resolvedRoot, "package.json");
+    if (existsSync19(pkgPath)) {
+      const pkg = JSON.parse(readFileSync17(pkgPath, "utf-8"));
+      deps = /* @__PURE__ */ new Set([
+        ...Object.keys(pkg.dependencies || {}),
+        ...Object.keys(pkg.devDependencies || {})
+      ]);
+    }
+  } catch {
+  }
+  const nextOrNuxt = exists("next.config.js") || exists("next.config.mjs") || exists("next.config.ts") || exists("next.config.cjs") || exists("nuxt.config.js") || exists("nuxt.config.ts") || deps.has("next") || deps.has("nuxt") || deps.has("nuxt3");
+  const nodeFramework = NODE_FRAMEWORK_DEPS.some((dep) => deps.has(dep));
+  const rails = exists("Gemfile") || exists("config/routes.rb");
+  const dotnet = hasRootFileWithExt(".csproj") || hasRootFileWithExt(".sln");
+  const javaSpring = exists("pom.xml") || exists("build.gradle") || exists("build.gradle.kts");
+  return { nextOrNuxt, nodeFramework, rails, dotnet, javaSpring };
+}
+function isFrameworkAutoLoadedFile(filePath, markers = NO_FRAMEWORK_MARKERS) {
+  const segments = filePath.split(path2.sep).join("/").split("/");
+  const has = (seg) => segments.includes(seg);
+  if ((markers.nextOrNuxt || markers.nodeFramework) && (has("pages") || has("app") || has("api") || has("routes") || has("middleware"))) {
+    return true;
+  }
+  if (markers.rails && (has("app") || has("routes") || has("controllers") || has("controller"))) {
+    return true;
+  }
+  if (markers.nodeFramework && (has("commands") || has("controllers") || has("controller"))) {
+    return true;
+  }
+  if (markers.dotnet && (has("Controllers") || has("Hubs") || has("Migrations"))) {
+    return true;
+  }
+  if (markers.javaSpring && (has("controller") || has("controllers") || has("service") || has("repository") || has("config") || has("configuration"))) {
+    return true;
+  }
+  return false;
 }
 function isCppExcluded(attrs) {
   const filePath = attrs.file || attrs.filePath || "";
@@ -17421,7 +17493,7 @@ import { join as join37 } from "path";
 
 // src/security/checks/dependencies.ts
 import { execSync as execSync2 } from "child_process";
-import { existsSync as existsSync24, readFileSync as readFileSync21, readdirSync as readdirSync12 } from "fs";
+import { existsSync as existsSync24, readFileSync as readFileSync21, readdirSync as readdirSync13 } from "fs";
 import { join as join28 } from "path";
 function cvssToSeverity(score) {
   if (score >= 9) return "critical";
@@ -17558,7 +17630,7 @@ function checkPostinstallScripts(projectRoot) {
   const nodeModules = join28(projectRoot, "node_modules");
   if (!existsSync24(nodeModules)) return findings;
   try {
-    const topLevelDeps = readdirSync12(nodeModules).filter((d) => !d.startsWith("."));
+    const topLevelDeps = readdirSync13(nodeModules).filter((d) => !d.startsWith("."));
     for (const dep of topLevelDeps) {
       const depPkgPath = join28(nodeModules, dep, "package.json");
       if (!existsSync24(depPkgPath)) continue;

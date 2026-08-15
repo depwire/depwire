@@ -60,19 +60,31 @@ export function isExcludedFromOrphanReporting(
 }
 
 /**
+ * Directory segment names that mark a file as test-only. Matched against
+ * path segments, not "/dir/" substrings, so a root-level `tests/foo.py`
+ * (filePath === "tests/foo.py", no leading slash) is still recognized —
+ * see #13. A substring check for "/tests/" never matches a path that
+ * starts with "tests/", which is the dominant convention in pure-Python
+ * repos (pytest) and common in JS repos too.
+ */
+const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__", "spec"]);
+
+/**
  * Returns true if the given file path is a test file.
  * 
  * Test files are identified by:
- * - Path containing /test/ or /tests/
+ * - A path segment named test, tests, __tests__, or spec (anywhere in the
+ *   path, including the first segment for root-level test directories)
  * - Filename ending in .test.ts, .test.js, .spec.ts, .spec.js
  * - Filename containing .test. or .spec.
  */
 export function isTestFile(filePath: string): boolean {
-  if (filePath.includes("/test/") || filePath.includes("/tests/")) {
+  const segments = filePath.split("\\").join("/").split("/");
+  if (segments.some((seg) => TEST_DIR_SEGMENTS.has(seg))) {
     return true;
   }
-  
-  const filename = filePath.split("/").pop() || "";
+
+  const filename = segments[segments.length - 1] || "";
   if (filename.endsWith(".test.ts") || filename.endsWith(".test.js")) {
     return true;
   }

@@ -12,7 +12,7 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-JTIB4ZSH.js";
+} from "./chunk-UAQP5QGE.js";
 
 // src/sdk.ts
 import { createRequire } from "module";

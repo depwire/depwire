@@ -1,6 +1,6 @@
 import type { Graph } from "graphology";
 import path from "node:path";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import type { DeadSymbol, ExclusionContext, ExclusionStats } from "./types.js";
 import { isExcludedFromOrphanReporting } from "../core/exclusions.js";
 
@@ -107,6 +107,7 @@ export function findDeadSymbols(
   };
 
   const packageEntryPoints = getPackageEntryPoints(projectRoot);
+  const frameworkMarkers = detectFrameworkMarkers(projectRoot);
 
   if (debug) {
     console.log("\n🔍 Debug: Graph Structure");
@@ -178,7 +179,7 @@ export function findDeadSymbols(
       if (funnel) funnel.passedInDegreeZero++;
       stats.total++;
       
-      const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures);
+      const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures, frameworkMarkers);
       
       if (exclusionReason) {
         switch (exclusionReason) {
@@ -306,7 +307,8 @@ function shouldExclude(
   context: ExclusionContext,
   includeTests: boolean,
   packageEntryPoints: Set<string>,
-  includeFixtures = false
+  includeFixtures = false,
+  frameworkMarkers: FrameworkMarkers = NO_FRAMEWORK_MARKERS
 ): string | null {
   const filePath = attrs.file || attrs.filePath;
   
@@ -348,7 +350,7 @@ function shouldExclude(
     return "default";
   }
 
-  if (isFrameworkAutoLoadedFile(relativePath)) {
+  if (isFrameworkAutoLoadedFile(relativePath, frameworkMarkers)) {
     return "framework";
   }
 
@@ -410,14 +412,23 @@ function isRealPackageEntryPoint(filePath: string, packageEntryPoints: Set<strin
   return false;
 }
 
+// Directory segment names that mark a file as test-only, regardless of
+// whether they appear at the start, middle, or end of the path. Matching on
+// segments (not "/dir/" substrings) is required so that a root-level
+// `tests/foo.py` — filePath === "tests/foo.py", no leading slash — is
+// still recognized. A substring check for "/tests/" never matches that
+// path, which is the #13 bug: pure-Python (and many JS) repos put tests at
+// the project root, not nested under something else.
+const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__", "spec"]);
+
 function isTestFile(filePath: string): boolean {
-  return (
-    filePath.includes("__tests__/") ||
-    filePath.includes(".test.") ||
-    filePath.includes(".spec.") ||
-    filePath.includes("/test/") ||
-    filePath.includes("/tests/")
-  );
+  const segments = filePath.split(path.sep).join("/").split("/");
+  if (segments.some((seg) => TEST_DIR_SEGMENTS.has(seg))) {
+    return true;
+  }
+
+  const filename = segments[segments.length - 1] || "";
+  return filename.includes(".test.") || filename.includes(".spec.");
 }
 
 function isConfigFile(filePath: string): boolean {
@@ -434,25 +445,117 @@ function isTypeDeclarationFile(filePath: string): boolean {
   return filePath.endsWith(".d.ts");
 }
 
-function isFrameworkAutoLoadedFile(filePath: string): boolean {
-  return (
-    filePath.includes("/pages/") ||
-    filePath.includes("/routes/") ||
-    filePath.includes("/middleware/") ||
-    filePath.includes("/commands/") ||
-    filePath.includes("/api/") ||
-    filePath.includes("/app/") ||
-    filePath.includes("/Controllers/") ||
-    filePath.includes("/Hubs/") ||
-    filePath.includes("/Migrations/") ||
-    // Java / Spring / Jakarta
-    filePath.includes("/controller/") ||
-    filePath.includes("/controllers/") ||
-    filePath.includes("/service/") ||
-    filePath.includes("/repository/") ||
-    filePath.includes("/config/") ||
-    filePath.includes("/configuration/")
-  );
+/**
+ * Presence of framework markers at the project root, detected once per
+ * findDeadSymbols() call (not per-file — the project root doesn't change
+ * mid-scan). See #10: directory names like "app/" and "api/" are common,
+ * legitimate names outside any framework, so auto-load exclusion must be
+ * gated on real evidence that the matching framework is actually in use.
+ */
+export interface FrameworkMarkers {
+  /** Next.js / Nuxt-style file-based routing: pages/, app/, api/ */
+  nextOrNuxt: boolean;
+  /** Node server/CLI frameworks: routes/, middleware/, commands/, controller(s)/ */
+  nodeFramework: boolean;
+  /** Ruby on Rails: app/, routes/, controller(s)/ */
+  rails: boolean;
+  /** ASP.NET Core (.csproj/.sln at root): Controllers/, Hubs/, Migrations/ */
+  dotnet: boolean;
+  /** Java / Spring / Jakarta (pom.xml, Gradle): controller(s)/, service/, repository/, config(uration)/ */
+  javaSpring: boolean;
+}
+
+const NO_FRAMEWORK_MARKERS: FrameworkMarkers = {
+  nextOrNuxt: false,
+  nodeFramework: false,
+  rails: false,
+  dotnet: false,
+  javaSpring: false,
+};
+
+const NODE_FRAMEWORK_DEPS = [
+  "express", "koa", "fastify", "hapi", "@hapi/hapi", "@nestjs/core",
+  "commander", "yargs", "oclif",
+];
+
+function detectFrameworkMarkers(projectRoot: string): FrameworkMarkers {
+  const resolvedRoot = path.resolve(projectRoot);
+  const exists = (rel: string) => existsSync(path.join(resolvedRoot, rel));
+  const hasRootFileWithExt = (ext: string): boolean => {
+    try {
+      return readdirSync(resolvedRoot).some((f) => f.endsWith(ext));
+    } catch {
+      return false;
+    }
+  };
+
+  let deps = new Set<string>();
+  try {
+    const pkgPath = path.join(resolvedRoot, "package.json");
+    if (existsSync(pkgPath)) {
+      const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+      deps = new Set([
+        ...Object.keys(pkg.dependencies || {}),
+        ...Object.keys(pkg.devDependencies || {}),
+      ]);
+    }
+  } catch {
+    // Malformed package.json — treat as no dependency evidence.
+  }
+
+  const nextOrNuxt =
+    exists("next.config.js") || exists("next.config.mjs") ||
+    exists("next.config.ts") || exists("next.config.cjs") ||
+    exists("nuxt.config.js") || exists("nuxt.config.ts") ||
+    deps.has("next") || deps.has("nuxt") || deps.has("nuxt3");
+
+  const nodeFramework = NODE_FRAMEWORK_DEPS.some((dep) => deps.has(dep));
+
+  const rails = exists("Gemfile") || exists("config/routes.rb");
+
+  const dotnet = hasRootFileWithExt(".csproj") || hasRootFileWithExt(".sln");
+
+  const javaSpring =
+    exists("pom.xml") || exists("build.gradle") || exists("build.gradle.kts");
+
+  return { nextOrNuxt, nodeFramework, rails, dotnet, javaSpring };
+}
+
+function isFrameworkAutoLoadedFile(
+  filePath: string,
+  markers: FrameworkMarkers = NO_FRAMEWORK_MARKERS
+): boolean {
+  const segments = filePath.split(path.sep).join("/").split("/");
+  const has = (seg: string) => segments.includes(seg);
+
+  if (
+    (markers.nextOrNuxt || markers.nodeFramework) &&
+    (has("pages") || has("app") || has("api") || has("routes") || has("middleware"))
+  ) {
+    return true;
+  }
+
+  if (markers.rails && (has("app") || has("routes") || has("controllers") || has("controller"))) {
+    return true;
+  }
+
+  if (markers.nodeFramework && (has("commands") || has("controllers") || has("controller"))) {
+    return true;
+  }
+
+  if (markers.dotnet && (has("Controllers") || has("Hubs") || has("Migrations"))) {
+    return true;
+  }
+
+  if (
+    markers.javaSpring &&
+    (has("controller") || has("controllers") || has("service") || has("repository") ||
+      has("config") || has("configuration"))
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 /**

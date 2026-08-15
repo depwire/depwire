@@ -6,6 +6,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.12.0
+
+### Fixed — dead-code exclusion path matching (#13, #10)
+
+Two path-matching bugs in dead-code exclusion, moving the reported count
+in **opposite directions**. Measured separately (see
+`test/fixtures/dead-code-snapshot.manifest.json` and the PR description
+for the full before/after table across multiple real repos) so one fix's
+effect can't mask a compensating error in the other.
+
+**#13 — `isTestFile()` required a leading slash, so root-level `tests/`
+and `test/` directories never matched (count moved down after the fix).**
+The check was `filePath.includes("/test/")` / `"/tests/"` — a substring
+match that only fires when the directory is nested under something else.
+A project-relative path for a root-level test directory is literally
+`"tests/foo.py"`, with no leading slash, so the substring never matched.
+This is the dominant convention in pure-Python repos (pytest) and common
+in JS repos too: on a pure-Python target repo, 80.8% of symbols reported
+dead were under `tests/`, and 73.9% of the total were `test_*` pytest
+functions invoked by framework discovery — 68.7% "dead" overall, almost
+entirely test code that isn't dead. Fixed by matching test-directory
+names (`test`, `tests`, `__tests__`, `spec`) against normalized path
+*segments* rather than substrings, so the check now fires regardless of
+where in the path the directory sits — first segment, middle, or last.
+Applied in both `src/dead-code/detector.ts` (`isTestFile`) and
+`src/core/exclusions.ts` (`isTestFile`, the shared orphan-reporting
+exclusion used by health scoring and other reporting paths).
+
+**#10 — `isFrameworkAutoLoadedFile()` matched bare directory names
+(`/app/`, `/api/`, `/config/`, `/routes/`, etc.) against any path,
+regardless of whether the matching framework was actually in use (count
+moved up after the fix).** `app/`, `api/`, `config/`, and `routes/` are
+common, legitimate directory names with no framework association outside
+Next.js/Rails/Spring/ASP.NET Core conventions — any repo with one of
+these names permanently lost those symbols from dead-code and orphan
+reporting, with no way to opt back in. Fixed by gating each
+framework-specific directory group behind a real marker detected once
+per scan (not per file): `next.config.*`/`nuxt.config.*` or a `next`/`nuxt`
+dependency for `pages/`, `app/`, `api/`, `routes/`, `middleware/`;
+`Gemfile`/`config/routes.rb` for Rails' `app/`, `routes/`,
+`controller(s)/`; a root `.csproj`/`.sln` for ASP.NET Core's
+`Controllers/`, `Hubs/`, `Migrations/`; `pom.xml`/`build.gradle(.kts)` for
+Java/Spring's `controller(s)/`, `service/`, `repository/`,
+`config(uration)/`; and known Node server/CLI dependencies (express,
+koa, fastify, hapi, NestJS, commander, yargs, oclif) for `routes/`,
+`middleware/`, `commands/`, `controller(s)/`. Absent the corresponding
+marker, these are just directories — no exclusion is applied.
+
+`test/fixtures/dead-code-snapshot.json` and its manifest were regenerated
+against a clean tree to reflect the new counts; the language-specific
+exclusions (C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R) in
+`shouldExclude()` were not touched by this change.
+
+---
+
 ## 1.11.0
 
 ### Fixed — dead-code detection returned zero in production; Orphans health dimension was inflated
