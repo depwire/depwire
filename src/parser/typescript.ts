@@ -1,6 +1,6 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser } from './types.js';
-import { resolveImportPath } from './resolver.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport } from './types.js';
+import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 
 interface Context {
   filePath: string;
@@ -13,6 +13,8 @@ interface Context {
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
   declaredSymbolIds: Set<string>; // every symbol id declared so far, used to resolve calls to nested/scoped functions
   unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[]}>; // buffered call edges waiting for forward-reference resolution
+  unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
+  wildcardReExports: string[]; // resolved target files this file wildcard-re-exports from (`export * from`)
 }
 
 export function parseTypeScriptFile(
@@ -36,6 +38,8 @@ export function parseTypeScriptFile(
     externalImports: new Map(),
     declaredSymbolIds: new Set(),
     unresolvedCallEdges: [],
+    unresolvedImports: [],
+    wildcardReExports: [],
   };
   
   walkNode(tree.rootNode, context);
@@ -47,6 +51,8 @@ export function parseTypeScriptFile(
     filePath,
     symbols: context.symbols,
     edges: context.edges,
+    unresolvedImports: context.unresolvedImports,
+    wildcardReExports: context.wildcardReExports,
   };
 }
 
@@ -707,6 +713,8 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
         context.externalImports.set(localName, importPath);
       }
     }
+    const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
+    context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
   }
 }
 
@@ -720,6 +728,14 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     // Locate the clause by node type — `export type { ... } from` shifts the
     // export_clause by one slot, same issue as Bug 1 for imports.
     const exportClause = findChildByType(node, 'export_clause');
+    // `export * from './x'` has a bare `*` token child and no export_clause,
+    // no namespace_export. `export * as ns from './x'` has a namespace_export
+    // child instead. Both are wildcard re-exports for chain-following
+    // purposes -- `ns.something` still ultimately resolves through the same
+    // barrel, so both are recorded as wildcard candidates.
+    const namespaceExport = findChildByType(node, 'namespace_export');
+    const isWildcard = !exportClause && (namespaceExport !== null || hasWildcardToken(node));
+
     if (exportClause && resolvedPath) {
       const exportedNames: string[] = [];
       
@@ -761,9 +777,28 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
           line: startLine,
         });
       }
+    } else if (exportClause && !resolvedPath) {
+      const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
+      context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
+    } else if (isWildcard) {
+      if (resolvedPath) {
+        context.wildcardReExports.push(resolvedPath);
+      } else {
+        const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
+        context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
+      }
     }
   }
 }
+
+function hasWildcardToken(node: Parser.SyntaxNode): boolean {
+  for (let i = 0; i < node.childCount; i++) {
+    const child = node.child(i);
+    if (child && child.type === '*') return true;
+  }
+  return false;
+}
+
 
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
   const functionNode = node.childForFieldName('function');

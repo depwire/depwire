@@ -46,10 +46,56 @@ export interface SymbolEdge {
   line: number;
 }
 
+export type UnresolvedImportReason =
+  | 'alias-unresolved'      // matched a tsconfig `paths` pattern but the target file was not found
+  | 'workspace-package'     // matched a known internal workspace package name but no source entry found
+  | 'external'              // bare specifier matching a real dependency, or a node: builtin
+  | 'relative-not-found'    // ./ or ../ that did not resolve to a real file
+  | 'chain-exceeded-depth'  // resolved to a barrel file, but the re-export chain to the real
+                            // declaration exceeded the depth cap or hit a cycle
+  | 'other';
+
+export interface UnresolvedImport {
+  fromFile: string;
+  specifier: string;
+  reason: UnresolvedImportReason;
+}
+
 export interface ParsedFile {
   filePath: string;    // Relative to project root
   symbols: SymbolNode[];
   edges: SymbolEdge[];
+  /**
+   * Imports/re-exports this file contains that did not resolve to a local
+   * symbol edge, with a classified reason. Populated during parsing (for
+   * relative/alias/bare-specifier misses) and extended by the re-export
+   * chain resolver post-process (for barrel chains that exceed the depth
+   * cap). Additive field -- existing consumers that only read
+   * `symbols`/`edges` are unaffected.
+   */
+  unresolvedImports?: UnresolvedImport[];
+  /**
+   * Resolved target file paths (relative to project root) that this file
+   * wildcard re-exports from, e.g. `export * from './expressions'`. Used by
+   * the re-export chain resolver to search through barrel files that
+   * re-export everything without naming it. Empty/absent for files with no
+   * wildcard re-exports.
+   */
+  wildcardReExports?: string[];
+}
+
+/**
+ * Flattens `unresolvedImports` across a full parse result into a single
+ * list. This is the Phase 1 instrument's public surface -- the per-file
+ * field is what parsing populates; this helper is what callers (CLI
+ * reporting, health/dead-code diagnostics, depwire-cloud) consume.
+ */
+export function aggregateUnresolvedImports(parsedFiles: ParsedFile[]): UnresolvedImport[] {
+  const out: UnresolvedImport[] = [];
+  for (const file of parsedFiles) {
+    if (file.unresolvedImports) out.push(...file.unresolvedImports);
+  }
+  return out;
 }
 
 export interface ProjectGraph {

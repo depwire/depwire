@@ -20,11 +20,41 @@ interface SymbolEdge {
     filePath: string;
     line: number;
 }
+type UnresolvedImportReason = 'alias-unresolved' | 'workspace-package' | 'external' | 'relative-not-found' | 'chain-exceeded-depth' | 'other';
+interface UnresolvedImport {
+    fromFile: string;
+    specifier: string;
+    reason: UnresolvedImportReason;
+}
 interface ParsedFile {
     filePath: string;
     symbols: SymbolNode[];
     edges: SymbolEdge[];
+    /**
+     * Imports/re-exports this file contains that did not resolve to a local
+     * symbol edge, with a classified reason. Populated during parsing (for
+     * relative/alias/bare-specifier misses) and extended by the re-export
+     * chain resolver post-process (for barrel chains that exceed the depth
+     * cap). Additive field -- existing consumers that only read
+     * `symbols`/`edges` are unaffected.
+     */
+    unresolvedImports?: UnresolvedImport[];
+    /**
+     * Resolved target file paths (relative to project root) that this file
+     * wildcard re-exports from, e.g. `export * from './expressions'`. Used by
+     * the re-export chain resolver to search through barrel files that
+     * re-export everything without naming it. Empty/absent for files with no
+     * wildcard re-exports.
+     */
+    wildcardReExports?: string[];
 }
+/**
+ * Flattens `unresolvedImports` across a full parse result into a single
+ * list. This is the Phase 1 instrument's public surface -- the per-file
+ * field is what parsing populates; this helper is what callers (CLI
+ * reporting, health/dead-code diagnostics, depwire-cloud) consume.
+ */
+declare function aggregateUnresolvedImports(parsedFiles: ParsedFile[]): UnresolvedImport[];
 
 /**
  * SECURITY: Parsing is READ-ONLY with respect to your source code.
@@ -350,4 +380,4 @@ declare function detectCrossLanguageEdges(files: ParsedFile[], projectRoot: stri
 /** Current SDK version — matches depwire-cli npm version */
 declare const DepwireSDKVersion: string;
 
-export { type BrokenImport, type CrossLanguageDetectionResult, type CrossLanguageEdge, DepwireSDKVersion, type GraphDiff, type HealthDelta, type SecurityFinding, type SecurityScanOptions, type SecurityScanResult, type Severity, type SimulationAction, SimulationEngine, type SimulationResult, type VulnerabilityClass, analyzeDeadCode, buildGraph, calculateHealthScore, clearCache, detectCrossLanguageEdges, generateDocs, getArchitectureSummary, getCacheStats, getImpact, parseProject, scanSecurity, searchSymbols };
+export { type BrokenImport, type CrossLanguageDetectionResult, type CrossLanguageEdge, DepwireSDKVersion, type GraphDiff, type HealthDelta, type SecurityFinding, type SecurityScanOptions, type SecurityScanResult, type Severity, type SimulationAction, SimulationEngine, type SimulationResult, type UnresolvedImport, type UnresolvedImportReason, type VulnerabilityClass, aggregateUnresolvedImports, analyzeDeadCode, buildGraph, calculateHealthScore, clearCache, detectCrossLanguageEdges, generateDocs, getArchitectureSummary, getCacheStats, getImpact, parseProject, scanSecurity, searchSymbols };

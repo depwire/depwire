@@ -17,6 +17,7 @@ import { openCache, getCachedFiles, updateCache } from './cache.js';
 import { minimatch } from 'minimatch';
 import { initParser } from './wasm-init.js';
 import { discoverJvmModuleRoots } from './jvm-modules.js';
+import { resolveReExportChains } from './reexport-chains.js';
 import {
   setModuleSourceRoots as setJavaModuleRoots,
   resetModuleSourceRoots as resetJavaModuleRoots,
@@ -173,6 +174,21 @@ export async function parseProject(
   // depends on cache state. Adds `uses` edges from *.component.html templates
   // to their sibling component class and to referenced selectors/pipes.
   pairTemplatesWithComponents(parsedFiles);
+  // ───────────────────────────────────────────────────────────
+
+  // ─── Re-export chain resolution (#12/#14) ──────────────────
+  // Runs on the full set (cached + freshly parsed) every call, same
+  // reasoning as the Angular pass above: it needs every file's symbol
+  // table and wildcard-re-export list, which only exists once parsing is
+  // complete. Follows `export * from` barrel chains so imports of a
+  // symbol that's only re-exported (not declared) in the directly-resolved
+  // file still land on a real declaring node.
+  const chainResult = resolveReExportChains(parsedFiles);
+  if (options?.verbose && (chainResult.rewritten > 0 || chainResult.droppedAsUnresolved > 0)) {
+    console.error(
+      `[Parser] Re-export chains: ${chainResult.rewritten} resolved, ${chainResult.droppedAsUnresolved} exceeded depth/cycle`
+    );
+  }
   // ───────────────────────────────────────────────────────────
 
   if (options?.verbose || errorFiles > 0) {

@@ -18,6 +18,14 @@ export const DepwireSDKVersion: string = (
 /** Parse a codebase directory and return raw parsed data */
 export { parseProject } from './parser/index.js';
 
+/**
+ * Flattens the per-file `unresolvedImports` instrument across a parse
+ * result. Reasons: 'alias-unresolved' | 'workspace-package' | 'external'
+ * | 'relative-not-found' | 'chain-exceeded-depth' | 'other'.
+ */
+export { aggregateUnresolvedImports } from './parser/types.js';
+export type { UnresolvedImport, UnresolvedImportReason } from './parser/types.js';
+
 /** Parse cache controls — clear the on-disk cache / inspect cache stats */
 export { clearCache, getCacheStats } from './parser/cache.js';
 
