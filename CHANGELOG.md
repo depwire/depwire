@@ -6,6 +6,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.13.0
+
+### Fixed — exponential longest-path search in the Dependency Depth dimension (#15)
+
+`calculateDepthScore`'s longest-path search was exhaustive backtracking over
+every simple path in the file-level dependency graph, with no memoization
+(`visited.delete(node)` on return). That is exponential once the graph has
+real cycles, and it could hang **indefinitely** — 40+ seconds without
+completing on a graph with 380 file-level cycles, while every other health
+dimension on the same graph completes in under 50ms. This was latent in
+every published version; it only stayed unnoticed because most repos'
+file-level graphs are near-acyclic and the cross-package edges that create
+most real circular structure were, until recently, largely missing (see the
+import-resolution work in progress on `fix/import-resolution`).
+
+**What changed:** the dimension now computes the longest path in the DAG of
+strongly connected components (Tarjan condensation), memoized over a single
+topological pass — O(V+E), and it cannot hang. Longest simple path on a
+cyclic graph is NP-hard and has no principled single answer (a cycle can be
+entered or exited at any of its members), so the previous exhaustive search
+wasn't computing a well-defined quantity on cyclic graphs to begin with —
+it was finding *some* long simple path, dependent on iteration order. The
+new number means "the longest chain of hops through the codebase's
+dependency clusters, where each strongly-connected cluster counts as one
+hop regardless of its internal size" — deterministic and reproducible run
+to run.
+
+**Compatibility:** on a graph with **zero file-level cycles**, every SCC is
+a singleton, so the new algorithm is provably identical to the old one (both
+compute the unique true longest simple path on a DAG) — not just similar,
+identical. Verified exactly on `code-graph`'s own self-scan: 71/C overall,
+Depth dimension unchanged at 40/F, "10 levels," before and after.
+
+**On any graph with cycles, the score changes — even a handful of cycles is
+enough.** Measured on drizzle-orm (pre-import-resolution-fix graph, 110
+file-level cycles): maximum depth 19→9, Depth score 20/F→40/F. This is not a
+bug: the old number for that graph was an arbitrary simple path threaded
+through cycle members, which is exactly the kind of confidently-precise-but-
+meaningless number this project has been eliminating all week. Because a
+real repo's score can move from this fix alone, this ships as a minor
+version bump (1.13.0) rather than a patch, even though the fix is
+correctness-only and introduces no new resolution behavior.
+
 ## 1.12.0
 
 ### Fixed — dead-code exclusion path matching (#13, #10)
