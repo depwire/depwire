@@ -1,0 +1,22 @@
+{
+  "note": "Frozen graph snapshot for regression testing dead-code/health detector logic in isolation from live-tree drift (see fix/deadcode-relative-path-cwd-collision and fix/deadcode-relevantkinds-and-self-import). The graph is fixed; only the detector/scoring code under test should be able to move these numbers. Caveat: getPackageEntryPoints reads projectRoot's package.json from disk at test time (not frozen) -- if code-graph's own package.json 'exports' field changes, entry-point classification could shift independently of this snapshot. That's a narrow, deliberate-change-only risk, not the 'new files added elsewhere' drift this fixture is meant to guard against.",
+  "sourceCommit": "captured at check-in time -- this fixture and the commit that introduces it represent the same source tree; see the git commit that added this file",
+  "sourceRepo": "code-graph (self-scan)",
+  "generatedAt": "2026-08-15T08:46:48.682Z",
+  "nodeCount": 5840,
+  "edgeCount": 2314,
+  "expected": {
+    "totalSymbols": 5840,
+    "deadSymbols": 166,
+    "deadPercentage": 2.8424657534246576,
+    "byConfidence": {
+      "high": 166,
+      "medium": 0,
+      "low": 0
+    },
+    "healthOverall": 71,
+    "healthGrade": "C",
+    "orphansScore": 88,
+    "orphansGrade": "B"
+  }
+}

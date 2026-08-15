@@ -12,10 +12,11 @@ import {
   parseProject,
   scanSecurity,
   searchSymbols
-} from "./chunk-5MPJHYJM.js";
+} from "./chunk-JTIB4ZSH.js";
 
 // src/sdk.ts
-var DepwireSDKVersion = "1.7.4";
+import { createRequire } from "module";
+var DepwireSDKVersion = createRequire(import.meta.url)("../package.json").version;
 export {
   DepwireSDKVersion,
   SimulationEngine,

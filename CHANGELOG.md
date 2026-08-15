@@ -6,6 +6,68 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.11.0
+
+### Fixed — dead-code detection returned zero in production; Orphans health dimension was inflated
+
+Two correctness bugs in dead-code detection, both silently in effect since
+the checks were written. **Dead-code output changes materially for every
+user, in both directions** — this is a correctness release, not a minor
+patch, despite the version-number-looking scope.
+
+**CWD/relative-path collision.** `shouldExclude()` and
+`calculateWorkspaceOrphansScore()` called `path.relative(projectRoot, filePath)`
+with a `filePath` that is project-relative by design. Node silently resolves
+a relative second argument against `process.cwd()` instead of diffing
+against `projectRoot`. On Railway (Nixpacks default container `WORKDIR` is
+`/app`), every relative path picked up an `/app/` substring, which
+`isFrameworkAutoLoadedFile()` treats as a framework-auto-loaded exclusion —
+so every symbol in every repo was excluded, producing `deadSymbols: 0` in
+every production parse, while local runs (whose cwd never collided with
+`/app/`) returned correct, non-zero results. The same bug made
+`isRealPackageEntryPoint()` compare a relative path against absolute
+package entry points, which can never match by construction — a package's
+own `main`/`module`/`exports` entry file (typically `inDegree === 0`, since
+nothing internal imports it) was misclassified as dead in every
+environment, not just Railway. Fixed by resolving `filePath` to absolute
+before any `path.relative()` call or absolute-path comparison.
+
+**`relevantKinds` was missing `"variable"`.** The detector's relevant-kind
+allowlist included `"const"`, `"let"`, and `"var"` — TypeScript source
+keywords that no parser ever emits as a `SymbolKind` value — but not
+`"variable"`, which is what the TypeScript, JavaScript, C, and Go (for
+`var`) parsers actually emit for non-const-like declarations. Every
+exported `variable`-kind symbol was rejected before the exported/inDegree
+checks ran at all. Fixed by adding `"variable"` to the allowlist; the
+downstream exported-only gate already handled it correctly, unused since
+day one.
+
+Both are covered by `test/dead-code-cwd.test.ts` (asserts detector output
+is independent of `process.cwd()`, and that a package entry point is
+excluded as `"entry"` rather than reported dead) and by
+`test/fixed-snapshot.test.ts`, a frozen graph snapshot (see
+`test/fixtures/`) that gates future detector/scoring changes against a
+fixed reference instead of the live, drifting repo tree.
+
+`SCORING_VERSION` boundary: the scoring curves are unchanged; the inputs
+to the Orphans dimension and dead-code counts are not comparable across
+this release. A trend line crossing this boundary will show movement
+that isn't a regression.
+
+Two related issues investigated but deliberately not bundled into this
+release, filed separately because they change the *graph* rather than the
+dead-code interpretation of it:
+- [#10](https://github.com/depwire/depwire/issues/10) — `isFrameworkAutoLoadedFile()`
+  substring matching over-excludes legitimate `app/`/`api/`/`config/` directories.
+- [#11](https://github.com/depwire/depwire/issues/11) — two divergent Orphans-score
+  implementations (`simulate_change` vs. `calculateHealthScore`).
+- [#12](https://github.com/depwire/depwire/issues/12) — nested `tsconfig.json` path
+  aliases are invisible in monorepos (`loadTsConfig` scoped to `projectRoot`
+  instead of the importing file's directory); also a candidate explanation
+  for the open 0%-cross-directory-coupling anomaly on multi-package repos.
+
+---
+
 ## 1.10.0
 
 ### Added — Workers-compatible graph entry point

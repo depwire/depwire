@@ -243,6 +243,7 @@ function isRelevantForDeadCodeDetection(attrs: any): boolean {
     "constant",
     "let",
     "var",
+    "variable",
     "method",
     "property"
   ];

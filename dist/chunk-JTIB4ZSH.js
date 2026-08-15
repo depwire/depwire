@@ -11370,14 +11370,474 @@ function getArchitectureSummary(graph, projectRoot, includeFixtures = false) {
 }
 
 // src/health/metrics.ts
-import { dirname as dirname18, relative as relative7 } from "path";
+import { dirname as dirname18 } from "path";
+function scoreToGrade(score) {
+  if (score >= 90) return "A";
+  if (score >= 80) return "B";
+  if (score >= 70) return "C";
+  if (score >= 60) return "D";
+  return "F";
+}
+function calculateCouplingScore(graph) {
+  const files = /* @__PURE__ */ new Set();
+  graph.forEachNode((node, attrs) => {
+    files.add(attrs.filePath);
+  });
+  if (files.size === 0) {
+    return {
+      name: "Coupling",
+      score: 100,
+      weight: 0.25,
+      grade: "A",
+      details: "No files to analyze",
+      metrics: { avgConnections: 0, maxConnections: 0, crossDirCoupling: 0 }
+    };
+  }
+  const fileConnections = /* @__PURE__ */ new Map();
+  let crossDirEdges = 0;
+  let totalEdges = 0;
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceAttrs = graph.getNodeAttributes(source);
+    const targetAttrs = graph.getNodeAttributes(target);
+    if (sourceAttrs.filePath !== targetAttrs.filePath) {
+      totalEdges++;
+      fileConnections.set(sourceAttrs.filePath, (fileConnections.get(sourceAttrs.filePath) || 0) + 1);
+      fileConnections.set(targetAttrs.filePath, (fileConnections.get(targetAttrs.filePath) || 0) + 1);
+      const sourceDir = dirname18(sourceAttrs.filePath).split("/")[0];
+      const targetDir = dirname18(targetAttrs.filePath).split("/")[0];
+      if (sourceDir !== targetDir) {
+        crossDirEdges++;
+      }
+    }
+  });
+  const avgConnections = totalEdges / files.size;
+  const maxConnections = Math.max(...Array.from(fileConnections.values()), 0);
+  const crossDirCoupling = totalEdges > 0 ? crossDirEdges / totalEdges : 0;
+  let score = 100;
+  if (avgConnections <= 3) {
+    score = 100;
+  } else if (avgConnections <= 6) {
+    score = 80;
+  } else if (avgConnections <= 10) {
+    score = 60;
+  } else if (avgConnections <= 15) {
+    score = 40;
+  } else {
+    score = 20;
+  }
+  if (maxConnections > avgConnections * 3) {
+    score -= 10;
+  }
+  if (crossDirCoupling > 0.7) {
+    score -= 10;
+  }
+  score = Math.max(0, Math.min(100, score));
+  return {
+    name: "Coupling",
+    score,
+    weight: 0.25,
+    grade: scoreToGrade(score),
+    details: `Average ${avgConnections.toFixed(1)} connections per file, max ${maxConnections}, ${(crossDirCoupling * 100).toFixed(0)}% cross-directory`,
+    metrics: {
+      avgConnections: parseFloat(avgConnections.toFixed(2)),
+      maxConnections,
+      crossDirCoupling: parseFloat((crossDirCoupling * 100).toFixed(1))
+    }
+  };
+}
+function calculateCohesionScore(graph) {
+  const dirEdges = /* @__PURE__ */ new Map();
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceAttrs = graph.getNodeAttributes(source);
+    const targetAttrs = graph.getNodeAttributes(target);
+    if (sourceAttrs.filePath !== targetAttrs.filePath) {
+      const sourceDir = dirname18(sourceAttrs.filePath);
+      const targetDir = dirname18(targetAttrs.filePath);
+      if (!dirEdges.has(sourceDir)) {
+        dirEdges.set(sourceDir, { internal: 0, total: 0 });
+      }
+      const stats = dirEdges.get(sourceDir);
+      stats.total++;
+      if (sourceDir === targetDir) {
+        stats.internal++;
+      }
+    }
+  });
+  if (dirEdges.size === 0) {
+    return {
+      name: "Cohesion",
+      score: 100,
+      weight: 0.2,
+      grade: "A",
+      details: "No inter-file dependencies",
+      metrics: { avgInternalRatio: 1, directories: 0 }
+    };
+  }
+  let totalRatio = 0;
+  for (const stats of dirEdges.values()) {
+    if (stats.total > 0) {
+      totalRatio += stats.internal / stats.total;
+    }
+  }
+  const avgInternalRatio = totalRatio / dirEdges.size;
+  let score = 100;
+  if (avgInternalRatio >= 0.7) {
+    score = 100;
+  } else if (avgInternalRatio >= 0.5) {
+    score = 80;
+  } else if (avgInternalRatio >= 0.3) {
+    score = 60;
+  } else if (avgInternalRatio >= 0.1) {
+    score = 40;
+  } else {
+    score = 20;
+  }
+  return {
+    name: "Cohesion",
+    score,
+    weight: 0.2,
+    grade: scoreToGrade(score),
+    details: `Average ${(avgInternalRatio * 100).toFixed(0)}% internal dependencies per directory`,
+    metrics: {
+      avgInternalRatio: parseFloat((avgInternalRatio * 100).toFixed(1)),
+      directories: dirEdges.size
+    }
+  };
+}
+function calculateCircularDepsScore(graph) {
+  const files = /* @__PURE__ */ new Set();
+  graph.forEachNode((node, attrs) => {
+    files.add(attrs.filePath);
+  });
+  if (files.size === 0) {
+    return {
+      name: "Circular Dependencies",
+      score: 100,
+      weight: 0.2,
+      grade: "A",
+      details: "No files to analyze",
+      metrics: { cycles: 0, cyclesPer100: 0 }
+    };
+  }
+  const fileGraph = /* @__PURE__ */ new Map();
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceFile = graph.getNodeAttributes(source).filePath;
+    const targetFile = graph.getNodeAttributes(target).filePath;
+    if (sourceFile !== targetFile) {
+      if (!fileGraph.has(sourceFile)) {
+        fileGraph.set(sourceFile, /* @__PURE__ */ new Set());
+      }
+      fileGraph.get(sourceFile).add(targetFile);
+    }
+  });
+  const visited = /* @__PURE__ */ new Set();
+  const recStack = /* @__PURE__ */ new Set();
+  const cycles = [];
+  function dfs(node, path6) {
+    if (recStack.has(node)) {
+      const cycleStart = path6.indexOf(node);
+      if (cycleStart >= 0) {
+        cycles.push(path6.slice(cycleStart));
+      }
+      return;
+    }
+    if (visited.has(node)) {
+      return;
+    }
+    visited.add(node);
+    recStack.add(node);
+    path6.push(node);
+    const neighbors = fileGraph.get(node);
+    if (neighbors) {
+      for (const neighbor of neighbors) {
+        dfs(neighbor, [...path6]);
+      }
+    }
+    recStack.delete(node);
+  }
+  for (const node of fileGraph.keys()) {
+    if (!visited.has(node)) {
+      dfs(node, []);
+    }
+  }
+  const uniqueCycles = /* @__PURE__ */ new Set();
+  for (const cycle of cycles) {
+    const sorted = [...cycle].sort().join(",");
+    uniqueCycles.add(sorted);
+  }
+  const cycleCount = uniqueCycles.size;
+  const cyclesPer100 = cycleCount / files.size * 100;
+  let score = 100;
+  if (cycleCount === 0) {
+    score = 100;
+  } else if (cyclesPer100 <= 1) {
+    score = 80;
+  } else if (cyclesPer100 <= 5) {
+    score = 60;
+  } else if (cyclesPer100 <= 15) {
+    score = 40;
+  } else {
+    score = 20;
+  }
+  return {
+    name: "Circular Dependencies",
+    score,
+    weight: 0.2,
+    grade: scoreToGrade(score),
+    details: cycleCount === 0 ? "No circular dependencies detected" : `${cycleCount} circular dependency cycle${cycleCount === 1 ? "" : "s"} detected`,
+    metrics: { cycles: cycleCount, cyclesPer100: parseFloat(cyclesPer100.toFixed(1)) }
+  };
+}
+function calculateGodFilesScore(graph) {
+  const files = /* @__PURE__ */ new Set();
+  const fileConnections = /* @__PURE__ */ new Map();
+  graph.forEachNode((node, attrs) => {
+    files.add(attrs.filePath);
+  });
+  if (files.size === 0) {
+    return {
+      name: "God Files",
+      score: 100,
+      weight: 0.15,
+      grade: "A",
+      details: "No files to analyze",
+      metrics: { godFiles: 0, threshold: 0, godFilesPer100: 0 }
+    };
+  }
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceFile = graph.getNodeAttributes(source).filePath;
+    const targetFile = graph.getNodeAttributes(target).filePath;
+    if (sourceFile !== targetFile) {
+      fileConnections.set(sourceFile, (fileConnections.get(sourceFile) || 0) + 1);
+      fileConnections.set(targetFile, (fileConnections.get(targetFile) || 0) + 1);
+    }
+  });
+  const connections = Array.from(fileConnections.values());
+  const avgConnections = connections.length > 0 ? connections.reduce((a, b) => a + b, 0) / connections.length : 0;
+  const godThreshold = avgConnections * 3;
+  const godFiles = connections.filter((c) => c > godThreshold).length;
+  const godFilesPer100 = godFiles / files.size * 100;
+  let score = 100;
+  if (godFiles === 0) {
+    score = 100;
+  } else if (godFilesPer100 <= 3) {
+    score = 80;
+  } else if (godFilesPer100 <= 6) {
+    score = 60;
+  } else if (godFilesPer100 <= 10) {
+    score = 40;
+  } else {
+    score = 20;
+  }
+  return {
+    name: "God Files",
+    score,
+    weight: 0.15,
+    grade: scoreToGrade(score),
+    details: godFiles === 0 ? "No god files detected" : `${godFiles} god file${godFiles === 1 ? "" : "s"} (>${godThreshold.toFixed(0)} connections)`,
+    metrics: {
+      godFiles,
+      threshold: parseFloat(godThreshold.toFixed(1)),
+      godFilesPer100: parseFloat(godFilesPer100.toFixed(1))
+    }
+  };
+}
+function calculateOrphansScore(graph) {
+  const files = /* @__PURE__ */ new Set();
+  const connectedFiles = /* @__PURE__ */ new Set();
+  graph.forEachNode((node, attrs) => {
+    files.add(attrs.filePath);
+  });
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceFile = graph.getNodeAttributes(source).filePath;
+    const targetFile = graph.getNodeAttributes(target).filePath;
+    if (sourceFile !== targetFile) {
+      connectedFiles.add(sourceFile);
+      connectedFiles.add(targetFile);
+    }
+  });
+  let deadSymbolCount = 0;
+  const relevantExportedKinds = /* @__PURE__ */ new Set([
+    "function",
+    "class",
+    "interface",
+    "type",
+    "type_alias",
+    "enum",
+    "const",
+    "constant",
+    "let",
+    "var",
+    "variable"
+  ]);
+  graph.forEachNode((node, attrs) => {
+    if (!attrs.exported) return;
+    if (!relevantExportedKinds.has(attrs.kind)) return;
+    if (graph.inDegree(node) === 0) {
+      deadSymbolCount++;
+    }
+  });
+  return calculateOrphansScoreFromMetrics(graph, files, connectedFiles, deadSymbolCount);
+}
+function calculateOrphansScoreFromMetrics(graph, files, connectedFiles, deadSymbolCount) {
+  let orphanCount = 0;
+  for (const file of files) {
+    if (!connectedFiles.has(file)) orphanCount++;
+  }
+  const orphanPercent = files.size > 0 ? orphanCount / files.size * 100 : 0;
+  const deadCodePercent = graph.order > 0 ? deadSymbolCount / graph.order * 100 : 0;
+  let deadScore;
+  if (deadCodePercent === 0) {
+    deadScore = 100;
+  } else if (deadCodePercent <= 2) {
+    deadScore = 95 - deadCodePercent * 2.5;
+  } else if (deadCodePercent <= 5) {
+    deadScore = 89 - (deadCodePercent - 2) * 3;
+  } else if (deadCodePercent <= 10) {
+    deadScore = 79 - (deadCodePercent - 5) * 2;
+  } else if (deadCodePercent <= 20) {
+    deadScore = 69 - (deadCodePercent - 10) * 2;
+  } else {
+    deadScore = Math.max(0, 49 - (deadCodePercent - 20) * 1);
+  }
+  let orphanScore;
+  if (orphanPercent === 0) {
+    orphanScore = 100;
+  } else if (orphanPercent <= 5) {
+    orphanScore = 90;
+  } else if (orphanPercent <= 10) {
+    orphanScore = 70;
+  } else if (orphanPercent <= 20) {
+    orphanScore = 50;
+  } else {
+    orphanScore = 30;
+  }
+  const score = Math.round(deadScore * 0.6 + orphanScore * 0.4);
+  return {
+    name: "Orphans & Dead Code",
+    score,
+    weight: 0.1,
+    grade: scoreToGrade(score),
+    details: `${orphanCount} orphan file${orphanCount === 1 ? "" : "s"} (${orphanPercent.toFixed(0)}%), ${deadSymbolCount} dead symbols (${deadCodePercent.toFixed(1)}%)`,
+    metrics: {
+      orphans: orphanCount,
+      orphanPercentage: parseFloat(orphanPercent.toFixed(1)),
+      deadSymbols: deadSymbolCount,
+      deadCodePercentage: parseFloat(deadCodePercent.toFixed(1))
+    }
+  };
+}
+function calculateDepthScore(graph) {
+  const fileGraph = /* @__PURE__ */ new Map();
+  graph.forEachEdge((edge, attrs, source, target) => {
+    const sourceFile = graph.getNodeAttributes(source).filePath;
+    const targetFile = graph.getNodeAttributes(target).filePath;
+    if (sourceFile !== targetFile) {
+      if (!fileGraph.has(sourceFile)) {
+        fileGraph.set(sourceFile, /* @__PURE__ */ new Set());
+      }
+      fileGraph.get(sourceFile).add(targetFile);
+    }
+  });
+  function findLongestPath(start) {
+    const visited = /* @__PURE__ */ new Set();
+    let maxDepth2 = 0;
+    function dfs(node, depth) {
+      if (visited.has(node)) {
+        return;
+      }
+      visited.add(node);
+      maxDepth2 = Math.max(maxDepth2, depth);
+      const neighbors = fileGraph.get(node);
+      if (neighbors) {
+        for (const neighbor of neighbors) {
+          dfs(neighbor, depth + 1);
+        }
+      }
+      visited.delete(node);
+    }
+    dfs(start, 0);
+    return maxDepth2;
+  }
+  let maxDepth = 0;
+  for (const node of fileGraph.keys()) {
+    const depth = findLongestPath(node);
+    maxDepth = Math.max(maxDepth, depth);
+  }
+  let score = 100;
+  if (maxDepth <= 4) {
+    score = 100;
+  } else if (maxDepth <= 6) {
+    score = 80;
+  } else if (maxDepth <= 8) {
+    score = 60;
+  } else if (maxDepth <= 12) {
+    score = 40;
+  } else {
+    score = 20;
+  }
+  return {
+    name: "Dependency Depth",
+    score,
+    weight: 0.1,
+    grade: scoreToGrade(score),
+    details: `Maximum dependency chain: ${maxDepth} level${maxDepth === 1 ? "" : "s"}`,
+    metrics: { maxDepth }
+  };
+}
+
+// src/health/workspace-metrics.ts
+import { relative as relative7, resolve as resolve16 } from "path";
 
 // src/dead-code/detector.ts
 import path2 from "path";
 import { readFileSync as readFileSync17, existsSync as existsSync19 } from "fs";
+function isFunnelDebugEnabled(debug) {
+  return debug || process.env.DEPWIRE_DEBUG_FUNNEL === "1";
+}
+function newFunnelStats() {
+  return {
+    totalNodesExamined: 0,
+    passedNameCheck: 0,
+    passedFileCheck: 0,
+    passedRelevantKind: 0,
+    rejectedByKind: {},
+    passedExportedCheck: 0,
+    passedInDegreeZero: 0,
+    survivedExclusion: 0,
+    exclusionByReason: {}
+  };
+}
+function logFunnelStats(funnel, label = "dead-code funnel") {
+  console.error(`
+\u{1F52C} Debug: ${label}`);
+  console.error(`  1. Total nodes examined:        ${funnel.totalNodesExamined}`);
+  console.error(`  2. Passed name check:           ${funnel.passedNameCheck}`);
+  console.error(`  3. Passed file check:           ${funnel.passedFileCheck}`);
+  console.error(`  4. Passed relevant-kind check:  ${funnel.passedRelevantKind}`);
+  const rejected = Object.entries(funnel.rejectedByKind).sort((a, b) => b[1] - a[1]);
+  if (rejected.length > 0) {
+    console.error(`     Rejected by kind:`);
+    for (const [kind, count] of rejected) {
+      console.error(`       - ${kind || "(no kind)"}: ${count}`);
+    }
+  }
+  console.error(`  5. Passed exported check:       ${funnel.passedExportedCheck}`);
+  console.error(`  6. Passed inDegree===0 check:   ${funnel.passedInDegreeZero}`);
+  console.error(`  7. Survived shouldExclude:      ${funnel.survivedExclusion}`);
+  const exclusions = Object.entries(funnel.exclusionByReason).sort((a, b) => b[1] - a[1]);
+  if (exclusions.length > 0) {
+    console.error(`     Excluded by reason:`);
+    for (const [reason, count] of exclusions) {
+      console.error(`       - ${reason}: ${count}`);
+    }
+  }
+}
 function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false, includeFixtures = false) {
   const deadSymbols = [];
   const context = { graph, projectRoot };
+  const funnelEnabled = isFunnelDebugEnabled(debug);
+  const funnel = funnelEnabled ? newFunnelStats() : void 0;
   const stats = {
     total: 0,
     excludedByTestFile: 0,
@@ -11407,7 +11867,7 @@ function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false
         if (graph.inDegree(node) === 0 && count < 10) {
           const attrs = graph.getNodeAttributes(node);
           const filePath = attrs.file || attrs.filePath || "unknown";
-          console.log(`  - ${attrs.name} (${attrs.kind}) in ${path2.relative(projectRoot, filePath)}`);
+          console.log(`  - ${attrs.name} (${attrs.kind}) in ${path2.relative(projectRoot, path2.resolve(projectRoot, filePath))}`);
           count++;
         }
       });
@@ -11415,19 +11875,31 @@ function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false
   }
   for (const node of graph.nodes()) {
     const attrs = graph.getNodeAttributes(node);
+    if (funnel) funnel.totalNodesExamined++;
     if (!attrs.name) continue;
+    if (funnel) funnel.passedNameCheck++;
     if (!attrs.file && !attrs.filePath) {
       if (debug) {
         console.log(`Skipping node ${attrs.name} - no file attribute`);
       }
       continue;
     }
+    if (funnel) funnel.passedFileCheck++;
     const filePath = attrs.file || attrs.filePath;
     if (!isRelevantForDeadCodeDetection(attrs)) {
+      if (funnel) {
+        const kind = attrs.kind || "(no kind)";
+        funnel.rejectedByKind[kind] = (funnel.rejectedByKind[kind] || 0) + 1;
+      }
       continue;
+    }
+    if (funnel) {
+      funnel.passedRelevantKind++;
+      funnel.passedExportedCheck++;
     }
     const inDegree = graph.inDegree(node);
     if (inDegree === 0) {
+      if (funnel) funnel.passedInDegreeZero++;
       stats.total++;
       const exclusionReason = shouldExclude(attrs, context, includeTests, packageEntryPoints, includeFixtures);
       if (exclusionReason) {
@@ -11451,8 +11923,12 @@ function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false
             stats.excludedByFrameworkDir++;
             break;
         }
+        if (funnel) {
+          funnel.exclusionByReason[exclusionReason] = (funnel.exclusionByReason[exclusionReason] || 0) + 1;
+        }
         continue;
       }
+      if (funnel) funnel.survivedExclusion++;
       deadSymbols.push({
         name: attrs.name,
         kind: attrs.kind || "unknown",
@@ -11477,7 +11953,10 @@ function findDeadSymbols(graph, projectRoot, includeTests = false, debug = false
     console.log(`Remaining dead symbols: ${deadSymbols.length}
 `);
   }
-  return { symbols: deadSymbols, stats };
+  if (funnel) {
+    logFunnelStats(funnel);
+  }
+  return { symbols: deadSymbols, stats, funnel };
 }
 function isRelevantForDeadCodeDetection(attrs) {
   const kind = attrs.kind;
@@ -11492,6 +11971,7 @@ function isRelevantForDeadCodeDetection(attrs) {
     "constant",
     "let",
     "var",
+    "variable",
     "method",
     "property"
   ];
@@ -11543,14 +12023,15 @@ function shouldExclude(attrs, context, includeTests, packageEntryPoints, include
   if (!filePath) {
     return null;
   }
-  const relativePath = path2.relative(context.projectRoot, filePath);
+  const absoluteFilePath = path2.resolve(context.projectRoot, filePath);
+  const relativePath = path2.relative(context.projectRoot, absoluteFilePath);
   if (!includeTests && isTestFile3(relativePath)) {
     return "test";
   }
   if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) {
     return "test";
   }
-  if (isRealPackageEntryPoint(filePath, packageEntryPoints)) {
+  if (isRealPackageEntryPoint(absoluteFilePath, packageEntryPoints)) {
     return "entry";
   }
   if (isConfigFile(relativePath)) {
@@ -11913,264 +12394,13 @@ function isRExcluded(attrs) {
   return false;
 }
 
-// src/health/metrics.ts
-function scoreToGrade(score) {
-  if (score >= 90) return "A";
-  if (score >= 80) return "B";
-  if (score >= 70) return "C";
-  if (score >= 60) return "D";
-  return "F";
-}
-function calculateCouplingScore(graph) {
-  const files = /* @__PURE__ */ new Set();
-  graph.forEachNode((node, attrs) => {
-    files.add(attrs.filePath);
-  });
-  if (files.size === 0) {
-    return {
-      name: "Coupling",
-      score: 100,
-      weight: 0.25,
-      grade: "A",
-      details: "No files to analyze",
-      metrics: { avgConnections: 0, maxConnections: 0, crossDirCoupling: 0 }
-    };
-  }
-  const fileConnections = /* @__PURE__ */ new Map();
-  let crossDirEdges = 0;
-  let totalEdges = 0;
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceAttrs = graph.getNodeAttributes(source);
-    const targetAttrs = graph.getNodeAttributes(target);
-    if (sourceAttrs.filePath !== targetAttrs.filePath) {
-      totalEdges++;
-      fileConnections.set(sourceAttrs.filePath, (fileConnections.get(sourceAttrs.filePath) || 0) + 1);
-      fileConnections.set(targetAttrs.filePath, (fileConnections.get(targetAttrs.filePath) || 0) + 1);
-      const sourceDir = dirname18(sourceAttrs.filePath).split("/")[0];
-      const targetDir = dirname18(targetAttrs.filePath).split("/")[0];
-      if (sourceDir !== targetDir) {
-        crossDirEdges++;
-      }
-    }
-  });
-  const avgConnections = totalEdges / files.size;
-  const maxConnections = Math.max(...Array.from(fileConnections.values()), 0);
-  const crossDirCoupling = totalEdges > 0 ? crossDirEdges / totalEdges : 0;
-  let score = 100;
-  if (avgConnections <= 3) {
-    score = 100;
-  } else if (avgConnections <= 6) {
-    score = 80;
-  } else if (avgConnections <= 10) {
-    score = 60;
-  } else if (avgConnections <= 15) {
-    score = 40;
-  } else {
-    score = 20;
-  }
-  if (maxConnections > avgConnections * 3) {
-    score -= 10;
-  }
-  if (crossDirCoupling > 0.7) {
-    score -= 10;
-  }
-  score = Math.max(0, Math.min(100, score));
-  return {
-    name: "Coupling",
-    score,
-    weight: 0.25,
-    grade: scoreToGrade(score),
-    details: `Average ${avgConnections.toFixed(1)} connections per file, max ${maxConnections}, ${(crossDirCoupling * 100).toFixed(0)}% cross-directory`,
-    metrics: {
-      avgConnections: parseFloat(avgConnections.toFixed(2)),
-      maxConnections,
-      crossDirCoupling: parseFloat((crossDirCoupling * 100).toFixed(1))
-    }
-  };
-}
-function calculateCohesionScore(graph) {
-  const dirEdges = /* @__PURE__ */ new Map();
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceAttrs = graph.getNodeAttributes(source);
-    const targetAttrs = graph.getNodeAttributes(target);
-    if (sourceAttrs.filePath !== targetAttrs.filePath) {
-      const sourceDir = dirname18(sourceAttrs.filePath);
-      const targetDir = dirname18(targetAttrs.filePath);
-      if (!dirEdges.has(sourceDir)) {
-        dirEdges.set(sourceDir, { internal: 0, total: 0 });
-      }
-      const stats = dirEdges.get(sourceDir);
-      stats.total++;
-      if (sourceDir === targetDir) {
-        stats.internal++;
-      }
-    }
-  });
-  if (dirEdges.size === 0) {
-    return {
-      name: "Cohesion",
-      score: 100,
-      weight: 0.2,
-      grade: "A",
-      details: "No inter-file dependencies",
-      metrics: { avgInternalRatio: 1, directories: 0 }
-    };
-  }
-  let totalRatio = 0;
-  for (const stats of dirEdges.values()) {
-    if (stats.total > 0) {
-      totalRatio += stats.internal / stats.total;
-    }
-  }
-  const avgInternalRatio = totalRatio / dirEdges.size;
-  let score = 100;
-  if (avgInternalRatio >= 0.7) {
-    score = 100;
-  } else if (avgInternalRatio >= 0.5) {
-    score = 80;
-  } else if (avgInternalRatio >= 0.3) {
-    score = 60;
-  } else if (avgInternalRatio >= 0.1) {
-    score = 40;
-  } else {
-    score = 20;
-  }
-  return {
-    name: "Cohesion",
-    score,
-    weight: 0.2,
-    grade: scoreToGrade(score),
-    details: `Average ${(avgInternalRatio * 100).toFixed(0)}% internal dependencies per directory`,
-    metrics: {
-      avgInternalRatio: parseFloat((avgInternalRatio * 100).toFixed(1)),
-      directories: dirEdges.size
-    }
-  };
-}
-function calculateCircularDepsScore(graph) {
-  const fileGraph = /* @__PURE__ */ new Map();
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceFile = graph.getNodeAttributes(source).filePath;
-    const targetFile = graph.getNodeAttributes(target).filePath;
-    if (sourceFile !== targetFile) {
-      if (!fileGraph.has(sourceFile)) {
-        fileGraph.set(sourceFile, /* @__PURE__ */ new Set());
-      }
-      fileGraph.get(sourceFile).add(targetFile);
-    }
-  });
-  const visited = /* @__PURE__ */ new Set();
-  const recStack = /* @__PURE__ */ new Set();
-  const cycles = [];
-  function dfs(node, path6) {
-    if (recStack.has(node)) {
-      const cycleStart = path6.indexOf(node);
-      if (cycleStart >= 0) {
-        cycles.push(path6.slice(cycleStart));
-      }
-      return;
-    }
-    if (visited.has(node)) {
-      return;
-    }
-    visited.add(node);
-    recStack.add(node);
-    path6.push(node);
-    const neighbors = fileGraph.get(node);
-    if (neighbors) {
-      for (const neighbor of neighbors) {
-        dfs(neighbor, [...path6]);
-      }
-    }
-    recStack.delete(node);
-  }
-  for (const node of fileGraph.keys()) {
-    if (!visited.has(node)) {
-      dfs(node, []);
-    }
-  }
-  const uniqueCycles = /* @__PURE__ */ new Set();
-  for (const cycle of cycles) {
-    const sorted = [...cycle].sort().join(",");
-    uniqueCycles.add(sorted);
-  }
-  const cycleCount = uniqueCycles.size;
-  let score = 100;
-  if (cycleCount === 0) {
-    score = 100;
-  } else if (cycleCount <= 2) {
-    score = 80;
-  } else if (cycleCount <= 5) {
-    score = 60;
-  } else if (cycleCount <= 10) {
-    score = 40;
-  } else {
-    score = 20;
-  }
-  return {
-    name: "Circular Dependencies",
-    score,
-    weight: 0.2,
-    grade: scoreToGrade(score),
-    details: cycleCount === 0 ? "No circular dependencies detected" : `${cycleCount} circular dependency cycle${cycleCount === 1 ? "" : "s"} detected`,
-    metrics: { cycles: cycleCount }
-  };
-}
-function calculateGodFilesScore(graph) {
-  const files = /* @__PURE__ */ new Set();
-  const fileConnections = /* @__PURE__ */ new Map();
-  graph.forEachNode((node, attrs) => {
-    files.add(attrs.filePath);
-  });
-  if (files.size === 0) {
-    return {
-      name: "God Files",
-      score: 100,
-      weight: 0.15,
-      grade: "A",
-      details: "No files to analyze",
-      metrics: { godFiles: 0, threshold: 0 }
-    };
-  }
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceFile = graph.getNodeAttributes(source).filePath;
-    const targetFile = graph.getNodeAttributes(target).filePath;
-    if (sourceFile !== targetFile) {
-      fileConnections.set(sourceFile, (fileConnections.get(sourceFile) || 0) + 1);
-      fileConnections.set(targetFile, (fileConnections.get(targetFile) || 0) + 1);
-    }
-  });
-  const connections = Array.from(fileConnections.values());
-  const avgConnections = connections.length > 0 ? connections.reduce((a, b) => a + b, 0) / connections.length : 0;
-  const godThreshold = avgConnections * 3;
-  const godFiles = connections.filter((c) => c > godThreshold).length;
-  let score = 100;
-  if (godFiles === 0) {
-    score = 100;
-  } else if (godFiles === 1) {
-    score = 80;
-  } else if (godFiles <= 3) {
-    score = 60;
-  } else if (godFiles <= 5) {
-    score = 40;
-  } else {
-    score = 20;
-  }
-  return {
-    name: "God Files",
-    score,
-    weight: 0.15,
-    grade: scoreToGrade(score),
-    details: godFiles === 0 ? "No god files detected" : `${godFiles} god file${godFiles === 1 ? "" : "s"} (>${godThreshold.toFixed(0)} connections)`,
-    metrics: { godFiles, threshold: parseFloat(godThreshold.toFixed(1)) }
-  };
-}
-function calculateOrphansScore(graph, projectRoot, includeFixtures = false) {
+// src/health/workspace-metrics.ts
+function calculateWorkspaceOrphansScore(graph, projectRoot, includeFixtures = false) {
   const files = /* @__PURE__ */ new Set();
   const connectedFiles = /* @__PURE__ */ new Set();
   graph.forEachNode((node, attrs) => {
-    if (!includeFixtures && projectRoot) {
-      const relativePath = relative7(projectRoot, attrs.filePath);
+    if (!includeFixtures) {
+      const relativePath = relative7(projectRoot, resolve16(projectRoot, attrs.filePath));
       if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) return;
     }
     files.add(attrs.filePath);
@@ -12183,163 +12413,18 @@ function calculateOrphansScore(graph, projectRoot, includeFixtures = false) {
       connectedFiles.add(targetFile);
     }
   });
-  let orphanCount = 0;
-  for (const file of files) {
-    if (!connectedFiles.has(file)) orphanCount++;
-  }
-  const orphanPercent = files.size > 0 ? orphanCount / files.size * 100 : 0;
-  let deadSymbolCount = 0;
-  let totalExportedSymbols = 0;
-  if (projectRoot) {
-    const result = findDeadSymbols(graph, projectRoot, false, false, includeFixtures);
-    deadSymbolCount = result.symbols.length;
-    const relevantExportedKinds = /* @__PURE__ */ new Set([
-      "function",
-      "class",
-      "interface",
-      "type",
-      "type_alias",
-      "enum",
-      "const",
-      "constant",
-      "let",
-      "var",
-      "variable",
-      "method",
-      "property"
-    ]);
-    graph.forEachNode((node, attrs) => {
-      if (!attrs.exported) return;
-      if (!relevantExportedKinds.has(attrs.kind)) return;
-      totalExportedSymbols++;
-    });
-  } else {
-    const relevantExportedKinds = /* @__PURE__ */ new Set([
-      "function",
-      "class",
-      "interface",
-      "type",
-      "type_alias",
-      "enum",
-      "const",
-      "constant",
-      "let",
-      "var",
-      "variable"
-    ]);
-    graph.forEachNode((node, attrs) => {
-      if (!attrs.exported) return;
-      if (!relevantExportedKinds.has(attrs.kind)) return;
-      totalExportedSymbols++;
-      if (graph.inDegree(node) === 0) {
-        deadSymbolCount++;
-      }
-    });
-  }
-  const deadCodePercent = graph.order > 0 ? deadSymbolCount / graph.order * 100 : 0;
-  let deadScore;
-  if (deadCodePercent === 0) {
-    deadScore = 100;
-  } else if (deadCodePercent <= 2) {
-    deadScore = 95 - deadCodePercent * 2.5;
-  } else if (deadCodePercent <= 5) {
-    deadScore = 89 - (deadCodePercent - 2) * 3;
-  } else if (deadCodePercent <= 10) {
-    deadScore = 79 - (deadCodePercent - 5) * 2;
-  } else if (deadCodePercent <= 20) {
-    deadScore = 69 - (deadCodePercent - 10) * 2;
-  } else {
-    deadScore = Math.max(0, 49 - (deadCodePercent - 20) * 1);
-  }
-  let orphanScore;
-  if (orphanPercent === 0) {
-    orphanScore = 100;
-  } else if (orphanPercent <= 5) {
-    orphanScore = 90;
-  } else if (orphanPercent <= 10) {
-    orphanScore = 70;
-  } else if (orphanPercent <= 20) {
-    orphanScore = 50;
-  } else {
-    orphanScore = 30;
-  }
-  const score = Math.round(deadScore * 0.6 + orphanScore * 0.4);
-  return {
-    name: "Orphans & Dead Code",
-    score,
-    weight: 0.1,
-    grade: scoreToGrade(score),
-    details: `${orphanCount} orphan file${orphanCount === 1 ? "" : "s"} (${orphanPercent.toFixed(0)}%), ${deadSymbolCount} dead symbols (${deadCodePercent.toFixed(1)}%)`,
-    metrics: {
-      orphans: orphanCount,
-      orphanPercentage: parseFloat(orphanPercent.toFixed(1)),
-      deadSymbols: deadSymbolCount,
-      deadCodePercentage: parseFloat(deadCodePercent.toFixed(1))
-    }
-  };
-}
-function calculateDepthScore(graph) {
-  const fileGraph = /* @__PURE__ */ new Map();
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceFile = graph.getNodeAttributes(source).filePath;
-    const targetFile = graph.getNodeAttributes(target).filePath;
-    if (sourceFile !== targetFile) {
-      if (!fileGraph.has(sourceFile)) {
-        fileGraph.set(sourceFile, /* @__PURE__ */ new Set());
-      }
-      fileGraph.get(sourceFile).add(targetFile);
-    }
-  });
-  function findLongestPath(start) {
-    const visited = /* @__PURE__ */ new Set();
-    let maxDepth2 = 0;
-    function dfs(node, depth) {
-      if (visited.has(node)) {
-        return;
-      }
-      visited.add(node);
-      maxDepth2 = Math.max(maxDepth2, depth);
-      const neighbors = fileGraph.get(node);
-      if (neighbors) {
-        for (const neighbor of neighbors) {
-          dfs(neighbor, depth + 1);
-        }
-      }
-      visited.delete(node);
-    }
-    dfs(start, 0);
-    return maxDepth2;
-  }
-  let maxDepth = 0;
-  for (const node of fileGraph.keys()) {
-    const depth = findLongestPath(node);
-    maxDepth = Math.max(maxDepth, depth);
-  }
-  let score = 100;
-  if (maxDepth <= 4) {
-    score = 100;
-  } else if (maxDepth <= 6) {
-    score = 80;
-  } else if (maxDepth <= 8) {
-    score = 60;
-  } else if (maxDepth <= 12) {
-    score = 40;
-  } else {
-    score = 20;
-  }
-  return {
-    name: "Dependency Depth",
-    score,
-    weight: 0.1,
-    grade: scoreToGrade(score),
-    details: `Maximum dependency chain: ${maxDepth} level${maxDepth === 1 ? "" : "s"}`,
-    metrics: { maxDepth }
-  };
+  const result = findDeadSymbols(graph, projectRoot, false, false, includeFixtures);
+  return calculateOrphansScoreFromMetrics(
+    graph,
+    files,
+    connectedFiles,
+    result.symbols.length
+  );
 }
 
 // src/health/index.ts
 import { readFileSync as readFileSync18, writeFileSync, existsSync as existsSync20, mkdirSync as mkdirSync2 } from "fs";
-import { dirname as dirname19, resolve as resolve16 } from "path";
+import { dirname as dirname19, resolve as resolve17 } from "path";
 function calculateHealthScore(graph, projectRoot) {
   if (graph.order === 0) {
     return {
@@ -12364,7 +12449,7 @@ function calculateHealthScore(graph, projectRoot) {
   const cohesion = calculateCohesionScore(graph);
   const circular = calculateCircularDepsScore(graph);
   const godFiles = calculateGodFilesScore(graph);
-  const orphans = calculateOrphansScore(graph, projectRoot);
+  const orphans = calculateWorkspaceOrphansScore(graph, projectRoot);
   const depth = calculateDepthScore(graph);
   const dimensions = [coupling, cohesion, circular, godFiles, orphans, depth];
   const overall = Math.round(
@@ -12410,10 +12495,10 @@ function calculateHealthScore(graph, projectRoot) {
     recommendations.push(`Low cohesion: Only ${cohesion.metrics.avgInternalRatio}% internal dependencies. Reorganize files by feature or domain.`);
   }
   if (circular.score < 80 && typeof circular.metrics.cycles === "number" && circular.metrics.cycles > 0) {
-    recommendations.push(`${circular.metrics.cycles} circular dependency cycle${circular.metrics.cycles === 1 ? "" : "s"} detected. Break cycles by introducing interfaces or extracting shared code.`);
+    recommendations.push(`${circular.metrics.cycles} circular dependency cycle${circular.metrics.cycles === 1 ? "" : "s"} detected (${Number(circular.metrics.cyclesPer100).toFixed(1)} per 100 files). Break cycles by introducing interfaces or extracting shared code.`);
   }
   if (godFiles.score < 80 && typeof godFiles.metrics.godFiles === "number" && godFiles.metrics.godFiles > 0) {
-    recommendations.push(`${godFiles.metrics.godFiles} god file${godFiles.metrics.godFiles === 1 ? "" : "s"} detected with >${godFiles.metrics.threshold} connections. Split into smaller, focused modules.`);
+    recommendations.push(`${godFiles.metrics.godFiles} god file${godFiles.metrics.godFiles === 1 ? "" : "s"} detected with >${godFiles.metrics.threshold} connections (${Number(godFiles.metrics.godFilesPer100).toFixed(1)} per 100 files). Split into smaller, focused modules.`);
   }
   if (orphans.score < 80 && typeof orphans.metrics.orphans === "number" && orphans.metrics.orphans > 0) {
     recommendations.push(`${orphans.metrics.orphans} orphan file${orphans.metrics.orphans === 1 ? "" : "s"} detected. Verify they're needed or remove dead code.`);
@@ -12458,8 +12543,8 @@ function getHealthTrend(projectRoot, currentScore) {
   }
 }
 function saveHealthHistory(projectRoot, report) {
-  const resolvedRoot = resolve16(projectRoot);
-  const historyFile = resolve16(resolvedRoot, ".depwire", "health-history.json");
+  const resolvedRoot = resolve17(projectRoot);
+  const historyFile = resolve17(resolvedRoot, ".depwire", "health-history.json");
   if (!historyFile.startsWith(resolvedRoot)) {
     return;
   }
@@ -12491,8 +12576,8 @@ function saveHealthHistory(projectRoot, report) {
   writeFileSync(historyFile, JSON.stringify(history, null, 2), "utf-8");
 }
 function loadHealthHistory(projectRoot) {
-  const resolvedRoot = resolve16(projectRoot);
-  const historyFile = resolve16(resolvedRoot, ".depwire", "health-history.json");
+  const resolvedRoot = resolve17(projectRoot);
+  const historyFile = resolve17(resolvedRoot, ".depwire", "health-history.json");
   if (!historyFile.startsWith(resolvedRoot) || !existsSync20(historyFile)) {
     return [];
   }
@@ -12723,6 +12808,9 @@ function analyzeDeadCode(graph, projectRoot, options = {}) {
   );
   const classifiedSymbols = classifyDeadSymbols(rawDeadSymbols, graph);
   const filteredSymbols = filterByConfidence(classifiedSymbols, opts.confidence);
+  if (opts.debug || process.env.DEPWIRE_DEBUG_FUNNEL === "1") {
+    console.error(`  8. Survived confidence filter:  ${filteredSymbols.length} (of ${classifiedSymbols.length} classified, min confidence = "${opts.confidence}")`);
+  }
   const totalSymbols = graph.order;
   const byConfidence = {
     high: classifiedSymbols.filter((s) => s.confidence === "high").length,
@@ -16096,7 +16184,7 @@ function getTopLevelDir2(filePath) {
 
 // src/docs/status.ts
 import { readFileSync as readFileSync19, existsSync as existsSync21 } from "fs";
-import { resolve as resolve17 } from "path";
+import { resolve as resolve18 } from "path";
 function generateStatus(graph, projectRoot, version) {
   let output = "";
   const now = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
@@ -16129,8 +16217,8 @@ function getFileCount11(graph) {
 }
 function extractComments(projectRoot, filePath) {
   const comments = [];
-  const resolvedRoot = resolve17(projectRoot);
-  const fullPath = resolve17(resolvedRoot, filePath);
+  const resolvedRoot = resolve18(projectRoot);
+  const fullPath = resolve18(resolvedRoot, filePath);
   if (!fullPath.startsWith(resolvedRoot)) {
     return comments;
   }
@@ -16718,10 +16806,10 @@ function generateConfidenceSection(title, description, symbols, projectRoot) {
 
 // src/docs/metadata.ts
 import { existsSync as existsSync22, readFileSync as readFileSync20, writeFileSync as writeFileSync2 } from "fs";
-import { resolve as resolve18 } from "path";
+import { resolve as resolve19 } from "path";
 function loadMetadata(outputDir) {
-  const resolvedDir = resolve18(outputDir);
-  const metadataPath = resolve18(resolvedDir, "metadata.json");
+  const resolvedDir = resolve19(outputDir);
+  const metadataPath = resolve19(resolvedDir, "metadata.json");
   if (!metadataPath.startsWith(resolvedDir) || !existsSync22(metadataPath)) {
     return null;
   }
@@ -16734,8 +16822,8 @@ function loadMetadata(outputDir) {
   }
 }
 function saveMetadata(outputDir, metadata) {
-  const resolvedDir = resolve18(outputDir);
-  const metadataPath = resolve18(resolvedDir, "metadata.json");
+  const resolvedDir = resolve19(outputDir);
+  const metadataPath = resolve19(resolvedDir, "metadata.json");
   if (!metadataPath.startsWith(resolvedDir)) {
     throw new Error(`Path traversal attempt blocked: ${metadataPath}`);
   }
