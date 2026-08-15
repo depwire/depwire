@@ -84,6 +84,14 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
       processFunctionDeclaration(node, context);
       return true;
     case 'class_declaration':
+    case 'abstract_class_declaration':
+      // tree-sitter-typescript emits a distinct node type for
+      // `export abstract class X {}` -- same shape (name/body fields,
+      // class_heritage child) as class_declaration, so the same handler
+      // applies directly. Missing this meant every abstract class (View,
+      // Relation, and any other `abstract class` in a TS codebase) produced
+      // no SymbolNode at all -- invisible to any importer, any call site,
+      // any dead-code check.
       processClassDeclaration(node, context);
       return true;
     case 'variable_declaration':
@@ -676,12 +684,22 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
     importBindings.push({ importedName: identifier.text, localName: identifier.text });
   }
   
-  // Handle namespace import (import * as X)
+  // Handle namespace import (import * as X). Track it separately from named
+  // imports: `import * as X from 'mod'` binds X to the WHOLE module object,
+  // not to a symbol literally named X declared inside mod. Treating it like
+  // a named import (target `${resolvedPath}::X`) meant the edge pointed at
+  // a symbol name that only ever matched by coincidence -- mod almost never
+  // declares something named after whatever the importer happened to call
+  // the local alias, so this always produced a target the graph doesn't
+  // actually declare. It targets the file-level pseudo-node instead,
+  // consistent with how whole-file/side-effect imports are already
+  // represented elsewhere.
+  const namespaceImportNames = new Set<string>();
   const namespaceImport = findChildByType(importClause, 'namespace_import');
   if (namespaceImport) {
     const alias = findChildByType(namespaceImport, 'identifier');
     if (alias) {
-      importBindings.push({ importedName: alias.text, localName: alias.text });
+      namespaceImportNames.add(alias.text);
     }
   }
   
@@ -696,6 +714,18 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
       // binding so calls to `beta()` resolve correctly for `alpha as beta`.
       context.imports.set(localName, targetId);
       
+      context.edges.push({
+        source: currentSymbolId || `${context.filePath}::__file__`,
+        target: targetId,
+        kind: 'imports',
+        filePath: context.filePath,
+        line: node.startPosition.row + 1,
+      });
+    }
+
+    for (const alias of namespaceImportNames) {
+      const targetId = `${resolvedPath}::__file__`;
+      context.imports.set(alias, targetId);
       context.edges.push({
         source: currentSymbolId || `${context.filePath}::__file__`,
         target: targetId,
@@ -737,15 +767,24 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     const isWildcard = !exportClause && (namespaceExport !== null || hasWildcardToken(node));
 
     if (exportClause && resolvedPath) {
-      const exportedNames: string[] = [];
+      const exportedNames: Array<{ localName: string; sourceName: string }> = [];
       
       for (let i = 0; i < exportClause.childCount; i++) {
         const child = exportClause.child(i);
         if (child && child.type === 'export_specifier') {
-          // export_specifier contains an identifier child
-          const identifier = findChildByType(child, 'identifier');
-          if (identifier) {
-            exportedNames.push(identifier.text);
+          // Use the named fields rather than first-identifier scanning, same
+          // fix as the import side: `export { X as Y } from '...'` must
+          // register the LOCAL name Y (what importers of THIS file use),
+          // while resolving the edge against the SOURCE module's real name
+          // X. Grabbing the first identifier unconditionally returns X for
+          // both, so an aliased re-export's local symbol was created under
+          // the wrong name entirely (present in the graph, just as the
+          // original name instead of the alias) -- any importer asking for
+          // the alias found nothing declared.
+          const nameNode = child.childForFieldName('name');
+          const aliasNode = child.childForFieldName('alias');
+          if (nameNode) {
+            exportedNames.push({ sourceName: nameNode.text, localName: aliasNode ? aliasNode.text : nameNode.text });
           }
         }
       }
@@ -754,12 +793,13 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
       const startLine = node.startPosition.row + 1;
       const endLine = node.endPosition.row + 1;
       
-      for (const exportedName of exportedNames) {
-        // Create a symbol node for the re-exported symbol
-        const symbolId = `${context.filePath}::${exportedName}`;
+      for (const { localName, sourceName } of exportedNames) {
+        // Create a symbol node for the re-exported symbol, under the LOCAL
+        // (possibly aliased) name -- that's the name other files import.
+        const symbolId = `${context.filePath}::${localName}`;
         pushSymbol(context, {
           id: symbolId,
-          name: exportedName,
+          name: localName,
           kind: 'export',
           filePath: context.filePath,
           startLine,
@@ -767,8 +807,9 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
           exported: true,
         });
         
-        // Create an edge from this re-export to the original symbol
-        const targetId = `${resolvedPath}::${exportedName}`;
+        // Create an edge from this re-export to the original symbol, under
+        // the SOURCE module's real (un-aliased) name.
+        const targetId = `${resolvedPath}::${sourceName}`;
         context.edges.push({
           source: symbolId,
           target: targetId,

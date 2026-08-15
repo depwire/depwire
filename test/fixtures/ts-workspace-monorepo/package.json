@@ -1,0 +1,5 @@
+{
+  "name": "ts-workspace-monorepo-fixture",
+  "private": true,
+  "workspaces": ["packages/*"]
+}

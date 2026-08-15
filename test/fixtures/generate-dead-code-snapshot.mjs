@@ -40,7 +40,7 @@ const KNOWN_BENIGN_CLEAN_ENTRIES = new Set([
   '.depwire/',                               // this tool's own cache dir
   '.mcpregistry_github_token', '.mcpregistry_registry_token', // local auth tokens, not source
   'depwire-output.json', 'depwire.mcpb',     // self-scan / build byproducts, not source
-  'dist/graph.d.ts', 'dist/graph.js', 'dist/tools.d.ts', 'dist/tools.js', // pre-existing untracked build-output gap, unrelated to this fixture (see git history)
+  'dist/', // build output, now properly gitignored end-to-end (previously a partial tracking gap existed for a few dist/*.js files; dist/ is untracked in full as of the #15 depth-score-blowup fix, which removed the stray tracked entries)
   'test/fixtures/go-project/{config,models,services,utils}/',
   'test/fixtures/java-multimodule/.depwire/',
   'test/fixtures/kotlin-multimodule/.depwire/',

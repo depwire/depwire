@@ -53,6 +53,9 @@ export type UnresolvedImportReason =
   | 'relative-not-found'    // ./ or ../ that did not resolve to a real file
   | 'chain-exceeded-depth'  // resolved to a barrel file, but the re-export chain to the real
                             // declaration exceeded the depth cap or hit a cycle
+  | 'ambiguous-reexport'    // resolved to a barrel file, and the re-export chain reached MORE
+                            // THAN ONE file declaring the same name -- picking one would be a
+                            // guess, so the import is recorded unresolved instead of guessing
   | 'other';
 
 export interface UnresolvedImport {

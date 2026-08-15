@@ -22,11 +22,15 @@ const MAX_CHAIN_DEPTH = 8;
  * declared-symbol table and the full wildcard-re-export adjacency are both
  * available.
  *
- * Mutates `parsedFiles` in place: rewrites `imports`-kind edge targets that
- * point at an undeclared name in a barrel file to the real declaring file,
- * and (for barrels that exhaust the depth cap or a cycle without finding the
- * symbol) records the miss into that file's `unresolvedImports` with reason
- * `chain-exceeded-depth` rather than leaving it as a silent dangling edge.
+ * Mutates `parsedFiles` in place: rewrites edge targets (any kind -- imports,
+ * calls, extends, injects, etc. can all legitimately reference a name
+ * re-exported through a barrel) that point at an undeclared name in a
+ * barrel file to the real declaring file, and (for barrels that exhaust the
+ * depth cap, hit a cycle, or reach more than one candidate declaring file
+ * without a way to choose between them) records the miss into that file's
+ * `unresolvedImports` with reason `chain-exceeded-depth` or
+ * `ambiguous-reexport` rather than leaving it as a silent dangling edge or
+ * guessing between candidates.
  */
 export function resolveReExportChains(parsedFiles: ParsedFile[]): {
   rewritten: number;
@@ -47,7 +51,13 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
 
   for (const file of parsedFiles) {
     for (const edge of file.edges) {
-      if (edge.kind !== 'imports') continue;
+      // No kind filter: `edge.kind !== 'imports'` was the bug -- calls,
+      // extends, injects and every other edge kind can point at a name
+      // that only exists behind a barrel's wildcard re-export, exactly like
+      // an imports edge does. The only thing that determines whether an
+      // edge needs chasing is whether its target is an undeclared name in a
+      // file that itself re-exports things, not what kind of relationship
+      // the edge represents.
       const sep = edge.target.lastIndexOf('::');
       if (sep === -1) continue;
       const targetFile = edge.target.slice(0, sep);
@@ -59,16 +69,28 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
       if (!targetParsed?.wildcardReExports?.length) continue; // not a barrel -- nothing to chase
 
       const found = searchWildcardChain(targetFile, targetName, byFile, declaredNames);
-      if (found) {
-        edge.target = `${found}::${targetName}`;
+      if (found.length === 1) {
+        edge.target = `${found[0]}::${targetName}`;
         rewritten++;
-      } else {
+      } else if (found.length === 0) {
         droppedAsUnresolved++;
         if (!file.unresolvedImports) file.unresolvedImports = [];
         file.unresolvedImports.push({
           fromFile: file.filePath,
           specifier: `${targetFile}::${targetName}`,
           reason: 'chain-exceeded-depth',
+        });
+      } else {
+        // More than one file in the chain declares the same name. Picking
+        // one (by BFS order, alphabetically, or any other rule) would be a
+        // guess dressed up as a resolved edge -- a wrong edge is worse than
+        // a missing one, so this is recorded unresolved instead.
+        droppedAsUnresolved++;
+        if (!file.unresolvedImports) file.unresolvedImports = [];
+        file.unresolvedImports.push({
+          fromFile: file.filePath,
+          specifier: `${targetFile}::${targetName}`,
+          reason: 'ambiguous-reexport',
         });
       }
     }
@@ -82,15 +104,21 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
  * `startFile`'s own wildcard targets. Visited set doubles as cycle
  * protection -- barrels can be mutually recursive (`a` wildcard-exports `b`,
  * `b` wildcard-exports `a`), and a file is never re-enqueued once visited.
+ *
+ * Returns EVERY file that declares `targetName` reachable within the depth
+ * cap, not just the first -- callers need the full candidate set to detect
+ * ambiguity rather than silently keeping whichever happened to be visited
+ * first.
  */
 function searchWildcardChain(
   startFile: string,
   targetName: string,
   byFile: Map<string, ParsedFile>,
   declaredNames: Map<string, Set<string>>
-): string | null {
+): string[] {
   const visited = new Set<string>([startFile]);
   const queue: Array<{ file: string; depth: number }> = [{ file: startFile, depth: 0 }];
+  const found: string[] = [];
 
   let i = 0;
   while (i < queue.length) {
@@ -105,11 +133,11 @@ function searchWildcardChain(
       visited.add(target);
 
       if (declaredNames.get(target)?.has(targetName)) {
-        return target;
+        found.push(target);
       }
       queue.push({ file: target, depth: depth + 1 });
     }
   }
 
-  return null;
+  return found;
 }

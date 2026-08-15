@@ -8,6 +8,107 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## 1.13.0
 
+### Fixed — nested tsconfig paths, workspace package resolution, transitive re-export chains (#12, #14)
+
+Two related resolution gaps that made monorepo import graphs systematically
+incomplete, plus a third fix (barrel-chain following) needed to make the
+first two useful rather than just less-empty.
+
+**#12 — `loadTsConfig(projectRoot)` searched upward only, from one fixed
+root, and never read `extends`.** Every file in a monorepo shared a single
+tsconfig regardless of which package it belonged to, so a child package's
+own `paths` aliases (e.g. drizzle-orm's `"~/*": ["src/*"]`) never applied.
+Fixed by keying the tsconfig cache per directory (nearest ancestor with a
+`tsconfig.json`, not past `projectRoot`), resolving `baseUrl` relative to
+the config that declares it, and following `extends` to fill fields the
+nearest config omits — matching TypeScript's own documented behavior that
+`paths` is replaced, not deep-merged, by the nearest config.
+
+**#14 — bare workspace-package specifiers (`import { eq } from 'drizzle-orm'`)
+had no resolution path at all** and were indistinguishable from external
+npm dependencies. Fixed by discovering internal packages (root
+`package.json` `workspaces`, then `pnpm-workspace.yaml`, falling back to a
+tree scan for `package.json` files with a `name` field) and mapping bare
+specifiers to a source entry point by directory convention
+(`src/index.ts`/`.tsx`) — **deliberately not** reading `exports` / `main` /
+`module`, which point at build output that does not exist in an unbuilt
+clone; resolving through them would create edges to files the parser never
+parsed, which is worse than no edge.
+
+**Barrel-chain following (needed for both to matter).** Most workspace
+package and path-alias targets are pure re-export barrels
+(`export * from './x'`) with zero symbols of their own — a naive directory
+lookup lands on an empty file and produces nothing. Added a
+post-parse pass (`resolveReExportChains`) that follows wildcard re-export
+chains, with cycle protection and a depth cap, to the file that actually
+declares the symbol. An import/call/extends/injects edge whose target name
+is undeclared in a barrel-shaped file is rewritten to the real declaring
+file; **any** edge kind is eligible, not just `imports` — the initial
+version only rewrote `imports` edges, which meant `calls` edges (the
+majority, and the ones dead-code detection's in-degree check actually
+reads) stayed pointed at the unrewritten barrel, so the fix's own
+motivating case (`eq`/`and` misread as dead) was not actually fixed for
+the metric that mattered until this was corrected.
+
+**Ambiguity is recorded, never guessed.** If a chain reaches more than one
+file declaring the same name, the import is recorded unresolved with reason
+`ambiguous-reexport` rather than picking one — a wrong edge is worse than a
+missing one. New `unresolvedImports` field on `ParsedFile` (aggregated via
+`aggregateUnresolvedImports`) classifies every import that didn't resolve
+to a local edge: `alias-unresolved`, `workspace-package`, `external`,
+`relative-not-found`, `chain-exceeded-depth`, `ambiguous-reexport`, `other`.
+This metric is new in this release.
+
+**Two bugs found by exhaustively verifying every edge the fix added** (not
+sampling — a 30-edge import-only sample had passed 30/30 while missing
+that `calls` edges, the majority, were still broken):
+- `abstract_class_declaration` was a distinct tree-sitter node type never
+  matched by the class-parsing switch, so abstract classes (e.g.
+  drizzle-orm's `View`, `Relation`) produced **zero SymbolNodes** and were
+  completely invisible to the graph — previously masked because imports of
+  them were unresolved anyway. Fixed by handling
+  `abstract_class_declaration` identically to `class_declaration` (same AST
+  shape). This adds SymbolNodes for abstract classes on **every**
+  TypeScript repo, not just monorepos — a parser-level change, called out
+  explicitly here rather than folded silently into the resolution fix.
+- Namespace imports (`import * as V1 from 'mod'`) were treated like named
+  imports, creating an edge target `mod::V1` — a symbol name that almost
+  never exists, since a namespace import binds the whole module object, not
+  a symbol literally named after the alias. Fixed to target the file-level
+  `__file__` pseudo-node instead, consistent with other whole-file
+  reference edges.
+- Aliased re-exports (`export { x as y } from './mod'`) used the first
+  identifier in the AST for both the local symbol name and the resolution
+  target, instead of the `name`/`alias` fields — mirroring a fix already
+  present on the import side.
+
+**Known remaining gap (5 cases in drizzle-orm, exhaustively enumerated, not
+a "some remain" hand-wave):** re-exporting an anonymous `export default`
+value (an array/object literal with no name to attach a SymbolNode to, e.g.
+drizzle-seed's dataset files) or a field pulled from a non-code file
+(`export { version as npmVersion } from '../package.json'`) has no
+SymbolNode to target regardless of alias handling — a different, narrower
+problem than either bug above, left unresolved rather than papered over
+with a guess.
+
+**Impact — graph edges change, and monorepo health scores move, mostly
+down.** Measured on drizzle-orm (968 files): edges 5,355 → 14,676
+(+9,321 real, correctly-declared cross-file connections instead of
+dangling barrel targets), cross-directory edges 0% → 21.21% (the 0%
+coupling anomaly open since Aug 12 is resolved: it was caused by these
+exact missing edges, not a scoring bug), circular-dependency cycles 110 →
+582 (Circular Deps stays 20/F — already the bottom bucket at either count),
+Coupling 70/C → 30/F, Cohesion 80/B → 40/F, Orphans 46/F → 63/D, overall
+health **57/F → 39/F**. `code-graph`'s own self-scan (no path aliases, no
+workspaces, no nested tsconfigs) is the control and is unchanged at 71/C —
+any movement there would mean the change leaked into single-package
+resolution.
+
+New regression test (`test/workspace-resolution.test.ts`) with a minimal
+two-package fixture monorepo covers the bare-specifier-through-a-barrel
+case directly; verified as a real gate by running it against the pre-fix
+parser and confirming it fails.
+
 ### Fixed — exponential longest-path search in the Dependency Depth dimension (#15)
 
 `calculateDepthScore`'s longest-path search was exhaustive backtracking over
