@@ -1,5 +1,5 @@
 const WORKFLOW_PROMPTS: Record<string, string> = {
-  generic: `DEPWIRE WORKFLOW — Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
+  generic: `DEPWIRE WORKFLOW — Graph-first workflow for complex multi-file tasks.
 
 ## STEP 1 — Orient (before touching anything)
 
@@ -56,17 +56,14 @@ npm test / pytest / go test
 
 1. Run affected_files BEFORE writing any code
    (not after — this is the key insight)
-2. DW Basic (Depwire available but no workflow)
-   performs WORSE than no Depwire — you must follow
-   this workflow for the benefit to materialize
-3. Depwire finds static dependencies only.
+2. Depwire finds static dependencies only.
    Runtime concerns (ORM registries, module caching,
    dynamic imports) are invisible to Depwire.
    Use the compiler/test suite for those.
-4. AGENTS.md in .depwire/ contains project-specific
+3. AGENTS.md in .depwire/ contains project-specific
    context. Read it first before any analysis.`,
 
-  claude: `DEPWIRE WORKFLOW (Claude/Cursor) — Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
+  claude: `DEPWIRE WORKFLOW (Claude/Cursor) — Graph-first workflow for complex multi-file tasks.
 
 ## STEP 1 — Orient (before touching anything)
 \`\`\`
@@ -120,11 +117,10 @@ npm test / pytest / go test
 
 ## CRITICAL RULES
 1. Run affected_files BEFORE writing any code (not after — this is the key insight)
-2. DW Basic (Depwire available but no workflow) performs WORSE than no Depwire — you must follow this workflow for the benefit to materialize
-3. Depwire finds static dependencies only. Runtime concerns (ORM registries, module caching, dynamic imports) are invisible to Depwire. Use the compiler/test suite for those.
-4. AGENTS.md in .depwire/ contains project-specific context. Read it first before any analysis.`,
+2. Depwire finds static dependencies only. Runtime concerns (ORM registries, module caching, dynamic imports) are invisible to Depwire. Use the compiler/test suite for those.
+3. AGENTS.md in .depwire/ contains project-specific context. Read it first before any analysis.`,
 
-  cline: `DEPWIRE WORKFLOW (Cline) — Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
+  cline: `DEPWIRE WORKFLOW (Cline) — Graph-first workflow for complex multi-file tasks.
 
 STEP 1 — ORIENT: connect_repo . then get_architecture_summary
   → Understand the module structure. Note which packages and directories exist.
@@ -159,11 +155,10 @@ STEP 6 — TEST: npm test / pytest / go test
 
 RULES:
 - Run affected_files BEFORE writing any code (not after — this is the key insight)
-- DW Basic (Depwire available but no workflow) performs WORSE than no Depwire — follow this workflow
 - Depwire finds static dependencies only. Runtime concerns are invisible to Depwire. Use the compiler/test suite.
 - AGENTS.md in .depwire/ contains project-specific context. Read it first.`,
 
-  codex: `DEPWIRE WORKFLOW (Codex/CLI) — Proven to reduce cost 19%, tokens 27%, and time 36% on complex multi-file tasks.
+  codex: `DEPWIRE WORKFLOW (Codex/CLI) — Graph-first workflow for complex multi-file tasks.
 
 1. connect_repo .
 2. get_architecture_summary → understand module structure
@@ -185,7 +180,6 @@ RULES:
 
 CRITICAL RULES:
 - Run affected_files BEFORE writing any code (not after — key insight)
-- DW Basic (tools available, no workflow) performs WORSE than no Depwire
 - Depwire finds static dependencies only. Runtime concerns invisible. Use compiler/tests.
 - AGENTS.md in .depwire/ has project context. Read it first.`,
 };

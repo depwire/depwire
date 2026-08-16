@@ -69,29 +69,15 @@ Depwire is the infrastructure layer between your AI coding assistant and your co
 
 ---
 
-## Benchmark Results
+## Performance evidence
 
-Tested on [payloadcms/payload](https://github.com/payloadcms/payload) using **Claude Code (claude-opus-4-8)** — 645 files, 9,292 symbols, 80-file cascading refactor (adding a required parameter to a core error class used across the entire codebase). 3 modes tested: without Depwire, Depwire with no guidance, and Depwire with guided workflow prompt.
+The previously published agent benchmark has been withdrawn after an audit found
+that the task prompt exposed its answer key, the scored file set was narrower
+than the change required by the monorepo, and one arm started in a different
+working directory. A corrected three-arm experiment is being prepared. No
+performance or correctness conclusion from the earlier runs should be cited.
 
-> **Pre-1.9.0 measurement.** The 9,292-symbol figure was produced by a parser with confirmed double-emission and false-orphan bugs (fixed in v1.9.0 — see [CHANGELOG](CHANGELOG.md)); the real symbol count is lower. The benchmark itself (timing, cost, tokens, correctness) is unaffected — it measures agent behavior, not graph size — but this specific number has not been re-measured on the corrected parser.
-
-| Mode | Duration | API Calls | Tokens | Cost | Correctness |
-|------|----------|-----------|--------|------|-------------|
-| Without Depwire | 16m 46s | 40 | 2,959,169 | $9.03 | 100% |
-| Depwire (no guidance) | 11m 20s | 46 | 3,399,822 | $9.80 | 100% |
-| Depwire + workflow | **10m 43s** | **26** | **2,165,356** | **$7.35** | 100% |
-
-**Depwire + guided workflow vs no Depwire:**
-- 36% faster
-- 35% fewer API calls
-- 27% fewer tokens
-- 19% lower cost
-
-> **Key finding:** Depwire without workflow guidance performed worse than no Depwire — agents had the tools but didn't use them unprompted, paying MCP overhead without getting any benefit. The `affected_files` command returned the complete 84-file blast radius in one call, but only when the agent was explicitly told to run it first. This is why we built `depwire prompt` — not as boilerplate, but because the benchmark showed agents need an explicit decision tree to use graph tools effectively.
-
-[Full benchmark methodology and scripts →](https://github.com/depwire/depwire-benchmark)
-
-> Agent: Claude Code (claude-opus-4-8) | Repo: payloadcms/payload @ commit 1545e87 | Benchmark scripts: [github.com/depwire/depwire-benchmark](https://github.com/depwire/depwire-benchmark)
+[Audit and corrected harness →](https://github.com/depwire/depwire-benchmark)
 
 ---
 
@@ -358,23 +344,23 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 | `depwire docs` | Generate 13 architecture documents |
 | `depwire temporal` | Visualize architecture evolution over git history |
 | `depwire parse` | Parse and export dependency graph as JSON |
-| `depwire prompt` | Get the proven workflow prompt for your AI agent |
+| `depwire prompt` | Get a graph-first workflow prompt for your AI agent |
 | `depwire diff` | Structural diff between two git commits — symbols, edges, health, security |
 | `depwire mcp` | Start MCP server for AI coding assistants |
 
 All commands auto-detect your project root. No path configuration needed.
 
-### `depwire prompt` — proven workflow for AI agents
+### `depwire prompt` — graph-first workflow for AI agents
 
 ```bash
-# Get the proven workflow prompt for your agent
+# Get the graph-first workflow prompt for your agent
 depwire prompt                    # generic
 depwire prompt --tool claude      # Claude Code optimized
 depwire prompt --tool cline       # Cline optimized
 depwire prompt --tool codex       # Codex optimized
 ```
 
-The guided workflow reduced cost by 19% and time by 36% in benchmarks. Paste the output as your agent's system context before starting any complex task.
+Paste the output as your agent's system context before starting a complex task.
 
 ---
 
@@ -425,7 +411,7 @@ echo "## Depwire Context" >> CLAUDE.md
 echo "Read .depwire/AGENTS.md for codebase architecture." >> CLAUDE.md
 ```
 
-This gives every Claude Code session instant orientation without any tool calls — the benchmark showed this alone reduces exploratory iterations.
+This gives every Claude Code session project-specific orientation without an MCP tool call.
 
 ![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
@@ -691,7 +677,7 @@ Your license key works in both the VSCode extension and the Cloud app — one su
 - `verify_change` diff-based (no more false positives)
 - SQLite graph cache — 6× faster warm parse
 - Fast MCP startup — loads from depwire-output.json in <100ms regardless of project size
-- `depwire prompt` — proven workflow prompt for AI agents (19% cheaper, 36% faster in benchmarks)
+- `depwire prompt` — workflow prompt for AI agents
 - Auto-generated `.depwire/AGENTS.md` project context after `depwire parse`
 
 **Coming next**

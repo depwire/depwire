@@ -16,7 +16,7 @@ After every version bump, complete ALL of the following before considering the r
 - [ ] website/index.html language count updated if new language added
 - [ ] website/index.html version number updated
 - [ ] website/index.html new language added to badge row and supported-languages section
-- [ ] website/index.html benchmark table updated with new test project numbers
+- [ ] website/index.html evidence-backed project statistics reviewed
 - [ ] website/index.html meta keywords updated
 
 ## Cloud / Infrastructure
