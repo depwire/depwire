@@ -292,6 +292,14 @@ function printResult(result: SimulationResult): void {
     `${chalk.bold('Health Score:')}    ${healthDelta.before} \u2192 ${healthDelta.after}  ${deltaColor(`(${deltaSign}${healthDelta.delta} ${deltaIcon})`)}`
   );
 
+  // Surface any dimension-level caveats (e.g. Orphans & Dead Code, #11) --
+  // these apply even when that dimension's delta is 0, since the caveat is
+  // about the absolute score not matching the real per-repo Health tab.
+  const withNotes = healthDelta.dimensionChanges.filter((d) => d.note);
+  for (const d of withNotes) {
+    console.log(chalk.dim(`  \u26a0 ${d.name}: ${d.note}`));
+  }
+
   // Dimension changes (only show non-zero)
   const changed = healthDelta.dimensionChanges.filter((d) => d.delta !== 0);
   if (changed.length > 0) {

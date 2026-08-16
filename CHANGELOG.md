@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 No real repo's score moved: code-graph stays 71/C with Orphans at 88/B; `simulate_change`'s Orphans component on a real delete simulation stays 73/73 (delta 0). Patch version per this project's own score-movement bump rule (same precedent as #15).
 
+**The residual divergence is now surfaced in the response, not just in code comments.** A single-source-of-truth fix is only useful to a user if they can see it: `simulate_change`'s output (both the pure-registry path in `src/tools.ts` and the legacy MCP path in `src/mcp/tools.ts` -- these are two independent response-formatting implementations wrapping the same `SimulationEngine`, and both needed the same change to stay conformant with each other) now includes a `caveats` array and per-dimension `note` field. When a simulation touches the Orphans dimension, the response explicitly states that its Orphans component is computed without filesystem access and will not match the repo's real Health-tab score -- so a user comparing `simulate_change`'s `healthBefore` against the dashboard sees why they differ, instead of silently wondering whether one of the two is wrong. The `whatif` CLI command prints the same caveat inline.
+
 ### Fixed — no fabricated edge for unresolvable member calls (#14, builtin/global misresolution)
 
 `resolveLocalCallTarget` read only the `property` of a `member_expression`

@@ -57,7 +57,27 @@ export interface DimensionChange {
   before: number;
   after: number;
   delta: number;
+  /**
+   * Present only on dimensions whose simulation-time computation is known
+   * to differ from the real per-repo score shown elsewhere (e.g. the
+   * Health tab). Currently only 'Orphans & Dead Code' (#11): simulate_change
+   * has no filesystem access, so it can't apply test/framework/entry-point
+   * exclusions and deliberately scopes to architecture-level symbols
+   * (excludes class methods/properties). Measured gap: 15-19 points on
+   * real repos. This is a documented, by-design difference, not a bug --
+   * see calculateOrphansScore in src/health/metrics.ts.
+   */
+  note?: string;
 }
+
+const ORPHANS_DIMENSION_NAME = 'Orphans & Dead Code';
+const ORPHANS_SIMULATION_NOTE =
+  "Computed without filesystem access: excludes test/framework/entry-point " +
+  "file exclusions and class methods/properties that the repo's real Health " +
+  "score (Health tab) accounts for. Expect this component -- and the overall " +
+  "before/after scores -- to differ from the repo's actual score by design; " +
+  "compare only the before/after delta shown here, not the absolute values " +
+  "against the Health tab.";
 
 export interface BrokenImport {
   file: string;
@@ -125,6 +145,7 @@ export class SimulationEngine {
         before: bd.score,
         after: ad ? ad.score : bd.score,
         delta: (ad ? ad.score : bd.score) - bd.score,
+        note: bd.name === ORPHANS_DIMENSION_NAME ? ORPHANS_SIMULATION_NOTE : undefined,
       };
     });
 

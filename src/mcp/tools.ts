@@ -1780,6 +1780,9 @@ function handleSimulateChange(args: Record<string, any>, state: DepwireState): a
     const brokenImportCount = result.diff.brokenImports.length;
     const affectedNodeCount = result.diff.affectedNodes.length;
     const removedEdgeCount = result.diff.removedEdges.length;
+    const caveats = result.healthDelta.dimensionChanges
+      .filter((d) => d.note)
+      .map((d) => `${d.name}: ${d.note}`);
 
     return {
       operation,
@@ -1787,6 +1790,8 @@ function handleSimulateChange(args: Record<string, any>, state: DepwireState): a
       healthBefore: result.healthDelta.before,
       healthAfter: result.healthDelta.after,
       healthDelta: result.healthDelta.delta,
+      dimensionChanges: result.healthDelta.dimensionChanges,
+      caveats,
       affectedNodes: affectedNodeCount,
       brokenImports: result.diff.brokenImports.map((bi) => ({
         file: bi.file,
