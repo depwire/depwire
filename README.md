@@ -526,15 +526,14 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 | | Depwire | RAG-based tools | LLM scanning |
 |--|---------|-----------------|--------------|
-| Approach | Deterministic graph | Probabilistic match | Brute force |
-| Accuracy | 100% — tree-sitter AST | ~70% — embedding match | Varies |
-| Refactor safety | Full call chain tracing | Misses indirect refs | Blind edits |
-| Token cost | Ultra-low — surgical reads | High — context stuffing | Extreme |
-| Cross-language | REST + subprocess edges | None | None |
-| Security scanner | Graph-aware severity | None | None |
-| What If simulation | Before touching code | None | None |
-| Multi-module JVM support | Full cross-module resolution | None | None |
-| Runs locally | Always | Varies | Never |
+| Approach | AST-derived dependency graph | Vector similarity | Direct file inspection |
+| Refactor context | Call and import relationships | Semantically retrieved chunks | Model-selected files |
+| Context shape | Focused graph queries | Retrieved text chunks | Variable |
+| Cross-language | REST + subprocess edges | Implementation-dependent | Model-dependent |
+| Security scanner | Graph-aware severity | Implementation-dependent | Model-dependent |
+| What If simulation | Available | Implementation-dependent | Model-dependent |
+| Multi-module JVM support | Cross-module resolution | Implementation-dependent | Model-dependent |
+| Local operation | Supported | Implementation-dependent | Implementation-dependent |
 
 ---
 
@@ -675,8 +674,8 @@ Your license key works in both the VSCode extension and the Cloud app — one su
 - Constructor/field dependency injection parsing (Angular services, `injects` edge kind)
 - Windows path normalization for all MCP tools
 - `verify_change` diff-based (no more false positives)
-- SQLite graph cache — 6× faster warm parse
-- Fast MCP startup — loads from depwire-output.json in <100ms regardless of project size
+- SQLite graph cache for faster warm parses
+- Fast MCP startup from persisted `depwire-output.json`
 - `depwire prompt` — workflow prompt for AI agents
 - Auto-generated `.depwire/AGENTS.md` project context after `depwire parse`
 

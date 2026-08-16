@@ -1700,7 +1700,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
     <section class="comparison-section">
         <div class="container-wide">
             <h2 class="section-title scroll-reveal">Deterministic Graph vs Probabilistic RAG</h2>
-            <p class="solution-subtitle scroll-reveal">Most AI coding tools use semantic search — they guess what's relevant based on text similarity. Depwire builds a precise, verifiable map of every function call and import using Tree-sitter. The AI doesn't guess. It knows.</p>
+            <p class="solution-subtitle scroll-reveal">Semantic search retrieves context by text similarity. Depwire instead uses Tree-sitter to build an inspectable structural map of calls and imports.</p>
             <div class="comparison-table scroll-reveal">
                 <table>
                     <thead>
@@ -1719,10 +1719,10 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                             <td>Brute Force Reading</td>
                         </tr>
                         <tr>
-                            <td><strong>Precision</strong></td>
-                            <td><span class="check">✓</span> 100% (Tree-sitter AST)</td>
-                            <td>~70% (Embedding match)</td>
-                            <td>Varies — hallucination prone</td>
+                            <td><strong>Context source</strong></td>
+                            <td><span class="check">✓</span> Tree-sitter AST relationships</td>
+                            <td>Embedding similarity</td>
+                            <td>Model-selected files</td>
                         </tr>
                         <tr>
                             <td><strong>Refactor Safety</strong></td>
