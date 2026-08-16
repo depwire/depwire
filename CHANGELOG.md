@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.14.2
+
+### Removed — withdrawn benchmark claims
+
+Removed the invalid performance and correctness claims from the README,
+`depwire prompt` output, and website. The underlying benchmark exposed its
+answer key, scored only a subset of the required monorepo consumers, and did not
+launch every arm from the same working directory. No result from those runs is
+presented as evidence of a Depwire effect. The benchmark is being rerun under a
+corrected, pre-registered harness.
+
 ## 1.14.1
 
 ### Fixed — single Orphans implementation (#11)
