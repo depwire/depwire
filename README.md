@@ -110,7 +110,7 @@ Four guarantees:
 - **Local** — everything runs on your machine. No cloud parsing. No data sent anywhere.
 - **Secure** — your code never leaves your machine. The security scanner requires no API key.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
-- **Deterministic** — tree-sitter parses your code the same way every time. 100% accurate. Not a guess.
+- **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
 
 ---
 
