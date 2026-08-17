@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { header, timestamp, table, formatNumber, impactEmoji, codeBlock, unorderedList } from './templates.js';
+import { analyzeDependencyPaths } from './dependency-paths.js';
 
 /**
  * Generate DEPENDENCIES.md
@@ -294,13 +295,13 @@ function generateConnectedFilePairs(graph: DirectedGraph): string {
 }
 
 function generateDependencyChains(graph: DirectedGraph): string {
-  const chains = findLongestPaths(graph, 5);
+  const chains = analyzeDependencyPaths(graph, 5).paths;
   
   if (chains.length === 0) {
     return 'No significant dependency chains detected.\n\n';
   }
   
-  let output = '';
+  let output = 'Cycles are collapsed into dependency clusters for ranking; displayed chains are expanded into real file-to-file dependency paths.\n\n';
   
   for (let i = 0; i < chains.length; i++) {
     const chain = chains[i];
@@ -309,69 +310,6 @@ function generateDependencyChains(graph: DirectedGraph): string {
   }
   
   return output;
-}
-
-function findLongestPaths(graph: DirectedGraph, limit: number): string[][] {
-  // Build file-level graph
-  const fileGraph = new Map<string, Set<string>>();
-  const fileInDegree = new Map<string, number>();
-  
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceFile = graph.getNodeAttributes(source).filePath;
-    const targetFile = graph.getNodeAttributes(target).filePath;
-    
-    if (sourceFile !== targetFile) {
-      if (!fileGraph.has(sourceFile)) {
-        fileGraph.set(sourceFile, new Set());
-      }
-      fileGraph.get(sourceFile)!.add(targetFile);
-      
-      fileInDegree.set(targetFile, (fileInDegree.get(targetFile) || 0) + 1);
-      if (!fileInDegree.has(sourceFile)) {
-        fileInDegree.set(sourceFile, 0);
-      }
-    }
-  });
-  
-  // Find files with zero in-degree (roots)
-  const roots: string[] = [];
-  for (const [file, inDegree] of fileInDegree.entries()) {
-    if (inDegree === 0) {
-      roots.push(file);
-    }
-  }
-  
-  // DFS from each root to find longest paths
-  const allPaths: string[][] = [];
-  const visited = new Set<string>();
-  
-  function dfs(file: string, path: string[]) {
-    visited.add(file);
-    path.push(file);
-    
-    const neighbors = fileGraph.get(file);
-    if (!neighbors || neighbors.size === 0) {
-      allPaths.push([...path]);
-    } else {
-      for (const neighbor of neighbors) {
-        if (!visited.has(neighbor)) {
-          dfs(neighbor, path);
-        }
-      }
-    }
-    
-    path.pop();
-    visited.delete(file);
-  }
-  
-  for (const root of roots.slice(0, 10)) {
-    dfs(root, []);
-  }
-  
-  // Sort by path length descending
-  allPaths.sort((a, b) => b.length - a.length);
-  
-  return allPaths.slice(0, limit);
 }
 
 function generateCircularDependenciesDetailed(graph: DirectedGraph): string {
