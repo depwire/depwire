@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.14.3
+
+### Fixed — bounded documentation dependency paths (#15)
+
+`depwire docs --update` no longer exhausts the V8 heap while generating
+`DEPENDENCIES.md` on highly connected repositories. Documentation and health
+now share one bounded SCC/DAG dependency-path analysis in the graph layer, and
+displayed documentation chains are expanded into real file-to-file edges.
+
+### Changed — release metadata and documentation
+
+Corrected the package description, README, website, and architecture assets to
+report 24 MCP tools and 14 CLI commands. Refreshed the README tool table with
+`affected_files` and updated the bundled website footer for v1.14.3.
+
 ## 1.14.2
 
 ### Removed — withdrawn benchmark claims

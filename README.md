@@ -6,7 +6,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/depwire-cli?color=00d4aa&label=downloads%2Fmonth)](https://www.npmjs.com/package/depwire-cli)
 [![GitHub stars](https://img.shields.io/github/stars/depwire/depwire?color=00d4aa&style=flat)](https://github.com/depwire/depwire/stargazers)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
-[![MCP Compatible](https://img.shields.io/badge/MCP-23%20tools-00d4aa)](https://github.com/depwire/depwire)
+[![MCP Compatible](https://img.shields.io/badge/MCP-24%20tools-00d4aa)](https://github.com/depwire/depwire)
 
 [![Languages](https://img.shields.io/badge/languages-17-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
@@ -366,7 +366,7 @@ Paste the output as your agent's system context before starting a complex task.
 
 ## MCP server — AI integration
 
-Connect Depwire to any MCP-compatible AI tool. Your AI gets 23 tools it can call autonomously.
+Connect Depwire to any MCP-compatible AI tool. Your AI gets 24 tools it can call autonomously.
 
 **Claude Desktop** — add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -442,6 +442,7 @@ This gives every Claude Code session project-specific orientation without an MCP
 | `get_active_claims` | Query who is currently working on what. |
 | `record_decision` | Save a structured decision for future sessions to reference. |
 | `get_decisions` | Retrieve past decisions by query, session, file, or tag. |
+| `affected_files` | Find files and tests affected by changing a file or symbol. |
 
 #### `.depwire/` runtime state
 

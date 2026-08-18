@@ -1,7 +1,7 @@
 {
   "name": "depwire-cli",
-  "version": "1.14.2",
-  "description": "Dependency graph + 23 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
+  "version": "1.14.3",
+  "description": "Dependency graph + 24 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
   "type": "module",
   "bin": {
     "depwire": "dist/index.js"
