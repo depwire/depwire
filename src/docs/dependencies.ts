@@ -1,7 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { header, timestamp, table, formatNumber, impactEmoji, codeBlock, unorderedList } from './templates.js';
-import { analyzeDependencyPaths } from './dependency-paths.js';
+import { analyzeDependencyPaths } from '../graph/dependency-paths.js';
 
 /**
  * Generate DEPENDENCIES.md

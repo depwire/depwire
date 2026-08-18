@@ -1,7 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { HealthDimension } from './types.js';
 import { dirname } from 'path';
-import { analyzeDependencyPaths } from '../docs/dependency-paths.js';
+import { analyzeDependencyPaths } from '../graph/dependency-paths.js';
 
 /**
  * Calculate the letter grade from a 0-100 score

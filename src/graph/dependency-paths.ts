@@ -19,7 +19,8 @@ export interface DependencyPathAnalysis {
 }
 
 /**
- * Analyze file-level dependency paths in bounded O(K(V+E)) space/time, where
+ * Analyze file-level dependency paths for graph consumers in bounded
+ * O(K(V+E)) space/time, where
  * K is the requested number of representative paths. Cycles are condensed to
  * strongly connected components before path ranking.
  */

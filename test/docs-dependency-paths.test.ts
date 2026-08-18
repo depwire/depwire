@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DirectedGraph } from 'graphology';
-import { analyzeDependencyPaths } from '../src/docs/dependency-paths.js';
+import { analyzeDependencyPaths } from '../src/graph/dependency-paths.js';
 import { calculateDepthScore } from '../src/health/metrics.js';
 
 function graphFromFileEdges(edges: Array<[string, string]>): DirectedGraph {
