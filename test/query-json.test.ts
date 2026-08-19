@@ -172,7 +172,7 @@ describe('depwire query --json', () => {
       '=== Impact Analysis: authenticate (function) ===\n' +
       'Location: auth.ts:1-1\n' +
       '\nDirect Dependents: 2\n' +
-      '  - __file__ (import) in users.ts:1\n' +
+      '  - __file__ (file) in users.ts:1\n' +
       '  - getUser (function) in users.ts:2\n' +
       '\nTotal Transitive Dependents: 4\n' +
       'Affected Files: 2\n' +
@@ -180,5 +180,32 @@ describe('depwire query --json', () => {
       '  - users.ts\n' +
       '\n',
     );
+
+    expect(
+      spawnSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          `import { deserializeGraph, serializeGraph } from ${JSON.stringify(resolve(import.meta.dirname, '../dist/graph.js'))};
+const graph = deserializeGraph({
+  projectRoot: '/repo',
+  files: ['src/a.ts'],
+  nodes: [
+    { id: 'src/a.ts::__file__', name: '__file__', kind: 'import', filePath: 'src/a.ts', startLine: 1, endLine: 1, exported: false },
+    { id: 'src/a.ts::import:dep', name: 'dep', kind: 'import', filePath: 'src/a.ts', startLine: 2, endLine: 2, exported: false }
+  ],
+  edges: [],
+  metadata: { parsedAt: '2026-01-01T00:00:00.000Z', fileCount: 1, nodeCount: 2, edgeCount: 0 }
+});
+process.stdout.write(JSON.stringify({
+  structural: graph.getNodeAttribute('src/a.ts::__file__', 'kind'),
+  declaration: graph.getNodeAttribute('src/a.ts::import:dep', 'kind'),
+  formatVersion: serializeGraph(graph, '/repo').formatVersion
+}));`,
+        ],
+        { encoding: 'utf-8' },
+      ).stdout,
+    ).toBe('{"structural":"file","declaration":"import","formatVersion":1}');
   });
 });

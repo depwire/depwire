@@ -34,6 +34,7 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
   });
   
   return {
+    formatVersion: 1,
     projectRoot,
     files: Array.from(fileSet).sort(),
     nodes,
@@ -54,7 +55,11 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   for (const node of json.nodes) {
     graph.addNode(node.id, {
       name: node.name,
-      kind: node.kind,
+      kind: json.formatVersion === undefined
+        && node.kind === 'import'
+        && node.id.endsWith('::__file__')
+        ? 'file'
+        : node.kind,
       filePath: node.filePath,
       startLine: node.startLine,
       endLine: node.endLine,

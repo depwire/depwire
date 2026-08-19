@@ -31,7 +31,7 @@ export function detectCrossLanguageEdges(
 
       graph.addNode(sourceNodeId, {
         name: '__file__',
-        kind: 'import',
+        kind: 'file',
         filePath: edge.sourceFile,
         startLine: 1,
         endLine: 1,
@@ -48,7 +48,7 @@ export function detectCrossLanguageEdges(
 
       graph.addNode(targetNodeId, {
         name: '__file__',
-        kind: 'import',
+        kind: 'file',
         filePath: edge.targetFile,
         startLine: 1,
         endLine: 1,

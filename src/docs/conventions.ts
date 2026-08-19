@@ -366,6 +366,7 @@ function generateSymbolDistribution(graph: DirectedGraph): string {
     type_alias: 0,
     interface: 0,
     enum: 0,
+    file: 0,
     import: 0,
     export: 0,
     method: 0,

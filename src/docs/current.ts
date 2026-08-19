@@ -319,6 +319,7 @@ function capitalizeKind(kind: SymbolKind): string {
     type_alias: 'Type',
     interface: 'Interface',
     enum: 'Enum',
+    file: 'File',
     import: 'Import',
     export: 'Export',
     method: 'Method',
