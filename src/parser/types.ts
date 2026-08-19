@@ -6,6 +6,7 @@ export type SymbolKind =
   | 'type_alias'
   | 'interface'
   | 'enum'
+  | 'file'           // Structural file-level pseudo-node (`path::__file__`)
   | 'import'
   | 'export'
   | 'method'
@@ -136,6 +137,8 @@ export function aggregateUnresolvedCalls(parsedFiles: ParsedFile[]): UnresolvedC
 }
 
 export interface ProjectGraph {
+  /** Serialized graph schema version. Absent on payloads written before v1. */
+  formatVersion?: number;
   projectRoot: string;
   files: string[];
   nodes: SymbolNode[];

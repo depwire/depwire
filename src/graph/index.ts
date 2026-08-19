@@ -32,7 +32,7 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
         const filePath = edge.source.replace('::__file__', '');
         graph.addNode(edge.source, {
           name: '__file__',
-          kind: 'import',
+          kind: 'file',
           filePath,
           startLine: 1,
           endLine: 1,
@@ -45,7 +45,7 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
         const filePath = edge.target.replace('::__file__', '');
         graph.addNode(edge.target, {
           name: '__file__',
-          kind: 'import',
+          kind: 'file',
           filePath,
           startLine: 1,
           endLine: 1,

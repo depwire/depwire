@@ -24,6 +24,10 @@ describe('Java multi-module import resolution', () => {
     expect(crossModuleEdge).toBeDefined();
     expect(crossModuleEdge!.source).toContain('module-a');
     expect(crossModuleEdge!.target).toContain('module-b');
+    expect(
+      parsedFiles.flatMap((file) => file.symbols)
+        .find((symbol) => symbol.id.includes('::import:'))?.kind,
+    ).toBe('import');
   });
 
   it('preserves pom-to-pom edges', async () => {
