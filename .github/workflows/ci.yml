@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Validate release metadata
+        run: node scripts/validate-release-metadata.mjs
+
+      - name: Smoke test packed CLI and MCP server
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          package_version="$(node -p "require('./package.json').version")"
+          tarball_name="$(npm pack --silent)"
+          tarball_path="$GITHUB_WORKSPACE/$tarball_name"
+          smoke_dir="$(mktemp -d)"
+          install_dir="$smoke_dir/install"
+          fixture_dir="$smoke_dir/fixture"
+
+          mkdir -p "$install_dir" "$fixture_dir"
+          cp -R test/fixtures/sample-project/. "$fixture_dir/"
+
+          cd "$install_dir"
+          npm init -y
+          npm install "$tarball_path"
+
+          depwire_bin="$install_dir/node_modules/.bin/depwire"
+          actual_version="$("$depwire_bin" --version)"
+          test "$actual_version" = "$package_version"
+
+          "$depwire_bin" parse "$fixture_dir" --output "$smoke_dir/depwire-output.json"
+
+          DEPWIRE_BIN="$depwire_bin" FIXTURE_DIR="$fixture_dir" node --input-type=module <<'NODE'
+          import { spawn } from 'node:child_process';
+
+          const child = spawn(process.env.DEPWIRE_BIN, ['mcp', process.env.FIXTURE_DIR, '--no-cache'], {
+            env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+            stdio: ['pipe', 'pipe', 'pipe'],
+          });
+          let stdout = '';
+          let stderr = '';
+
+          child.stderr.setEncoding('utf8');
+          child.stderr.on('data', chunk => { stderr += chunk; });
+
+          function send(message) {
+            child.stdin.write(`${JSON.stringify(message)}\n`);
+          }
+
+          const tools = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              child.kill('SIGTERM');
+              reject(new Error(`MCP smoke test timed out. stderr:\n${stderr}`));
+            }, 30_000);
+
+            child.stdout.setEncoding('utf8');
+            child.stdout.on('data', chunk => {
+              stdout += chunk;
+              let newline;
+              while ((newline = stdout.indexOf('\n')) >= 0) {
+                const line = stdout.slice(0, newline).trim();
+                stdout = stdout.slice(newline + 1);
+                if (!line) continue;
+
+                const message = JSON.parse(line);
+                if (message.id === 1) {
+                  send({ jsonrpc: '2.0', method: 'notifications/initialized' });
+                  send({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
+                } else if (message.id === 2) {
+                  clearTimeout(timeout);
+                  resolve(message.result?.tools);
+                }
+              }
+            });
+            child.once('error', reject);
+            child.once('exit', code => {
+              if (code !== null && code !== 0) {
+                clearTimeout(timeout);
+                reject(new Error(`MCP server exited ${code}. stderr:\n${stderr}`));
+              }
+            });
+
+            send({
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'initialize',
+              params: {
+                protocolVersion: '2025-06-18',
+                capabilities: {},
+                clientInfo: { name: 'depwire-ci-smoke', version: '1.0.0' },
+              },
+            });
+          });
+
+          if (!Array.isArray(tools) || tools.length !== 24) {
+            child.kill('SIGTERM');
+            throw new Error(`Expected exactly 24 MCP tools, received ${tools?.length ?? 'no list'}.`);
+          }
+
+          console.log(`MCP tools/list returned ${tools.length} tools.`);
+          child.kill('SIGTERM');
+          NODE

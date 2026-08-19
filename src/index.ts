@@ -40,6 +40,12 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
 const program = new Command();
 
+const VALID_DOC_NAMES = [
+  'architecture', 'conventions', 'dependencies', 'onboarding',
+  'files', 'api_surface', 'errors', 'tests', 'history', 'current',
+  'status', 'health', 'dead_code',
+] as const;
+
 program
   .name('depwire')
   .description('Code cross-reference graph builder for multi-language projects')
@@ -581,6 +587,17 @@ program
       const onlyList = options.only 
         ? options.only.split(',').map(s => s.trim())
         : undefined;
+
+      if (onlyList) {
+        const validNames = new Set<string>(VALID_DOC_NAMES);
+        const unknownNames = onlyList.filter(name => !validNames.has(name));
+        if (unknownNames.length > 0) {
+          console.error(`Unknown document name(s): ${unknownNames.join(', ')}`);
+          console.error(`Valid document names: ${VALID_DOC_NAMES.join(', ')}`);
+          process.exitCode = 1;
+          return;
+        }
+      }
       
       // Handle .gitignore
       if (options.gitignore === undefined && !existsSyncNode(outputDir)) {

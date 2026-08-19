@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.15.0
+
+### Added — reliability gates
+
+- Added a required CI workflow for pull requests and pushes to `main`, running
+  clean installs, sequential builds and tests, release-metadata validation, and
+  packed CLI/MCP smoke tests on Node 20 and Node 22.
+- Added release-metadata synchronization and validation scripts covering
+  `package.json`, `server.json`, and `manifest.json`.
+
+### Changed
+
+- Raised the supported Node.js version to 20 or newer. Commander 14 and Vitest
+  4 already require Node 20, and Node 18 is end-of-life; this support-contract
+  correction is the reason for the minor version bump.
+- Unknown `depwire docs --update --only` document names now fail before any
+  document is generated and list all 13 valid names.
+- Replaced the website's absolute parse-success claim with an accurate statement
+  that parse failures are counted and reported.
+
 ## 1.14.3
 
 ### Fixed — bounded documentation dependency paths (#15)
