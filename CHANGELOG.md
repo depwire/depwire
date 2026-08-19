@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.16.0
+
+### Changed — graph shape and compatibility
+
+- Structural file nodes now have their own `file` kind; real import declarations
+  keep the `import` kind. Serialized graphs carry `formatVersion: 1`, and older
+  payloads are normalized on read so stored graphs keep working unmodified.
+- Symbol counts across every surface—including file context, architecture
+  summary, docs, dead-code totals, visualization, and temporal snapshots—now
+  exclude structural nodes through one shared predicate.
+
+### Disclosure — symbol-count correction
+
+Symbol totals drop at this version (e.g. −149 on this repository) because structural file nodes are no longer counted as symbols. Totals-over-time views will show a one-time step down at the v1.16.0 boundary — a counting correction, not a code change. Dead-code percentages shift accordingly because the denominator is now real symbols.
+
 ## 1.15.0
 
 ### Added — reliability gates
