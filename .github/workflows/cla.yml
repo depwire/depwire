@@ -24,5 +24,5 @@ jobs:
         with:
           path-to-signatures: 'signatures/version1/cla.json'
           path-to-document: 'https://gist.github.com/atef-ataya/29589a6f53895817bb502f87f915171d'
-          branch: 'main'
+          branch: 'cla-signatures'
           allowlist: 'atef-ataya,dependabot[bot]'
