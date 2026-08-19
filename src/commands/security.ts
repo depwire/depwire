@@ -2,6 +2,7 @@ import { resolve, dirname, join } from 'path';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { buildGraph } from '../graph/index.js';
+import { countGraphSymbols } from '../graph/counts.js';
 import { parseProject } from '../parser/index.js';
 import { findProjectRoot } from '../utils/files.js';
 import { scanSecurity } from '../security/scanner.js';
@@ -50,7 +51,7 @@ export async function securityCommand(
   console.error(`Parsed ${parsedFiles.length} files`);
 
   const graph = buildGraph(parsedFiles, projectRoot);
-  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
 
   if (graph.order === 0) {
     console.error(`No parseable files found in ${projectRoot}. Nothing was analyzed, so no security scan was performed.`);

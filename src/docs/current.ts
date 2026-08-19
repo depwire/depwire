@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { header, timestamp, formatNumber, code, codeBlock, unorderedList } from './templates.js';
 import { SymbolKind } from '../parser/types.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate CURRENT.md - complete codebase snapshot
@@ -18,7 +19,7 @@ export function generateCurrent(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Complete Codebase Snapshot');
   output += '> **Note:** This is a complete snapshot of the entire codebase. For a high-level overview, see ARCHITECTURE.md.\n\n';
@@ -85,7 +86,7 @@ function getLanguageStats(graph: DirectedGraph): { [key: string]: number } {
 
 function generateProjectOverview(graph: DirectedGraph): string {
   const fileCount = getFileCount(graph);
-  const symbolCount = graph.order;
+  const symbolCount = countGraphSymbols(graph);
   const edgeCount = graph.size;
   const languages = getLanguageStats(graph);
   
@@ -135,7 +136,7 @@ function getFileInfo(graph: DirectedGraph): FileInfo[] {
     
     const info = fileMap.get(attrs.filePath)!;
     
-    if (attrs.name !== '__file__') {
+    if (isCountableSymbol(attrs.kind)) {
       info.symbols.push({
         name: attrs.name,
         kind: attrs.kind,
@@ -266,7 +267,7 @@ function generateCompleteSymbolIndex(graph: DirectedGraph): string {
   const symbolsByKind = new Map<SymbolKind, Array<{ name: string; filePath: string; line: number }>>();
   
   graph.forEachNode((node, attrs) => {
-    if (attrs.name === '__file__') return;
+    if (!isCountableSymbol(attrs.kind)) return;
     
     if (!symbolsByKind.has(attrs.kind)) {
       symbolsByKind.set(attrs.kind, []);

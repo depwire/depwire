@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { basename, extname } from 'path';
 import { SymbolKind } from '../parser/types.js';
 import { header, timestamp, table, formatNumber, formatPercent, unorderedList } from './templates.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate CONVENTIONS.md
@@ -16,7 +17,7 @@ export function generateConventions(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Code Conventions');
   output += 'Auto-detected coding patterns and conventions in this codebase.\n\n';
@@ -377,10 +378,11 @@ function generateSymbolDistribution(graph: DirectedGraph): string {
   };
   
   graph.forEachNode((node, attrs) => {
+    if (!isCountableSymbol(attrs.kind)) return;
     symbolCounts[attrs.kind as SymbolKind]++;
   });
   
-  const total = graph.order;
+  const total = countGraphSymbols(graph);
   
   const rows: string[][] = [];
   

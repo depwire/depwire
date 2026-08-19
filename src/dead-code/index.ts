@@ -3,6 +3,7 @@ import type { DeadCodeReport, DeadCodeOptions, ConfidenceLevel } from "./types.j
 import { findDeadSymbols } from "./detector.js";
 import { classifyDeadSymbols } from "./classifier.js";
 import { displayDeadCodeReport } from "./display.js";
+import { countGraphSymbols } from "../graph/counts.js";
 
 export function analyzeDeadCode(
   graph: DirectedGraph,
@@ -37,7 +38,7 @@ export function analyzeDeadCode(
     console.error(`  8. Survived confidence filter:  ${filteredSymbols.length} (of ${classifiedSymbols.length} classified, min confidence = "${opts.confidence}")`);
   }
 
-  const totalSymbols = graph.order;
+  const totalSymbols = countGraphSymbols(graph);
 
   const byConfidence = {
     high: classifiedSymbols.filter((s) => s.confidence === "high").length,

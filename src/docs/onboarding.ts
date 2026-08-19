@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { dirname, relative } from 'path';
 import { header, timestamp, orderedList, unorderedList, code } from './templates.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate ONBOARDING.md
@@ -15,7 +16,7 @@ export function generateOnboarding(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Onboarding Guide');
   output += 'A guide for developers new to this codebase.\n\n';
@@ -103,9 +104,9 @@ function generateQuickOrientation(graph: DirectedGraph): string {
   let output = '';
   
   if (primaryLang) {
-    output += `This is a **${primaryLang[0]}** project with **${fileCount} files** and **${graph.order} symbols**. `;
+    output += `This is a **${primaryLang[0]}** project with **${fileCount} files** and **${countGraphSymbols(graph)} symbols**. `;
   } else {
-    output += `This project has **${fileCount} files** and **${graph.order} symbols**. `;
+    output += `This project has **${fileCount} files** and **${countGraphSymbols(graph)} symbols**. `;
   }
   
   if (dirs.size > 0) {
@@ -195,7 +196,9 @@ function getFileStatsWithDeps(graph: DirectedGraph): Array<{
         outgoingRefs: new Set(),
       });
     }
-    fileMap.get(attrs.filePath)!.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) {
+      fileMap.get(attrs.filePath)!.symbolCount++;
+    }
   });
   
   // Count cross-file references
@@ -280,7 +283,9 @@ function getDirectoryStats(graph: DirectedGraph): DirectoryStats[] {
       });
     }
     
-    dirMap.get(dir)!.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) {
+      dirMap.get(dir)!.symbolCount++;
+    }
   });
   
   // Count files per directory

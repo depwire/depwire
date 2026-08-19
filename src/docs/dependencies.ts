@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { header, timestamp, table, formatNumber, impactEmoji, codeBlock, unorderedList } from './templates.js';
 import { analyzeDependencyPaths } from '../graph/dependency-paths.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate DEPENDENCIES.md
@@ -16,7 +17,7 @@ export function generateDependencies(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Dependency Map');
   output += 'Complete dependency mapping showing what connects to what.\n\n';
@@ -176,7 +177,7 @@ function generateHighImpactSymbols(graph: DirectedGraph): string {
   
   graph.forEachNode((node, attrs) => {
     const inDegree = graph.inDegree(node);
-    if (inDegree > 0 && attrs.name !== '__file__') {
+    if (inDegree > 0 && isCountableSymbol(attrs.kind)) {
       symbolImpact.push({
         name: attrs.name,
         filePath: attrs.filePath,

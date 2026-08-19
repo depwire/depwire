@@ -11,6 +11,7 @@ import { calculateHealthScore } from '../health/index.js';
 import { scoreToGrade } from '../health/metrics.js';
 import { scanSecurity } from '../security/scanner.js';
 import { getArchitectureSummary } from '../graph/queries.js';
+import { isCountableSymbol } from '../graph/counts.js';
 import type { SymbolNode, SymbolEdge } from '../parser/types.js';
 
 export interface DiffOptions {
@@ -178,6 +179,7 @@ export async function computeDiff(
     filesA = [...new Set(filesA)];
 
     gA.forEachNode((nodeId: string, attrs: any) => {
+      if (!isCountableSymbol(attrs.kind)) return;
       symbolsA.set(nodeId, {
         id: nodeId,
         name: attrs.name,
@@ -233,6 +235,7 @@ export async function computeDiff(
     filesB = [...new Set(filesB)];
 
     gB.forEachNode((nodeId: string, attrs: any) => {
+      if (!isCountableSymbol(attrs.kind)) return;
       symbolsB.set(nodeId, {
         id: nodeId,
         name: attrs.name,

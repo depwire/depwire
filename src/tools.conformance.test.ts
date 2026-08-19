@@ -27,6 +27,14 @@ function createConformanceGraph(): DirectedGraph {
     endLine: 20,
     exported: true,
   });
+  graph.addNode('src/a.ts::__file__', {
+    name: '__file__',
+    kind: 'file',
+    filePath: 'src/a.ts',
+    startLine: 1,
+    endLine: 1,
+    exported: false,
+  });
   graph.addNode('src/b.ts::Bar', {
     name: 'Bar',
     kind: 'class',
@@ -119,5 +127,26 @@ describe('pure tool registry conformance', () => {
     const registryResult = await registryDefinition!.handler(args, context);
 
     expect(registryResult).toEqual(existingResult);
+    if (name === 'get_file_context') {
+      expect(JSON.parse(existingResult.content[0].text).symbols).toHaveLength(2);
+      expect(JSON.parse(existingResult.content[0].text).totalSymbols).toBe(2);
+    }
+    if (name === 'get_architecture_summary') {
+      expect(JSON.parse(existingResult.content[0].text).overview.totalSymbols).toBe(5);
+      expect(JSON.parse(existingResult.content[0].text).overview.totalFiles).toBe(4);
+      expect(JSON.parse(existingResult.content[0].text).overview.totalEdges).toBe(4);
+    }
+    if (name === 'list_files') {
+      expect(
+        JSON.parse(existingResult.content[0].text).files
+          .find((file: { path: string }) => file.path === 'src/a.ts').symbolCount,
+      ).toBe(2);
+    }
+    if (name === 'search_symbols') {
+      expect(
+        JSON.parse((await handleToolCall('search_symbols', { query: '__file__' }, state)).content[0].text)
+          .totalMatches,
+      ).toBe(0);
+    }
   });
 });

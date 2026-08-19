@@ -29,6 +29,8 @@ export {
   getDependents,
 } from './graph/queries.js';
 
+export { countGraphSymbols, isCountableSymbol } from './graph/counts.js';
+
 export { SimulationEngine } from './simulation/engine.js';
 
 export {

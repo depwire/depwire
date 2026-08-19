@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
+import { countGraphSymbols } from '../graph/counts.js';
 
 /**
  * Generate STATUS.md - TODO/FIXME inventory
@@ -16,7 +17,7 @@ export function generateStatus(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Project Status');
   output += 'TODO/FIXME/HACK inventory showing what\'s implemented vs pending.\n\n';

@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { basename } from 'path';
 import { getCrossFileEdges, getFileSummary } from '../graph/queries.js';
+import { countGraphSymbols } from '../graph/counts.js';
 import type { VizData, VizFile, VizArc } from './types.js';
 
 export function prepareVizData(graph: DirectedGraph, projectRoot: string): VizData {
@@ -63,7 +64,7 @@ export function prepareVizData(graph: DirectedGraph, projectRoot: string): VizDa
     arcs,
     stats: {
       totalFiles: files.length,
-      totalSymbols: graph.order,
+      totalSymbols: countGraphSymbols(graph),
       totalEdges: graph.size,
       totalCrossFileEdges: arcs.reduce((sum, arc) => sum + arc.edgeCount, 0),
     },

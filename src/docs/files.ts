@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { dirname, basename, relative } from 'path';
 import { header, timestamp, table, formatNumber, formatPercent, unorderedList } from './templates.js';
 import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate FILES.md - complete file catalog
@@ -16,7 +17,7 @@ export function generateFiles(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('File Catalog');
   output += 'Complete catalog of every file in the project with key metrics.\n\n';
@@ -84,7 +85,7 @@ function getFileStats(graph: DirectedGraph): FileStats[] {
     }
     
     const stats = fileMap.get(attrs.filePath)!;
-    stats.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) stats.symbolCount++;
     
     // Track exported symbols
     if (attrs.exported && attrs.name !== 'default') {

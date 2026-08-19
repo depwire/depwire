@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { SymbolKind } from '../parser/types.js';
 import { header, timestamp, table, formatNumber, formatPercent, codeBlock, unorderedList } from './templates.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 interface LanguageStats {
   [key: string]: number;
@@ -39,7 +40,7 @@ export function generateArchitecture(
   
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
-  output += timestamp(version, now, getFileCount(graph), graph.order);
+  output += timestamp(version, now, getFileCount(graph), countGraphSymbols(graph));
   
   output += header('Architecture Overview');
   
@@ -109,7 +110,7 @@ function getLanguageStats(graph: DirectedGraph): LanguageStats {
 
 function generateProjectSummary(graph: DirectedGraph, parseTime: number): string {
   const fileCount = getFileCount(graph);
-  const symbolCount = graph.order;
+  const symbolCount = countGraphSymbols(graph);
   const edgeCount = graph.size;
   const languages = getLanguageStats(graph);
   
@@ -174,7 +175,7 @@ function getDirectoryStats(graph: DirectedGraph): DirectoryStats[] {
     }
     
     const dirStat = dirMap.get(dir)!;
-    dirStat.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) dirStat.symbolCount++;
     
     // Count symbol kinds
     if (attrs.kind === 'interface' || attrs.kind === 'type_alias') {
@@ -325,7 +326,9 @@ function getFileStats(graph: DirectedGraph): {
         outgoingRefs: new Set(),
       });
     }
-    fileMap.get(attrs.filePath)!.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) {
+      fileMap.get(attrs.filePath)!.symbolCount++;
+    }
   });
   
   // Count cross-file references

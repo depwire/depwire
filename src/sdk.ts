@@ -59,6 +59,9 @@ export { getImpact } from './graph/queries.js';
 /** Get high-level architecture summary — file count, symbol count, most connected files */
 export { getArchitectureSummary } from './graph/queries.js';
 
+/** Shared reporting contract: structural file nodes are not symbols. */
+export { countGraphSymbols, isCountableSymbol } from './graph/counts.js';
+
 /** Simulation engine — simulate a move/delete/rename/split/merge before touching code */
 export { SimulationEngine } from './simulation/engine.js';
 
