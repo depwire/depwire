@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { SymbolNode, EdgeKind } from '../parser/types.js';
 import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
 import { relative } from 'path';
+import { countGraphSymbols, isCountableSymbol } from './counts.js';
 
 export interface SymbolMatch {
   id: string;
@@ -26,6 +27,7 @@ export function findSymbols(graph: DirectedGraph, query: string): SymbolMatch[] 
   if (query.includes('::')) {
     if (graph.hasNode(query)) {
       const attrs = graph.getNodeAttributes(query);
+      if (!isCountableSymbol(attrs.kind)) return [];
       return [{
         id: query,
         name: attrs.name,
@@ -46,7 +48,7 @@ export function findSymbols(graph: DirectedGraph, query: string): SymbolMatch[] 
   const results: SymbolMatch[] = [];
 
   graph.forEachNode((nodeId, attrs) => {
-    if (attrs.name.toLowerCase() === queryLower) {
+    if (isCountableSymbol(attrs.kind) && attrs.name.toLowerCase() === queryLower) {
       results.push({
         id: nodeId,
         name: attrs.name,
@@ -226,7 +228,9 @@ export function getFileSummary(graph: DirectedGraph): {
         outgoingRefs: new Set(),
       });
     }
-    fileMap.get(attrs.filePath)!.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) {
+      fileMap.get(attrs.filePath)!.symbolCount++;
+    }
   });
   
   // Count cross-file references
@@ -272,7 +276,7 @@ export function searchSymbols(graph: DirectedGraph, query: string): SymbolNode[]
   const results: SymbolNode[] = [];
   
   graph.forEachNode((nodeId, attrs) => {
-    if (attrs.name.toLowerCase().includes(queryLower)) {
+    if (isCountableSymbol(attrs.kind) && attrs.name.toLowerCase().includes(queryLower)) {
       results.push({
         id: nodeId,
         name: attrs.name,
@@ -415,7 +419,7 @@ export function getArchitectureSummary(graph: DirectedGraph, projectRoot?: strin
   
   return {
     fileCount: fileSet.size,
-    symbolCount: graph.order,
+    symbolCount: countGraphSymbols(graph),
     edgeCount: graph.size,
     mostConnectedFiles: fileConnections.slice(0, 5),
     orphanFiles,

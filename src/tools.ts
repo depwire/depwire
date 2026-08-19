@@ -11,6 +11,7 @@ import {
   searchSymbols,
   type DepwireGraph,
 } from './graph.js';
+import { isCountableSymbol } from './graph/counts.js';
 
 type SymbolMatch = ReturnType<typeof findSymbols>[number];
 type SimulationAction = Parameters<SimulationEngine['simulate']>[0];
@@ -284,9 +285,12 @@ function handleGetFileContext(
 ) {
   const normalized = normalizePath(filePath);
   const fileSymbols: any[] = [];
+  let fileFound = false;
 
   graph.forEachNode((nodeId, attrs) => {
     if (normalizePath(attrs.filePath) === normalized) {
+      fileFound = true;
+      if (!isCountableSymbol(attrs.kind)) return;
       fileSymbols.push({
         name: attrs.name,
         kind: attrs.kind,
@@ -298,7 +302,7 @@ function handleGetFileContext(
     }
   });
 
-  if (fileSymbols.length === 0) {
+  if (!fileFound) {
     return {
       error: `File '${filePath}' not found`,
       suggestion: 'Use list_files to see available files',

@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import chalk from 'chalk';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
+import { countGraphSymbols } from '../graph/counts.js';
 import { findProjectRoot } from '../utils/files.js';
 import { getAffectedFiles, type AffectedFile } from '../graph/queries.js';
 import { trackCloudCta } from '../telemetry.js';
@@ -56,7 +57,7 @@ export async function affectedCommand(
   console.error(`Parsing project: ${projectRoot}`);
   const parsedFiles = await parseProject(projectRoot);
   const graph = buildGraph(parsedFiles, projectRoot);
-  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
 
   // Aggregate results across all changed files
   const allAffected = new Map<string, AffectedFile>();

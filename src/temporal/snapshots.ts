@@ -2,6 +2,7 @@ import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync } from 
 import { join, resolve } from 'path';
 import { TemporalSnapshot } from './types.js';
 import { ProjectGraph } from '../parser/types.js';
+import { isCountableSymbol } from '../graph/counts.js';
 
 export function saveSnapshot(
   snapshot: TemporalSnapshot,
@@ -81,7 +82,9 @@ export function createSnapshot(
     if (!fileMap.has(node.filePath)) {
       fileMap.set(node.filePath, { symbols: 0, inbound: 0, outbound: 0 });
     }
-    fileMap.get(node.filePath)!.symbols++;
+    if (isCountableSymbol(node.kind)) {
+      fileMap.get(node.filePath)!.symbols++;
+    }
   }
 
   for (const edge of graph.edges) {
@@ -149,7 +152,7 @@ export function createSnapshot(
     commitAuthor,
     stats: {
       totalFiles: graph.files.length,
-      totalSymbols: graph.nodes.length,
+      totalSymbols: graph.nodes.filter((node) => isCountableSymbol(node.kind)).length,
       totalEdges: edges.length,
       languages,
     },

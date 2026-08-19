@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { basename, dirname } from 'path';
 import { header, timestamp, formatNumber, formatPercent, unorderedList, code, table } from './templates.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate TESTS.md - test file analysis
@@ -15,7 +16,7 @@ export function generateTests(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Test Analysis');
   output += 'Test file inventory and coverage mapping.\n\n';
@@ -91,7 +92,7 @@ function getTestFiles(graph: DirectedGraph): TestFileInfo[] {
       }
       
       const info = testFiles.get(attrs.filePath)!;
-      info.symbolCount++;
+      if (isCountableSymbol(attrs.kind)) info.symbolCount++;
       
       if (attrs.kind === 'function' || attrs.kind === 'method') {
         info.functionCount++;
@@ -346,7 +347,9 @@ function generateTestCoverageMap(graph: DirectedGraph): string {
   // Count symbols per file
   const fileSymbols = new Map<string, number>();
   graph.forEachNode((node, attrs) => {
-    fileSymbols.set(attrs.filePath, (fileSymbols.get(attrs.filePath) || 0) + 1);
+    if (isCountableSymbol(attrs.kind)) {
+      fileSymbols.set(attrs.filePath, (fileSymbols.get(attrs.filePath) || 0) + 1);
+    }
   });
   
   for (const sourceFile of sourceFiles) {

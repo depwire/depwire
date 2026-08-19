@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
 import { calculateHealthScore, loadHealthHistory } from '../health/index.js';
 import { HealthReport } from '../health/types.js';
+import { countGraphSymbols } from '../graph/counts.js';
 
 /**
  * Generate HEALTH.md - dependency health score report
@@ -19,7 +20,7 @@ export function generateHealth(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Dependency Health Score');
   output += 'Analysis of dependency architecture quality across 6 dimensions.\n\n';

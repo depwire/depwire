@@ -6,6 +6,7 @@
 import { resolve } from 'path';
 import { parseProject } from './parser/index.js';
 import { buildGraph } from './graph/index.js';
+import { countGraphSymbols } from './graph/counts.js';
 import { startMcpServer } from './mcp/server.js';
 import { createEmptyState } from './mcp/state.js';
 import { watchProject } from './watcher.js';
@@ -31,7 +32,7 @@ async function main() {
       
       // Build the graph
       const graph = buildGraph(parsedFiles, projectRoot);
-      console.error(`[MCPB] Built graph: ${graph.order} symbols, ${graph.size} edges`);
+      console.error(`[MCPB] Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
       
       // Set initial state
       state.graph = graph;

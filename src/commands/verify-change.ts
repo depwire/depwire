@@ -3,6 +3,7 @@ import { readFileSync, readSync } from 'fs';
 import chalk from 'chalk';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
+import { countGraphSymbols } from '../graph/counts.js';
 import { findProjectRoot } from '../utils/files.js';
 import { verifyChange, type VerifyChangeOutput } from '../core/verify-change.js';
 import { trackCloudCta } from '../telemetry.js';
@@ -36,7 +37,7 @@ export async function verifyChangeCommand(
 
   const parsedFiles = await parseProject(projectRoot);
   const graph = buildGraph(parsedFiles, projectRoot);
-  console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+  console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
 
   // Run verification
   const result = await verifyChange(input, { graph, projectRoot });

@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { header, timestamp, formatNumber, unorderedList, code } from './templates.js';
 import { SymbolKind } from '../parser/types.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate API_SURFACE.md - all exported symbols (public API)
@@ -15,7 +16,7 @@ export function generateApiSurface(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('API Surface');
   output += 'Every exported symbol in the project — the public API.\n\n';
@@ -63,7 +64,7 @@ function getExportedSymbols(graph: DirectedGraph): ExportInfo[] {
   const exports: ExportInfo[] = [];
   
   graph.forEachNode((node, attrs) => {
-    if (attrs.exported && attrs.name !== '__file__') {
+    if (attrs.exported && isCountableSymbol(attrs.kind)) {
       const dependentCount = graph.inDegree(node);
       
       exports.push({

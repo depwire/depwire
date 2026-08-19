@@ -1,5 +1,6 @@
 import { DirectedGraph } from 'graphology';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Generate ERRORS.md - error handling patterns
@@ -14,7 +15,7 @@ export function generateErrors(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Error Handling Analysis');
   output += 'Analysis of error handling patterns and error-prone areas in the codebase.\n\n';
@@ -68,7 +69,7 @@ function getErrorRelatedSymbols(graph: DirectedGraph): ErrorSymbol[] {
   const symbols: ErrorSymbol[] = [];
   
   graph.forEachNode((node, attrs) => {
-    if (attrs.name === '__file__') return;
+    if (!isCountableSymbol(attrs.kind)) return;
     
     const nameLower = attrs.name.toLowerCase();
     
@@ -200,7 +201,9 @@ function generateErrorProneFiles(graph: DirectedGraph): string {
         symbolCount: 0,
       });
     }
-    fileStats.get(attrs.filePath)!.symbolCount++;
+    if (isCountableSymbol(attrs.kind)) {
+      fileStats.get(attrs.filePath)!.symbolCount++;
+    }
   });
   
   // Count error-related symbols

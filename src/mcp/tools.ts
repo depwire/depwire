@@ -20,6 +20,7 @@ import { generateArcDiagramHTML } from "../viz/generate-html.js";
 import { startVizServer } from "../viz/server.js";
 import { parseProject } from "../parser/index.js";
 import { buildGraph } from "../graph/index.js";
+import { countGraphSymbols, isCountableSymbol } from "../graph/counts.js";
 import { generateDocs } from "../docs/index.js";
 import { loadMetadata } from "../docs/metadata.js";
 import { calculateHealthScore } from "../health/index.js";
@@ -1055,9 +1056,12 @@ function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph
   const normalized = normalizePath(filePath);
   // Find all symbols in this file
   const fileSymbols: any[] = [];
+  let fileFound = false;
   
   graph.forEachNode((nodeId, attrs) => {
     if (normalizePath(attrs.filePath) === normalized) {
+      fileFound = true;
+      if (!isCountableSymbol(attrs.kind)) return;
       fileSymbols.push({
         name: attrs.name,
         kind: attrs.kind,
@@ -1069,7 +1073,7 @@ function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph
     }
   });
   
-  if (fileSymbols.length === 0) {
+  if (!fileFound) {
     return {
       error: `File '${filePath}' not found`,
       suggestion: "Use list_files to see available files",
@@ -1501,11 +1505,11 @@ async function handleUpdateProjectDocs(
     
     return {
       status: 'success',
-      message: `Updated ${result.generated.join(', ')} (${fileCount.size} files, ${graph.order} symbols, ${elapsed.toFixed(1)}s)`,
+      message: `Updated ${result.generated.join(', ')} (${fileCount.size} files, ${countGraphSymbols(graph)} symbols, ${elapsed.toFixed(1)}s)`,
       generated: result.generated,
       stats: {
         files: fileCount.size,
-        symbols: graph.order,
+        symbols: countGraphSymbols(graph),
         edges: graph.size,
         time: elapsed,
       },
@@ -1811,5 +1815,4 @@ function handleSimulateChange(args: Record<string, any>, state: DepwireState): a
     };
   }
 }
-
 

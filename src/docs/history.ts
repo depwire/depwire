@@ -2,6 +2,7 @@ import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { execSync } from 'child_process';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
+import { countGraphSymbols } from '../graph/counts.js';
 
 /**
  * Generate HISTORY.md - git history + graph analysis
@@ -16,7 +17,7 @@ export function generateHistory(
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
   const fileCount = getFileCount(graph);
-  output += timestamp(version, now, fileCount, graph.order);
+  output += timestamp(version, now, fileCount, countGraphSymbols(graph));
   
   output += header('Development History');
   output += 'Git history combined with graph analysis showing feature evolution.\n\n';

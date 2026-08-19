@@ -12,6 +12,7 @@ import { calculateWorkspaceOrphansScore } from './workspace-metrics.js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { getSupportedExtensions } from '../parser/detect.js';
+import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 
 /**
  * Calculate the overall health score for a project
@@ -62,6 +63,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   
   graph.forEachNode((node, attrs) => {
     files.add(attrs.filePath);
+    if (!isCountableSymbol(attrs.kind)) return;
     
     const ext = attrs.filePath.toLowerCase();
     let lang: string;
@@ -136,7 +138,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
     recommendations,
     projectStats: {
       files: files.size,
-      symbols: graph.order,
+      symbols: countGraphSymbols(graph),
       edges: graph.size,
       languages
     },

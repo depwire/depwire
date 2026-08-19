@@ -1,6 +1,7 @@
 import { DirectedGraph } from 'graphology';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { countGraphSymbols } from '../graph/counts.js';
 import { generateArchitecture } from './architecture.js';
 import { generateConventions } from './conventions.js';
 import { generateDependencies } from './dependencies.js';
@@ -82,7 +83,7 @@ export async function generateDocs(
     
     // Generate each document
     const fileCount = getFileCount(graph);
-    const symbolCount = graph.order;
+    const symbolCount = countGraphSymbols(graph);
     const edgeCount = graph.size;
     
     if (options.format === 'markdown') {

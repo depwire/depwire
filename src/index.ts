@@ -6,6 +6,7 @@ import { writeFileSync, readFileSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { parseProject, loadParsedFilesFromJson, findOutputJson } from './parser/index.js';
 import { buildGraph } from './graph/index.js';
+import { countGraphSymbols } from './graph/counts.js';
 import type { DirectedGraph } from 'graphology';
 import { exportToJSON, importFromJSON } from './graph/serializer.js';
 import { findSymbols, getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
@@ -499,7 +500,7 @@ program
           graph = buildGraph(parsedFiles, projectRootToConnect);
         }
 
-        console.error(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+        console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
         
         // Set initial state
         state.graph = graph;
@@ -623,7 +624,7 @@ program
       const graph = buildGraph(parsedFiles, projectRoot);
       const parseTime = (Date.now() - startTime) / 1000;
       
-      console.log(`Built graph: ${graph.order} symbols, ${graph.size} edges`);
+      console.log(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
       
       // Generate documentation
       if (options.verbose) {
