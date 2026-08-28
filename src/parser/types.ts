@@ -68,10 +68,16 @@ export interface UnresolvedImport {
 export type UnresolvedCallReason =
   | 'unresolvable-receiver' // member call (`obj.method()`) whose receiver is not `this`/`super` --
                              // resolving it would require a type checker, so no edge is guessed
-  | 'receiver-not-local';   // receiver IS known (`this`/`super`, i.e. the enclosing instance) but
+  | 'receiver-not-local'    // receiver IS known (`this`/`super`, i.e. the enclosing instance) but
                              // the called property does not match any member declared on the
                              // enclosing class within this file (inherited from outside the file,
                              // dynamically added, or a typo) -- still not guessed
+  | 'local-binding-not-modeled' // a parameter, catch binding, or destructured local shadows a
+                                // same-named graph symbol; the binding has no SymbolNode to target
+  | 'unresolved-import-callee' // a bare callee comes from an import with no local source target
+  | 'no-local-target'       // no declared local value supports a bare call/new-expression edge
+  | 'receiver-required';    // a bare call/new expression matched only a method or property, which
+                            // cannot be referenced without an explicit receiver
 
 export interface UnresolvedCall {
   fromFile: string;

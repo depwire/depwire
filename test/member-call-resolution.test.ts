@@ -69,4 +69,52 @@ describe('member-call resolution (#14 -- no fabricated edge for unresolvable rec
     );
     expect(entry).toBeDefined();
   });
+
+  it('does not resolve parameter or destructured bindings to same-named class members', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const sample = parsedFiles.find((file) => file.filePath === 'sample.ts')!;
+
+    expect(sample.edges).not.toContainEqual(expect.objectContaining({
+      kind: 'calls',
+      target: 'sample.ts::BareCallCollisions.transaction',
+    }));
+    expect(sample.edges).not.toContainEqual(expect.objectContaining({
+      kind: 'calls',
+      target: 'sample.ts::BareCallCollisions.callable',
+    }));
+    expect(sample.unresolvedCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ callee: 'transaction', reason: 'local-binding-not-modeled' }),
+      expect.objectContaining({ callee: 'callable', reason: 'local-binding-not-modeled' }),
+    ]));
+  });
+
+  it('does not resolve a global constructor to a same-named class method', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const sample = parsedFiles.find((file) => file.filePath === 'sample.ts')!;
+
+    expect(sample.edges).not.toContainEqual(expect.objectContaining({
+      kind: 'calls',
+      source: 'sample.ts::BareCallCollisions.constructGlobal',
+      target: 'sample.ts::BareCallCollisions.Error',
+    }));
+    expect(sample.unresolvedCalls).toContainEqual(expect.objectContaining({
+      callee: 'Error',
+      reason: 'receiver-required',
+    }));
+  });
+
+  it('resolves imported constructors from import evidence and records external callees', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const sample = parsedFiles.find((file) => file.filePath === 'sample.ts')!;
+
+    expect(sample.edges).toContainEqual(expect.objectContaining({
+      kind: 'calls',
+      source: 'sample.ts::constructImported',
+      target: 'target.ts::ImportedCtor',
+    }));
+    expect(sample.unresolvedCalls).toContainEqual(expect.objectContaining({
+      callee: 'externalCall',
+      reason: 'unresolved-import-callee',
+    }));
+  });
 });

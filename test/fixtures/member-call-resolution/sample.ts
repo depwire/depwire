@@ -2,6 +2,9 @@
 // Contains a local `push` function whose name collides with a common
 // builtin/prototype method, plus a class exercising this./super. calls.
 
+import { ImportedCtor } from './target.js';
+import { externalCall } from 'external-call-package';
+
 export function push(x: number): number {
   return x + 1;
 }
@@ -31,4 +34,41 @@ export class Derived extends Base {
     // super.helper() -- also a knowable receiver; kept.
     return super.helper();
   }
+}
+
+// Bare identifiers need lexical/value evidence too. These names deliberately
+// collide with class members, parameters, globals, and external imports.
+export class BareCallCollisions {
+  transaction(): number {
+    return 0;
+  }
+
+  Error(): number {
+    return 0;
+  }
+
+  callable(): number {
+    return 0;
+  }
+
+  invokeCallback(transaction: () => number): number {
+    return transaction();
+  }
+
+  invokeDestructured(source: { callable: () => number }): number {
+    const { callable } = source;
+    return callable();
+  }
+
+  constructGlobal(): Error {
+    return new Error('not the Error method above');
+  }
+}
+
+export function constructImported(): ImportedCtor {
+  return new ImportedCtor();
+}
+
+export function invokeExternal(): void {
+  externalCall();
 }
