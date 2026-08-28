@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.16.1
+
+### Fixed — evidence-gated TypeScript call resolution
+
+- Bare calls and constructors no longer fabricate same-file `calls` edges from
+  name collisions. Resolution now requires lexical, import, receiver, and
+  value-kind evidence; rejected guesses are classified in `unresolvedCalls`.
+- Imported constructors now target their actual imported declaration instead
+  of a guessed same-file symbol. Parameter, catch, destructured-local, and
+  external-import bindings no longer misresolve to same-named local symbols.
+- On drizzle-orm SHA
+  `b7862528fd8fc39bc2653a6c18dad7c1f4e68d10`, the exhaustive comparison
+  removed 4,955 raw occurrences, retargeted 516 calls, and removed 70 unique
+  wrong graph relationships. This does not reproduce or supersede the
+  v1.13.0-era figure of 558, which was measured on a different Drizzle state
+  and is not directly comparable.
+- Code-graph's health remains 71/C with all six dimension scores unchanged.
+  The full recon and two seeded 30-edge audits are in
+  `recon/P0-CORRECTNESS-RECON.md`.
+
 ## 1.16.0
 
 ### Changed — graph shape and compatibility
