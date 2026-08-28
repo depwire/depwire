@@ -1,5 +1,5 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 
 interface Context {
@@ -12,11 +12,12 @@ interface Context {
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
   declaredSymbolIds: Set<string>; // every symbol id declared so far, used to resolve calls to nested/scoped functions
+  declaredSymbols: Map<string, SymbolNode[]>; // declarations by id; call resolution also needs value/kind evidence
   // Buffered call edges waiting for forward-reference resolution. `scopedOnly` marks calls
   // whose target must match a real declared symbol at some scope level (this./super. member
-  // calls) -- these get NO edge (recorded unresolved instead) if no level matches, unlike
-  // bare-identifier calls which keep the unconditional flat-id fallback.
-  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
+  // calls) -- these get NO edge (recorded unresolved instead) if no level matches. Bare calls
+  // and constructors are also buffered until a real value declaration supports the edge.
+  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   wildcardReExports: string[]; // resolved target files this file wildcard-re-exports from (`export * from`)
@@ -42,6 +43,7 @@ export function parseTypeScriptFile(
     imports: new Map(),
     externalImports: new Map(),
     declaredSymbolIds: new Set(),
+    declaredSymbols: new Map(),
     unresolvedCallEdges: [],
     unresolvedImports: [],
     unresolvedCalls: [],
@@ -856,10 +858,14 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   if (!currentSymbolId) return;
 
   if (functionNode.type === 'identifier') {
-    // Bare identifier call, e.g. `foo()`. UNCHANGED from prior behavior: this is a
-    // legitimate local-call shape (JS/TS scoping means an unimported bare name almost
-    // always refers to a same-file declaration), so the flat-id fallback stays.
+    // Bare identifier call, e.g. `foo()`. A name match is not enough: parameters,
+    // destructured locals, and external imports can shadow a same-named graph symbol.
     const functionName = functionNode.text;
+
+    if (hasUnmodeledLexicalBinding(node, functionName)) {
+      recordUnresolvedCall(context, functionName, 'local-binding-not-modeled');
+      return;
+    }
 
     // Check if this function is imported
     if (context.imports.has(functionName)) {
@@ -874,9 +880,14 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
       return;
     }
 
+    if (context.externalImports.has(functionName)) {
+      recordUnresolvedCall(context, functionName, 'unresolved-import-callee');
+      return;
+    }
+
     // Try to resolve immediately if the target is already declared
     const targetId = resolveLocalCallTarget(functionName, context);
-    if (context.declaredSymbolIds.has(targetId)) {
+    if (isSupportedLocalCallTarget(targetId, 'call', context)) {
       // Target already declared, resolve immediately
       context.edges.push({
         source: currentSymbolId,
@@ -892,6 +903,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
         functionName,
         line: node.startPosition.row + 1,
         scopeChain: [...context.currentScope],
+        callKind: 'call',
       });
     }
     return;
@@ -915,6 +927,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
         functionName,
         line,
         scopeChain: [...context.currentScope],
+        callKind: 'call',
         scopedOnly: true,
         receiverKind: object.type as 'this' | 'super',
       });
@@ -929,29 +942,152 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   }
 }
 
-function recordUnresolvedCall(context: Context, callee: string, reason: 'unresolvable-receiver' | 'receiver-not-local'): void {
+function recordUnresolvedCall(context: Context, callee: string, reason: UnresolvedCallReason): void {
   context.unresolvedCalls.push({ fromFile: context.filePath, callee, reason });
 }
 
 function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
-  // Get the class being instantiated
-  const classNode = node.child(1);
+  const classNode = node.childForFieldName('constructor');
   if (!classNode || classNode.type !== 'identifier') return;
   
   const className = classNode.text;
   const currentSymbolId = getCurrentSymbolId(context);
   
   if (currentSymbolId) {
+    if (hasUnmodeledLexicalBinding(node, className)) {
+      recordUnresolvedCall(context, className, 'local-binding-not-modeled');
+      return;
+    }
+
+    if (context.imports.has(className)) {
+      context.edges.push({
+        source: currentSymbolId,
+        target: context.imports.get(className)!,
+        kind: 'calls',
+        filePath: context.filePath,
+        line: node.startPosition.row + 1,
+      });
+      return;
+    }
+
+    if (context.externalImports.has(className)) {
+      recordUnresolvedCall(context, className, 'unresolved-import-callee');
+      return;
+    }
+
     const targetId = resolveLocalCallTarget(className, context);
-    
-    context.edges.push({
+    if (isSupportedLocalCallTarget(targetId, 'new', context)) {
+      context.edges.push({
+        source: currentSymbolId,
+        target: targetId,
+        kind: 'calls',
+        filePath: context.filePath,
+        line: node.startPosition.row + 1,
+      });
+      return;
+    }
+
+    context.unresolvedCallEdges.push({
       source: currentSymbolId,
-      target: targetId,
-      kind: 'calls',
-      filePath: context.filePath,
+      functionName: className,
       line: node.startPosition.row + 1,
+      scopeChain: [...context.currentScope],
+      callKind: 'new',
     });
   }
+}
+
+function collectBindingNames(pattern: Parser.SyntaxNode | null, names: Set<string>): void {
+  if (!pattern) return;
+  if (pattern.type === 'identifier' || pattern.type === 'shorthand_property_identifier_pattern') {
+    names.add(pattern.text);
+    return;
+  }
+  if (pattern.type === 'pair_pattern') {
+    collectBindingNames(pattern.childForFieldName('value'), names);
+    return;
+  }
+  if (pattern.type === 'assignment_pattern') {
+    collectBindingNames(pattern.childForFieldName('left'), names);
+    return;
+  }
+  for (let i = 0; i < pattern.namedChildCount; i++) {
+    collectBindingNames(pattern.namedChild(i), names);
+  }
+}
+
+function parameterBindsName(parameters: Parser.SyntaxNode | null, name: string): boolean {
+  if (!parameters) return false;
+  const names = new Set<string>();
+  if (parameters.type === 'identifier') {
+    names.add(parameters.text);
+  } else {
+    for (let i = 0; i < parameters.namedChildCount; i++) {
+      const parameter = parameters.namedChild(i);
+      collectBindingNames(
+        parameter.childForFieldName('pattern') ?? parameter.childForFieldName('name'),
+        names,
+      );
+    }
+  }
+  return names.has(name);
+}
+
+function declarationHasUnmodeledBinding(node: Parser.SyntaxNode, name: string): boolean {
+  if (node.type !== 'lexical_declaration' && node.type !== 'variable_declaration') return false;
+  for (let i = 0; i < node.namedChildCount; i++) {
+    const declarator = node.namedChild(i);
+    if (declarator.type !== 'variable_declarator') continue;
+    const pattern = declarator.childForFieldName('name');
+    if (!pattern || pattern.type === 'identifier') continue;
+    const names = new Set<string>();
+    collectBindingNames(pattern, names);
+    if (names.has(name)) return true;
+  }
+  return false;
+}
+
+// Parameters, catch bindings, and destructured locals currently have no
+// SymbolNode. If one shadows a graph symbol, resolving by name alone creates
+// a confident but false edge. Inspect the lexical evidence at the call site
+// and decline to guess instead.
+function hasUnmodeledLexicalBinding(node: Parser.SyntaxNode, name: string): boolean {
+  let child: Parser.SyntaxNode = node;
+  let parent = node.parent;
+  while (parent) {
+    if (
+      parent.type === 'method_definition'
+      || parent.type === 'function_declaration'
+      || parent.type === 'function_expression'
+      || parent.type === 'generator_function'
+      || parent.type === 'generator_function_declaration'
+    ) {
+      if (parameterBindsName(parent.childForFieldName('parameters'), name)) return true;
+    } else if (parent.type === 'arrow_function') {
+      if (
+        parameterBindsName(
+          parent.childForFieldName('parameters') ?? parent.childForFieldName('parameter'),
+          name,
+        )
+      ) return true;
+    } else if (parent.type === 'catch_clause') {
+      const names = new Set<string>();
+      collectBindingNames(parent.childForFieldName('parameter'), names);
+      if (names.has(name)) return true;
+    }
+
+    if (parent.type === 'statement_block' || parent.type === 'program') {
+      for (let i = 0; i < parent.namedChildCount; i++) {
+        const sibling = parent.namedChild(i);
+        if (sibling.id === child.id) break;
+        if (declarationHasUnmodeledBinding(sibling, name)) return true;
+      }
+    }
+
+    child = parent;
+    parent = parent.parent;
+  }
+  return false;
 }
 
 const SCOPE_BOUNDARIES = new Set([
@@ -1002,6 +1138,31 @@ function getCurrentSymbolId(context: Context): string | null {
 function pushSymbol(context: Context, symbol: SymbolNode): void {
   context.symbols.push(symbol);
   context.declaredSymbolIds.add(symbol.id);
+  const declarations = context.declaredSymbols.get(symbol.id) ?? [];
+  declarations.push(symbol);
+  context.declaredSymbols.set(symbol.id, declarations);
+}
+
+function isSupportedLocalCallTarget(
+  targetId: string,
+  callKind: 'call' | 'new',
+  context: Context,
+): boolean {
+  const declarations = context.declaredSymbols.get(targetId) ?? [];
+  const supportedKinds: ReadonlySet<SymbolKind> = callKind === 'new'
+    ? new Set<SymbolKind>(['class', 'function', 'variable'])
+    : new Set<SymbolKind>(['function', 'variable', 'class']);
+  return declarations.some((declaration) => supportedKinds.has(declaration.kind));
+}
+
+function unsupportedLocalCallReason(
+  targetId: string,
+  context: Context,
+): UnresolvedCallReason {
+  const declarations = context.declaredSymbols.get(targetId) ?? [];
+  return declarations.some((declaration) => declaration.kind === 'method' || declaration.kind === 'property')
+    ? 'receiver-required'
+    : 'no-local-target';
 }
 
 // Resolves a call to `functionName` against the current scope chain,
@@ -1076,18 +1237,25 @@ function resolveUnresolvedCallEdges(context: Context): void {
 
     // Resolve the target using the captured scope chain
     const targetId = resolveLocalCallTarget(unresolved.functionName, context);
-    
+
     // Restore the original scope
     context.currentScope = savedScope;
-    
-    // Add the resolved edge
-    context.edges.push({
-      source: unresolved.source,
-      target: targetId,
-      kind: 'calls',
-      filePath: context.filePath,
-      line: unresolved.line,
-    });
+
+    if (isSupportedLocalCallTarget(targetId, unresolved.callKind, context)) {
+      context.edges.push({
+        source: unresolved.source,
+        target: targetId,
+        kind: 'calls',
+        filePath: context.filePath,
+        line: unresolved.line,
+      });
+    } else {
+      context.unresolvedCalls.push({
+        fromFile: context.filePath,
+        callee: unresolved.functionName,
+        reason: unsupportedLocalCallReason(targetId, context),
+      });
+    }
   }
   
   // Clear the buffer
