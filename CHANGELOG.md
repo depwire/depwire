@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.17.0
+
+### Added — symbol-level TypeScript type references
+
+- New `references-type` edges connect the referencing symbol—or the file node
+  at top level—to resolvable project interfaces, type aliases, enums, and
+  classes used in type position. Coverage includes heritage clauses, parameter
+  and return types, properties, generic arguments, `as`, and `satisfies`.
+- Type-only imports now resolve to their imported symbols and participate in
+  affected-file and impact traversal. This restores all six `ModuleMetadata`
+  oracle paths and all four `FactoryProvider` paths measured on Nest v12.0.1.
+- Dead-code analysis and generated dependency docs count type references;
+  coupling, cohesion, circular-dependency health, and dependency depth exclude
+  them by design. Visualization renders type references distinctly.
+- Unresolvable type names are recorded in `unresolvedTypeRefs` without guessing
+  or using a builtin stoplist. Parser resolution cache version advances to 2;
+  serialized graph `formatVersion` remains compatible at 1.
+- Coupling and cohesion exclude `references-type` by design. File pairs
+  connected only by type-only imports (previously counted via `imports` edges)
+  leave coupling's input—measured impact: 11 of 12,719 pairs (-0.09%) on
+  drizzle-orm, with no bucket crossing. Repositories with unusually many
+  pure-type-only file pairs near a bucket boundary could see the dimension move.
+
 ## 1.16.1
 
 ### Fixed — evidence-gated TypeScript call resolution
