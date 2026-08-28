@@ -17,6 +17,7 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
           endLine: symbol.endLine,
           exported: symbol.exported,
           scope: symbol.scope,
+          metadata: symbol.metadata,
         });
       }
     }

@@ -99,7 +99,7 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
   return { rewritten, droppedAsUnresolved };
 }
 
-const PROJECT_TYPE_KINDS = new Set<SymbolKind>(['interface', 'type_alias', 'enum', 'class']);
+const PROJECT_TYPE_KINDS = new Set<SymbolKind>(['interface', 'type_alias', 'enum', 'class', 'module']);
 
 /**
  * Proves every references-type target against the complete project symbol

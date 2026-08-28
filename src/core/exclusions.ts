@@ -67,13 +67,15 @@ export function isExcludedFromOrphanReporting(
  * starts with "tests/", which is the dominant convention in pure-Python
  * repos (pytest) and common in JS repos too.
  */
-const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__", "spec"]);
+// `spec` is not sufficient evidence: protocol/OpenAPI/RFC repositories often
+// use it for production sources. Explicit `.spec.` filenames remain excluded.
+const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__"]);
 
 /**
  * Returns true if the given file path is a test file.
  * 
  * Test files are identified by:
- * - A path segment named test, tests, __tests__, or spec (anywhere in the
+ * - A path segment named test, tests, or __tests__ (anywhere in the
  *   path, including the first segment for root-level test directories)
  * - Filename ending in .test.ts, .test.js, .spec.ts, .spec.js
  * - Filename containing .test. or .spec.
@@ -92,6 +94,9 @@ export function isTestFile(filePath: string): boolean {
     return true;
   }
   if (filename.includes(".test.") || filename.includes(".spec.")) {
+    return true;
+  }
+  if (filename.includes("_spec.")) {
     return true;
   }
   

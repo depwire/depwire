@@ -2,8 +2,8 @@
 // Contains a local `push` function whose name collides with a common
 // builtin/prototype method, plus a class exercising this./super. calls.
 
-import { ImportedCtor } from './target.js';
-import { externalCall } from 'external-call-package';
+import { CrossFileBase, ImportedCtor } from './target.js';
+import { ExternalBase, externalCall } from 'external-call-package';
 
 export function push(x: number): number {
   return x + 1;
@@ -33,6 +33,18 @@ export class Derived extends Base {
   other(): number {
     // super.helper() -- also a knowable receiver; kept.
     return super.helper();
+  }
+}
+
+export class CrossFileDerived extends CrossFileBase {
+  method(): number {
+    return super.inherited();
+  }
+}
+
+export class ExternalDerived extends ExternalBase {
+  method(): number {
+    return super.notProjectLocal();
   }
 }
 

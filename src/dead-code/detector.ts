@@ -246,14 +246,15 @@ function isRelevantForDeadCodeDetection(attrs: any): boolean {
     "var",
     "variable",
     "method",
-    "property"
+    "property",
+    "module"
   ];
   
   if (!relevantKinds.includes(kind)) {
     return false;
   }
   
-  if (kind === "const" || kind === "let" || kind === "var" || kind === "variable") {
+  if (kind === "const" || kind === "let" || kind === "var" || kind === "variable" || kind === "module") {
     return attrs.exported === true;
   }
   
@@ -419,7 +420,10 @@ function isRealPackageEntryPoint(filePath: string, packageEntryPoints: Set<strin
 // still recognized. A substring check for "/tests/" never matches that
 // path, which is the #13 bug: pure-Python (and many JS) repos put tests at
 // the project root, not nested under something else.
-const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__", "spec"]);
+// `spec` is deliberately not a directory marker. In OpenAPI/protocol/RFC
+// repositories it commonly contains production declarations. Test files in
+// such a directory are still excluded by their explicit `.spec.` filename.
+const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__"]);
 
 function isTestFile(filePath: string): boolean {
   const segments = filePath.split(path.sep).join("/").split("/");
@@ -428,7 +432,7 @@ function isTestFile(filePath: string): boolean {
   }
 
   const filename = segments[segments.length - 1] || "";
-  return filename.includes(".test.") || filename.includes(".spec.");
+  return filename.includes(".test.") || filename.includes(".spec.") || filename.includes("_spec.");
 }
 
 function isConfigFile(filePath: string): boolean {
