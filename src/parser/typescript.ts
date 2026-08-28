@@ -552,7 +552,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
             context.edges.push({
               source: symbolId,
               target: targetId,
-              kind: 'extends',
+              kind: 'inherits',
               filePath: context.filePath,
               line: typeNode.startPosition.row + 1,
             });
@@ -566,7 +566,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
           context.edges.push({
             source: symbolId,
             target: resolveTypeTarget(value.text, context),
-            kind: 'extends',
+            kind: 'inherits',
             filePath: context.filePath,
             line: value.startPosition.row + 1,
           });

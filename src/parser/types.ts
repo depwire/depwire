@@ -43,12 +43,20 @@ export interface PendingNamespaceCall {
   line: number;
 }
 
+/**
+ * Graph relationship kinds.
+ *
+ * `inherits` is the canonical class-level inheritance relationship for every
+ * language. `extends` is its legacy read-only alias: consumers must continue
+ * accepting it from stored graphs, but parsers must never emit it. Serialized
+ * legacy graphs retain `extends` unchanged rather than being normalized.
+ */
 export type EdgeKind =
   | 'imports'
   | 'calls'
-  | 'extends'
+  | 'extends'        // Legacy read-only alias for class inheritance
   | 'implements'
-  | 'inherits'       // Python: class inheritance
+  | 'inherits'       // Class-level inheritance, all languages
   | 'decorates'      // Python: decorator application
   | 'references'
   | 'references-type'

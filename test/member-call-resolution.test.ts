@@ -50,7 +50,7 @@ describe('member-call resolution (#14 -- no fabricated edge for unresolvable rec
     expect(edge).toBeDefined();
   });
 
-  it('resolves super.helper() through a same-file extends edge', async () => {
+  it('resolves super.helper() through a same-file inherits edge', async () => {
     const parsedFiles = await parseProject(fixtureDir, { useCache: false });
     const allEdges = parsedFiles.flatMap((f) => f.edges);
     const unresolved = aggregateUnresolvedCalls(parsedFiles);
