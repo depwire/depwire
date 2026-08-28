@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DirectedGraph } from 'graphology';
 import {
+  calculateCohesionScore,
+  calculateCouplingScore,
   calculateCircularDepsScore,
   calculateGodFilesScore
 } from '../src/health/metrics.js';
@@ -47,6 +49,17 @@ function graphWithCycles(fileCount: number, cycleCount: number): DirectedGraph {
 }
 
 describe('size-normalized health dimensions', () => {
+  it('excludes references-type edges from coupling, cohesion, and circular dependencies', () => {
+    const baseline = graphWithFiles(2);
+    const withTypeCycle = graphWithFiles(2);
+    withTypeCycle.addEdge('file-0', 'file-1', { kind: 'references-type' });
+    withTypeCycle.addEdge('file-1', 'file-0', { kind: 'references-type' });
+
+    expect(calculateCouplingScore(withTypeCycle)).toEqual(calculateCouplingScore(baseline));
+    expect(calculateCohesionScore(withTypeCycle)).toEqual(calculateCohesionScore(baseline));
+    expect(calculateCircularDepsScore(withTypeCycle)).toEqual(calculateCircularDepsScore(baseline));
+  });
+
   it('scores empty projects as healthy without dividing by zero', () => {
     const graph = graphWithFiles(0);
 

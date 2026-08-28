@@ -17,7 +17,7 @@ import { openCache, getCachedFiles, updateCache } from './cache.js';
 import { minimatch } from 'minimatch';
 import { initParser } from './wasm-init.js';
 import { discoverJvmModuleRoots } from './jvm-modules.js';
-import { resolveReExportChains } from './reexport-chains.js';
+import { finalizeTypeReferences, resolveReExportChains } from './reexport-chains.js';
 import {
   setModuleSourceRoots as setJavaModuleRoots,
   resetModuleSourceRoots as resetJavaModuleRoots,
@@ -184,9 +184,26 @@ export async function parseProject(
   // symbol that's only re-exported (not declared) in the directly-resolved
   // file still land on a real declaring node.
   const chainResult = resolveReExportChains(parsedFiles);
+  // Capture the exact target main would retain after wildcard re-export
+  // resolution. The type-reference finalizer may subsequently chase a named
+  // export to its declaration, but health normalization needs the old import
+  // topology for strict score invariance.
+  for (const file of parsedFiles) {
+    for (const edge of file.edges) {
+      if (edge.kind === 'references-type' && edge.typeOnlyImport && !edge.typeOnlyFallback) {
+        edge.originalImportTarget = edge.target;
+      }
+    }
+  }
+  const typeRefResult = finalizeTypeReferences(parsedFiles);
   if (options?.verbose && (chainResult.rewritten > 0 || chainResult.droppedAsUnresolved > 0)) {
     console.error(
       `[Parser] Re-export chains: ${chainResult.rewritten} resolved, ${chainResult.droppedAsUnresolved} exceeded depth/cycle`
+    );
+  }
+  if (options?.verbose && (typeRefResult.kept > 0 || typeRefResult.dropped > 0)) {
+    console.error(
+      `[Parser] Type references: ${typeRefResult.kept} resolved, ${typeRefResult.retargeted} retargeted through named re-exports, ${typeRefResult.dropped} unresolved`
     );
   }
   // ───────────────────────────────────────────────────────────

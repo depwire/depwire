@@ -4,6 +4,25 @@ import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
 import { relative } from 'path';
 import { countGraphSymbols, isCountableSymbol } from './counts.js';
 
+const IMPACT_EDGE_KINDS = new Set<string>([
+  'imports', 'calls', 'extends', 'implements', 'inherits', 'decorates',
+  'references', 'references-type', 'injects', 'uses', 'rest-api', 'subprocess',
+]);
+
+export function isImpactEdgeKind(kind: unknown): boolean {
+  return typeof kind === 'string' && IMPACT_EDGE_KINDS.has(kind);
+}
+
+function incomingImpactNeighbors(graph: DirectedGraph, nodeId: string): string[] {
+  const neighbors = new Set<string>();
+  for (const edge of graph.inEdges(nodeId)) {
+    if (isImpactEdgeKind(graph.getEdgeAttribute(edge, 'kind'))) {
+      neighbors.add(graph.source(edge));
+    }
+  }
+  return [...neighbors];
+}
+
 export interface SymbolMatch {
   id: string;
   name: string;
@@ -96,7 +115,7 @@ export function getDependents(graph: DirectedGraph, symbolId: string): SymbolNod
   if (!graph.hasNode(symbolId)) return [];
   
   const dependents: SymbolNode[] = [];
-  const neighbors = graph.inNeighbors(symbolId);
+  const neighbors = incomingImpactNeighbors(graph, symbolId);
   
   for (const neighborId of neighbors) {
     const attrs = graph.getNodeAttributes(neighborId);
@@ -137,7 +156,7 @@ export function getImpact(graph: DirectedGraph, symbolId: string): {
   // BFS to find all transitive dependents
   while (queue.length > 0) {
     const current = queue.shift()!;
-    const neighbors = graph.inNeighbors(current);
+    const neighbors = incomingImpactNeighbors(graph, current);
     
     for (const neighborId of neighbors) {
       if (!visited.has(neighborId)) {
@@ -340,7 +359,7 @@ export function getAffectedFiles(
     const next: QueueItem[] = [];
     for (const { nodeId, depth } of queue) {
       if (depth >= maxDepth) continue;
-      for (const neighborId of graph.inNeighbors(nodeId)) {
+      for (const neighborId of incomingImpactNeighbors(graph, nodeId)) {
         if (visited.has(neighborId)) continue;
         visited.add(neighborId);
         const attrs = graph.getNodeAttributes(neighborId);

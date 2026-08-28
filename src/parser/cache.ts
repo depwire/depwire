@@ -22,6 +22,9 @@ import { existsSync, mkdirSync, openSync, readSync, closeSync, statSync, rmSync 
 import { join } from 'path';
 import { ParsedFile } from './types.js';
 
+/** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
+export const RESOLUTION_VERSION = 2;
+
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms
  * where it cannot be installed or compiled (e.g. Windows without Visual Studio
@@ -104,6 +107,16 @@ export function openCache(projectRoot: string): any {
       value TEXT NOT NULL
     );
   `);
+
+  const storedVersion = db.prepare(
+    "SELECT value FROM cache_meta WHERE key = 'resolution_version'"
+  ).get() as { value: string } | undefined;
+  if (storedVersion?.value !== String(RESOLUTION_VERSION)) {
+    db.exec('DELETE FROM file_cache');
+    db.prepare(
+      "INSERT INTO cache_meta (key, value) VALUES ('resolution_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run(String(RESOLUTION_VERSION));
+  }
 
   return db;
 }

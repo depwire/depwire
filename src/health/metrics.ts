@@ -3,6 +3,11 @@ import { HealthDimension } from './types.js';
 import { dirname } from 'path';
 import { analyzeDependencyPaths } from '../graph/dependency-paths.js';
 
+/** Type-only relationships inform impact/dead-code, not runtime architecture. */
+export function isRuntimeHealthEdge(kind: unknown): boolean {
+  return kind !== 'references-type';
+}
+
 /**
  * Calculate the letter grade from a 0-100 score
  */
@@ -41,6 +46,7 @@ export function calculateCouplingScore(graph: DirectedGraph): HealthDimension {
   let totalEdges = 0;
   
   graph.forEachEdge((edge, attrs, source, target) => {
+    if (!isRuntimeHealthEdge(attrs.kind)) return;
     const sourceAttrs = graph.getNodeAttributes(source);
     const targetAttrs = graph.getNodeAttributes(target);
     
@@ -110,6 +116,7 @@ export function calculateCohesionScore(graph: DirectedGraph): HealthDimension {
   const dirEdges = new Map<string, { internal: number; total: number }>();
   
   graph.forEachEdge((edge, attrs, source, target) => {
+    if (!isRuntimeHealthEdge(attrs.kind)) return;
     const sourceAttrs = graph.getNodeAttributes(source);
     const targetAttrs = graph.getNodeAttributes(target);
     
@@ -203,6 +210,7 @@ export function calculateCircularDepsScore(graph: DirectedGraph): HealthDimensio
   const fileGraph = new Map<string, Set<string>>();
   
   graph.forEachEdge((edge, attrs, source, target) => {
+    if (!isRuntimeHealthEdge(attrs.kind)) return;
     const sourceFile = graph.getNodeAttributes(source).filePath;
     const targetFile = graph.getNodeAttributes(target).filePath;
     
@@ -311,6 +319,7 @@ export function calculateGodFilesScore(graph: DirectedGraph): HealthDimension {
   
   // Count connections
   graph.forEachEdge((edge, attrs, source, target) => {
+    if (!isRuntimeHealthEdge(attrs.kind)) return;
     const sourceFile = graph.getNodeAttributes(source).filePath;
     const targetFile = graph.getNodeAttributes(target).filePath;
     
@@ -419,6 +428,7 @@ export function calculateOrphansScore(
   });
 
   graph.forEachEdge((edge, attrs, source, target) => {
+    if (!isRuntimeHealthEdge(attrs.kind)) return;
     const sourceFile = graph.getNodeAttributes(source).filePath;
     const targetFile = graph.getNodeAttributes(target).filePath;
     
@@ -541,7 +551,7 @@ export function calculateOrphansScoreFromMetrics(
  * bounded dynamic pass in reverse topological order.
  */
 export function calculateDepthScore(graph: DirectedGraph): HealthDimension {
-  const { maxDepth, sccCount, nodeCount } = analyzeDependencyPaths(graph);
+  const { maxDepth, sccCount, nodeCount } = analyzeDependencyPaths(graph, 0, isRuntimeHealthEdge);
   const hasCycles = sccCount < nodeCount;
   
   let score = 100;

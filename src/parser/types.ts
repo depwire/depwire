@@ -35,7 +35,7 @@ export type EdgeKind =
   | 'inherits'       // Python: class inheritance
   | 'decorates'      // Python: decorator application
   | 'references'
-  | 'type_references'
+  | 'references-type'
   | 'injects'        // TS/Angular: constructor/field dependency injection
   | 'uses';          // HTML/Angular: template -> component/directive/pipe usage
 
@@ -45,6 +45,12 @@ export interface SymbolEdge {
   kind: EdgeKind;
   filePath: string;    // File where the reference occurs
   line: number;
+  /** Internal parser hint; omitted by graph serialization. */
+  typeContext?: 'heritage';
+  /** Marks the non-additive import-type retarget for health normalization. */
+  typeOnlyImport?: boolean;
+  typeOnlyFallback?: boolean;
+  originalImportTarget?: string;
 }
 
 export type UnresolvedImportReason =
@@ -85,6 +91,18 @@ export interface UnresolvedCall {
   reason: UnresolvedCallReason;
 }
 
+export type UnresolvedTypeRefReason =
+  | 'external-type'
+  | 'no-project-symbol'
+  | 'unsupported-target-kind'
+  | 'ambiguous-reexport';
+
+export interface UnresolvedTypeRef {
+  fromFile: string;
+  typeName: string;
+  reason: UnresolvedTypeRefReason;
+}
+
 export interface ParsedFile {
   filePath: string;    // Relative to project root
   symbols: SymbolNode[];
@@ -106,6 +124,8 @@ export interface ParsedFile {
    * and why.
    */
   unresolvedCalls?: UnresolvedCall[];
+  /** Type-position names rejected because no project symbol could be proven. */
+  unresolvedTypeRefs?: UnresolvedTypeRef[];
   /**
    * Resolved target file paths (relative to project root) that this file
    * wildcard re-exports from, e.g. `export * from './expressions'`. Used by
@@ -138,6 +158,14 @@ export function aggregateUnresolvedCalls(parsedFiles: ParsedFile[]): UnresolvedC
   const out: UnresolvedCall[] = [];
   for (const file of parsedFiles) {
     if (file.unresolvedCalls) out.push(...file.unresolvedCalls);
+  }
+  return out;
+}
+
+export function aggregateUnresolvedTypeRefs(parsedFiles: ParsedFile[]): UnresolvedTypeRef[] {
+  const out: UnresolvedTypeRef[] = [];
+  for (const file of parsedFiles) {
+    if (file.unresolvedTypeRefs) out.push(...file.unresolvedTypeRefs);
   }
   return out;
 }

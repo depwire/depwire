@@ -37,6 +37,9 @@ export function generateDependencies(
   // 4. Most Connected File Pairs
   output += header('Most Connected File Pairs', 2);
   output += generateConnectedFilePairs(graph);
+
+  output += header('Type References', 2);
+  output += generateTypeReferences(graph);
   
   // 5. Dependency Chains
   output += header('Longest Dependency Chains', 2);
@@ -47,6 +50,24 @@ export function generateDependencies(
   output += generateCircularDependenciesDetailed(graph);
   
   return output;
+}
+
+function generateTypeReferences(graph: DirectedGraph): string {
+  const rows: string[][] = [];
+  graph.forEachEdge((_edge, attrs, source, target) => {
+    if (attrs.kind !== 'references-type') return;
+    const sourceAttrs = graph.getNodeAttributes(source);
+    const targetAttrs = graph.getNodeAttributes(target);
+    rows.push([
+      `\`${sourceAttrs.name}\``,
+      `\`${targetAttrs.name}\``,
+      'type reference',
+      `\`${attrs.filePath}:${attrs.line}\``,
+    ]);
+  });
+  if (rows.length === 0) return 'No project-local type references detected.\n\n';
+  rows.sort((a, b) => a.join('\0').localeCompare(b.join('\0')));
+  return table(['Source', 'Target', 'Relationship', 'Location'], rows.slice(0, 100));
 }
 
 function getFileCount(graph: DirectedGraph): number {
@@ -358,6 +379,7 @@ function detectCyclesDetailed(graph: DirectedGraph): CycleDetail[] {
   const fileGraph = new Map<string, Map<string, Array<{ symbolName: string; symbolKind: string; line: number }>>>();
   
   graph.forEachEdge((edge, attrs, source, target) => {
+    if (attrs.kind === 'references-type') return;
     const sourceAttrs = graph.getNodeAttributes(source);
     const targetAttrs = graph.getNodeAttributes(target);
     const sourceFile = sourceAttrs.filePath;

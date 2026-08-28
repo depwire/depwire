@@ -60,11 +60,33 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
     for (const edge of file.edges) {
       // Only add edge if both source and target exist
       if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
+        const existing = graph.edge(edge.source, edge.target);
+        if (existing) {
+          const existingKind = graph.getEdgeAttribute(existing, 'kind');
+          // The graph is intentionally simple (one relationship per symbol
+          // pair). Preserve a pre-existing runtime/import relationship when
+          // a new type reference connects the same pair, so the additive
+          // parser phase never relabels an older edge kind.
+          if (edge.kind === 'references-type' && existingKind !== 'references-type') {
+            continue;
+          }
+          if (
+            edge.kind === 'references-type'
+            && existingKind === 'references-type'
+            && graph.getEdgeAttribute(existing, 'typeOnlyImport') === true
+            && edge.typeOnlyImport !== true
+          ) {
+            continue;
+          }
+        }
         // Use mergeEdge to avoid duplicate edge errors
         graph.mergeEdge(edge.source, edge.target, {
           kind: edge.kind,
           filePath: edge.filePath,
           line: edge.line,
+          typeOnlyImport: edge.typeOnlyImport,
+          typeOnlyFallback: edge.typeOnlyFallback,
+          originalImportTarget: edge.originalImportTarget,
         });
       }
     }

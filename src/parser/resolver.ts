@@ -232,7 +232,8 @@ function getWorkspacePackages(projectRoot: string): Map<string, string> {
  */
 function resolveWorkspacePackageImport(
   importPath: string,
-  projectRoot: string
+  projectRoot: string,
+  allowPackageRootSource = false,
 ): string | null {
   const packages = getWorkspacePackages(projectRoot);
   if (packages.size === 0) return null;
@@ -253,6 +254,12 @@ function resolveWorkspacePackageImport(
         join(pkgDir, 'src', subpath, 'index.tsx'),
         join(pkgDir, 'src', subpath + '.ts'),
         join(pkgDir, 'src', subpath + '.tsx'),
+        ...(allowPackageRootSource ? [
+          join(pkgDir, subpath, 'index.ts'),
+          join(pkgDir, subpath, 'index.tsx'),
+          join(pkgDir, subpath + '.ts'),
+          join(pkgDir, subpath + '.tsx'),
+        ] : []),
       ]
     : [
         join(pkgDir, 'src', 'index.ts'),
@@ -271,7 +278,8 @@ function resolveWorkspacePackageImport(
 export function resolveImportPath(
   importPath: string,
   fromFile: string,
-  projectRoot: string
+  projectRoot: string,
+  options: { allowPackageRootSource?: boolean } = {},
 ): string | null {
   // Get the directory of the importing file -- used both for relative
   // resolution and as the starting point for the nearest-tsconfig search.
@@ -285,7 +293,7 @@ export function resolveImportPath(
       return tryResolve(expanded, projectRoot);
     }
     // Not a tsconfig alias -- try workspace package resolution next.
-    return resolveWorkspacePackageImport(importPath, projectRoot);
+    return resolveWorkspacePackageImport(importPath, projectRoot, options.allowPackageRootSource);
   }
 
   // Resolve relative to the importing file
