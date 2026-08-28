@@ -45,6 +45,7 @@ export function parseRFile(
   const codeToparse = isRmd ? extractRmdChunks(sourceCode) : sourceCode;
 
   const lines = codeToparse.split('\n');
+  let parenDepth = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -66,21 +67,24 @@ export function parseRFile(
     // R6 class definitions: R6::R6Class() or R6Class()
     processR6Definitions(trimmed, lineNum, context);
 
-    // Function definitions via <- or = (left-assignment)
-    processLeftAssignFunction(trimmed, lineNum, context);
-
-    // Function definitions via -> (right-assignment)
-    processRightAssignFunction(trimmed, lineNum, context);
-
-    // Anonymous / shorthand functions (not assigned to a name)
-    processAnonymousFunction(trimmed, lineNum, context);
+    // A named argument such as `callback = function(...)` belongs to a call
+    // expression, not the surrounding file's declaration scope. Only accept
+    // assignment declarations when not nested inside an argument list.
+    if (parenDepth === 0) {
+      processLeftAssignFunction(trimmed, lineNum, context, lines, i);
+      processRightAssignFunction(trimmed, lineNum, context, lines, i);
+    }
 
     // :: and ::: namespace access edges
     processNamespaceAccess(trimmed, lineNum, context);
 
-    // Function call edges
-    processCallEdges(trimmed, lineNum, context);
+    parenDepth = Math.max(0, parenDepth + countParenDelta(line));
   }
+
+
+  // Calls are resolved after the declaration pass so forward references are
+  // evidence-backed. Anonymous callbacks intentionally have no named symbol.
+  processCallEdges(lines, context);
 
   return {
     filePath,
@@ -272,7 +276,9 @@ function processR6Definitions(line: string, lineNum: number, context: Context): 
 
 // ─── Left-assignment function definitions ────────────────────
 
-function processLeftAssignFunction(line: string, lineNum: number, context: Context): void {
+function processLeftAssignFunction(
+  line: string, lineNum: number, context: Context, lines: string[], idx: number
+): void {
   // Matches:
   //   myfunc <- function(...)
   //   myfunc = function(...)
@@ -281,17 +287,21 @@ function processLeftAssignFunction(line: string, lineNum: number, context: Conte
   // Also S3 methods: print.myclass <- function(...)
   // Also operator overloads: `+.myclass` <- function(...)
   const funcMatch = line.match(
+    /^`([^`]+)`\s*(?:<-|=)\s*(?:function|\\\()/
+  ) || line.match(
     /^`?([A-Za-z._][A-Za-z0-9._]*(?:\.[A-Za-z][A-Za-z0-9._]*)*|[+\-*\/^!<>=&|]+\.[A-Za-z][A-Za-z0-9._]*)`?\s*(?:<-|=)\s*(?:function|\\\()/
   );
   if (!funcMatch) return;
 
   const rawName = funcMatch[1];
-  registerFunction(rawName, lineNum, context);
+  registerFunction(rawName, lineNum, context, lines, idx);
 }
 
 // ─── Right-assignment function definitions ───────────────────
 
-function processRightAssignFunction(line: string, lineNum: number, context: Context): void {
+function processRightAssignFunction(
+  line: string, lineNum: number, context: Context, lines: string[], idx: number
+): void {
   // function(...) { ... } -> myfunc
   // \(...) ... -> myfunc
   const rightMatch = line.match(
@@ -300,32 +310,7 @@ function processRightAssignFunction(line: string, lineNum: number, context: Cont
   if (!rightMatch) return;
 
   const rawName = rightMatch[1];
-  registerFunction(rawName, lineNum, context);
-}
-
-// ─── Anonymous function detection ────────────────────────────
-
-function processAnonymousFunction(line: string, lineNum: number, context: Context): void {
-  // Detect anonymous functions that are NOT part of an assignment:
-  // e.g. lapply(x, function(y) y * 2) or sapply(x, \(y) y + 1)
-  // We only emit a symbol if they appear standalone as arguments (heuristic).
-  // Skip lines already captured by left/right assign processors.
-  if (/(?:<-|=)\s*(?:function|\\\()/.test(line)) return;
-  if (/(?:function|\\\().*->/.test(line)) return;
-
-  const anonMatch = line.match(/(?:function|\\\()\s*\([^)]*\)/);
-  if (!anonMatch) return;
-
-  const symbolId = `${context.filePath}::__anon__:${lineNum}`;
-  context.symbols.push({
-    id: symbolId,
-    name: `<anonymous:${lineNum}>`,
-    kind: 'function',
-    filePath: context.filePath,
-    startLine: lineNum,
-    endLine: lineNum,
-    exported: false,
-  });
+  registerFunction(rawName, lineNum, context, lines, idx);
 }
 
 // ─── Namespace access (:: and :::) ────────────────────────────
@@ -372,26 +357,33 @@ function processNamespaceAccess(line: string, lineNum: number, context: Context)
 
 // ─── Function call edges ──────────────────────────────────────
 
-function processCallEdges(line: string, lineNum: number, context: Context): void {
-  if (context.currentScope.length === 0) return;
+function processCallEdges(lines: string[], context: Context): void {
+  const callables = context.symbols.filter(symbol => symbol.kind === 'function' || symbol.kind === 'method');
+  const seen = new Set(context.edges.map(edge => `${edge.source}\0${edge.target}\0${edge.line}\0${edge.kind}`));
 
-  // Match calls: someFn(...) — skip namespace calls (already handled)
-  const callPattern = /\b([A-Za-z._][A-Za-z0-9._]*)\s*\(/g;
-  let match;
-  while ((match = callPattern.exec(line)) !== null) {
-    const callee = match[1];
-    if (isRBuiltin(callee)) continue;
-    // Skip calls that are part of namespace access (pkg::fn already covered)
-    if (new RegExp(`[\\w.]+:::?${callee}\\s*\\(`).test(line)) continue;
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
+    const lineNum = idx + 1;
+    const caller = callables
+      .filter(symbol => symbol.startLine <= lineNum && symbol.endLine >= lineNum)
+      .sort((a, b) => (a.endLine - a.startLine) - (b.endLine - b.startLine))[0];
+    if (!caller) continue;
 
-    const callerId = getCurrentSymbolId(context);
-    if (!callerId) continue;
+    const callPattern = /\b([A-Za-z._][A-Za-z0-9._]*)\s*\(/g;
+    let match: RegExpExecArray | null;
+    while ((match = callPattern.exec(line)) !== null) {
+      const callee = match[1];
+      if (isRBuiltin(callee)) continue;
+      if (new RegExp(`[\\w.]+:::?${callee}\\s*\\(`).test(line)) continue;
 
-    const calleeId = resolveSymbol(callee, context);
-    if (calleeId) {
+      const target = `${context.filePath}::${callee}`;
+      if (!context.symbols.some(symbol => symbol.id === target)) continue;
+      const key = `${caller.id}\0${target}\0${lineNum}\0calls`;
+      if (seen.has(key)) continue;
+      seen.add(key);
       context.edges.push({
-        source: callerId,
-        target: calleeId,
+        source: caller.id,
+        target,
         kind: 'calls',
         filePath: context.filePath,
         line: lineNum,
@@ -406,7 +398,13 @@ function processCallEdges(line: string, lineNum: number, context: Context): void
  * Shared logic to register a function symbol, handling S3 methods and
  * operator overloads. Updates currentScope for call-edge tracking.
  */
-function registerFunction(rawName: string, lineNum: number, context: Context): void {
+function registerFunction(
+  rawName: string,
+  lineNum: number,
+  context: Context,
+  lines: string[],
+  idx: number
+): void {
   const symbolId = `${context.filePath}::${rawName}`;
 
   // Determine if this is an S3 method: name contains a dot and the part
@@ -430,19 +428,74 @@ function registerFunction(rawName: string, lineNum: number, context: Context): v
     kind = 'method';
   }
 
+  const endLine = findRFunctionEnd(lines, idx) + 1;
   context.symbols.push({
     id: symbolId,
     name: rawName,
     kind,
     filePath: context.filePath,
     startLine: lineNum,
-    endLine: lineNum,
+    endLine,
     exported: !rawName.startsWith('.'),
     ...(scope !== undefined ? { scope } : {}),
   });
 
-  // Track scope for call-edge resolution
-  context.currentScope.push(rawName);
+}
+
+function countParenDelta(line: string): number {
+  let delta = 0;
+  let quote: string | null = null;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (quote) {
+      if (ch === quote && line[i - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === '#') {
+      break;
+    } else if (ch === '(') {
+      delta++;
+    } else if (ch === ')') {
+      delta--;
+    }
+  }
+  return delta;
+}
+
+function findRBlockEnd(lines: string[], startIdx: number): number {
+  let depth = 0;
+  let foundOpen = false;
+  for (let i = startIdx; i < lines.length; i++) {
+    const line = lines[i];
+    let quote: string | null = null;
+    for (let j = 0; j < line.length; j++) {
+      const ch = line[j];
+      if (quote) {
+        if (ch === quote && line[j - 1] !== '\\') quote = null;
+        continue;
+      }
+      if (ch === '"' || ch === "'") quote = ch;
+      else if (ch === '#') break;
+      else if (ch === '{') { depth++; foundOpen = true; }
+      else if (ch === '}') depth--;
+      if (foundOpen && depth === 0) return i;
+    }
+  }
+  return startIdx;
+}
+
+function findRFunctionEnd(lines: string[], startIdx: number): number {
+  let signatureDepth = 0;
+  let sawParameters = false;
+  for (let i = startIdx; i < lines.length; i++) {
+    signatureDepth += countParenDelta(lines[i]);
+    if (lines[i].includes('(')) sawParameters = true;
+    if (lines[i].includes('{')) return findRBlockEnd(lines, i);
+    if (sawParameters && signatureDepth <= 0) return i;
+  }
+  return startIdx;
 }
 
 function resolveRSource(sourcePath: string, currentFile: string, projectRoot: string): string | null {
