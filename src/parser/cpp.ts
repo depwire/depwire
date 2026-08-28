@@ -97,6 +97,9 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
     case 'declaration':
       processDeclaration(node, context);
       return false;
+    case 'field_declaration':
+      processFieldDeclaration(node, context);
+      return false;
     case 'alias_declaration':
       processAliasDeclaration(node, context);
       return false;
@@ -129,7 +132,10 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
 function processNamespaceDefinition(node: Parser.SyntaxNode, context: Context): void {
   const nameNode = node.childForFieldName('name');
   // Anonymous namespace — skip naming but still walk body
-  const name = nameNode ? nodeText(nameNode, context) : '<anonymous>';
+  const localName = nameNode ? nodeText(nameNode, context).replace(/::/g, '.') : '<anonymous>';
+  const name = localName === '<anonymous>'
+    ? localName
+    : context.currentNamespace ? `${context.currentNamespace}.${localName}` : localName;
 
   if (name !== '<anonymous>') {
     const symbolId = `${context.filePath}::${name}`;
@@ -203,8 +209,9 @@ function processTypeSpecifier(
   if (!name) return;
 
   const exported = true; // In C++ headers, types are generally exported
-  const scope = context.currentClass || undefined;
-  const symbolId = `${context.filePath}::${name}`;
+  const scope = context.currentClass || context.currentNamespace || undefined;
+  const qualifiedName = context.currentNamespace ? `${context.currentNamespace}.${name}` : name;
+  const symbolId = `${context.filePath}::${qualifiedName}`;
 
   context.symbols.push({
     id: symbolId,
@@ -225,8 +232,8 @@ function processTypeSpecifier(
 
   // Enter class scope
   const oldClass = context.currentClass;
-  context.currentClass = name;
-  context.currentScope.push(name);
+  context.currentClass = qualifiedName;
+  context.currentScope.push(qualifiedName);
 
   const body = node.childForFieldName('body') || findChildByType(node, 'field_declaration_list');
   if (body) {
@@ -246,7 +253,14 @@ function processBaseClassClause(node: Parser.SyntaxNode, sourceId: string, conte
         child.type === 'qualified_identifier' || child.type === 'template_type') {
       const baseName = extractTypeName(child, context);
       if (baseName) {
-        const baseId = resolveSymbol(baseName, context);
+        const qualifiedBase = nodeText(child, context)
+          .replace(/^(?:public|protected|private|virtual)\s+/g, '')
+          .replace(/<.*>/, '')
+          .replace(/::/g, '.');
+        const exactQualifiedId = `${context.filePath}::${qualifiedBase}`;
+        const baseId = context.symbols.some(symbol => symbol.id === exactQualifiedId)
+          ? exactQualifiedId
+          : resolveSymbol(baseName, context);
         if (baseId) {
           context.edges.push({
             source: sourceId,
@@ -330,6 +344,14 @@ function processFunctionDefinition(node: Parser.SyntaxNode, context: Context): v
   if (!nameNode) return;
 
   let name = nodeText(nameNode, context);
+  const qualifiedDeclarator = findChildByType(declarator, 'qualified_identifier');
+  const declaredScopeNode = qualifiedDeclarator?.childForFieldName('scope');
+  let outOfLineScope = declaredScopeNode
+    ? nodeText(declaredScopeNode, context).replace(/::/g, '.')
+    : null;
+  if (outOfLineScope && context.currentNamespace && !outOfLineScope.startsWith(`${context.currentNamespace}.`)) {
+    outOfLineScope = `${context.currentNamespace}.${outOfLineScope}`;
+  }
 
   // Handle operator overloads: operator+, operator==, etc.
   if (name === 'operator') {
@@ -351,26 +373,34 @@ function processFunctionDefinition(node: Parser.SyntaxNode, context: Context): v
   }
 
   // Detect constructor: function name matches current class
-  const isConstructor = context.currentClass !== null && name === context.currentClass;
+  const currentClassName = context.currentClass?.split('.').pop() || null;
+  const isConstructor = currentClassName !== null && name === currentClassName;
   const isDestructor = name.startsWith('~');
 
   const isStatic = hasStorageClass(node, 'static', context);
   const exported = !isStatic;
-  const scope = context.currentClass || undefined;
+  const methodScope = context.currentClass || outOfLineScope || undefined;
+  const scope = methodScope || context.currentNamespace || undefined;
   const symbolId = scope
     ? `${context.filePath}::${scope}.${name}`
     : `${context.filePath}::${name}`;
 
-  context.symbols.push({
-    id: symbolId,
-    name,
-    kind: context.currentClass ? 'method' : 'function',
-    filePath: context.filePath,
-    startLine: node.startPosition.row + 1,
-    endLine: node.endPosition.row + 1,
-    exported,
-    scope,
-  });
+  const existing = context.symbols.find(symbol => symbol.id === symbolId);
+  if (existing) {
+    existing.endLine = Math.max(existing.endLine, node.endPosition.row + 1);
+    existing.exported = existing.exported || exported;
+  } else {
+    context.symbols.push({
+      id: symbolId,
+      name,
+      kind: methodScope ? 'method' : 'function',
+      filePath: context.filePath,
+      startLine: node.startPosition.row + 1,
+      endLine: node.endPosition.row + 1,
+      exported,
+      scope,
+    });
+  }
 
   // Enter function scope
   const scopeName = scope ? `${scope}.${name}` : name;
@@ -393,12 +423,6 @@ function processFunctionDefinition(node: Parser.SyntaxNode, context: Context): v
 // ─── Declarations ─────────────────────────────────────────────
 
 function processDeclaration(node: Parser.SyntaxNode, context: Context): void {
-  // Inside a class body — handle field declarations
-  if (context.currentClass) {
-    processFieldDeclaration(node, context);
-    return;
-  }
-
   // Top-level declarations — global variables, function declarations
   const parent = node.parent;
   if (!parent || (parent.type !== 'translation_unit' && parent.type !== 'declaration_list')) {
@@ -630,6 +654,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   if (!functionNode) return;
 
   let calleeName: string | null = null;
+  let qualifiedCallee: string | null = null;
 
   if (functionNode.type === 'identifier') {
     calleeName = nodeText(functionNode, context);
@@ -638,6 +663,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     const nameNode = functionNode.childForFieldName('name') || functionNode.childForFieldName('field');
     if (nameNode) {
       calleeName = nodeText(nameNode, context);
+    }
+    if (functionNode.type === 'qualified_identifier') {
+      qualifiedCallee = nodeText(functionNode, context).replace(/::/g, '.');
     }
   } else if (functionNode.type === 'template_function') {
     const nameNode = functionNode.childForFieldName('name');
@@ -661,7 +689,10 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   const callerId = getCurrentSymbolId(context);
   if (!callerId) return;
 
-  const calleeId = resolveSymbol(calleeName, context);
+  const exactQualifiedId = qualifiedCallee ? `${context.filePath}::${qualifiedCallee}` : null;
+  const calleeId = exactQualifiedId && context.symbols.some(symbol => symbol.id === exactQualifiedId)
+    ? exactQualifiedId
+    : resolveSymbol(calleeName, context);
   if (calleeId) {
     context.edges.push({
       source: callerId,
@@ -885,6 +916,21 @@ function resolveSymbol(name: string, context: Context): string | null {
     }
   }
 
+  const activeScope = context.currentScope[context.currentScope.length - 1];
+  let owner = activeScope === context.currentNamespace
+    ? activeScope
+    : activeScope?.includes('.')
+      ? activeScope.slice(0, activeScope.lastIndexOf('.'))
+      : context.currentNamespace;
+  while (owner) {
+    const scopedId = `${context.filePath}::${owner}.${name}`;
+    if (context.symbols.find(s => s.id === scopedId)) {
+      return scopedId;
+    }
+    const dot = owner.lastIndexOf('.');
+    owner = dot >= 0 ? owner.slice(0, dot) : null;
+  }
+
   return null;
 }
 
@@ -919,7 +965,7 @@ function hasAccessSpecifier(node: Parser.SyntaxNode, specifier: string, context:
 }
 
 function extractFunctionName(declarator: Parser.SyntaxNode): Parser.SyntaxNode | null {
-  if (declarator.type === 'identifier') {
+  if (declarator.type === 'identifier' || declarator.type === 'field_identifier') {
     return declarator;
   }
 
@@ -954,7 +1000,7 @@ function extractFunctionName(declarator: Parser.SyntaxNode): Parser.SyntaxNode |
 
   for (let i = 0; i < declarator.childCount; i++) {
     const child = declarator.child(i);
-    if (child && child.type === 'identifier') {
+    if (child && (child.type === 'identifier' || child.type === 'field_identifier')) {
       return child;
     }
   }

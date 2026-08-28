@@ -71,18 +71,30 @@ export function parseDartFile(
     // Enum declarations (including enhanced enums)
     processEnumDeclaration(trimmed, lineNum, context, lines, i);
 
-    // Top-level functions and methods
-    processFunctionDeclaration(trimmed, lineNum, context);
+    const insideTypeBody = context.symbols.some(symbol =>
+      (symbol.kind === 'class' || symbol.kind === 'enum') &&
+      lineNum > symbol.startLine && lineNum <= symbol.endLine
+    );
+
+    // Top-level and nested functions. Class members are emitted exactly once
+    // by processClassBody; scanning their source lines again used to create a
+    // second, top-level declaration for every method.
+    if (!insideTypeBody) {
+      processFunctionDeclaration(trimmed, lineNum, context, lines, i);
+    }
 
     // Top-level variables and constants
-    processTopLevelVariable(trimmed, lineNum, context);
-
-    // Function call edges
-    processCallEdges(trimmed, lineNum, context);
+    if (!insideTypeBody) {
+      processTopLevelVariable(trimmed, lineNum, context);
+    }
 
     // Typedef declarations
     processTypedef(trimmed, lineNum, context);
   }
+
+  // Resolve calls only after every declaration is known. Besides supporting
+  // forward calls, this keeps invocation syntax out of declaration matching.
+  processCallEdges(lines, context);
 
   return {
     filePath,
@@ -425,11 +437,19 @@ function processEnumDeclaration(
 
 // ─── Functions ────────────────────────────────────────────────
 
-function processFunctionDeclaration(line: string, lineNum: number, context: Context): void {
+function processFunctionDeclaration(
+  line: string,
+  lineNum: number,
+  context: Context,
+  lines: string[],
+  idx: number
+): void {
   // Top-level or nested function: ReturnType functionName(...) { or =>
   // Also matches: void main() {, Future<void> fetchData() async {
   const funcMatch = line.match(
-    /^(?:(?:static|external|abstract)\s+)*(?:[\w<>,?\s]+\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*(?:async\s*\*?|sync\s*\*?)?\s*(?:\{|=>|;)/
+    /^(?:(?:static|external|abstract)\s+)*(?:[\w<>,?\s]+\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*(?:async\s*\*?|sync\s*\*?)?\s*(?:\{|=>)/
+  ) || line.match(
+    /^(?:external\s+)(?:[\w<>,?\s]+\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*;/
   );
   if (!funcMatch) return;
 
@@ -445,13 +465,14 @@ function processFunctionDeclaration(line: string, lineNum: number, context: Cont
 
   const symbolId = `${context.filePath}::${name}`;
 
+  const endLine = line.includes('{') ? findBlockEnd(lines, idx) + 1 : lineNum;
   context.symbols.push({
     id: symbolId,
     name,
     kind: 'function',
     filePath: context.filePath,
     startLine: lineNum,
-    endLine: lineNum,
+    endLine,
     exported: !name.startsWith('_'),
   });
 }
@@ -514,24 +535,39 @@ function processTypedef(line: string, lineNum: number, context: Context): void {
 
 // ─── Call edges ───────────────────────────────────────────────
 
-function processCallEdges(line: string, lineNum: number, context: Context): void {
-  if (context.currentScope.length === 0) return;
+function processCallEdges(lines: string[], context: Context): void {
+  const callables = context.symbols.filter(symbol => symbol.kind === 'function' || symbol.kind === 'method');
+  const seen = new Set(context.edges.map(edge => `${edge.source}\0${edge.target}\0${edge.line}\0${edge.kind}`));
 
-  // Match function calls: name(...) or Name.method(...)
-  const callPattern = /\b([A-Z]\w+)\s*\(/g;
-  let match;
-  while ((match = callPattern.exec(line)) !== null) {
-    const callee = match[1];
-    if (isBuiltin(callee)) continue;
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
+    const lineNum = idx + 1;
+    const caller = callables
+      .filter(symbol => symbol.startLine <= lineNum && symbol.endLine >= lineNum)
+      .sort((a, b) => (a.endLine - a.startLine) - (b.endLine - b.startLine))[0];
+    if (!caller) continue;
 
-    const callerId = getCurrentSymbolId(context);
-    if (!callerId) continue;
+    const callPattern = /\b([A-Za-z_]\w*)\s*\(/g;
+    let match: RegExpExecArray | null;
+    while ((match = callPattern.exec(line)) !== null) {
+      const callee = match[1];
+      const preceding = match.index > 0 ? line[match.index - 1] : '';
+      if (preceding === '.' || isBuiltin(callee) || isDartControlKeyword(callee)) continue;
+      if (lineNum === caller.startLine && callee === caller.name.split('.').pop()) continue;
 
-    const calleeId = resolveSymbol(callee, context);
-    if (calleeId) {
+      const scopedId = caller.scope ? `${context.filePath}::${caller.scope}.${callee}` : null;
+      const localId = `${context.filePath}::${callee}`;
+      const target = (scopedId && context.symbols.some(symbol => symbol.id === scopedId))
+        ? scopedId
+        : context.symbols.some(symbol => symbol.id === localId) ? localId : null;
+      if (!target) continue;
+
+      const key = `${caller.id}\0${target}\0${lineNum}\0calls`;
+      if (seen.has(key)) continue;
+      seen.add(key);
       context.edges.push({
-        source: callerId,
-        target: calleeId,
+        source: caller.id,
+        target,
         kind: 'calls',
         filePath: context.filePath,
         line: lineNum,
@@ -558,13 +594,14 @@ function processClassBody(lines: string[], startIdx: number, endIdx: number, con
       const name = namedCtor ? `${context.currentClass}.${namedCtor}` : context.currentClass!;
       const symbolId = `${context.filePath}::${context.currentClass}.${namedCtor || 'constructor'}`;
 
+      const endLine = line.includes('{') ? findBlockEnd(lines, i) + 1 : lineNum;
       context.symbols.push({
         id: symbolId,
         name,
         kind: 'method',
         filePath: context.filePath,
         startLine: lineNum,
-        endLine: lineNum,
+        endLine,
         exported: !name.startsWith('_'),
         scope: context.currentClass || undefined,
       });
@@ -580,13 +617,14 @@ function processClassBody(lines: string[], startIdx: number, endIdx: number, con
       const name = namedFactory ? `${context.currentClass}.${namedFactory}` : `${context.currentClass}.factory`;
       const symbolId = `${context.filePath}::${context.currentClass}.${namedFactory || 'factory'}`;
 
+      const endLine = line.includes('{') ? findBlockEnd(lines, i) + 1 : lineNum;
       context.symbols.push({
         id: symbolId,
         name,
         kind: 'method',
         filePath: context.filePath,
         startLine: lineNum,
-        endLine: lineNum,
+        endLine,
         exported: !name.startsWith('_'),
         scope: context.currentClass || undefined,
       });
@@ -594,8 +632,13 @@ function processClassBody(lines: string[], startIdx: number, endIdx: number, con
     }
 
     // Method declarations
+    if (/^(?:return|throw|await|yield)\b/.test(line)) continue;
     const methodMatch = line.match(
-      /^(?:(?:static|@override|@protected|@visibleForTesting)\s+)*(?:[\w<>,?\s]+\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*(?:async\s*\*?|sync\s*\*?)?\s*(?:\{|=>|;)/
+      /^(?:(?:static|@override|@protected|@visibleForTesting)\s+)*(?:[\w<>,?\s]+\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*(?:async\s*\*?|sync\s*\*?)?\s*(?:\{|=>)/
+    ) || line.match(
+      /^(?:(?:external|abstract|static)\s+)+(?:[\w<>,?\s]+\s+)?(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*;/
+    ) || line.match(
+      /^(?:[A-Za-z_]\w*(?:<[^>]*>)?[?]?\s+)(\w+)\s*(?:<[^>]*>)?\s*\([^)]*\)\s*;/
     );
     if (methodMatch) {
       const name = methodMatch[1];
@@ -603,13 +646,14 @@ function processClassBody(lines: string[], startIdx: number, endIdx: number, con
 
       const symbolId = `${context.filePath}::${context.currentClass}.${name}`;
 
+      const endLine = line.includes('{') ? findBlockEnd(lines, i) + 1 : lineNum;
       context.symbols.push({
         id: symbolId,
         name,
         kind: 'method',
         filePath: context.filePath,
         startLine: lineNum,
-        endLine: lineNum,
+        endLine,
         exported: !name.startsWith('_'),
         scope: context.currentClass || undefined,
       });
@@ -778,6 +822,13 @@ function isBuiltin(name: string): boolean {
     'Exception', 'Override', 'Deprecated',
   ]);
   return builtins.has(name);
+}
+
+function isDartControlKeyword(name: string): boolean {
+  return new Set([
+    'if', 'for', 'while', 'switch', 'catch', 'return', 'throw', 'assert',
+    'super', 'this', 'function',
+  ]).has(name);
 }
 
 // Export as LanguageParser interface
