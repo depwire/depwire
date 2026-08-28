@@ -42,13 +42,35 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
     };
   }
 
+  // Health is a runtime-architecture view. Symbol-level type references are
+  // excluded from every dimension. A type-only import, however, replaced an
+  // imports edge that main already counted; normalize that one non-additive
+  // retarget back to its prior relationship solely inside the health view.
+  const healthGraph = graph.copy();
+  const typeEdges = healthGraph.filterEdges((_edge, attrs) => attrs.kind === 'references-type');
+  for (const edge of typeEdges) {
+    const attrs = healthGraph.getEdgeAttributes(edge);
+    if (attrs.typeOnlyImport !== true || attrs.typeOnlyFallback === true) {
+      healthGraph.dropEdge(edge);
+      continue;
+    }
+    const source = healthGraph.source(edge);
+    const originalTarget = attrs.originalImportTarget;
+    if (typeof originalTarget === 'string' && healthGraph.hasNode(originalTarget)) {
+      healthGraph.dropEdge(edge);
+      healthGraph.mergeEdge(source, originalTarget, { ...attrs, kind: 'imports' });
+    } else {
+      healthGraph.setEdgeAttribute(edge, 'kind', 'imports');
+    }
+  }
+
   // Calculate all 6 dimensions
-  const coupling = calculateCouplingScore(graph);
-  const cohesion = calculateCohesionScore(graph);
-  const circular = calculateCircularDepsScore(graph);
-  const godFiles = calculateGodFilesScore(graph);
-  const orphans = calculateWorkspaceOrphansScore(graph, projectRoot);
-  const depth = calculateDepthScore(graph);
+  const coupling = calculateCouplingScore(healthGraph);
+  const cohesion = calculateCohesionScore(healthGraph);
+  const circular = calculateCircularDepsScore(healthGraph);
+  const godFiles = calculateGodFilesScore(healthGraph);
+  const orphans = calculateWorkspaceOrphansScore(healthGraph, projectRoot);
+  const depth = calculateDepthScore(healthGraph);
   
   const dimensions = [coupling, cohesion, circular, godFiles, orphans, depth];
   

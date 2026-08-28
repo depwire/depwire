@@ -8,17 +8,18 @@ const fixtureDir = resolve(import.meta.dirname, 'fixtures/type-imports');
 const repoRoot = resolve(import.meta.dirname, '..');
 
 describe('TypeScript parser correctness (type-only imports, duplicate symbols, export scope)', () => {
-  it('produces an imports edge for `import type { A } from "./types"`', async () => {
+  it('retargets `import type` to references-type and removes its imports edge', async () => {
     const parsedFiles = await parseProject(fixtureDir, { useCache: false });
     const allEdges = parsedFiles.flatMap((f) => f.edges);
 
     const edge = allEdges.find(
       (e) =>
         e.filePath === 'import-type.ts' &&
-        e.kind === 'imports' &&
+        e.kind === 'references-type' &&
         e.target === 'types.ts::A'
     );
     expect(edge).toBeDefined();
+    expect(allEdges.some((e) => e.filePath === 'import-type.ts' && e.kind === 'imports')).toBe(false);
   });
 
   it('produces edges for both A and B in `import { type A, B } from "./x"`', async () => {
@@ -26,13 +27,49 @@ describe('TypeScript parser correctness (type-only imports, duplicate symbols, e
     const allEdges = parsedFiles.flatMap((f) => f.edges);
 
     const edgeA = allEdges.find(
-      (e) => e.filePath === 'import-both.ts' && e.kind === 'imports' && e.target === 'x.ts::A'
+      (e) => e.filePath === 'import-both.ts' && e.kind === 'references-type' && e.target === 'x.ts::A'
     );
     const edgeB = allEdges.find(
       (e) => e.filePath === 'import-both.ts' && e.kind === 'imports' && e.target === 'x.ts::B'
     );
     expect(edgeA).toBeDefined();
     expect(edgeB).toBeDefined();
+  });
+
+  it('emits proven references-type edges for every approved TypeScript type position', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const edges = parsedFiles.flatMap((file) => file.edges)
+      .filter((edge) => edge.filePath === 'type-edges.ts' && edge.kind === 'references-type');
+
+    const relationships = new Set(edges.map((edge) => `${edge.source}->${edge.target}`));
+    expect(relationships).toContain('type-edges.ts::Child->type-edges.ts::LocalParent');
+    expect(relationships).toContain('type-edges.ts::Child->types.ts::A');
+    expect(relationships).toContain('type-edges.ts::Child->types.ts::Inner');
+    expect(relationships).toContain('type-edges.ts::Implementation->type-edges.ts::Child');
+    expect(relationships).toContain('type-edges.ts::Implementation.method->type-edges.ts::LocalAlias');
+    expect(relationships).toContain('type-edges.ts::Implementation.method->types.ts::A');
+    expect(relationships).toContain('type-edges.ts::GenericAlias->type-edges.ts::LocalParent');
+    expect(relationships).toContain('type-edges.ts::convert->types.ts::A');
+    expect(relationships).toContain('type-edges.ts::convert->type-edges.ts::LocalAlias');
+  });
+
+  it('records unresolvable builtins without emitting guessed type edges', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const file = parsedFiles.find((entry) => entry.filePath === 'type-edges.ts')!;
+    expect(file.unresolvedTypeRefs).toContainEqual({
+      fromFile: 'type-edges.ts',
+      typeName: 'Map',
+      reason: 'no-project-symbol',
+    });
+    expect(file.edges.some((edge) => edge.target.endsWith('::Map'))).toBe(false);
+  });
+
+  it('reuses named re-export resolution and targets the declaring type symbol', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false });
+    const edges = parsedFiles.flatMap((file) => file.edges)
+      .filter((edge) => edge.filePath === 'named-consumer.ts' && edge.kind === 'references-type');
+    expect(edges.some((edge) => edge.target === 'types.ts::A')).toBe(true);
+    expect(edges.some((edge) => edge.target === 'named-barrel.ts::PublicA')).toBe(false);
   });
 
   it('produces an edge for `export type { A } from "./types"`', async () => {

@@ -1,5 +1,5 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 
 interface Context {
@@ -11,6 +11,7 @@ interface Context {
   currentScope: string[];
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
+  typeFallbackImports: Set<string>; // type-only bindings resolved by the root-source workspace fallback
   declaredSymbolIds: Set<string>; // every symbol id declared so far, used to resolve calls to nested/scoped functions
   declaredSymbols: Map<string, SymbolNode[]>; // declarations by id; call resolution also needs value/kind evidence
   // Buffered call edges waiting for forward-reference resolution. `scopedOnly` marks calls
@@ -20,6 +21,8 @@ interface Context {
   unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
+  unresolvedTypeRefs: UnresolvedTypeRef[];
+  pendingTypeRefs: Array<{ source: string; typeName: string; qualifier?: string; line: number; heritage?: boolean }>;
   wildcardReExports: string[]; // resolved target files this file wildcard-re-exports from (`export * from`)
 }
 
@@ -42,11 +45,14 @@ export function parseTypeScriptFile(
     currentScope: [],
     imports: new Map(),
     externalImports: new Map(),
+    typeFallbackImports: new Set(),
     declaredSymbolIds: new Set(),
     declaredSymbols: new Map(),
     unresolvedCallEdges: [],
     unresolvedImports: [],
     unresolvedCalls: [],
+    unresolvedTypeRefs: [],
+    pendingTypeRefs: [],
     wildcardReExports: [],
   };
   
@@ -54,6 +60,7 @@ export function parseTypeScriptFile(
   
   // Resolve all buffered call edges now that all symbols have been declared
   resolveUnresolvedCallEdges(context);
+  resolvePendingTypeReferences(context);
   
   return {
     filePath,
@@ -61,6 +68,7 @@ export function parseTypeScriptFile(
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
     unresolvedCalls: context.unresolvedCalls,
+    unresolvedTypeRefs: context.unresolvedTypeRefs,
     wildcardReExports: context.wildcardReExports,
   };
 }
@@ -128,6 +136,10 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
     case 'new_expression':
       processNewExpression(node, context);
       break;
+    case 'as_expression':
+    case 'satisfies_expression':
+      processTypeExpression(node, context);
+      break;
   }
   return false;
 }
@@ -154,6 +166,8 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
     exported,
     scope,
   });
+
+  collectCallableTypeReferences(node, symbolId, context);
   
   // Enter function scope for processing nested calls
   context.currentScope.push(name);
@@ -175,6 +189,134 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   context.currentScope.pop();
 }
 
+function recordUnresolvedTypeRef(
+  context: Context,
+  typeName: string,
+  reason: UnresolvedTypeRefReason,
+): void {
+  context.unresolvedTypeRefs.push({ fromFile: context.filePath, typeName, reason });
+}
+
+function collectTypeNames(
+  node: Parser.SyntaxNode | null,
+  out: Array<{ name: string; qualifier?: string; line: number }>,
+): void {
+  if (!node) return;
+  if (node.type === 'nested_type_identifier') {
+    const qualifier = node.namedChild(0)?.text.split('.')[0];
+    const name = node.lastNamedChild?.text;
+    if (qualifier && name) {
+      out.push({ name, qualifier, line: node.startPosition.row + 1 });
+    }
+    return;
+  }
+  if (node.type === 'type_identifier') {
+    out.push({ name: node.text, line: node.startPosition.row + 1 });
+    return;
+  }
+  // A heritage clause uses an ordinary identifier rather than type_identifier.
+  if (
+    node.type === 'identifier'
+    && (node.parent?.type === 'extends_type_clause' || node.parent?.type === 'extends_clause')
+  ) {
+    out.push({ name: node.text, line: node.startPosition.row + 1 });
+    return;
+  }
+  for (let i = 0; i < node.namedChildCount; i++) {
+    collectTypeNames(node.namedChild(i), out);
+  }
+}
+
+function queueTypeReferences(
+  typeNode: Parser.SyntaxNode | null,
+  source: string,
+  context: Context,
+  heritage = false,
+): void {
+  const names: Array<{ name: string; qualifier?: string; line: number }> = [];
+  collectTypeNames(typeNode, names);
+  for (const { name, qualifier, line } of names) {
+    context.pendingTypeRefs.push({ source, typeName: name, qualifier, line, heritage });
+  }
+}
+
+function collectParameterTypeReferences(
+  params: Parser.SyntaxNode | null,
+  source: string,
+  context: Context,
+): void {
+  if (!params) return;
+  for (let i = 0; i < params.namedChildCount; i++) {
+    const param = params.namedChild(i);
+    queueTypeReferences(param.childForFieldName('type'), source, context);
+  }
+}
+
+function collectCallableTypeReferences(
+  node: Parser.SyntaxNode,
+  source: string,
+  context: Context,
+): void {
+  collectParameterTypeReferences(node.childForFieldName('parameters'), source, context);
+  queueTypeReferences(node.childForFieldName('return_type'), source, context);
+}
+
+function processTypeExpression(node: Parser.SyntaxNode, context: Context): void {
+  const source = getCurrentSymbolId(context) ?? `${context.filePath}::__file__`;
+  queueTypeReferences(node.childForFieldName('type') ?? node.lastNamedChild, source, context);
+}
+
+function resolvePendingTypeReferences(context: Context): void {
+  for (const pending of context.pendingTypeRefs) {
+    if (pending.qualifier) {
+      const qualifierTarget = context.imports.get(pending.qualifier);
+      if (qualifierTarget) {
+        const targetFile = qualifierTarget.slice(0, qualifierTarget.lastIndexOf('::'));
+        context.edges.push({
+          source: pending.source,
+          target: `${targetFile}::${pending.typeName}`,
+          kind: 'references-type',
+          filePath: context.filePath,
+          line: pending.line,
+          ...(pending.heritage ? { typeContext: 'heritage' } : {}),
+        });
+        continue;
+      }
+      if (context.externalImports.has(pending.qualifier)) {
+        recordUnresolvedTypeRef(context, `${pending.qualifier}.${pending.typeName}`, 'external-type');
+        continue;
+      }
+    }
+    const imported = context.imports.get(pending.typeName);
+    if (imported) {
+      context.edges.push({
+        source: pending.source,
+        target: imported,
+        kind: 'references-type',
+        filePath: context.filePath,
+        line: pending.line,
+        ...(pending.heritage ? { typeContext: 'heritage' } : {}),
+      });
+      continue;
+    }
+    if (context.externalImports.has(pending.typeName)) {
+      recordUnresolvedTypeRef(context, pending.typeName, 'external-type');
+      continue;
+    }
+
+    // Keep the local-name candidate until the project-wide resolver has the
+    // complete symbol/re-export index. It will prove the target or classify it.
+    context.edges.push({
+      source: pending.source,
+      target: `${context.filePath}::${pending.typeName}`,
+      kind: 'references-type',
+      filePath: context.filePath,
+      line: pending.line,
+      ...(pending.heritage ? { typeContext: 'heritage' } : {}),
+    });
+  }
+}
+
 const PRIMITIVE_TYPES = new Set([
   'string', 'number', 'boolean', 'any', 'void', 'unknown', 'never',
   'object', 'symbol', 'bigint', 'null', 'undefined', 'true', 'false', 'this',
@@ -187,6 +329,7 @@ const PRIMITIVE_TYPES = new Set([
  * - Otherwise assume a same-file symbol.
  */
 function resolveTypeTarget(typeName: string, context: Context): string {
+  if (context.typeFallbackImports.has(typeName)) return `external::${typeName}`;
   const localImport = context.imports.get(typeName);
   if (localImport) return localImport;
   if (context.externalImports.has(typeName)) return `external::${typeName}`;
@@ -377,6 +520,10 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
           }
         }
       }
+      const grammarExtendsClause = findChildByType(child, 'extends_clause');
+      if (grammarExtendsClause && !extendsClause) {
+        queueTypeReferences(grammarExtendsClause, symbolId, context, true);
+      }
       
       // Process implements clause
       const implementsClause = child.childForFieldName('implements');
@@ -396,8 +543,13 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
               filePath: context.filePath,
               line: typeNode.startPosition.row + 1,
             });
+            queueTypeReferences(typeNode, symbolId, context, true);
           }
         }
+      }
+      const grammarImplementsClause = findChildByType(child, 'implements_clause');
+      if (grammarImplementsClause && !implementsClause) {
+        queueTypeReferences(grammarImplementsClause, symbolId, context, true);
       }
     }
   }
@@ -490,6 +642,8 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
     exported: false,
     scope: className,
   });
+
+  collectCallableTypeReferences(node, symbolId, context);
   
   // Enter method scope
   context.currentScope.push(name);
@@ -524,6 +678,7 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
     exported: false,
     scope: className,
   });
+  queueTypeReferences(node.childForFieldName('type'), symbolId, context);
 }
 
 function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): void {
@@ -560,6 +715,7 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
         exported,
         scope,
       });
+      queueTypeReferences(child.childForFieldName('type'), symbolId, context);
       
       // If it's an arrow function, process its body with the declared name
       // pushed as scope. Otherwise (e.g. `const x = foo();`), still walk the
@@ -569,6 +725,7 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       // longer reaches it).
       if (value) {
         if (kind === 'function') {
+          collectCallableTypeReferences(value, symbolId, context);
           context.currentScope.push(name);
           walkNode(value, context);
           context.currentScope.pop();
@@ -600,6 +757,20 @@ function processTypeAliasDeclaration(node: Parser.SyntaxNode, context: Context):
     endLine,
     exported,
   });
+
+  const value = node.childForFieldName('value');
+  if (value) {
+    queueTypeReferences(value, symbolId, context);
+  } else {
+    // tree-sitter versions differ on whether the alias RHS is named `value`.
+    // Scan named children after the declaration name/type parameters.
+    for (let i = 0; i < node.namedChildCount; i++) {
+      const child = node.namedChild(i);
+      if (child.id !== nameNode.id && child.type !== 'type_parameters') {
+        queueTypeReferences(child, symbolId, context);
+      }
+    }
+  }
 }
 
 function processInterfaceDeclaration(node: Parser.SyntaxNode, context: Context): void {
@@ -622,6 +793,21 @@ function processInterfaceDeclaration(node: Parser.SyntaxNode, context: Context):
     endLine,
     exported,
   });
+
+  for (let i = 0; i < node.namedChildCount; i++) {
+    const child = node.namedChild(i);
+    if (child.type === 'extends_type_clause') {
+      queueTypeReferences(child, symbolId, context, true);
+    } else if (child.type === 'object_type' || child.type === 'interface_body') {
+      for (let j = 0; j < child.namedChildCount; j++) {
+        const member = child.namedChild(j);
+        queueTypeReferences(member.childForFieldName('type'), symbolId, context);
+        if (member.type === 'method_signature' || member.type === 'call_signature') {
+          collectCallableTypeReferences(member, symbolId, context);
+        }
+      }
+    }
+  }
 }
 
 function processEnumDeclaration(node: Parser.SyntaxNode, context: Context): void {
@@ -649,6 +835,7 @@ function processEnumDeclaration(node: Parser.SyntaxNode, context: Context): void
 interface ImportBinding {
   importedName: string; // the name as exported by the source module
   localName: string;    // the name bound in this file's scope
+  typeOnly: boolean;
 }
 
 function processImportStatement(node: Parser.SyntaxNode, context: Context): void {
@@ -658,6 +845,12 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   
   const importPath = source.text.slice(1, -1); // Remove quotes
   const resolvedPath = resolveImportPath(importPath, context.filePath, context.projectRoot);
+  const typeResolvedPath = resolvedPath ?? resolveImportPath(
+    importPath,
+    context.filePath,
+    context.projectRoot,
+    { allowPackageRootSource: true },
+  );
   
   // Locate the clause by node type rather than positional index — `import
   // type { ... }` shifts every subsequent child by one slot because `type`
@@ -667,6 +860,7 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   if (!importClause) return;
   
   const importBindings: ImportBinding[] = [];
+  const statementTypeOnly = node.text.trimStart().startsWith('import type');
   
   // Handle named imports (including `import { type A, B } from ...`)
   const namedImports = findChildByType(importClause, 'named_imports');
@@ -682,7 +876,11 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
         if (!nameNode) continue;
         const importedName = nameNode.text;
         const localName = aliasNode ? aliasNode.text : importedName;
-        importBindings.push({ importedName, localName });
+        importBindings.push({
+          importedName,
+          localName,
+          typeOnly: statementTypeOnly || hasDirectToken(child, 'type'),
+        });
       }
     }
   }
@@ -690,7 +888,11 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   // Handle default import
   const identifier = findChildByType(importClause, 'identifier');
   if (identifier) {
-    importBindings.push({ importedName: identifier.text, localName: identifier.text });
+    importBindings.push({
+      importedName: identifier.text,
+      localName: identifier.text,
+      typeOnly: statementTypeOnly,
+    });
   }
   
   // Handle namespace import (import * as X). Track it separately from named
@@ -712,46 +914,56 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
     }
   }
   
-  // Create edges for each imported symbol
-  if (resolvedPath) {
-    const currentSymbolId = getCurrentSymbolId(context);
-    
-    for (const { importedName, localName } of importBindings) {
-      const targetId = `${resolvedPath}::${importedName}`;
-      
-      // Track the import for later call resolution, keyed by the local
-      // binding so calls to `beta()` resolve correctly for `alpha as beta`.
-      context.imports.set(localName, targetId);
-      
-      context.edges.push({
-        source: currentSymbolId || `${context.filePath}::__file__`,
-        target: targetId,
-        kind: 'imports',
-        filePath: context.filePath,
-        line: node.startPosition.row + 1,
-      });
+  // Create edges per binding. Type-only bindings may use the same workspace
+  // resolver with the package-root source fallback enabled; value imports
+  // retain the existing resolution behavior so this feature stays additive.
+  const currentSymbolId = getCurrentSymbolId(context);
+  let hasUnresolvedBinding = false;
+  for (const { importedName, localName, typeOnly } of importBindings) {
+    const bindingPath = resolvedPath ?? (typeOnly ? typeResolvedPath : null);
+    if (!bindingPath) {
+      hasUnresolvedBinding = true;
+      if (!context.externalImports.has(localName)) context.externalImports.set(localName, importPath);
+      continue;
     }
+    const targetId = `${bindingPath}::${importedName}`;
+    context.imports.set(localName, targetId);
+    if (!resolvedPath && typeOnly) context.typeFallbackImports.add(localName);
+    context.edges.push({
+      source: currentSymbolId || `${context.filePath}::__file__`,
+      target: targetId,
+      kind: typeOnly ? 'references-type' : 'imports',
+      filePath: context.filePath,
+      line: node.startPosition.row + 1,
+      ...(typeOnly ? { typeOnlyImport: true } : {}),
+      ...(typeOnly ? { originalImportTarget: targetId } : {}),
+      ...(!resolvedPath && typeOnly ? { typeOnlyFallback: true } : {}),
+    });
+  }
 
-    for (const alias of namespaceImportNames) {
-      const targetId = `${resolvedPath}::__file__`;
-      context.imports.set(alias, targetId);
-      context.edges.push({
-        source: currentSymbolId || `${context.filePath}::__file__`,
-        target: targetId,
-        kind: 'imports',
-        filePath: context.filePath,
-        line: node.startPosition.row + 1,
-      });
+  for (const alias of namespaceImportNames) {
+    const bindingPath = resolvedPath ?? (statementTypeOnly ? typeResolvedPath : null);
+    if (!bindingPath) {
+      hasUnresolvedBinding = true;
+      context.externalImports.set(alias, importPath);
+      continue;
     }
-  } else {
-    // Unresolved (node_modules / ambient) — remember the local names so
-    // dependency injection resolution can mark them as external rather
-    // than local.
-    for (const { localName } of importBindings) {
-      if (!context.externalImports.has(localName)) {
-        context.externalImports.set(localName, importPath);
-      }
-    }
+    const targetId = `${bindingPath}::__file__`;
+    context.imports.set(alias, targetId);
+    if (!resolvedPath && statementTypeOnly) context.typeFallbackImports.add(alias);
+    context.edges.push({
+      source: currentSymbolId || `${context.filePath}::__file__`,
+      target: targetId,
+      kind: statementTypeOnly ? 'references-type' : 'imports',
+      filePath: context.filePath,
+      line: node.startPosition.row + 1,
+      ...(statementTypeOnly ? { typeOnlyImport: true } : {}),
+      ...(statementTypeOnly ? { originalImportTarget: targetId } : {}),
+      ...(!resolvedPath && statementTypeOnly ? { typeOnlyFallback: true } : {}),
+    });
+  }
+
+  if (hasUnresolvedBinding) {
     const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
     context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
   }
@@ -849,6 +1061,13 @@ function hasWildcardToken(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function hasDirectToken(node: Parser.SyntaxNode, type: string): boolean {
+  for (let i = 0; i < node.childCount; i++) {
+    if (node.child(i)?.type === type) return true;
+  }
+  return false;
+}
+
 
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
   const functionNode = node.childForFieldName('function');
@@ -868,6 +1087,11 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     }
 
     // Check if this function is imported
+    if (context.typeFallbackImports.has(functionName)) {
+      recordUnresolvedCall(context, functionName, 'unresolved-import-callee');
+      return;
+    }
+
     if (context.imports.has(functionName)) {
       const targetId = context.imports.get(functionName)!;
       context.edges.push({
@@ -956,6 +1180,11 @@ function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
   if (currentSymbolId) {
     if (hasUnmodeledLexicalBinding(node, className)) {
       recordUnresolvedCall(context, className, 'local-binding-not-modeled');
+      return;
+    }
+
+    if (context.typeFallbackImports.has(className)) {
+      recordUnresolvedCall(context, className, 'unresolved-import-callee');
       return;
     }
 

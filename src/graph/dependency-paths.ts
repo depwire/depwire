@@ -27,8 +27,9 @@ export interface DependencyPathAnalysis {
 export function analyzeDependencyPaths(
   graph: DirectedGraph,
   pathLimit = 0,
+  edgeFilter: (kind: unknown) => boolean = () => true,
 ): DependencyPathAnalysis {
-  const fileGraph = buildFileGraph(graph);
+  const fileGraph = buildFileGraph(graph, edgeFilter);
   if (fileGraph.size === 0) {
     return { maxDepth: 0, nodeCount: 0, paths: [], sccCount: 0 };
   }
@@ -108,10 +109,14 @@ export function analyzeDependencyPaths(
   };
 }
 
-function buildFileGraph(graph: DirectedGraph): Map<string, Set<string>> {
+function buildFileGraph(
+  graph: DirectedGraph,
+  edgeFilter: (kind: unknown) => boolean,
+): Map<string, Set<string>> {
   const fileGraph = new Map<string, Set<string>>();
 
-  graph.forEachEdge((_edge, _attrs, source, target) => {
+  graph.forEachEdge((_edge, attrs, source, target) => {
+    if (!edgeFilter(attrs.kind)) return;
     const sourceFile = graph.getNodeAttributes(source).filePath;
     const targetFile = graph.getNodeAttributes(target).filePath;
     if (sourceFile === targetFile) return;

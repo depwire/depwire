@@ -35,8 +35,12 @@ export type { UnresolvedImport, UnresolvedImportReason } from './parser/types.js
 export { aggregateUnresolvedCalls } from './parser/types.js';
 export type { UnresolvedCall, UnresolvedCallReason } from './parser/types.js';
 
+/** Type-position names dropped because no project symbol was provable. */
+export { aggregateUnresolvedTypeRefs } from './parser/types.js';
+export type { UnresolvedTypeRef, UnresolvedTypeRefReason } from './parser/types.js';
+
 /** Parse cache controls — clear the on-disk cache / inspect cache stats */
-export { clearCache, getCacheStats } from './parser/cache.js';
+export { clearCache, getCacheStats, RESOLUTION_VERSION } from './parser/cache.js';
 
 /** Build a graphology DirectedGraph from parsed data */
 export { buildGraph } from './graph/index.js';

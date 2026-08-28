@@ -1,4 +1,4 @@
-import type { ParsedFile } from './types.js';
+import type { ParsedFile, SymbolKind, UnresolvedTypeRefReason } from './types.js';
 
 // Barrel/re-export chains rarely exceed 3-4 levels in real code (an entry
 // index.ts re-exporting a submodule's index.ts re-exporting individual
@@ -97,6 +97,100 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
   }
 
   return { rewritten, droppedAsUnresolved };
+}
+
+const PROJECT_TYPE_KINDS = new Set<SymbolKind>(['interface', 'type_alias', 'enum', 'class']);
+
+/**
+ * Proves every references-type target against the complete project symbol
+ * table. Named re-exports are followed through their existing imports edges;
+ * wildcard re-exports have already been rewritten by resolveReExportChains.
+ * Candidates that cannot be proven are removed and classified rather than
+ * reaching buildGraph as guessed relationships.
+ */
+export function finalizeTypeReferences(parsedFiles: ParsedFile[]): {
+  kept: number;
+  dropped: number;
+  retargeted: number;
+} {
+  const symbols = new Map<string, SymbolKind[]>();
+  const namedReExports = new Map<string, string[]>();
+  for (const file of parsedFiles) {
+    for (const symbol of file.symbols) {
+      const kinds = symbols.get(symbol.id) ?? [];
+      kinds.push(symbol.kind);
+      symbols.set(symbol.id, kinds);
+    }
+    for (const edge of file.edges) {
+      if (edge.kind !== 'imports') continue;
+      const sourceKinds = symbols.get(edge.source) ?? file.symbols
+        .filter((symbol) => symbol.id === edge.source)
+        .map((symbol) => symbol.kind);
+      if (!sourceKinds.includes('export')) continue;
+      const targets = namedReExports.get(edge.source) ?? [];
+      targets.push(edge.target);
+      namedReExports.set(edge.source, targets);
+    }
+  }
+
+  const resolveTarget = (start: string): { target?: string; reason?: UnresolvedTypeRefReason } => {
+    let target = start;
+    const seen = new Set<string>();
+    while (true) {
+      if (seen.has(target)) return { reason: 'ambiguous-reexport' };
+      seen.add(target);
+      const kinds = symbols.get(target) ?? [];
+      if (kinds.some((kind) => PROJECT_TYPE_KINDS.has(kind))) return { target };
+      if (!kinds.includes('export')) {
+        return { reason: kinds.length > 0 ? 'unsupported-target-kind' : 'no-project-symbol' };
+      }
+      const next = [...new Set(namedReExports.get(target) ?? [])];
+      if (next.length !== 1) return { reason: 'ambiguous-reexport' };
+      target = next[0];
+    }
+  };
+
+  let kept = 0;
+  let dropped = 0;
+  let retargeted = 0;
+  for (const file of parsedFiles) {
+    const retained = [];
+    for (const edge of file.edges) {
+      if (edge.kind !== 'references-type') {
+        retained.push(edge);
+        continue;
+      }
+      const resolved = resolveTarget(edge.target);
+      if (!resolved.target) {
+        const typeName = edge.target.slice(edge.target.lastIndexOf('::') + 2);
+        if (!file.unresolvedTypeRefs) file.unresolvedTypeRefs = [];
+        file.unresolvedTypeRefs.push({
+          fromFile: file.filePath,
+          typeName,
+          reason: resolved.reason ?? 'no-project-symbol',
+        });
+        dropped++;
+        continue;
+      }
+
+      // Heritage already represented by extends/implements remains unchanged
+      // when it resolves to a class. Interface/type-alias heritage is the new
+      // relationship this edge kind is designed to expose.
+      if (edge.typeContext === 'heritage' && (symbols.get(resolved.target) ?? []).includes('class')) {
+        dropped++;
+        continue;
+      }
+      if (resolved.target !== edge.target) {
+        edge.target = resolved.target;
+        retargeted++;
+      }
+      delete edge.typeContext;
+      retained.push(edge);
+      kept++;
+    }
+    file.edges = retained;
+  }
+  return { kept, dropped, retargeted };
 }
 
 /**

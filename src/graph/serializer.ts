@@ -30,6 +30,9 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
       kind: attrs.kind,
       filePath: attrs.filePath,
       line: attrs.line,
+      typeOnlyImport: attrs.typeOnlyImport,
+      typeOnlyFallback: attrs.typeOnlyFallback,
+      originalImportTarget: attrs.originalImportTarget,
     });
   });
   
@@ -75,6 +78,9 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
         kind: edge.kind,
         filePath: edge.filePath,
         line: edge.line,
+        typeOnlyImport: edge.typeOnlyImport,
+        typeOnlyFallback: edge.typeOnlyFallback,
+        originalImportTarget: edge.originalImportTarget,
       });
     }
   }

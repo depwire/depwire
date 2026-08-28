@@ -386,6 +386,7 @@ function renderArcDiagram() {
       return d3.interpolateRainbow(t);
     })
     .attr('stroke-width', d => Math.min(4, 1 + Math.log(d.edgeCount)))
+    .attr('stroke-dasharray', d => d.edgeKinds.includes('references-type') ? '5,4' : null)
     .on('mouseover', handleArcHover)
     .on('mouseout', handleArcOut)
     .on('click', handleArcClick);

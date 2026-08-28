@@ -56,4 +56,18 @@ describe('workspace package + barrel re-export resolution (#12/#14)', () => {
     expect(barrel).toBeDefined();
     expect(barrel!.symbols.length).toBe(0);
   });
+
+  it('resolves package-root subpaths only for type bindings', async () => {
+    const parsedFiles = await parseProject(fixtureDir, { useCache: false } as any);
+    const file = parsedFiles.find((entry) => entry.filePath === 'packages/pkg-a/src/root-type.ts')!;
+
+    expect(file.edges).toContainEqual(expect.objectContaining({
+      kind: 'references-type',
+      target: 'packages/pkg-root/internal.ts::RootType',
+    }));
+    expect(file.edges).not.toContainEqual(expect.objectContaining({
+      kind: 'imports',
+      target: 'packages/pkg-root/internal.ts::rootValue',
+    }));
+  });
 });
