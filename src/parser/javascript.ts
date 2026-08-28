@@ -200,7 +200,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
             context.edges.push({
               source: symbolId,
               target: baseId,
-              kind: 'extends',
+              kind: 'inherits',
               filePath: context.filePath,
               line: child.startPosition.row + 1,
             });

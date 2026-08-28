@@ -21,7 +21,7 @@ function payload(formatVersion?: number): ProjectGraph {
 
 describe('graph format compatibility for references-type', () => {
   it('bumps the parser resolution cache version', () => {
-    expect(RESOLUTION_VERSION).toBe(2);
+    expect(RESOLUTION_VERSION).toBe(3);
   });
 
   it('loads a pre-1.17 payload and preserves an unknown edge kind', () => {
@@ -34,5 +34,17 @@ describe('graph format compatibility for references-type', () => {
     const exported = exportToJSON(graph, '/repo');
     expect(exported.formatVersion).toBe(1);
     expect(exported.edges).toContainEqual(expect.objectContaining({ kind: 'references-type' }));
+  });
+
+  it('preserves the legacy extends inheritance kind without normalization', () => {
+    const oldGraph = payload(1);
+    oldGraph.edges[0].kind = 'extends';
+
+    const graph = importFromJSON(oldGraph);
+    const exported = exportToJSON(graph, '/repo');
+
+    expect(exported.formatVersion).toBe(1);
+    expect(exported.edges).toContainEqual(expect.objectContaining({ kind: 'extends' }));
+    expect(exported.edges).not.toContainEqual(expect.objectContaining({ kind: 'inherits' }));
   });
 });

@@ -23,7 +23,7 @@ import { join } from 'path';
 import { ParsedFile } from './types.js';
 
 /** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
-export const RESOLUTION_VERSION = 2;
+export const RESOLUTION_VERSION = 3;
 
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms

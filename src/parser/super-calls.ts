@@ -2,14 +2,14 @@ import type { ParsedFile, SymbolEdge, SymbolNode } from './types.js';
 
 // Matches the existing re-export traversal bound: inheritance chains beyond
 // eight hops are left unresolved rather than searched without limit.
-const MAX_EXTENDS_DEPTH = 8;
+const MAX_INHERITANCE_DEPTH = 8;
 
 export interface SuperCallResolutionResult {
   resolved: number;
   unresolved: number;
 }
 
-/** Resolve buffered super.method() calls against the proven extends graph. */
+/** Resolve buffered super.method() calls against proven inheritance edges. */
 export function resolveSuperCalls(parsedFiles: ParsedFile[]): SuperCallResolutionResult {
   const symbols = new Map<string, SymbolNode>();
   const parentByClass = new Map<string, string[]>();
@@ -17,7 +17,9 @@ export function resolveSuperCalls(parsedFiles: ParsedFile[]): SuperCallResolutio
   for (const file of parsedFiles) {
     for (const symbol of file.symbols) symbols.set(symbol.id, symbol);
     for (const edge of file.edges) {
-      if (edge.kind !== 'extends') continue;
+      // `inherits` is canonical. Keep accepting `extends` forever so loaded
+      // graphs written by older releases retain identical super resolution.
+      if (edge.kind !== 'inherits' && edge.kind !== 'extends') continue;
       const parents = parentByClass.get(edge.source) ?? [];
       parents.push(edge.target);
       parentByClass.set(edge.source, parents);
@@ -75,12 +77,12 @@ function findInheritedMethod(
     const { classId, depth } = queue[index++];
     if (visited.has(classId)) continue;
     visited.add(classId);
-    if (depth > MAX_EXTENDS_DEPTH) continue;
+    if (depth > MAX_INHERITANCE_DEPTH) continue;
 
     const candidate = `${classId}.${methodName}`;
     if (symbols.get(candidate)?.kind === 'method') return candidate;
 
-    if (depth < MAX_EXTENDS_DEPTH) {
+    if (depth < MAX_INHERITANCE_DEPTH) {
       for (const parent of parentByClass.get(classId) ?? []) {
         if (!visited.has(parent)) queue.push({ classId: parent, depth: depth + 1 });
       }
