@@ -1,5 +1,5 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 
 interface Context {
@@ -23,6 +23,9 @@ interface Context {
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   unresolvedTypeRefs: UnresolvedTypeRef[];
   pendingTypeRefs: Array<{ source: string; typeName: string; qualifier?: string; line: number; heritage?: boolean }>;
+  pendingSuperCalls: PendingSuperCall[];
+  pendingNamespaceCalls: PendingNamespaceCall[];
+  ambientDepth: number;
   wildcardReExports: string[]; // resolved target files this file wildcard-re-exports from (`export * from`)
 }
 
@@ -53,6 +56,9 @@ export function parseTypeScriptFile(
     unresolvedCalls: [],
     unresolvedTypeRefs: [],
     pendingTypeRefs: [],
+    pendingSuperCalls: [],
+    pendingNamespaceCalls: [],
+    ambientDepth: 0,
     wildcardReExports: [],
   };
   
@@ -68,6 +74,8 @@ export function parseTypeScriptFile(
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
     unresolvedCalls: context.unresolvedCalls,
+    pendingSuperCalls: context.pendingSuperCalls,
+    pendingNamespaceCalls: context.pendingNamespaceCalls,
     unresolvedTypeRefs: context.unresolvedTypeRefs,
     wildcardReExports: context.wildcardReExports,
   };
@@ -124,6 +132,16 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
     case 'enum_declaration':
       processEnumDeclaration(node, context);
       break;
+    case 'internal_module':
+    case 'module':
+      processNamespaceDeclaration(node, context);
+      return true;
+    case 'ambient_declaration':
+      processAmbientDeclaration(node, context);
+      return true;
+    case 'function_signature':
+      processFunctionSignature(node, context);
+      return true;
     case 'import_statement':
       processImportStatement(node, context);
       break;
@@ -148,29 +166,31 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   const nameNode = node.childForFieldName('name');
   if (!nameNode) return;
   
-  const name = nameNode.text;
+  const localName = nameNode.text;
+  const qualifiedName = qualifyName(localName, context);
   const exported = isExported(node);
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   const scope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
   
-  const symbolId = `${context.filePath}::${scope ? scope + '.' : ''}${name}`;
+  const symbolId = `${context.filePath}::${qualifiedName}`;
   
   pushSymbol(context, {
     id: symbolId,
-    name,
+    name: localName,
     kind: 'function',
     filePath: context.filePath,
     startLine,
     endLine,
     exported,
     scope,
+    ...ambientMetadata(context),
   });
 
   collectCallableTypeReferences(node, symbolId, context);
   
   // Enter function scope for processing nested calls
-  context.currentScope.push(name);
+  context.currentScope.push(localName);
   
   // Walk default parameter values (e.g. `function f(x = init())`) — the
   // outer generic recursion no longer reaches these now that this
@@ -202,12 +222,12 @@ function collectTypeNames(
   out: Array<{ name: string; qualifier?: string; line: number }>,
 ): void {
   if (!node) return;
+  if (node.type === 'member_expression') {
+    out.push({ name: node.text, line: node.startPosition.row + 1 });
+    return;
+  }
   if (node.type === 'nested_type_identifier') {
-    const qualifier = node.namedChild(0)?.text.split('.')[0];
-    const name = node.lastNamedChild?.text;
-    if (qualifier && name) {
-      out.push({ name, qualifier, line: node.startPosition.row + 1 });
-    }
+    out.push({ name: node.text, line: node.startPosition.row + 1 });
     return;
   }
   if (node.type === 'type_identifier') {
@@ -287,7 +307,7 @@ function resolvePendingTypeReferences(context: Context): void {
         continue;
       }
     }
-    const imported = context.imports.get(pending.typeName);
+    const imported = resolveQualifiedImportTarget(pending.typeName, context);
     if (imported) {
       context.edges.push({
         source: pending.source,
@@ -299,7 +319,8 @@ function resolvePendingTypeReferences(context: Context): void {
       });
       continue;
     }
-    if (context.externalImports.has(pending.typeName)) {
+    const rootTypeName = pending.typeName.split('.')[0];
+    if (context.externalImports.has(rootTypeName) || context.typeFallbackImports.has(rootTypeName)) {
       recordUnresolvedTypeRef(context, pending.typeName, 'external-type');
       continue;
     }
@@ -329,11 +350,23 @@ const PRIMITIVE_TYPES = new Set([
  * - Otherwise assume a same-file symbol.
  */
 function resolveTypeTarget(typeName: string, context: Context): string {
-  if (context.typeFallbackImports.has(typeName)) return `external::${typeName}`;
-  const localImport = context.imports.get(typeName);
+  const rootTypeName = typeName.split('.')[0];
+  if (context.typeFallbackImports.has(rootTypeName)) return `external::${typeName}`;
+  const localImport = resolveQualifiedImportTarget(typeName, context);
   if (localImport) return localImport;
-  if (context.externalImports.has(typeName)) return `external::${typeName}`;
+  if (context.externalImports.has(rootTypeName)) return `external::${typeName}`;
   return `${context.filePath}::${typeName}`;
+}
+
+function resolveQualifiedImportTarget(name: string, context: Context): string | undefined {
+  const [root, ...suffixParts] = name.split('.');
+  const imported = context.imports.get(root);
+  if (!imported) return undefined;
+  if (suffixParts.length === 0) return imported;
+  const suffix = suffixParts.join('.');
+  return imported.endsWith('::__file__')
+    ? `${imported.slice(0, -'__file__'.length)}${suffix}`
+    : `${imported}.${suffix}`;
 }
 
 /** Extract the base type identifier from a type or type_annotation node. */
@@ -475,11 +508,13 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   if (!nameNode) return;
   
   const name = nameNode.text;
+  const parentScope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
+  const qualifiedName = qualifyName(name, context);
   const exported = isExported(node);
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   
-  const symbolId = `${context.filePath}::${name}`;
+  const symbolId = `${context.filePath}::${qualifiedName}`;
   
   // Angular: capture the @Component({ selector: '...' }) value so the HTML
   // template pairing pass can resolve template tags back to this class.
@@ -487,13 +522,17 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   
   pushSymbol(context, {
     id: symbolId,
-    name,
+    name: nameNode.text,
     kind: 'class',
     filePath: context.filePath,
     startLine,
     endLine,
     exported,
-    ...(angularSelector ? { metadata: { angularSelector } } : {}),
+    ...(parentScope ? { scope: parentScope } : {}),
+    ...((angularSelector || context.ambientDepth > 0) ? { metadata: {
+      ...(angularSelector ? { angularSelector } : {}),
+      ...(context.ambientDepth > 0 ? { ambient: true } : {}),
+    } } : {}),
   });
   
   // Process extends clause
@@ -522,7 +561,16 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
       }
       const grammarExtendsClause = findChildByType(child, 'extends_clause');
       if (grammarExtendsClause && !extendsClause) {
-        queueTypeReferences(grammarExtendsClause, symbolId, context, true);
+        const value = grammarExtendsClause.childForFieldName('value') ?? grammarExtendsClause.lastNamedChild;
+        if (value) {
+          context.edges.push({
+            source: symbolId,
+            target: resolveTypeTarget(value.text, context),
+            kind: 'extends',
+            filePath: context.filePath,
+            line: value.startPosition.row + 1,
+          });
+        }
       }
       
       // Process implements clause
@@ -621,12 +669,86 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   context.currentScope.pop();
 }
 
+function qualifyName(localName: string, context: Context): string {
+  return context.currentScope.length > 0
+    ? `${context.currentScope.join('.')}.${localName}`
+    : localName;
+}
+
+function ambientMetadata(context: Context): { metadata: { ambient: true } } | Record<string, never> {
+  return context.ambientDepth > 0 ? { metadata: { ambient: true } } : {};
+}
+
+function processAmbientDeclaration(node: Parser.SyntaxNode, context: Context): void {
+  context.ambientDepth++;
+  for (let i = 0; i < node.namedChildCount; i++) {
+    walkNode(node.namedChild(i), context);
+  }
+  context.ambientDepth--;
+}
+
+function processNamespaceDeclaration(node: Parser.SyntaxNode, context: Context): void {
+  const nameNode = node.childForFieldName('name') ?? node.namedChild(0);
+  if (!nameNode) return;
+  const parts = nameNode.text.replace(/^['"]|['"]$/g, '').split('.');
+  const parentScope = context.currentScope.join('.');
+  const qualified = parentScope ? `${parentScope}.${parts.join('.')}` : parts.join('.');
+  const symbolId = `${context.filePath}::${qualified}`;
+  const mergedDeclaration = context.declaredSymbols.get(symbolId)?.[0];
+  if (mergedDeclaration) {
+    // TypeScript permits declaration merging (`class Outer {}` plus
+    // `namespace Outer {}`). Preserve one graph id and flag its namespace
+    // facet instead of creating a cross-kind duplicate node.
+    mergedDeclaration.exported ||= isExported(node);
+    mergedDeclaration.metadata = {
+      ...mergedDeclaration.metadata,
+      namespace: true,
+      ...(context.ambientDepth > 0 ? { ambient: true } : {}),
+    };
+  } else {
+    pushSymbol(context, {
+      id: symbolId,
+      name: qualified,
+      kind: 'module',
+      filePath: context.filePath,
+      startLine: node.startPosition.row + 1,
+      endLine: node.endPosition.row + 1,
+      exported: isExported(node),
+      ...(parentScope ? { scope: parentScope } : {}),
+      ...ambientMetadata(context),
+    });
+  }
+
+  context.currentScope.push(...parts);
+  const body = node.childForFieldName('body') ?? findChildByType(node, 'statement_block');
+  if (body) walkNode(body, context);
+  context.currentScope.splice(context.currentScope.length - parts.length, parts.length);
+}
+
+function processFunctionSignature(node: Parser.SyntaxNode, context: Context): void {
+  const nameNode = node.childForFieldName('name');
+  if (!nameNode) return;
+  const symbolId = `${context.filePath}::${qualifyName(nameNode.text, context)}`;
+  pushSymbol(context, {
+    id: symbolId,
+    name: nameNode.text,
+    kind: 'function',
+    filePath: context.filePath,
+    startLine: node.startPosition.row + 1,
+    endLine: node.endPosition.row + 1,
+    exported: isExported(node),
+    ...(context.currentScope.length > 0 ? { scope: context.currentScope.join('.') } : {}),
+    metadata: { ambient: true },
+  });
+  collectCallableTypeReferences(node, symbolId, context);
+}
+
 function processMethodDefinition(node: Parser.SyntaxNode, context: Context): void {
   const nameNode = node.childForFieldName('name');
   if (!nameNode) return;
   
   const name = nameNode.text;
-  const className = context.currentScope[context.currentScope.length - 1];
+  const className = context.currentScope.join('.');
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   
@@ -641,6 +763,7 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
     endLine,
     exported: false,
     scope: className,
+    ...ambientMetadata(context),
   });
 
   collectCallableTypeReferences(node, symbolId, context);
@@ -662,7 +785,7 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
   if (!nameNode) return;
   
   const name = nameNode.text;
-  const className = context.currentScope[context.currentScope.length - 1];
+  const className = context.currentScope.join('.');
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   
@@ -677,6 +800,7 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
     endLine,
     exported: false,
     scope: className,
+    ...ambientMetadata(context),
   });
   queueTypeReferences(node.childForFieldName('type'), symbolId, context);
 }
@@ -714,6 +838,7 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
         endLine,
         exported,
         scope,
+        ...ambientMetadata(context),
       });
       queueTypeReferences(child.childForFieldName('type'), symbolId, context);
       
@@ -746,7 +871,8 @@ function processTypeAliasDeclaration(node: Parser.SyntaxNode, context: Context):
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   
-  const symbolId = `${context.filePath}::${name}`;
+  const scope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
+  const symbolId = `${context.filePath}::${qualifyName(name, context)}`;
   
   pushSymbol(context, {
     id: symbolId,
@@ -756,6 +882,8 @@ function processTypeAliasDeclaration(node: Parser.SyntaxNode, context: Context):
     startLine,
     endLine,
     exported,
+    ...(scope ? { scope } : {}),
+    ...ambientMetadata(context),
   });
 
   const value = node.childForFieldName('value');
@@ -782,7 +910,8 @@ function processInterfaceDeclaration(node: Parser.SyntaxNode, context: Context):
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   
-  const symbolId = `${context.filePath}::${name}`;
+  const scope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
+  const symbolId = `${context.filePath}::${qualifyName(name, context)}`;
   
   pushSymbol(context, {
     id: symbolId,
@@ -792,6 +921,8 @@ function processInterfaceDeclaration(node: Parser.SyntaxNode, context: Context):
     startLine,
     endLine,
     exported,
+    ...(scope ? { scope } : {}),
+    ...ambientMetadata(context),
   });
 
   for (let i = 0; i < node.namedChildCount; i++) {
@@ -819,7 +950,8 @@ function processEnumDeclaration(node: Parser.SyntaxNode, context: Context): void
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
   
-  const symbolId = `${context.filePath}::${name}`;
+  const scope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
+  const symbolId = `${context.filePath}::${qualifyName(name, context)}`;
   
   pushSymbol(context, {
     id: symbolId,
@@ -829,6 +961,8 @@ function processEnumDeclaration(node: Parser.SyntaxNode, context: Context): void
     startLine,
     endLine,
     exported,
+    ...(scope ? { scope } : {}),
+    ...ambientMetadata(context),
   });
 }
 
@@ -1140,7 +1274,22 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     const functionName = property.text;
     const line = node.startPosition.row + 1;
 
-    if (object && (object.type === 'this' || object.type === 'super')) {
+    if (object?.type === 'super') {
+      const declaringClass = findEnclosingClassId(context);
+      if (declaringClass) {
+        context.pendingSuperCalls.push({
+          source: currentSymbolId,
+          declaringClass,
+          methodName: functionName,
+          line,
+        });
+      } else {
+        recordUnresolvedCall(context, `super.${functionName}`, 'receiver-not-local');
+      }
+      return;
+    }
+
+    if (object?.type === 'this') {
       // The receiver IS known -- it's the enclosing class instance (or its base class).
       // Always buffer: a sibling member declared LATER in the class body must not be
       // mistaken for "not local" just because it hasn't been parsed yet. Resolution
@@ -1153,8 +1302,55 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
         scopeChain: [...context.currentScope],
         callKind: 'call',
         scopedOnly: true,
-        receiverKind: object.type as 'this' | 'super',
+        receiverKind: 'this',
       });
+      return;
+    }
+
+    const qualifiedName = functionNode.text;
+    const rootName = qualifiedName.split('.')[0];
+    const importedTarget = resolveQualifiedImportTarget(qualifiedName, context);
+    const localNamespace = context.declaredSymbols.get(`${context.filePath}::${rootName}`)
+      ?.some((declaration) => declaration.kind === 'module' || declaration.metadata?.namespace === true);
+    if (importedTarget || localNamespace) {
+      if (hasUnmodeledLexicalBinding(node, rootName)) {
+        recordUnresolvedCall(context, qualifiedName, 'local-binding-not-modeled');
+        return;
+      }
+      if (context.externalImports.has(rootName)) {
+        recordUnresolvedCall(context, qualifiedName, 'unresolved-import-callee');
+        return;
+      }
+      const targetId = importedTarget ?? resolveLocalCallTarget(qualifiedName, context);
+      if (importedTarget) {
+        const importedRoot = context.imports.get(rootName)!;
+        const namespaceRoot = importedRoot.endsWith('::__file__')
+          ? `${importedRoot.slice(0, -'__file__'.length)}${qualifiedName.split('.')[1]}`
+          : importedRoot;
+        context.pendingNamespaceCalls.push({
+          source: currentSymbolId,
+          namespaceRoot,
+          target: targetId,
+          callee: qualifiedName,
+          line,
+        });
+      } else if (isSupportedLocalCallTarget(targetId, 'call', context)) {
+        context.edges.push({
+          source: currentSymbolId,
+          target: targetId,
+          kind: 'calls',
+          filePath: context.filePath,
+          line,
+        });
+      } else {
+        context.unresolvedCallEdges.push({
+          source: currentSymbolId,
+          functionName: qualifiedName,
+          line,
+          scopeChain: [...context.currentScope],
+          callKind: 'call',
+        });
+      }
       return;
     }
 
@@ -1359,6 +1555,16 @@ function findChildByType(node: Parser.SyntaxNode, type: string): Parser.SyntaxNo
 function getCurrentSymbolId(context: Context): string | null {
   if (context.currentScope.length === 0) return null;
   return `${context.filePath}::${context.currentScope.join('.')}`;
+}
+
+function findEnclosingClassId(context: Context): string | null {
+  for (let i = context.currentScope.length; i >= 1; i--) {
+    const candidate = `${context.filePath}::${context.currentScope.slice(0, i).join('.')}`;
+    if (context.declaredSymbols.get(candidate)?.some((symbol) => symbol.kind === 'class')) {
+      return candidate;
+    }
+  }
+  return null;
 }
 
 // Records a symbol and tracks its id so nested/scoped functions (e.g. a

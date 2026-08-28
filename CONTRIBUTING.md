@@ -33,7 +33,7 @@ The CLA ensures that ATEF ATAYA LLC can maintain licensing flexibility for the p
 
 ### Prerequisites
 
-- **Node.js 18+** (LTS recommended)
+- **Node.js 20+** (the package engine minimum; CI covers Node 20 and 22)
 - **npm** (comes with Node.js)
 - **Git**
 
@@ -226,11 +226,17 @@ Ensure zero parse errors on all tested projects.
 8. **Sign CLA** when prompted by the bot
 9. **Respond to review** comments promptly
 
+`main` is protected by a repository ruleset. Changes must arrive through a
+pull request, and the required `Node 20.x` and `Node 22.x` CI checks must pass.
+CI runs the build and full test suite sequentially, validates release metadata,
+and smoke-tests the packed CLI and MCP server.
+
 ### PR Checklist
 
 - [ ] Code follows project coding standards
 - [ ] Tests pass (`npm test`)
 - [ ] Build succeeds (`npm run build`)
+- [ ] Release metadata validation and packed CLI/MCP smoke test pass in CI
 - [ ] No security violations (zero eval, zero writes, localhost only)
 - [ ] Tested on at least one real-world project (for parser changes)
 - [ ] Documentation updated (if applicable)
@@ -297,33 +303,23 @@ Open a GitHub issue tagged `enhancement` with:
 
 ---
 
-## Release Process (as of v1.1.0)
+## Release Process
 
-Publishing to npm is automated via GitHub Actions. **Never run `npm publish` manually.**
+Releases are performed manually by the maintainer. Contributors and coding
+agents must not publish packages, registry entries, or deployments.
 
-### How to publish a new version:
+1. Open a release PR that bumps the version. The package `version` script
+   synchronizes `manifest.json` and `server.json`; validate all three files.
+2. Merge the release PR only after the protected-branch CI checks pass.
+3. Create and push the matching `vX.Y.Z` git tag.
+4. The maintainer authenticates through npm's browser flow and runs
+   `npm publish`, then verifies the published version.
+5. In a fresh session, the maintainer runs `mcp-publisher login github` and
+   completes the GitHub device-flow login before `mcp-publisher publish`.
 
-1. Bump version in `package.json`, `manifest.json`, `server.json`
-2. Commit and push to `main`
-3. Create and push a git tag:
-   ```bash
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
-4. GitHub Actions automatically builds and publishes to npm
-5. Then manually run: `mcp-publisher publish`
-
-### What triggers the workflow:
-
-- Any tag matching `v*` pushed to the repo
-- Workflow file: `.github/workflows/npm-publish.yml`
-- Uses `NPM_TOKEN` secret for authentication
-- The workflow skips publish if the version is already on npm
-
-### Notes:
-
-- `NPM_TOKEN` is generated via browser-based web auth (`npm login`)
-- After npm publish succeeds, manually run: `mcp-publisher publish`
+There is no automated npm-publish workflow or `NPM_TOKEN`-driven tag trigger.
+The MCP publisher credential expires between sessions, so a fresh GitHub login
+is required for each publishing session.
 
 ---
 

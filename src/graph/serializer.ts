@@ -17,6 +17,7 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
       endLine: attrs.endLine,
       exported: attrs.exported,
       scope: attrs.scope,
+      metadata: attrs.metadata,
     });
     
     fileSet.add(attrs.filePath);
@@ -68,6 +69,7 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
       endLine: node.endLine,
       exported: node.exported,
       scope: node.scope,
+      metadata: node.metadata,
     });
   }
   

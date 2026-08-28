@@ -27,6 +27,22 @@ export interface SymbolNode {
   metadata?: Record<string, unknown>; // Optional parser-specific data (e.g. Angular selector, template refs)
 }
 
+/** Internal evidence retained between the file parser and project finalizer. */
+export interface PendingSuperCall {
+  source: string;
+  declaringClass: string;
+  methodName: string;
+  line: number;
+}
+
+export interface PendingNamespaceCall {
+  source: string;
+  namespaceRoot: string;
+  target: string;
+  callee: string;
+  line: number;
+}
+
 export type EdgeKind =
   | 'imports'
   | 'calls'
@@ -124,6 +140,10 @@ export interface ParsedFile {
    * and why.
    */
   unresolvedCalls?: UnresolvedCall[];
+  /** Internal parser hint used to resolve super.method() after all classes are known. */
+  pendingSuperCalls?: PendingSuperCall[];
+  /** Internal parser hint; project finalization proves imported namespace members. */
+  pendingNamespaceCalls?: PendingNamespaceCall[];
   /** Type-position names rejected because no project symbol could be proven. */
   unresolvedTypeRefs?: UnresolvedTypeRef[];
   /**

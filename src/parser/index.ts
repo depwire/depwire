@@ -18,6 +18,8 @@ import { minimatch } from 'minimatch';
 import { initParser } from './wasm-init.js';
 import { discoverJvmModuleRoots } from './jvm-modules.js';
 import { finalizeTypeReferences, resolveReExportChains } from './reexport-chains.js';
+import { resolveSuperCalls } from './super-calls.js';
+import { resolveNamespaceCalls } from './namespace-calls.js';
 import {
   setModuleSourceRoots as setJavaModuleRoots,
   resetModuleSourceRoots as resetJavaModuleRoots,
@@ -184,6 +186,8 @@ export async function parseProject(
   // symbol that's only re-exported (not declared) in the directly-resolved
   // file still land on a real declaring node.
   const chainResult = resolveReExportChains(parsedFiles);
+  const superResult = resolveSuperCalls(parsedFiles);
+  const namespaceCallResult = resolveNamespaceCalls(parsedFiles);
   // Capture the exact target main would retain after wildcard re-export
   // resolution. The type-reference finalizer may subsequently chase a named
   // export to its declaration, but health normalization needs the old import
@@ -205,6 +209,12 @@ export async function parseProject(
     console.error(
       `[Parser] Type references: ${typeRefResult.kept} resolved, ${typeRefResult.retargeted} retargeted through named re-exports, ${typeRefResult.dropped} unresolved`
     );
+  }
+  if (options?.verbose && (superResult.resolved > 0 || superResult.unresolved > 0)) {
+    console.error(`[Parser] Super calls: ${superResult.resolved} resolved, ${superResult.unresolved} unresolved`);
+  }
+  if (options?.verbose && (namespaceCallResult.resolved > 0 || namespaceCallResult.unresolved > 0)) {
+    console.error(`[Parser] Namespace calls: ${namespaceCallResult.resolved} resolved, ${namespaceCallResult.unresolved} unresolved`);
   }
   // ───────────────────────────────────────────────────────────
 

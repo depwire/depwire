@@ -44,7 +44,7 @@ describe('TypeScript parser correctness (type-only imports, duplicate symbols, e
     const relationships = new Set(edges.map((edge) => `${edge.source}->${edge.target}`));
     expect(relationships).toContain('type-edges.ts::Child->type-edges.ts::LocalParent');
     expect(relationships).toContain('type-edges.ts::Child->types.ts::A');
-    expect(relationships).toContain('type-edges.ts::Child->types.ts::Inner');
+    expect(relationships).toContain('type-edges.ts::Child->types.ts::Outer.Inner');
     expect(relationships).toContain('type-edges.ts::Implementation->type-edges.ts::Child');
     expect(relationships).toContain('type-edges.ts::Implementation.method->type-edges.ts::LocalAlias');
     expect(relationships).toContain('type-edges.ts::Implementation.method->types.ts::A');
