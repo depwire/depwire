@@ -44,6 +44,16 @@ export function formatTable(result: SecurityScanResult, elapsedMs: number): stri
 
   lines.push('');
 
+  if (result.suppressed.length > 0) {
+    lines.push(chalk.dim(`SUPPRESSED (NONE) — ${result.suppressed.length}`));
+    for (const finding of result.suppressed) {
+      lines.push(`  ${chalk.dim(`[${finding.id}]`)} ${finding.title}`);
+      lines.push(`  File: ${finding.file}`);
+      lines.push(`  ${chalk.dim(`Allowlist v${finding.allowlistVersion}: ${finding.suppressionReason}`)}`);
+      lines.push('');
+    }
+  }
+
   // Group findings by severity
   const severityOrder: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -83,7 +93,8 @@ export function formatJSON(result: SecurityScanResult): string {
 }
 
 export function formatSARIF(result: SecurityScanResult, version: string): string {
-  const rules = result.findings.map(f => ({
+  const reported = [...result.findings, ...result.suppressed];
+  const rules = reported.map(f => ({
     id: f.id,
     shortDescription: { text: f.title },
     fullDescription: { text: f.description },
@@ -99,7 +110,7 @@ export function formatSARIF(result: SecurityScanResult, version: string): string
     new Map(rules.map(r => [r.id, r])).values()
   );
 
-  const results = result.findings.map(f => {
+  const results = reported.map(f => {
     let level: string;
     if (f.severity === 'critical' || f.severity === 'high') level = 'error';
     else if (f.severity === 'medium') level = 'warning';
@@ -108,7 +119,11 @@ export function formatSARIF(result: SecurityScanResult, version: string): string
     const sarifResult: any = {
       ruleId: f.id,
       level,
-      message: { text: `${f.title}: ${f.description}` },
+      message: {
+        text: f.severity === 'none'
+          ? `${f.title}: suppressed by native-binding allowlist v${f.allowlistVersion}: ${f.suppressionReason}`
+          : `${f.title}: ${f.description}`,
+      },
       locations: [
         {
           physicalLocation: {

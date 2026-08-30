@@ -1,4 +1,4 @@
-import { join, resolve, dirname } from 'path';
+import { join, resolve, dirname, sep } from 'path';
 import { existsSync, readFileSync } from 'fs';
 
 export interface JvmModuleRoots {
@@ -6,6 +6,13 @@ export interface JvmModuleRoots {
   roots: string[];
   /** Pre-verified set of existing source root directories (absolute paths) */
   verifiedRootSet: Set<string>;
+  /** Rejected module declarations, including traversal attempts. */
+  errors: JvmModuleDiscoveryError[];
+}
+
+export interface JvmModuleDiscoveryError {
+  path: string;
+  reason: string;
 }
 
 const MAX_RECURSION_DEPTH = 10;
@@ -21,23 +28,33 @@ const MAX_RECURSION_DEPTH = 10;
 export function discoverJvmModuleRoots(projectRoot: string): JvmModuleRoots {
   const roots: string[] = [];
   const verifiedRootSet = new Set<string>();
+  const errors: JvmModuleDiscoveryError[] = [];
 
   // Discover Maven modules
   const rootPom = join(projectRoot, 'pom.xml');
   if (existsSync(rootPom)) {
-    const mavenModules = discoverMavenModules(projectRoot, 'pom.xml', new Set<string>(), 0);
+    const mavenModules = discoverMavenModules(projectRoot, 'pom.xml', new Set<string>(), 0, errors);
     for (const modulePath of mavenModules) {
       addSourceRootsForModule(projectRoot, modulePath, roots, verifiedRootSet, 'java');
     }
   }
 
   // Discover Gradle modules
-  const gradleModules = discoverGradleModules(projectRoot);
+  const gradleModules = discoverGradleModules(projectRoot, errors);
   for (const modulePath of gradleModules) {
     addSourceRootsForModule(projectRoot, modulePath, roots, verifiedRootSet, 'kotlin');
   }
 
-  return { roots, verifiedRootSet };
+  return { roots, verifiedRootSet, errors };
+}
+
+/** Resolve a project-relative path and reject anything outside projectRoot. */
+function resolveWithinProject(projectRoot: string, relativePath: string): string | null {
+  const resolvedRoot = resolve(projectRoot);
+  const candidate = resolve(resolvedRoot, relativePath);
+  return candidate === resolvedRoot || candidate.startsWith(resolvedRoot + sep)
+    ? candidate
+    : null;
 }
 
 /**
@@ -47,11 +64,19 @@ function discoverMavenModules(
   projectRoot: string,
   pomRelativePath: string,
   visited: Set<string>,
-  depth: number
+  depth: number,
+  errors: JvmModuleDiscoveryError[]
 ): string[] {
   if (depth > MAX_RECURSION_DEPTH) return [];
 
-  const normalizedPath = resolve(projectRoot, pomRelativePath);
+  const normalizedPath = resolveWithinProject(projectRoot, pomRelativePath);
+  if (!normalizedPath) {
+    errors.push({
+      path: pomRelativePath,
+      reason: `Rejected Maven module path outside project root: ${pomRelativePath}`,
+    });
+    return [];
+  }
   if (visited.has(normalizedPath)) return [];
   visited.add(normalizedPath);
 
@@ -71,15 +96,24 @@ function discoverMavenModules(
   while ((match = moduleRegex.exec(content)) !== null) {
     const moduleName = match[1].trim();
     const modulePath = pomDir === '.' ? moduleName : join(pomDir, moduleName);
+    const absoluteModulePath = resolveWithinProject(projectRoot, modulePath);
+
+    if (!absoluteModulePath) {
+      errors.push({
+        path: modulePath,
+        reason: `Rejected Maven module path outside project root: ${modulePath}`,
+      });
+      continue;
+    }
 
     // Verify the module directory exists
-    if (existsSync(join(projectRoot, modulePath))) {
+    if (existsSync(absoluteModulePath)) {
       modules.push(modulePath);
 
       // Recurse into child pom.xml for nested modules
       const childPom = join(modulePath, 'pom.xml');
       if (existsSync(join(projectRoot, childPom))) {
-        const childModules = discoverMavenModules(projectRoot, childPom, visited, depth + 1);
+        const childModules = discoverMavenModules(projectRoot, childPom, visited, depth + 1, errors);
         modules.push(...childModules);
       }
     }
@@ -91,13 +125,14 @@ function discoverMavenModules(
 /**
  * Discover Gradle modules from settings.gradle.kts or settings.gradle.
  */
-function discoverGradleModules(projectRoot: string): string[] {
+function discoverGradleModules(projectRoot: string, errors: JvmModuleDiscoveryError[]): string[] {
   // Check for settings files
   const settingsFiles = ['settings.gradle.kts', 'settings.gradle'];
   let settingsContent: string | null = null;
 
   for (const settingsFile of settingsFiles) {
-    const fullPath = join(projectRoot, settingsFile);
+    const fullPath = resolveWithinProject(projectRoot, settingsFile);
+    if (!fullPath) continue;
     if (existsSync(fullPath)) {
       try {
         settingsContent = readFileSync(fullPath, 'utf-8');
@@ -120,8 +155,17 @@ function discoverGradleModules(projectRoot: string): string[] {
     const moduleName = match[1];
     // Convert Gradle colon-separated paths to filesystem paths: services:auth → services/auth
     const modulePath = moduleName.replace(/:/g, '/');
+    const absoluteModulePath = resolveWithinProject(projectRoot, modulePath);
 
-    if (existsSync(join(projectRoot, modulePath))) {
+    if (!absoluteModulePath) {
+      errors.push({
+        path: modulePath,
+        reason: `Rejected Gradle module path outside project root: ${modulePath}`,
+      });
+      continue;
+    }
+
+    if (existsSync(absoluteModulePath)) {
       modules.push(modulePath);
     }
   }
@@ -154,9 +198,9 @@ function addSourceRootsForModule(
 
   for (const suffix of suffixes) {
     const relativeRoot = join(modulePath, suffix);
-    const absoluteRoot = join(projectRoot, relativeRoot);
+    const absoluteRoot = resolveWithinProject(projectRoot, relativeRoot);
 
-    if (existsSync(absoluteRoot)) {
+    if (absoluteRoot && existsSync(absoluteRoot)) {
       // Avoid duplicates
       if (!verifiedRootSet.has(absoluteRoot)) {
         roots.push(relativeRoot);

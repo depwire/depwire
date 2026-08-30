@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "description": "Native packages whose expected install lifecycle builds or selects a platform binding. Entries suppress only the lifecycle-script heuristic; other checks still apply.",
+  "entries": [
+    {
+      "package": "better-sqlite3",
+      "reason": "Installs a prebuilt SQLite native addon, with node-gyp as the documented fallback."
+    },
+    {
+      "package": "esbuild",
+      "reason": "Selects and validates esbuild's platform-specific native executable during postinstall."
+    },
+    {
+      "package": "nx",
+      "reason": "Selects Nx's platform-specific native executable during postinstall."
+    },
+    {
+      "package": "sharp",
+      "reason": "Selects a prebuilt libvips native addon, with a source-build fallback."
+    },
+    {
+      "package": "tree-sitter-c",
+      "reason": "Builds or selects the published C grammar native binding via node-gyp-build."
+    },
+    {
+      "package": "tree-sitter-c-sharp",
+      "reason": "Builds or selects the published C# grammar native binding via node-gyp-build."
+    },
+    {
+      "package": "tree-sitter-cpp",
+      "reason": "Builds or selects the published C++ grammar native binding via node-gyp-build."
+    },
+    {
+      "package": "tree-sitter-java",
+      "reason": "Builds or selects the published Java grammar native binding via node-gyp-build."
+    },
+    {
+      "package": "tree-sitter-php",
+      "reason": "Builds or selects the published PHP grammar native binding via node-gyp-build."
+    },
+    {
+      "package": "tree-sitter-ruby",
+      "reason": "Builds or selects the published Ruby grammar native binding via node-gyp-build."
+    }
+  ]
+}

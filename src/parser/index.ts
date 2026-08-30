@@ -31,25 +31,44 @@ import {
 
 const MAX_FILE_SIZE = 1_000_000; // 1MB — files larger than this are likely generated
 
+export interface ParseErrorFile {
+  path: string;
+  reason: string;
+}
+
+/** ParsedFile[] with additive failure metadata; remains array-compatible. */
+export type ParseProjectResult = ParsedFile[] & { errorFiles: ParseErrorFile[] };
+
+function withErrorFiles(files: ParsedFile[], errorFiles: ParseErrorFile[]): ParseProjectResult {
+  return Object.assign(files, { errorFiles });
+}
+
 function shouldParseFile(fullPath: string): boolean {
-  try {
-    const stats = statSync(fullPath);
-    if (stats.size > MAX_FILE_SIZE) {
-      console.error(`[Parser] Skipping ${fullPath} — file too large (${(stats.size / 1024).toFixed(0)}KB)`);
-      return false;
-    }
-    return true;
-  } catch (error) {
+  const stats = statSync(fullPath);
+  if (stats.size > MAX_FILE_SIZE) {
+    console.error(`[Parser] Skipping ${fullPath} — file too large (${(stats.size / 1024).toFixed(0)}KB)`);
     return false;
   }
+  return true;
 }
 
 export async function parseProject(
   projectRoot: string,
   options?: { exclude?: string[]; verbose?: boolean; useCache?: boolean }
-): Promise<ParsedFile[]> {
+): Promise<ParseProjectResult> {
+  const files = scanDirectory(projectRoot);
+  const errorFiles: ParseErrorFile[] = [];
+
   // Initialize WASM parsers (no-op if already initialized)
-  await initParser();
+  try {
+    await initParser();
+  } catch (err) {
+    const reason = `Grammar initialization failed: ${err instanceof Error ? err.message : String(err)}`;
+    for (const file of files) errorFiles.push({ path: file, reason });
+    console.error(`[Parser] ${reason}`);
+    console.error(`  Errors: ${errorFiles.length} files`);
+    return withErrorFiles([], errorFiles);
+  }
 
   // ─── JVM multi-module pre-pass ─────────────────────────────
   // Reset module roots from any previous parseProject() call in this process
@@ -60,6 +79,9 @@ export async function parseProject(
   // Discover Maven/Gradle module source roots before parsing files.
   // This allows cross-module Java/Kotlin imports to resolve correctly.
   const jvmModules = discoverJvmModuleRoots(projectRoot);
+  for (const error of jvmModules.errors) {
+    console.error(`[Parser] ${error.reason}`);
+  }
   if (jvmModules.roots.length > 0) {
     setJavaModuleRoots(jvmModules.roots, jvmModules.verifiedRootSet);
     setKotlinModuleRoots(jvmModules.roots, jvmModules.verifiedRootSet);
@@ -69,10 +91,8 @@ export async function parseProject(
   }
   // ───────────────────────────────────────────────────────────
   
-  const files = scanDirectory(projectRoot);
   const parsedFiles: ParsedFile[] = [];
   let skippedFiles = 0;
-  let errorFiles = 0;
 
   // ─── Parse cache (opt-in, on by default) ───────────────────
   // Restore unchanged files from {projectRoot}/.depwire/cache.db so only
@@ -154,8 +174,9 @@ export async function parseProject(
       parsedFiles.push(parsed);
       newlyParsed.push(parsed);
     } catch (err) {
-      errorFiles++;
-      console.error(`Error parsing file ${file}:`, err instanceof Error ? err.message : err);
+      const reason = err instanceof Error ? err.message : String(err);
+      errorFiles.push({ path: file, reason });
+      console.error(`Error parsing file ${file}:`, reason);
     }
   }
 
@@ -218,18 +239,18 @@ export async function parseProject(
   }
   // ───────────────────────────────────────────────────────────
 
-  if (options?.verbose || errorFiles > 0) {
+  if (options?.verbose || errorFiles.length > 0) {
     console.error(`\n[Parser] Summary:`);
     console.error(`  Parsed: ${parsedFiles.length} files`);
     if (skippedFiles > 0) {
       console.error(`  Skipped: ${skippedFiles} files`);
     }
-    if (errorFiles > 0) {
-      console.error(`  Errors: ${errorFiles} files`);
+    if (errorFiles.length > 0) {
+      console.error(`  Errors: ${errorFiles.length} files`);
     }
   }
   
-  return parsedFiles;
+  return withErrorFiles(parsedFiles, errorFiles);
 }
 
 /**

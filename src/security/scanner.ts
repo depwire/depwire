@@ -14,6 +14,7 @@ import { checkCryptography } from './checks/cryptography.js';
 import { checkFrontend } from './checks/frontend.js';
 import { checkArchitecture } from './checks/architecture.js';
 import { elevateByReachability } from './graph-aware.js';
+import { suppressAllowlistedNativeBindings } from './native-bindings.js';
 
 const SEVERITY_ORDER: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -58,6 +59,10 @@ export async function scanSecurity(
     findings = findings.filter(f => allowedClasses.has(f.vulnerabilityClass));
   }
 
+  const suppression = suppressAllowlistedNativeBindings(findings);
+  findings = suppression.findings;
+  const suppressed = suppression.suppressed.sort((a, b) => a.file.localeCompare(b.file));
+
   // Apply graph-aware severity elevation
   if (options.graphAware !== false) {
     findings = findings.map(f => elevateByReachability(f, graph, projectRoot));
@@ -72,6 +77,9 @@ export async function scanSecurity(
   findings.forEach((f, i) => {
     f.id = `SEC-${String(i + 1).padStart(3, '0')}`;
   });
+  suppressed.forEach((f, i) => {
+    f.id = `SUP-${String(i + 1).padStart(3, '0')}`;
+  });
 
   // Build summary
   const summary = {
@@ -80,6 +88,7 @@ export async function scanSecurity(
     medium: findings.filter(f => f.severity === 'medium').length,
     low: findings.filter(f => f.severity === 'low').length,
     info: findings.filter(f => f.severity === 'info').length,
+    suppressed: suppressed.length,
     total: findings.length,
   };
 
@@ -92,6 +101,7 @@ export async function scanSecurity(
     projectRoot,
     filesScanned: filteredFiles.length,
     findings,
+    suppressed,
     summary,
     dependencyAudit: {
       ran: hasDeps,

@@ -29,6 +29,9 @@ async function main() {
       // Parse all TypeScript files
       const parsedFiles = await parseProject(projectRoot);
       console.error(`[MCPB] Parsed ${parsedFiles.length} files`);
+      if (parsedFiles.errorFiles.length > 0) {
+        console.error(`[MCPB] ${parsedFiles.errorFiles.length} files failed`);
+      }
       
       // Build the graph
       const graph = buildGraph(parsedFiles, projectRoot);

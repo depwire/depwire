@@ -387,6 +387,9 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 24 tools it can call
 # Parse once (writes depwire-output.json)
 depwire parse .
 
+# Output defaults to the parsed project directory; --output takes precedence
+depwire parse ./services/api --output ./artifacts
+
 # MCP starts instantly from cached graph (<100ms)
 depwire mcp .
 

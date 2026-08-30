@@ -1,9 +1,37 @@
-import { describe, it, expect } from 'vitest';
-import { resolve } from 'path';
+import { afterEach, describe, it, expect } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join, resolve } from 'path';
 import { discoverJvmModuleRoots } from '../src/parser/jvm-modules.js';
 
 describe('discoverJvmModuleRoots', () => {
   const fixturesDir = resolve(import.meta.dirname, 'fixtures');
+  const tempDirs: string[] = [];
+
+  afterEach(() => {
+    for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('rejects and records a Maven module path that traverses outside the project root', () => {
+    const sandbox = mkdtempSync(join(tmpdir(), 'depwire-jvm-traversal-'));
+    tempDirs.push(sandbox);
+    const projectRoot = join(sandbox, 'project');
+    const outsideRoot = join(sandbox, 'outside');
+    mkdirSync(projectRoot);
+    mkdirSync(join(outsideRoot, 'src/main/java'), { recursive: true });
+    writeFileSync(join(projectRoot, 'pom.xml'), '<project><modules><module>../outside</module></modules></project>');
+
+    const result = discoverJvmModuleRoots(projectRoot);
+
+    expect(result.roots).toEqual([]);
+    expect(result.verifiedRootSet.has(join(outsideRoot, 'src/main/java'))).toBe(false);
+    expect(result.errors).toEqual([
+      {
+        path: '../outside',
+        reason: expect.stringContaining('outside project root'),
+      },
+    ]);
+  });
 
   describe('Maven multi-module', () => {
     it('discovers module source roots from pom.xml', () => {

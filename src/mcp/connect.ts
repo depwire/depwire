@@ -105,7 +105,8 @@ export async function connectToRepo(
       }
     } else {
       // Local path - validate it's safe
-      const validation = validateProjectPath(source);
+      const resolvedSource = resolve(source);
+      const validation = validateProjectPath(resolvedSource);
       if (!validation.valid) {
         return {
           error: "Access denied",
@@ -113,16 +114,16 @@ export async function connectToRepo(
         };
       }
       
-      if (!existsSync(source)) {
+      if (!existsSync(resolvedSource)) {
         return {
           error: "Directory not found",
           message: `Directory does not exist: ${source}`,
         };
       }
 
-      projectRoot = subdirectory ? join(source, subdirectory) : source;
+      projectRoot = subdirectory ? join(resolvedSource, subdirectory) : resolvedSource;
       if (subdirectory) {
-        const resolvedRoot = resolve(source);
+        const resolvedRoot = resolvedSource;
         const resolvedProject = resolve(projectRoot);
         if (!resolvedProject.startsWith(resolvedRoot + '/') && 
             resolvedProject !== resolvedRoot) {
@@ -163,11 +164,15 @@ export async function connectToRepo(
 
     // Parse the project
     const parsedFiles = await parseProject(projectRoot);
+    const failedFiles = parsedFiles.errorFiles.length;
 
     if (parsedFiles.length === 0) {
       return {
         error: "No source files found",
-        message: `No supported source files (.ts, .tsx, .js, .jsx, .py, .go) found in ${projectRoot}`,
+        message: failedFiles > 0
+          ? `No files parsed in ${projectRoot}. ${failedFiles} files failed.`
+          : `No supported source files (.ts, .tsx, .js, .jsx, .py, .go) found in ${projectRoot}`,
+        ...(failedFiles > 0 ? { failedFiles, errorFiles: parsedFiles.errorFiles } : {}),
       };
     }
 
@@ -180,6 +185,7 @@ export async function connectToRepo(
     state.projectName = projectName;
 
     console.error(`Parsed ${parsedFiles.length} files`);
+    if (failedFiles > 0) console.error(`${failedFiles} files failed`);
 
     // Start file watcher
     console.error("Starting file watcher...");
@@ -250,12 +256,14 @@ export async function connectToRepo(
         edges: summary.totalEdges,
         crossFileEdges: summary.crossFileEdges,
         languages: languageBreakdown,
+        ...(failedFiles > 0 ? { failedFiles } : {}),
       },
       mostConnectedFiles: mostConnected.map(f => ({
         path: f.filePath,
         connections: f.incomingCount + f.outgoingCount,
       })),
-      summary: `Connected to ${projectName}. Found ${summary.totalFiles} files with ${summary.totalSymbols} symbols and ${summary.crossFileEdges} cross-file edges.`,
+      ...(failedFiles > 0 ? { errorFiles: parsedFiles.errorFiles } : {}),
+      summary: `Connected to ${projectName}. Found ${summary.totalFiles} files with ${summary.totalSymbols} symbols and ${summary.crossFileEdges} cross-file edges.${failedFiles > 0 ? `\n${failedFiles} files failed.` : ''}`,
     };
   } catch (error) {
     console.error("Error in connectToRepo:", error);
