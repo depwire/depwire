@@ -32,17 +32,25 @@ export interface SecurityFinding {
   };
 }
 
+export interface SuppressedSecurityFinding extends Omit<SecurityFinding, 'severity'> {
+  severity: 'none';
+  allowlistVersion: number;
+  suppressionReason: string;
+}
+
 export interface SecurityScanResult {
   scannedAt: string;
   projectRoot: string;
   filesScanned: number;
   findings: SecurityFinding[];
+  suppressed: SuppressedSecurityFinding[];
   summary: {
     critical: number;
     high: number;
     medium: number;
     low: number;
     info: number;
+    suppressed: number;
     total: number;
   };
   dependencyAudit: {

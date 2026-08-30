@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && tsup src/graph.ts src/tools.ts --format esm --dts --no-splitting && npm run copy-static",
     "prepublishOnly": "npm run build",
-    "copy-static": "mkdir -p dist/viz/public dist/parser/grammars && cp -r src/viz/public/* dist/viz/public/ && cp src/parser/grammars/*.wasm dist/parser/grammars/",
+    "copy-static": "mkdir -p dist/viz/public dist/parser/grammars dist/security && cp -r src/viz/public/* dist/viz/public/ && cp src/parser/grammars/*.wasm dist/parser/grammars/ && cp src/security/native-binding-allowlist.json dist/security/",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
     "test": "vitest run",

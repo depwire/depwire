@@ -2,7 +2,7 @@
 
 import { Command } from 'commander';
 import { resolve, dirname, join } from 'path';
-import { writeFileSync, readFileSync, existsSync, statSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync, statSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { parseProject, loadParsedFilesFromJson, findOutputJson } from './parser/index.js';
 import { buildGraph } from './graph/index.js';
@@ -56,12 +56,12 @@ program
   .command('parse')
   .description('Parse a project and build dependency graph')
   .argument('[directory]', 'Project directory to parse (defaults to current directory or auto-detected project root)')
-  .option('-o, --output <path>', 'Output JSON file path', 'depwire-output.json')
+  .option('-o, --output <dir>', 'Output directory (takes precedence over the project path)')
   .option('--pretty', 'Pretty-print JSON output')
   .option('--stats', 'Print summary statistics')
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
-  .action(async (directory: string | undefined, options: { output: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
+  .action(async (directory: string | undefined, options: { output?: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
     trackCommand('parse', packageJson.version);
     const startTime = Date.now();
     
@@ -76,6 +76,9 @@ program
         verbose: options.verbose
       });
       console.log(`Parsed ${parsedFiles.length} files`);
+      if (parsedFiles.errorFiles.length > 0) {
+        console.log(`${parsedFiles.errorFiles.length} files failed`);
+      }
       
       // Build the graph
       const graph = buildGraph(parsedFiles, projectRoot);
@@ -88,8 +91,11 @@ program
         ? JSON.stringify(projectGraph, null, 2) 
         : JSON.stringify(projectGraph);
       
-      writeFileSync(options.output, json, 'utf-8');
-      console.log(`Graph exported to: ${options.output}`);
+      const outputDir = options.output ? resolve(options.output) : projectRoot;
+      const outputPath = join(outputDir, 'depwire-output.json');
+      mkdirSync(outputDir, { recursive: true });
+      writeFileSync(outputPath, json, 'utf-8');
+      console.log(`Graph exported to: ${outputPath}`);
       
       // Suggest .gitignore entries if not already present
       try {
