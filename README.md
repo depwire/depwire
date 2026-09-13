@@ -54,6 +54,7 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 - [Architecture health score](#architecture-health-score)
 - [Language support](#language-support)
 - [SDK](#sdk)
+- [Telemetry](#telemetry)
 - [Cloud dashboard](#cloud-dashboard)
 - [GitHub Action — PR Impact Analysis](#github-action--pr-impact-analysis)
 - [Depwire Action Token (DAT)](#depwire-action-token-dat)
@@ -612,6 +613,19 @@ Block PRs that hurt your architecture:
 ```
 
 [GitHub Marketplace](https://github.com/marketplace/actions/depwire-pr-impact) — [depwire-action repo](https://github.com/depwire/depwire-action)
+
+---
+
+## Telemetry
+
+The CLI sends fail-silent usage events containing the command name, Depwire
+version, operating system, and Node.js version. Source code, file names, graph
+data, and command arguments are never included.
+
+Set `DO_NOT_TRACK=1` to disable telemetry entirely. The legacy Depwire-specific
+forms `DEPWIRE_NO_TELEMETRY=1` and `DEPWIRE_NO_TELEMETRY=true` are also
+supported. When any of these is set, the CLI does not attempt the network
+request.
 
 ---
 
