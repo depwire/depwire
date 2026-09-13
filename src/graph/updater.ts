@@ -1,5 +1,6 @@
 import { DirectedGraph } from 'graphology';
 import { join } from 'path';
+import { readFileSync } from 'fs';
 import { parseTypeScriptFile } from '../parser/typescript.js';
 import type { ParsedFile } from '../parser/types.js';
 
@@ -26,15 +27,15 @@ export function removeFileFromGraph(graph: DirectedGraph, filePath: string): voi
 export function addFileToGraph(graph: DirectedGraph, parsedFile: ParsedFile): void {
   // Add all symbols as nodes
   for (const symbol of parsedFile.symbols) {
-    const nodeId = `${parsedFile.filePath}::${symbol.name}`;
+    const nodeId = symbol.id;
     
     try {
       graph.addNode(nodeId, {
         name: symbol.name,
         kind: symbol.kind,
         filePath: parsedFile.filePath,
-        startLine: symbol.location.startLine,
-        endLine: symbol.location.endLine,
+        startLine: symbol.startLine,
+        endLine: symbol.endLine,
         exported: symbol.exported,
         scope: symbol.scope,
       });
@@ -48,8 +49,8 @@ export function addFileToGraph(graph: DirectedGraph, parsedFile: ParsedFile): vo
     try {
       graph.mergeEdge(edge.source, edge.target, {
         kind: edge.kind,
-        sourceFile: edge.sourceFile,
-        targetFile: edge.targetFile,
+        filePath: edge.filePath,
+        line: edge.line,
       });
     } catch (error) {
       // Source or target node might not exist, skip
@@ -69,7 +70,8 @@ export async function updateFileInGraph(
   const absolutePath = join(projectRoot, relativeFilePath);
   
   try {
-    const parsedFile = parseTypeScriptFile(absolutePath, relativeFilePath);
+    const sourceCode = readFileSync(absolutePath, 'utf-8');
+    const parsedFile = parseTypeScriptFile(relativeFilePath, sourceCode, projectRoot);
     
     // Add new version
     addFileToGraph(graph, parsedFile);

@@ -1,6 +1,29 @@
 import { DirectedGraph } from 'graphology';
 import { ProjectGraph, SymbolNode, SymbolEdge } from '../parser/types.js';
 
+export const GRAPH_FORMAT_VERSION = 2;
+
+export class UnsupportedGraphFormatError extends Error {
+  readonly code = 'UNSUPPORTED_GRAPH_FORMAT';
+  readonly foundVersion: number | undefined;
+
+  constructor(foundVersion: number | undefined) {
+    const displayVersion = foundVersion === undefined ? 'unversioned' : `v${foundVersion}`;
+    super(
+      `Cannot load ${displayVersion} Depwire graph with graph format v${GRAPH_FORMAT_VERSION}. `
+      + 'Block-scoped symbol ids cannot be reconstructed from stored v1 data; reparse the source with Depwire v1.20.0 or newer.',
+    );
+    this.name = 'UnsupportedGraphFormatError';
+    this.foundVersion = foundVersion;
+  }
+}
+
+export function assertSupportedGraphFormat(json: Pick<ProjectGraph, 'formatVersion'>): void {
+  if (json.formatVersion !== GRAPH_FORMAT_VERSION) {
+    throw new UnsupportedGraphFormatError(json.formatVersion);
+  }
+}
+
 export function exportToJSON(graph: DirectedGraph, projectRoot: string): ProjectGraph {
   const nodes: SymbolNode[] = [];
   const edges: SymbolEdge[] = [];
@@ -38,7 +61,7 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
   });
   
   return {
-    formatVersion: 1,
+    formatVersion: GRAPH_FORMAT_VERSION,
     projectRoot,
     files: Array.from(fileSet).sort(),
     nodes,
@@ -53,17 +76,14 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
 }
 
 export function importFromJSON(json: ProjectGraph): DirectedGraph {
+  assertSupportedGraphFormat(json);
   const graph = new DirectedGraph();
   
   // Add all nodes
   for (const node of json.nodes) {
     graph.addNode(node.id, {
       name: node.name,
-      kind: json.formatVersion === undefined
-        && node.kind === 'import'
-        && node.id.endsWith('::__file__')
-        ? 'file'
-        : node.kind,
+      kind: node.kind,
       filePath: node.filePath,
       startLine: node.startLine,
       endLine: node.endLine,

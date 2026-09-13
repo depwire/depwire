@@ -33,6 +33,7 @@ describe('depwire query --json', () => {
   let uniqueDir: string;
   let ambiguousDir: string;
   let emptyDir: string;
+  let v1CacheDir: string;
 
   beforeAll(() => {
     uniqueDir = mkdtempSync(join(tmpdir(), 'depwire-query-unique-'));
@@ -60,12 +61,27 @@ describe('depwire query --json', () => {
     );
 
     emptyDir = mkdtempSync(join(tmpdir(), 'depwire-query-empty-'));
+
+    v1CacheDir = mkdtempSync(join(tmpdir(), 'depwire-query-v1-'));
+    writeFileSync(join(v1CacheDir, 'legacy.ts'), 'export function legacySymbol(): boolean { return true; }\n');
+    writeFileSync(join(v1CacheDir, 'depwire-output.json'), JSON.stringify({
+      formatVersion: 1,
+      projectRoot: v1CacheDir,
+      files: ['legacy.ts'],
+      nodes: [{
+        id: 'legacy.ts::legacySymbol', name: 'legacySymbol', kind: 'function',
+        filePath: 'legacy.ts', startLine: 1, endLine: 1, exported: true,
+      }],
+      edges: [],
+      metadata: { parsedAt: '2026-09-13T00:00:00.000Z', fileCount: 1, nodeCount: 1, edgeCount: 0 },
+    }));
   });
 
   afterAll(() => {
     rmSync(uniqueDir, { recursive: true, force: true });
     rmSync(ambiguousDir, { recursive: true, force: true });
     rmSync(emptyDir, { recursive: true, force: true });
+    rmSync(v1CacheDir, { recursive: true, force: true });
   });
 
   it('resolves a fully-qualified symbol through the existing two-argument form', () => {
@@ -112,6 +128,15 @@ describe('depwire query --json', () => {
 
     expect(result.status).toBe(2);
     expect(output.error).toBe('no_parseable_files');
+  });
+
+  it('detects a v1 graph cache and reparses available source', () => {
+    const result = runQuery([v1CacheDir, 'legacySymbol', '--json'], v1CacheDir);
+    const output = JSON.parse(result.stdout);
+
+    expect(result.status).toBe(0);
+    expect(output.id).toBe('legacy.ts::legacySymbol');
+    expect(result.stderr).toMatch(/Cannot load v1 Depwire graph.*Reparsing source/);
   });
 
   it('writes exactly one parseable JSON value to stdout', () => {
@@ -189,10 +214,11 @@ describe('depwire query --json', () => {
           '-e',
           `import { deserializeGraph, serializeGraph } from ${JSON.stringify(resolve(import.meta.dirname, '../dist/graph.js'))};
 const graph = deserializeGraph({
+  formatVersion: 2,
   projectRoot: '/repo',
   files: ['src/a.ts'],
   nodes: [
-    { id: 'src/a.ts::__file__', name: '__file__', kind: 'import', filePath: 'src/a.ts', startLine: 1, endLine: 1, exported: false },
+    { id: 'src/a.ts::__file__', name: '__file__', kind: 'file', filePath: 'src/a.ts', startLine: 1, endLine: 1, exported: false },
     { id: 'src/a.ts::import:dep', name: 'dep', kind: 'import', filePath: 'src/a.ts', startLine: 2, endLine: 2, exported: false }
   ],
   edges: [],
@@ -206,6 +232,6 @@ process.stdout.write(JSON.stringify({
         ],
         { encoding: 'utf-8' },
       ).stdout,
-    ).toBe('{"structural":"file","declaration":"import","formatVersion":1}');
+    ).toBe('{"structural":"file","declaration":"import","formatVersion":2}');
   });
 });

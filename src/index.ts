@@ -8,7 +8,7 @@ import { parseProject, loadParsedFilesFromJson, findOutputJson } from './parser/
 import { buildGraph } from './graph/index.js';
 import { countGraphSymbols } from './graph/counts.js';
 import type { DirectedGraph } from 'graphology';
-import { exportToJSON, importFromJSON } from './graph/serializer.js';
+import { exportToJSON, importFromJSON, UnsupportedGraphFormatError } from './graph/serializer.js';
 import { findSymbols, getImpact, getArchitectureSummary, searchSymbols } from './graph/queries.js';
 import { prepareVizData } from './viz/data.js';
 import { startVizServer } from './viz/server.js';
@@ -175,8 +175,13 @@ program
         const json = JSON.parse(readFileSync(cacheFile, 'utf-8'));
         const cacheMatchesProject = !options.json || resolve(json.projectRoot) === projectRoot;
         if (cacheMatchesProject) {
-          options.json ? console.error('Loading from cache...') : console.log('Loading from cache...');
-          graph = importFromJSON(json);
+          try {
+            options.json ? console.error('Loading from cache...') : console.log('Loading from cache...');
+            graph = importFromJSON(json);
+          } catch (error) {
+            if (!(error instanceof UnsupportedGraphFormatError)) throw error;
+            console.error(`[Depwire] ${error.message} Reparsing source.`);
+          }
         }
       }
 
@@ -429,6 +434,7 @@ program
 
         // Log to stderr only (NEVER stdout - it corrupts MCP protocol)
         let graph: DirectedGraph | null = null;
+        let incompatibleCacheReason: string | null = null;
 
         // Try loading a pre-parsed graph from depwire-output.json first, so
         // large projects start near-instantly instead of re-parsing.
@@ -465,7 +471,11 @@ program
                   `Run 'depwire parse .' to refresh.`
                 );
               }
-            } catch {
+            } catch (error) {
+              if (error instanceof UnsupportedGraphFormatError) {
+                incompatibleCacheReason = error.message;
+                console.error(`[Depwire] ${error.message}`);
+              }
               graph = null; // fall through to reconstruct + buildGraph
             }
 
@@ -493,8 +503,10 @@ program
         if (!graph) {
           if (fromCache) {
             console.error(
-              '[Depwire] Error: --from-cache specified but no ' +
-              'depwire-output.json found. Run depwire parse . first.'
+              incompatibleCacheReason
+                ? `[Depwire] Error: ${incompatibleCacheReason}`
+                : '[Depwire] Error: --from-cache specified but no ' +
+                  'depwire-output.json found. Run depwire parse . first.'
             );
             process.exit(1);
           }

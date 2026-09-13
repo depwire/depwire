@@ -20,6 +20,7 @@ import { discoverJvmModuleRoots } from './jvm-modules.js';
 import { finalizeTypeReferences, resolveReExportChains } from './reexport-chains.js';
 import { resolveSuperCalls } from './super-calls.js';
 import { resolveNamespaceCalls } from './namespace-calls.js';
+import { assertSupportedGraphFormat, GRAPH_FORMAT_VERSION } from '../graph/serializer.js';
 import {
   setModuleSourceRoots as setJavaModuleRoots,
   resetModuleSourceRoots as resetJavaModuleRoots,
@@ -371,6 +372,7 @@ export async function loadParsedFilesFromJson(
     // Detected by node/edge arrays at the top level. Reconstruct ParsedFile[]
     // by grouping nodes and edges by their filePath.
     if (Array.isArray(data?.nodes) && Array.isArray(data?.edges)) {
+      assertSupportedGraphFormat(data);
       const files = reconstructParsedFiles(
         data.nodes as SymbolNode[],
         data.edges as SymbolEdge[]
@@ -378,17 +380,19 @@ export async function loadParsedFilesFromJson(
       return files.length > 0 ? files : null;
     }
 
+    // Unversioned ParsedFile containers cannot prove which symbol-id scheme
+    // they use. Refuse them rather than silently mixing v1 and v2 ids.
     // Shape 2: raw ParsedFile[] written directly.
     if (Array.isArray(data)) {
-      const files = data as ParsedFile[];
-      if (files.length > 0 && Array.isArray(files[0]?.symbols)) {
-        return files;
-      }
       return null;
     }
 
     // Shape 3: { files: ParsedFile[] } wrapper.
-    if (Array.isArray(data?.files) && Array.isArray(data.files[0]?.symbols)) {
+    if (
+      data?.formatVersion === GRAPH_FORMAT_VERSION
+      && Array.isArray(data?.files)
+      && Array.isArray(data.files[0]?.symbols)
+    ) {
       const files = data.files as ParsedFile[];
       return files.length > 0 ? files : null;
     }

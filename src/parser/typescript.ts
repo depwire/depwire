@@ -9,6 +9,7 @@ interface Context {
   symbols: SymbolNode[];
   edges: SymbolEdge[];
   currentScope: string[];
+  blockCounters: number[]; // next lexical-block index at each named/block scope
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   externalImports: Map<string, string>; // Map<importedName, moduleSpecifier> for node_modules / unresolved imports
   typeFallbackImports: Set<string>; // type-only bindings resolved by the root-source workspace fallback
@@ -22,7 +23,7 @@ interface Context {
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   unresolvedTypeRefs: UnresolvedTypeRef[];
-  pendingTypeRefs: Array<{ source: string; typeName: string; qualifier?: string; line: number; heritage?: boolean }>;
+  pendingTypeRefs: Array<{ source: string; typeName: string; qualifier?: string; line: number; heritage?: boolean; scopeChain: string[] }>;
   pendingSuperCalls: PendingSuperCall[];
   pendingNamespaceCalls: PendingNamespaceCall[];
   ambientDepth: number;
@@ -46,6 +47,7 @@ export function parseTypeScriptFile(
     symbols: [],
     edges: [],
     currentScope: [],
+    blockCounters: [0],
     imports: new Map(),
     externalImports: new Map(),
     typeFallbackImports: new Set(),
@@ -81,7 +83,30 @@ export function parseTypeScriptFile(
   };
 }
 
-function walkNode(node: any, context: Context): void {
+const LEXICAL_SCOPE_TYPES = new Set([
+  'statement_block',
+  'for_statement',
+  'for_in_statement',
+  'switch_statement',
+  'class_static_block',
+]);
+
+function walkNode(node: any, context: Context, namedScopeBody = false): void {
+  if (!namedScopeBody && LEXICAL_SCOPE_TYPES.has(node.type)) {
+    const counterIndex = context.blockCounters.length - 1;
+    const blockIndex = context.blockCounters[counterIndex]++;
+    context.currentScope.push(`$b${blockIndex}`);
+    context.blockCounters.push(0);
+    walkNodeContents(node, context);
+    context.blockCounters.pop();
+    context.currentScope.pop();
+    return;
+  }
+
+  walkNodeContents(node, context);
+}
+
+function walkNodeContents(node: any, context: Context): void {
   // Process current node. `processNode` returns `true` when it has taken
   // full responsibility for traversing its own subtree (e.g. function and
   // class bodies are walked explicitly, with scope pushed/popped around
@@ -98,6 +123,15 @@ function walkNode(node: any, context: Context): void {
     if (child) {
       walkNode(child, context);
     }
+  }
+}
+
+function withNamedScopeBody(context: Context, visit: () => void): void {
+  context.blockCounters.push(0);
+  try {
+    visit();
+  } finally {
+    context.blockCounters.pop();
   }
 }
 
@@ -191,20 +225,18 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   
   // Enter function scope for processing nested calls
   context.currentScope.push(localName);
-  
-  // Walk default parameter values (e.g. `function f(x = init())`) — the
-  // outer generic recursion no longer reaches these now that this
-  // function owns its entire subtree.
-  const params = node.childForFieldName('parameters');
-  if (params) {
-    walkNode(params, context);
-  }
-  
-  // Process function body
-  const body = node.childForFieldName('body');
-  if (body) {
-    walkNode(body, context);
-  }
+  withNamedScopeBody(context, () => {
+    // Walk default parameter values (e.g. `function f(x = init())`) — the
+    // outer generic recursion no longer reaches these now that this
+    // function owns its entire subtree.
+    const params = node.childForFieldName('parameters');
+    if (params) walkNode(params, context);
+
+    // The function's own body is the root of its named scope. Nested blocks
+    // beneath it receive deterministic $bN path components.
+    const body = node.childForFieldName('body');
+    if (body) walkNode(body, context, true);
+  });
   
   context.currentScope.pop();
 }
@@ -256,7 +288,14 @@ function queueTypeReferences(
   const names: Array<{ name: string; qualifier?: string; line: number }> = [];
   collectTypeNames(typeNode, names);
   for (const { name, qualifier, line } of names) {
-    context.pendingTypeRefs.push({ source, typeName: name, qualifier, line, heritage });
+    context.pendingTypeRefs.push({
+      source,
+      typeName: name,
+      qualifier,
+      line,
+      heritage,
+      scopeChain: [...context.currentScope],
+    });
   }
 }
 
@@ -327,9 +366,14 @@ function resolvePendingTypeReferences(context: Context): void {
 
     // Keep the local-name candidate until the project-wide resolver has the
     // complete symbol/re-export index. It will prove the target or classify it.
+    const localTarget = resolveLocalDeclarationTarget(
+      pending.typeName,
+      pending.scopeChain,
+      context,
+    );
     context.edges.push({
       source: pending.source,
-      target: `${context.filePath}::${pending.typeName}`,
+      target: localTarget ?? `${context.filePath}::${pending.typeName}`,
       kind: 'references-type',
       filePath: context.filePath,
       line: pending.line,
@@ -355,7 +399,8 @@ function resolveTypeTarget(typeName: string, context: Context): string {
   const localImport = resolveQualifiedImportTarget(typeName, context);
   if (localImport) return localImport;
   if (context.externalImports.has(rootTypeName)) return `external::${typeName}`;
-  return `${context.filePath}::${typeName}`;
+  return resolveLocalDeclarationTarget(typeName, context.currentScope, context)
+    ?? `${context.filePath}::${typeName}`;
 }
 
 function resolveQualifiedImportTarget(name: string, context: Context): string | undefined {
@@ -607,6 +652,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   
   // Enter class scope for processing methods
   context.currentScope.push(name);
+  context.blockCounters.push(0);
   
   // Process class body
   const body = node.childForFieldName('body');
@@ -666,6 +712,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     walkNode(decorator, context);
   }
   
+  context.blockCounters.pop();
   context.currentScope.pop();
 }
 
@@ -721,7 +768,9 @@ function processNamespaceDeclaration(node: Parser.SyntaxNode, context: Context):
 
   context.currentScope.push(...parts);
   const body = node.childForFieldName('body') ?? findChildByType(node, 'statement_block');
-  if (body) walkNode(body, context);
+  withNamedScopeBody(context, () => {
+    if (body) walkNode(body, context, true);
+  });
   context.currentScope.splice(context.currentScope.length - parts.length, parts.length);
 }
 
@@ -770,12 +819,10 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
   
   // Enter method scope
   context.currentScope.push(name);
-  
-  // Process method body
-  const body = node.childForFieldName('body');
-  if (body) {
-    walkNode(body, context);
-  }
+  withNamedScopeBody(context, () => {
+    const body = node.childForFieldName('body');
+    if (body) walkNode(body, context, true);
+  });
   
   context.currentScope.pop();
 }
@@ -852,7 +899,14 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
         if (kind === 'function') {
           collectCallableTypeReferences(value, symbolId, context);
           context.currentScope.push(name);
-          walkNode(value, context);
+          withNamedScopeBody(context, () => {
+            const body = value.childForFieldName('body');
+            if (body) {
+              walkNode(body, context, body.type === 'statement_block');
+            } else {
+              walkNode(value, context);
+            }
+          });
           context.currentScope.pop();
         } else {
           walkNode(value, context);
@@ -1553,8 +1607,24 @@ function findChildByType(node: Parser.SyntaxNode, type: string): Parser.SyntaxNo
 }
 
 function getCurrentSymbolId(context: Context): string | null {
-  if (context.currentScope.length === 0) return null;
-  return `${context.filePath}::${context.currentScope.join('.')}`;
+  for (let i = context.currentScope.length; i >= 1; i--) {
+    const candidate = `${context.filePath}::${context.currentScope.slice(0, i).join('.')}`;
+    if (context.declaredSymbolIds.has(candidate)) return candidate;
+  }
+  return null;
+}
+
+function resolveLocalDeclarationTarget(
+  name: string,
+  scopeChain: string[],
+  context: Context,
+): string | null {
+  for (let i = scopeChain.length; i >= 0; i--) {
+    const prefix = scopeChain.slice(0, i).join('.');
+    const candidate = `${context.filePath}::${prefix ? `${prefix}.` : ''}${name}`;
+    if (context.declaredSymbolIds.has(candidate)) return candidate;
+  }
+  return null;
 }
 
 function findEnclosingClassId(context: Context): string | null {

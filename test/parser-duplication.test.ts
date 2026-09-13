@@ -15,15 +15,11 @@ function listFixtureDirs(): string[] {
 }
 
 /**
- * Two symbols sharing an id *and* a startLine is always a double-emit bug
- * (the same AST node was processed more than once). This must never happen.
- *
- * Two symbols sharing an id on *different* lines is a separate, known,
- * accepted limitation of function-scoped ids (block-scoped name reuse,
- * e.g. multiple `const names` in separate `if` blocks) and is NOT asserted
- * here.
+ * Every emitted declaration must have a unique id. Lexical block paths make
+ * different-line sibling declarations distinguishable, so the former
+ * different-line exception is no longer valid.
  */
-function findSameLineDuplicates(symbols: SymbolNode[]): Map<string, SymbolNode[]> {
+function findDuplicateIds(symbols: SymbolNode[]): Map<string, SymbolNode[]> {
   const byId = new Map<string, SymbolNode[]>();
   for (const s of symbols) {
     if (!byId.has(s.id)) byId.set(s.id, []);
@@ -33,10 +29,7 @@ function findSameLineDuplicates(symbols: SymbolNode[]): Map<string, SymbolNode[]
   const dupes = new Map<string, SymbolNode[]>();
   for (const [id, group] of byId) {
     if (group.length < 2) continue;
-    const lines = new Set(group.map((s) => s.startLine));
-    if (lines.size === 1) {
-      dupes.set(id, group);
-    }
+    dupes.set(id, group);
   }
   return dupes;
 }
@@ -62,17 +55,17 @@ function findCrossKindCollisions(symbols: SymbolNode[]): Map<string, Set<string>
 
 describe('No double-emitted symbols across every fixture directory', () => {
   for (const dirName of listFixtureDirs()) {
-    it(`${dirName}: zero same-line duplicate symbol ids`, async () => {
+    it(`${dirName}: zero duplicate symbol ids`, async () => {
       const dir = resolve(fixturesRoot, dirName);
       const parsedFiles = await parseProject(dir, { useCache: false });
       const symbols = parsedFiles.flatMap((f) => f.symbols);
 
-      const dupes = findSameLineDuplicates(symbols);
+      const dupes = findDuplicateIds(symbols);
       if (dupes.size > 0) {
         const details = [...dupes.entries()]
           .map(([id, group]) => `  ${id} (x${group.length}, kinds=${group.map((s) => s.kind).join('/')})`)
           .join('\n');
-        throw new Error(`Found same-line duplicate symbol ids in ${dirName}:\n${details}`);
+        throw new Error(`Found duplicate symbol ids in ${dirName}:\n${details}`);
       }
       expect(dupes.size).toBe(0);
     });
@@ -95,17 +88,17 @@ describe('No double-emitted symbols across every fixture directory', () => {
 });
 
 describe('No double-emitted symbols in this project\'s own src/', () => {
-  it('zero same-line duplicate symbol ids across src/', async () => {
+  it('zero duplicate symbol ids across src/', async () => {
     const dir = resolve(repoRoot, 'src');
     const parsedFiles = await parseProject(dir, { useCache: false });
     const symbols = parsedFiles.flatMap((f) => f.symbols);
 
-    const dupes = findSameLineDuplicates(symbols);
+    const dupes = findDuplicateIds(symbols);
     if (dupes.size > 0) {
       const details = [...dupes.entries()]
         .map(([id, group]) => `  ${id} (x${group.length}, kinds=${group.map((s) => s.kind).join('/')})`)
         .join('\n');
-      throw new Error(`Found same-line duplicate symbol ids in src/:\n${details}`);
+      throw new Error(`Found duplicate symbol ids in src/:\n${details}`);
     }
     expect(dupes.size).toBe(0);
   });

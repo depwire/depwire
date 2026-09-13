@@ -31,6 +31,12 @@ export {
 
 export { countGraphSymbols, isCountableSymbol } from './graph/counts.js';
 
+export {
+  GRAPH_FORMAT_VERSION,
+  UnsupportedGraphFormatError,
+  assertSupportedGraphFormat,
+} from './graph/serializer.js';
+
 export { SimulationEngine } from './simulation/engine.js';
 
 export {

@@ -67,6 +67,13 @@ export { getArchitectureSummary } from './graph/queries.js';
 /** Shared reporting contract: structural file nodes are not symbols. */
 export { countGraphSymbols, isCountableSymbol } from './graph/counts.js';
 
+/** Serialized graph compatibility contract. v1 graphs require a source reparse. */
+export {
+  GRAPH_FORMAT_VERSION,
+  UnsupportedGraphFormatError,
+  assertSupportedGraphFormat,
+} from './graph/serializer.js';
+
 /** Simulation engine — simulate a move/delete/rename/split/merge before touching code */
 export { SimulationEngine } from './simulation/engine.js';
 

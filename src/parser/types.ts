@@ -16,7 +16,7 @@ export type SymbolKind =
   | 'template';      // HTML/Angular: a template file pseudo-node
 
 export interface SymbolNode {
-  id: string;          // Unique ID: "relative/path.ts::symbolName"
+  id: string;          // Unique ID: "relative/path.ts::named.scope.$b0.symbolName"
   name: string;        // The symbol name itself
   kind: SymbolKind;
   filePath: string;    // Relative to project root
@@ -199,7 +199,7 @@ export function aggregateUnresolvedTypeRefs(parsedFiles: ParsedFile[]): Unresolv
 }
 
 export interface ProjectGraph {
-  /** Serialized graph schema version. Absent on payloads written before v1. */
+  /** Serialized graph schema version. v2 introduces lexical block-scoped ids. */
   formatVersion?: number;
   projectRoot: string;
   files: string[];
