@@ -11,6 +11,9 @@ interface Context {
   symbols: SymbolNode[];
   edges: SymbolEdge[];
   currentScope: string[];
+  blockCounters: number[];
+  declaredSymbolIds: Set<string>;
+  pendingReferences: Array<{ source: string; name: string; kind: 'calls' | 'references'; line: number; scopeChain: string[] }>;
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   isJSX: boolean;
 }
@@ -31,11 +34,15 @@ export function parseJavaScriptFile(
     symbols: [],
     edges: [],
     currentScope: [],
+    blockCounters: [0],
+    declaredSymbolIds: new Set(),
+    pendingReferences: [],
     imports: new Map(),
     isJSX: filePath.endsWith('.jsx'),
   };
   
   walkNode(tree.rootNode, context);
+  resolvePendingReferences(context);
   
   return {
     filePath,
@@ -44,9 +51,28 @@ export function parseJavaScriptFile(
   };
 }
 
-function walkNode(node: Parser.SyntaxNode, context: Context): void {
-  // Process current node
-  processNode(node, context);
+const LEXICAL_SCOPE_TYPES = new Set([
+  'statement_block', 'for_statement', 'for_in_statement',
+  'switch_statement', 'class_static_block',
+]);
+
+function walkNode(node: Parser.SyntaxNode, context: Context, namedScopeBody = false): void {
+  if (!namedScopeBody && LEXICAL_SCOPE_TYPES.has(node.type)) {
+    const counterIndex = context.blockCounters.length - 1;
+    const blockIndex = context.blockCounters[counterIndex]++;
+    context.currentScope.push(`$b${blockIndex}`);
+    context.blockCounters.push(0);
+    walkNodeContents(node, context);
+    context.blockCounters.pop();
+    context.currentScope.pop();
+    return;
+  }
+  walkNodeContents(node, context);
+}
+
+function walkNodeContents(node: Parser.SyntaxNode, context: Context): void {
+  const handledChildren = processNode(node, context);
+  if (handledChildren) return;
   
   // Recursively process children
   for (let i = 0; i < node.childCount; i++) {
@@ -57,27 +83,28 @@ function walkNode(node: Parser.SyntaxNode, context: Context): void {
   }
 }
 
-function processNode(node: Parser.SyntaxNode, context: Context): void {
+function withNamedScopeBody(context: Context, visit: () => void): void {
+  context.blockCounters.push(0);
+  try { visit(); } finally { context.blockCounters.pop(); }
+}
+
+function processNode(node: Parser.SyntaxNode, context: Context): boolean {
   const type = node.type;
   
   switch (type) {
     case 'function_declaration':
       processFunctionDeclaration(node, context);
-      break;
-    case 'function':
-      // Arrow functions and function expressions
-      processFunctionExpression(node, context);
-      break;
+      return true;
     case 'class_declaration':
       processClassDeclaration(node, context);
-      break;
+      return true;
     case 'method_definition':
       processMethodDefinition(node, context);
-      break;
+      return true;
     case 'lexical_declaration':
     case 'variable_declaration':
       processVariableDeclaration(node, context);
-      break;
+      return true;
     case 'import_statement':
       processImportStatement(node, context);
       break;
@@ -97,6 +124,7 @@ function processNode(node: Parser.SyntaxNode, context: Context): void {
       }
       break;
   }
+  return false;
 }
 
 function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): void {
@@ -106,7 +134,8 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
   const name = nodeText(nameNode, context);
   const exported = isExported(node.parent);
   
-  const symbolId = `${context.filePath}::${name}`;
+  const scope = context.currentScope.join('.');
+  const symbolId = `${context.filePath}::${scope ? `${scope}.` : ''}${name}`;
   
   context.symbols.push({
     id: symbolId,
@@ -116,55 +145,19 @@ function processFunctionDeclaration(node: Parser.SyntaxNode, context: Context): 
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
     exported,
+    ...(scope ? { scope } : {}),
   });
+  context.declaredSymbolIds.add(symbolId);
   
   // Enter function scope
   context.currentScope.push(name);
-  
-  // Process function body
-  const body = findChildByType(node, 'statement_block');
-  if (body) {
-    walkNode(body, context);
-  }
+  withNamedScopeBody(context, () => {
+    const body = findChildByType(node, 'statement_block');
+    if (body) walkNode(body, context, true);
+  });
   
   // Exit function scope
   context.currentScope.pop();
-}
-
-function processFunctionExpression(node: Parser.SyntaxNode, context: Context): void {
-  // Arrow functions: const handler = (req, res) => { ... }
-  // Skip anonymous functions, only extract named ones from variable declarations
-  if (node.parent && node.parent.type === 'variable_declarator') {
-    const nameNode = node.parent.childForFieldName('name');
-    if (nameNode && nameNode.type === 'identifier') {
-      const name = nodeText(nameNode, context);
-      const exported = isExported(node.parent.parent?.parent || null);
-      
-      const symbolId = `${context.filePath}::${name}`;
-      
-      context.symbols.push({
-        id: symbolId,
-        name,
-        kind: 'function',
-        filePath: context.filePath,
-        startLine: node.startPosition.row + 1,
-        endLine: node.endPosition.row + 1,
-        exported,
-      });
-      
-      // Enter function scope
-      context.currentScope.push(name);
-      
-      // Process function body
-      const body = findChildByType(node, 'statement_block');
-      if (body) {
-        walkNode(body, context);
-      }
-      
-      // Exit function scope
-      context.currentScope.pop();
-    }
-  }
 }
 
 function processClassDeclaration(node: Parser.SyntaxNode, context: Context): void {
@@ -174,7 +167,8 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   const name = nodeText(nameNode, context);
   const exported = isExported(node.parent);
   
-  const symbolId = `${context.filePath}::${name}`;
+  const parentScope = context.currentScope.join('.');
+  const symbolId = `${context.filePath}::${parentScope ? `${parentScope}.` : ''}${name}`;
   
   context.symbols.push({
     id: symbolId,
@@ -184,7 +178,9 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
     exported,
+    ...(parentScope ? { scope: parentScope } : {}),
   });
+  context.declaredSymbolIds.add(symbolId);
   
   // Check for inheritance (extends)
   const heritage = node.childForFieldName('heritage');
@@ -212,6 +208,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   
   // Enter class scope
   context.currentScope.push(name);
+  context.blockCounters.push(0);
   
   // Process class body
   const body = findChildByType(node, 'class_body');
@@ -220,6 +217,7 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
   }
   
   // Exit class scope
+  context.blockCounters.pop();
   context.currentScope.pop();
 }
 
@@ -228,7 +226,7 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
   if (!nameNode) return;
   
   const name = nodeText(nameNode, context);
-  const scope = context.currentScope.length > 0 ? context.currentScope[context.currentScope.length - 1] : undefined;
+  const scope = context.currentScope.length > 0 ? context.currentScope.join('.') : undefined;
   
   const symbolId = scope ? `${context.filePath}::${scope}.${name}` : `${context.filePath}::${name}`;
   
@@ -242,15 +240,14 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
     exported: false,
     scope,
   });
+  context.declaredSymbolIds.add(symbolId);
   
   // Enter method scope
   context.currentScope.push(name);
-  
-  // Process method body
-  const body = findChildByType(node, 'statement_block');
-  if (body) {
-    walkNode(body, context);
-  }
+  withNamedScopeBody(context, () => {
+    const body = findChildByType(node, 'statement_block');
+    if (body) walkNode(body, context, true);
+  });
   
   // Exit method scope
   context.currentScope.pop();
@@ -278,24 +275,37 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       }
     }
     
-    // Regular variable declaration
-    if (context.currentScope.length === 0) {
-      // Only capture module-level variables
-      const name = extractIdentifierName(nameNode, context);
-      if (name) {
-        const exported = isExported(node.parent);
-        
-        const symbolId = `${context.filePath}::${name}`;
-        
-        context.symbols.push({
-          id: symbolId,
-          name,
-          kind: 'variable',
-          filePath: context.filePath,
-          startLine: node.startPosition.row + 1,
-          endLine: node.endPosition.row + 1,
-          exported,
+    const name = extractIdentifierName(nameNode, context);
+    if (!name) continue;
+    const exported = isExported(node.parent);
+    const scope = context.currentScope.join('.');
+    const callable = valueNode?.type === 'arrow_function'
+      || valueNode?.type === 'function_expression'
+      || valueNode?.type === 'generator_function';
+    const symbolId = `${context.filePath}::${scope ? `${scope}.` : ''}${name}`;
+
+    context.symbols.push({
+      id: symbolId,
+      name,
+      kind: callable ? 'function' : 'variable',
+      filePath: context.filePath,
+      startLine: declarator.startPosition.row + 1,
+      endLine: declarator.endPosition.row + 1,
+      exported,
+      ...(scope ? { scope } : {}),
+    });
+    context.declaredSymbolIds.add(symbolId);
+
+    if (valueNode) {
+      if (callable) {
+        context.currentScope.push(name);
+        withNamedScopeBody(context, () => {
+          const body = valueNode.childForFieldName('body') ?? valueNode.lastNamedChild;
+          if (body) walkNode(body, context, body.type === 'statement_block');
         });
+        context.currentScope.pop();
+      } else {
+        walkNode(valueNode, context);
       }
     }
   }
@@ -468,12 +478,9 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
                      findChildByType(node, 'function_declaration') ||
                      findChildByType(node, 'class_declaration');
   
-  if (declaration) {
-    // export const x = ...
-    // export function f() {}
-    // export class C {}
-    processNode(declaration, context);
-  }
+  // The generic walker visits this declaration exactly once. Earlier this
+  // handler processed it eagerly and then recursion processed it again.
+  void declaration;
 }
 
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
@@ -500,16 +507,13 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   const callerId = getCurrentSymbolId(context);
   if (!callerId) return;
   
-  const calleeId = resolveSymbol(calleeName, context);
-  if (calleeId) {
-    context.edges.push({
-      source: callerId,
-      target: calleeId,
-      kind: 'calls',
-      filePath: context.filePath,
-      line: node.startPosition.row + 1,
-    });
-  }
+  context.pendingReferences.push({
+    source: callerId,
+    name: calleeName,
+    kind: 'calls',
+    line: node.startPosition.row + 1,
+    scopeChain: [...context.currentScope],
+  });
 }
 
 function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
@@ -522,16 +526,13 @@ function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
   const callerId = getCurrentSymbolId(context);
   if (!callerId) return;
   
-  const classId = resolveSymbol(className, context);
-  if (classId) {
-    context.edges.push({
-      source: callerId,
-      target: classId,
-      kind: 'calls',
-      filePath: context.filePath,
-      line: node.startPosition.row + 1,
-    });
-  }
+  context.pendingReferences.push({
+    source: callerId,
+    name: className,
+    kind: 'calls',
+    line: node.startPosition.row + 1,
+    scopeChain: [...context.currentScope],
+  });
 }
 
 function processJSXElement(node: Parser.SyntaxNode, context: Context): void {
@@ -563,16 +564,13 @@ function processJSXElement(node: Parser.SyntaxNode, context: Context): void {
   const callerId = getCurrentSymbolId(context);
   if (!callerId) return;
   
-  const componentId = resolveSymbol(tagName, context);
-  if (componentId) {
-    context.edges.push({
-      source: callerId,
-      target: componentId,
-      kind: 'references',
-      filePath: context.filePath,
-      line: node.startPosition.row + 1,
-    });
-  }
+  context.pendingReferences.push({
+    source: callerId,
+    name: tagName,
+    kind: 'references',
+    line: node.startPosition.row + 1,
+    scopeChain: [...context.currentScope],
+  });
 }
 
 // Helper functions
@@ -621,28 +619,31 @@ function resolveJavaScriptImport(importPath: string, currentFile: string, projec
 }
 
 function resolveSymbol(name: string, context: Context): string | null {
-  // Check imports first
-  if (context.imports.has(name)) {
-    return context.imports.get(name) || null;
+  return resolveSymbolAt(name, context.currentScope, context);
+}
+
+function resolveSymbolAt(name: string, scopeChain: string[], context: Context): string | null {
+  for (let i = scopeChain.length; i >= 0; i--) {
+    const prefix = scopeChain.slice(0, i).join('.');
+    const candidate = `${context.filePath}::${prefix ? `${prefix}.` : ''}${name}`;
+    if (context.declaredSymbolIds.has(candidate)) return candidate;
   }
-  
-  // Check current file symbols
-  const currentFileId = `${context.filePath}::${name}`;
-  const symbol = context.symbols.find(s => s.id === currentFileId);
-  if (symbol) {
-    return currentFileId;
+  return context.imports.get(name) ?? null;
+}
+
+function resolvePendingReferences(context: Context): void {
+  for (const pending of context.pendingReferences) {
+    const target = resolveSymbolAt(pending.name, pending.scopeChain, context);
+    if (!target) continue;
+    context.edges.push({
+      source: pending.source,
+      target,
+      kind: pending.kind,
+      filePath: context.filePath,
+      line: pending.line,
+    });
   }
-  
-  // Check current scope (class methods, etc.)
-  if (context.currentScope.length > 0) {
-    const scopedId = `${context.filePath}::${context.currentScope.join('.')}.${name}`;
-    const scopedSymbol = context.symbols.find(s => s.id === scopedId);
-    if (scopedSymbol) {
-      return scopedId;
-    }
-  }
-  
-  return null;
+  context.pendingReferences = [];
 }
 
 function isExported(node: Parser.SyntaxNode | null): boolean {
@@ -654,6 +655,13 @@ function isExported(node: Parser.SyntaxNode | null): boolean {
     if (current.type === 'export_statement') {
       return true;
     }
+    if (
+      current.type === 'statement_block'
+      || current.type === 'class_body'
+      || current.type === 'function_declaration'
+      || current.type === 'arrow_function'
+      || current.type === 'function_expression'
+    ) return false;
     current = current.parent;
   }
   
@@ -689,8 +697,11 @@ function nodeText(node: Parser.SyntaxNode, context: Context): string {
 }
 
 function getCurrentSymbolId(context: Context): string | null {
-  if (context.currentScope.length === 0) return null;
-  return `${context.filePath}::${context.currentScope.join('.')}`;
+  for (let i = context.currentScope.length; i >= 1; i--) {
+    const candidate = `${context.filePath}::${context.currentScope.slice(0, i).join('.')}`;
+    if (context.declaredSymbolIds.has(candidate)) return candidate;
+  }
+  return null;
 }
 
 // Export as LanguageParser interface

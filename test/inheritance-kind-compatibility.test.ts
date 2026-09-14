@@ -10,7 +10,7 @@ import type { EdgeKind, ParsedFile } from '../src/parser/types.js';
 const fixtureDir = resolve(import.meta.dirname, 'fixtures/member-call-resolution');
 
 describe('inheritance edge kind compatibility', () => {
-  it('emits inherits and loads a current-main extends payload without changing impact or resolved super calls', async () => {
+  it('emits inherits and loads a v2 legacy-extends payload without changing impact or resolved super calls', async () => {
     const parsed = await parseProject(fixtureDir, { useCache: false });
     const freshGraph = buildGraph(parsed);
     const freshPayload = exportToJSON(freshGraph, fixtureDir);
@@ -18,7 +18,7 @@ describe('inheritance edge kind compatibility', () => {
     expect(freshPayload.edges.filter((edge) => edge.kind === 'inherits')).not.toHaveLength(0);
     expect(freshPayload.edges.filter((edge) => edge.kind === 'extends')).toHaveLength(0);
 
-    // Current main wrote the same graph with `extends`. Preserve that payload
+    // Compatible v2 graphs may still contain the read-only `extends` alias.
     // verbatim on load: compatibility belongs in consumers, not serialization.
     const currentMainPayload = structuredClone(freshPayload);
     for (const edge of currentMainPayload.edges) {
