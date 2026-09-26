@@ -1,0 +1,176 @@
+{
+  "files": 968,
+  "errors": [],
+  "symbols": 30479,
+  "edges": {
+    "imports": 6122,
+    "calls": 4472,
+    "references-type": 12203,
+    "injects": 684,
+    "inherits": 700
+  },
+  "health": {
+    "status": "scored",
+    "overall": 34,
+    "grade": "F",
+    "dimensions": [
+      {
+        "name": "Coupling",
+        "score": 10,
+        "weight": 0.25,
+        "grade": "F",
+        "details": "Average 15.1 connections per file, max 1418, 23% cross-directory",
+        "metrics": {
+          "avgConnections": 15.15,
+          "maxConnections": 1418,
+          "crossDirCoupling": 23.3
+        }
+      },
+      {
+        "name": "Cohesion",
+        "score": 40,
+        "weight": 0.2,
+        "grade": "F",
+        "details": "Average 12% internal dependencies per directory",
+        "metrics": {
+          "avgInternalRatio": 11.5,
+          "directories": 148
+        }
+      },
+      {
+        "name": "Circular Dependencies",
+        "score": 20,
+        "weight": 0.2,
+        "grade": "F",
+        "details": "622 circular dependency cycles detected",
+        "metrics": {
+          "cycles": 622,
+          "cyclesPer100": 70.3
+        }
+      },
+      {
+        "name": "God Files",
+        "score": 60,
+        "weight": 0.15,
+        "grade": "D",
+        "details": "50 god files (>95 connections)",
+        "metrics": {
+          "godFiles": 50,
+          "threshold": 95.3,
+          "godFilesPer100": 5.6
+        }
+      },
+      {
+        "name": "Orphans & Dead Code",
+        "score": 69,
+        "weight": 0.1,
+        "grade": "D",
+        "details": "20 orphan files (3%), 5239 dead symbols (16.7%)",
+        "metrics": {
+          "orphans": 20,
+          "orphanPercentage": 3.2,
+          "deadSymbols": 5239,
+          "deadCodePercentage": 16.7
+        }
+      },
+      {
+        "name": "Dependency Depth",
+        "score": 40,
+        "weight": 0.1,
+        "grade": "F",
+        "details": "Maximum dependency chain: 9 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+        "metrics": {
+          "maxDepth": 9
+        }
+      }
+    ],
+    "summary": "Project health score is 34/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+    "recommendations": [
+      "High coupling detected: Average 15.15 connections per file. Consider breaking down large modules.",
+      "Low cohesion: Only 11.5% internal dependencies. Reorganize files by feature or domain.",
+      "622 circular dependency cycles detected (70.3 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+      "50 god files detected with >95.3 connections (5.6 per 100 files). Split into smaller, focused modules.",
+      "20 orphan files detected. Verify they're needed or remove dead code.",
+      "Maximum dependency depth is 9 levels. Consider flattening the deepest chains."
+    ],
+    "projectStats": {
+      "files": 885,
+      "symbols": 30479,
+      "edges": 24181,
+      "languages": {
+        "TypeScript": 29984,
+        "JavaScript": 495
+      }
+    }
+  },
+  "architecture": {
+    "fileCount": 885,
+    "symbolCount": 30479,
+    "edgeCount": 24181,
+    "mostConnectedFiles": [
+      {
+        "filePath": "drizzle-orm/src/sql/sql.ts",
+        "connections": 391
+      },
+      {
+        "filePath": "drizzle-orm/src/entity.ts",
+        "connections": 336
+      },
+      {
+        "filePath": "drizzle-orm/src/utils.ts",
+        "connections": 265
+      },
+      {
+        "filePath": "drizzle-orm/src/column.ts",
+        "connections": 175
+      },
+      {
+        "filePath": "drizzle-orm/src/column-builder.ts",
+        "connections": 145
+      }
+    ],
+    "orphanFiles": [
+      "drizzle-arktype/scripts/fix-imports.ts",
+      "drizzle-kit/build.dev.ts",
+      "drizzle-kit/build.ts",
+      "drizzle-kit/imports-checker/grammar/grammar.ohm-bundle.js",
+      "drizzle-kit/src/@types/utils.ts",
+      "drizzle-kit/src/cli/commands/_es5.ts",
+      "drizzle-kit/src/extensions/vector.ts",
+      "drizzle-kit/src/jsonDiffer.js",
+      "drizzle-kit/src/loader.mjs",
+      "drizzle-kit/src/simulator.ts",
+      "drizzle-kit/tests/migrate/libsql-migrate.test.ts",
+      "drizzle-kit/tests/statements-combiner/libsql-statements-combiner.test.ts",
+      "drizzle-kit/tests/statements-combiner/singlestore-statements-combiner.test.ts",
+      "drizzle-kit/tests/statements-combiner/sqlite-statements-combiner.test.ts",
+      "drizzle-orm/scripts/build.ts",
+      "drizzle-orm/scripts/fix-imports.ts",
+      "drizzle-orm/src/gel/migrator.ts",
+      "drizzle-orm/src/sqlite-core/view-common.ts",
+      "drizzle-orm/tests/exports.test.ts",
+      "drizzle-orm/tsup.config.ts",
+      "drizzle-orm/type-tests/utils.ts",
+      "drizzle-typebox/scripts/fix-imports.ts",
+      "drizzle-valibot/scripts/fix-imports.ts",
+      "drizzle-zod/scripts/fix-imports.ts",
+      "eslint-plugin-drizzle/tests/delete.test.ts",
+      "eslint-plugin-drizzle/tests/update.test.ts",
+      "eslint/eslint-plugin-drizzle-internal/index.js",
+      "integration-tests/js-tests/driver-init/commonjs/better-sqlite3.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/libsql.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/mysql2.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/neon-http.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/neon-ws.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/node-pg.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/pglite.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/planetscale.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/postgres-js.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/tidb.test.cjs",
+      "integration-tests/js-tests/driver-init/commonjs/vercel.test.cjs",
+      "integration-tests/tests/common.ts",
+      "integration-tests/tests/imports/index.test.ts",
+      "integration-tests/tests/sqlite/durable-objects/drizzle/migrations.js"
+    ]
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "files": 1836,
+  "errors": [],
+  "symbols": 16841,
+  "edges": {
+    "references-type": 5087,
+    "imports": 6361,
+    "injects": 502,
+    "calls": 2843,
+    "inherits": 166,
+    "rest-api": 2
+  },
+  "health": {
+    "status": "scored",
+    "overall": 55,
+    "grade": "F",
+    "dimensions": [
+      {
+        "name": "Coupling",
+        "score": 70,
+        "weight": 0.25,
+        "grade": "C",
+        "details": "Average 5.1 connections per file, max 876, 35% cross-directory",
+        "metrics": {
+          "avgConnections": 5.06,
+          "maxConnections": 876,
+          "crossDirCoupling": 35
+        }
+      },
+      {
+        "name": "Cohesion",
+        "score": 40,
+        "weight": 0.2,
+        "grade": "F",
+        "details": "Average 14% internal dependencies per directory",
+        "metrics": {
+          "avgInternalRatio": 13.6,
+          "directories": 468
+        }
+      },
+      {
+        "name": "Circular Dependencies",
+        "score": 60,
+        "weight": 0.2,
+        "grade": "D",
+        "details": "59 circular dependency cycles detected",
+        "metrics": {
+          "cycles": 59,
+          "cyclesPer100": 3.4
+        }
+      },
+      {
+        "name": "God Files",
+        "score": 60,
+        "weight": 0.15,
+        "grade": "D",
+        "details": "71 god files (>31 connections)",
+        "metrics": {
+          "godFiles": 71,
+          "threshold": 31.1,
+          "godFilesPer100": 4.1
+        }
+      },
+      {
+        "name": "Orphans & Dead Code",
+        "score": 68,
+        "weight": 0.1,
+        "grade": "D",
+        "details": "34 orphan files (3%), 3300 dead symbols (18.0%)",
+        "metrics": {
+          "orphans": 34,
+          "orphanPercentage": 2.7,
+          "deadSymbols": 3300,
+          "deadCodePercentage": 18
+        }
+      },
+      {
+        "name": "Dependency Depth",
+        "score": 20,
+        "weight": 0.1,
+        "grade": "F",
+        "details": "Maximum dependency chain: 22 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+        "metrics": {
+          "maxDepth": 22
+        }
+      }
+    ],
+    "summary": "Project health score is 55/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+    "recommendations": [
+      "Low cohesion: Only 13.6% internal dependencies. Reorganize files by feature or domain.",
+      "59 circular dependency cycles detected (3.4 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+      "71 god files detected with >31.1 connections (4.1 per 100 files). Split into smaller, focused modules.",
+      "34 orphan files detected. Verify they're needed or remove dead code.",
+      "Maximum dependency depth is 22 levels. Consider flattening the deepest chains."
+    ],
+    "projectStats": {
+      "files": 1745,
+      "symbols": 16841,
+      "edges": 14961,
+      "languages": {
+        "TypeScript": 16805,
+        "Other": 4,
+        "JavaScript": 32
+      }
+    }
+  },
+  "architecture": {
+    "fileCount": 1745,
+    "symbolCount": 16841,
+    "edgeCount": 14961,
+    "mostConnectedFiles": [
+      {
+        "filePath": "packages/common/index.ts",
+        "connections": 395
+      },
+      {
+        "filePath": "packages/common/decorators/core/injectable.decorator.ts",
+        "connections": 252
+      },
+      {
+        "filePath": "packages/common/decorators/modules/module.decorator.ts",
+        "connections": 228
+      },
+      {
+        "filePath": "packages/testing/test.ts",
+        "connections": 222
+      },
+      {
+        "filePath": "packages/common/decorators/core/controller.decorator.ts",
+        "connections": 142
+      }
+    ],
+    "orphanFiles": [
+      "integration/_support/register-local-packages.ts",
+      "integration/graphql-schema-first/src/common/scalars/date.scalar.ts",
+      "integration/hello-world/src/hello/dto/test.dto.ts",
+      "integration/hello-world/src/host-array/dto/test.dto.ts",
+      "integration/hello-world/src/host/dto/test.dto.ts",
+      "integration/hooks/e2e/enable-shutdown-hook.spec.ts",
+      "integration/inspector/src/chat/entities/chat.entity.ts",
+      "integration/inspector/src/circular-hello/dto/test.dto.ts",
+      "integration/inspector/src/database/entities/database.entity.ts",
+      "integration/inspector/src/dogs/entities/dog.entity.ts",
+      "integration/inspector/src/external-svc/entities/external-svc.entity.ts",
+      "integration/inspector/src/users/entities/user.entity.ts",
+      "integration/repl/e2e/repl-process.spec.ts",
+      "integration/repl/src/users/entities/user.entity.ts",
+      "integration/scopes/src/circular-hello/dto/test.dto.ts",
+      "integration/scopes/src/circular-transient/dto/test.dto.ts",
+      "integration/scopes/src/hello/dto/test.dto.ts",
+      "integration/scopes/src/msvc/dto/test.dto.ts",
+      "integration/scopes/src/transient/dto/test.dto.ts",
+      "packages/common/interfaces/controllers/controller-metadata.interface.ts",
+      "packages/microservices/external/nats-codec.interface.ts",
+      "packages/microservices/test/nest-microservice.spec.ts",
+      "packages/websockets/interfaces/hooks/on-gateway-connection.interface.ts",
+      "packages/websockets/interfaces/hooks/on-gateway-disconnect.interface.ts",
+      "packages/websockets/interfaces/hooks/on-gateway-init.interface.ts",
+      "packages/websockets/interfaces/web-socket-server.interface.ts",
+      "sample/02-gateways/client/index.html",
+      "sample/12-graphql-schema-first/generate-typings.ts",
+      "sample/12-graphql-schema-first/src/common/plugins/logging.plugin.ts",
+      "sample/12-graphql-schema-first/src/common/scalars/date.scalar.ts",
+      "sample/16-gateways-ws/client/index.html",
+      "sample/22-graphql-prisma/generate-typings.ts",
+      "sample/23-graphql-code-first/src/common/plugins/complexity.plugin.ts",
+      "sample/23-graphql-code-first/src/common/plugins/logging.plugin.ts",
+      "sample/24-serve-static/client/index.html",
+      "sample/28-sse/src/index.html",
+      "sample/31-graphql-federation-code-first/gateway/generate-supergraph.ts",
+      "sample/32-graphql-federation-schema-first/gateway/generate-supergraph.ts",
+      "sample/32-graphql-federation-schema-first/gateway/generate-typings.ts",
+      "scripts/docker-compose.js",
+      "scripts/wait-for-rabbitmq.js"
+    ]
+  }
+}

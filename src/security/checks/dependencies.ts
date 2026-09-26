@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import type { ParsedFile } from '../../parser/types.js';
 import type { SecurityFinding, Severity } from '../types.js';
+import { npmAuditFindings, loadAdvisoryPatches } from '../npm-audit.js';
 
 function cvssToSeverity(score: number): Severity {
   if (score >= 9.0) return 'critical';
@@ -20,7 +21,7 @@ export async function checkDependencies(
   try {
     // Detect package manager and run audit
     if (existsSync(join(projectRoot, 'package.json'))) {
-      findings.push(...checkNpmAudit(projectRoot));
+      findings.push(...await checkNpmAudit(projectRoot));
       findings.push(...checkPackageJsonPatterns(projectRoot));
       findings.push(...checkPostinstallScripts(projectRoot));
     }
@@ -52,87 +53,32 @@ export async function checkDependencies(
   return findings;
 }
 
-function checkNpmAudit(projectRoot: string): SecurityFinding[] {
-  const findings: SecurityFinding[] = [];
-
+async function checkNpmAudit(projectRoot: string): Promise<SecurityFinding[]> {
+  let output: string;
   try {
-    const output = execSync('npm audit --json', {
-      cwd: projectRoot,
-      encoding: 'utf-8',
-      timeout: 30000,
+    output = execSync('npm audit --json', {
+      cwd: projectRoot, encoding: 'utf-8', timeout: 30000,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
-
-    const audit = JSON.parse(output);
-    const vulnerabilities = audit.vulnerabilities || {};
-
-    for (const [name, vuln] of Object.entries<any>(vulnerabilities)) {
-      const severity = vuln.severity === 'critical' ? 'critical'
-        : vuln.severity === 'high' ? 'high'
-        : vuln.severity === 'moderate' ? 'medium'
-        : 'low';
-
-      findings.push({
-        id: '',
-        severity: severity as Severity,
-        vulnerabilityClass: 'dependency-cve',
-        file: 'package.json',
-        title: `Vulnerable dependency: ${name}`,
-        description: `${name}@${vuln.range || 'unknown'} has a known ${vuln.severity} vulnerability. ${vuln.title || ''}`.trim(),
-        attackScenario: `An attacker could exploit the known vulnerability in ${name} to compromise the application.`,
-        suggestedFix: vuln.fixAvailable ? `Update ${name} to a patched version.` : `No fix currently available. Consider replacing ${name}.`,
-      });
-    }
   } catch (err: any) {
-    // npm audit exits non-zero when vulns found — try to parse stderr/stdout
-    if (err.stdout) {
-      try {
-        const audit = JSON.parse(err.stdout);
-        const vulnerabilities = audit.vulnerabilities || {};
-        for (const [name, vuln] of Object.entries<any>(vulnerabilities)) {
-          const severity = vuln.severity === 'critical' ? 'critical'
-            : vuln.severity === 'high' ? 'high'
-            : vuln.severity === 'moderate' ? 'medium'
-            : 'low';
-
-          findings.push({
-            id: '',
-            severity: severity as Severity,
-            vulnerabilityClass: 'dependency-cve',
-            file: 'package.json',
-            title: `Vulnerable dependency: ${name}`,
-            description: `${name}@${vuln.range || 'unknown'} has a known ${vuln.severity} vulnerability.`,
-            attackScenario: `An attacker could exploit the known vulnerability in ${name}.`,
-            suggestedFix: vuln.fixAvailable ? `Update ${name} to a patched version.` : `No fix currently available.`,
-          });
-        }
-      } catch {
-        findings.push({
-          id: '',
-          severity: 'info',
-          vulnerabilityClass: 'dependency-cve',
-          file: 'package.json',
-          title: 'npm audit unavailable',
-          description: 'Could not parse npm audit output.',
-          attackScenario: 'N/A',
-          suggestedFix: 'Run npm audit manually to check for vulnerabilities.',
-        });
-      }
-    } else {
-      findings.push({
-        id: '',
-        severity: 'info',
-        vulnerabilityClass: 'dependency-cve',
-        file: 'package.json',
-        title: 'npm audit unavailable',
-        description: 'npm audit command failed or is not available.',
-        attackScenario: 'N/A',
-        suggestedFix: 'Ensure npm is installed and run npm audit manually.',
-      });
-    }
+    // npm uses a nonzero exit status for valid reports with vulnerabilities.
+    output = String(err.stdout || '');
   }
-
-  return findings;
+  try {
+    const audit = JSON.parse(output);
+    if (audit.error) throw new Error('npm audit returned an error');
+    let packages = {};
+    try {
+      packages = JSON.parse(readFileSync(join(projectRoot, 'package-lock.json'), 'utf-8')).packages || {};
+    } catch { /* Installed versions may be unavailable; retain advisory ranges. */ }
+    return npmAuditFindings(audit, packages, await loadAdvisoryPatches(audit));
+  } catch {
+    return [{
+      id: '', severity: 'info', vulnerabilityClass: 'dependency-cve', file: 'package.json',
+      title: 'npm audit unavailable', description: 'Could not obtain a valid npm audit report.',
+      attackScenario: 'N/A', suggestedFix: 'Run npm audit manually to check for vulnerabilities.',
+    }];
+  }
 }
 
 function checkPackageJsonPatterns(projectRoot: string): SecurityFinding[] {

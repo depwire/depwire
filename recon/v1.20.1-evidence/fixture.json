@@ -1,0 +1,52 @@
+{
+  "scannedAt": "fixture",
+  "projectRoot": "/fixture",
+  "filesScanned": 1,
+  "findings": [
+    {
+      "id": "SEC-1",
+      "severity": "high",
+      "vulnerabilityClass": "dependency-cve",
+      "file": "package.json",
+      "title": "Vulnerable dependency: simple-git",
+      "description": "simple-git 3.35.2: simple-git is vulnerable to Remote Code Execution. Affected range (simple-git): <3.36.0. GHSA-hffm-xvc3-vprc — https://github.com/advisories/GHSA-hffm-xvc3-vprc.",
+      "attackScenario": "An attacker could exploit the reported dependency vulnerabilities affecting simple-git.",
+      "suggestedFix": "npm proposes updating simple-git to 3.36.0. Upstream patch available for simple-git (GHSA-hffm-xvc3-vprc): 3.36.0."
+    },
+    {
+      "id": "SEC-2",
+      "severity": "high",
+      "vulnerabilityClass": "dependency-cve",
+      "file": "package.json",
+      "title": "Dependency vulnerable via transitives: depwire-cli",
+      "description": "depwire-cli is flagged only because of vulnerable dependencies. depwire-cli → simple-git 3.35.2: simple-git is vulnerable to Remote Code Execution. Affected range (simple-git): <3.36.0. GHSA-hffm-xvc3-vprc — https://github.com/advisories/GHSA-hffm-xvc3-vprc.",
+      "attackScenario": "An attacker could exploit the reported dependency vulnerabilities affecting depwire-cli.",
+      "suggestedFix": "No automatic fix available in this dependency tree. Upstream patch available for simple-git (GHSA-hffm-xvc3-vprc): 3.36.0."
+    },
+    {
+      "id": "SEC-3",
+      "severity": "medium",
+      "vulnerabilityClass": "dependency-cve",
+      "file": "package.json",
+      "title": "Vulnerable dependency: unpatched-fixture",
+      "description": "unpatched-fixture: Unpatched fixture advisory. Affected range (unpatched-fixture): *. GHSA-aaaa-bbbb-cccc — https://github.com/advisories/GHSA-aaaa-bbbb-cccc.",
+      "attackScenario": "An attacker could exploit the reported dependency vulnerabilities affecting unpatched-fixture.",
+      "suggestedFix": "No automatic fix available in this dependency tree. No upstream patch exists for unpatched-fixture (GHSA-aaaa-bbbb-cccc), according to the advisory."
+    }
+  ],
+  "suppressed": [],
+  "summary": {
+    "total": 3,
+    "high": 2,
+    "medium": 1,
+    "critical": 0,
+    "low": 0,
+    "info": 0,
+    "suppressed": 0
+  },
+  "dependencyAudit": {
+    "ran": true,
+    "packageManager": "npm",
+    "rawOutput": ""
+  }
+}
