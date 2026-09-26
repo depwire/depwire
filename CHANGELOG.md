@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.20.1
+
+### Fixed — dependency remediation and scanner accuracy
+
+- Remediate all production dependency audit entries with compatible pinned
+  dependency updates and constrained lockfile refreshes.
+- Preserve npm advisory chains, identifiers, links, and installed versions.
+  Aggregate findings explicitly identify vulnerable transitive dependencies.
+- Distinguish automatic dependency-tree fixes from upstream patch availability;
+  unavailable advisory metadata is reported as unknown.
+- Graph shape and every health metric remain identical on fixed code-graph,
+  Nest, and Drizzle inputs. Graph format and resolution versions are unchanged.
+- Two development-only audit entries remain documented: sharp requires a
+  breaking update, and tsup's esbuild constraint excludes its patched release.
+  See `recon/V1.20.1-DEPENDENCY-SCANNER-REPORT.md` for the full audit and gates.
+
 ## 1.17.0
 
 ### Added — symbol-level TypeScript type references
