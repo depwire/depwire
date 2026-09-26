@@ -1,0 +1,7186 @@
+{
+  "full-before": {
+    "logicalBytes": 251969162,
+    "duKiB": 265072,
+    "categories": {
+      "other": 10909862,
+      "js": 10978505,
+      "source-map": 7324398,
+      "wasm": 40651383,
+      "native-source": 93631910,
+      "native-binary": 88473104
+    },
+    "dependencies": {
+      "tree-sitter-c-sharp": {
+        "logicalBytes": 68022151,
+        "duKiB": 67304,
+        "categories": {
+          "js": 56345,
+          "other": 419380,
+          "wasm": 5350581,
+          "native-source": 29700949,
+          "native-binary": 32494896
+        }
+      },
+      "tree-sitter-cpp": {
+        "logicalBytes": 42392814,
+        "duKiB": 42820,
+        "categories": {
+          "js": 39704,
+          "other": 581059,
+          "wasm": 3434931,
+          "native-source": 17323264,
+          "native-binary": 21013856
+        }
+      },
+      "tree-sitter-ruby": {
+        "logicalBytes": 30832828,
+        "duKiB": 30684,
+        "categories": {
+          "js": 36076,
+          "other": 273085,
+          "wasm": 2106352,
+          "native-source": 15334059,
+          "native-binary": 13083256
+        }
+      },
+      "tree-sitter-php": {
+        "logicalBytes": 29836331,
+        "duKiB": 30120,
+        "categories": {
+          "wasm": 2060448,
+          "other": 707044,
+          "js": 48703,
+          "native-source": 14084584,
+          "native-binary": 12935552
+        }
+      },
+      "depwire-cli": {
+        "logicalBytes": 26956201,
+        "duKiB": 27424,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "better-sqlite3": {
+        "logicalBytes": 12321465,
+        "duKiB": 13160,
+        "categories": {
+          "other": 18918,
+          "js": 24328,
+          "native-source": 10345499,
+          "native-binary": 1932720
+        }
+      },
+      "tree-sitter-c": {
+        "logicalBytes": 8967502,
+        "duKiB": 9192,
+        "categories": {
+          "wasm": 620090,
+          "js": 38942,
+          "other": 327622,
+          "native-source": 3887688,
+          "native-binary": 4093160
+        }
+      },
+      "tree-sitter-java": {
+        "logicalBytes": 6223115,
+        "duKiB": 6756,
+        "categories": {
+          "js": 32741,
+          "other": 275771,
+          "wasm": 414641,
+          "native-source": 2580298,
+          "native-binary": 2919664
+        }
+      },
+      "web-tree-sitter": {
+        "logicalBytes": 4523037,
+        "duKiB": 4460,
+        "categories": {
+          "source-map": 2691221,
+          "js": 736552,
+          "other": 87694,
+          "wasm": 1007570
+        }
+      },
+      "@modelcontextprotocol/sdk": {
+        "logicalBytes": 4343917,
+        "duKiB": 6112,
+        "categories": {
+          "other": 1417691,
+          "source-map": 1330284,
+          "js": 1595942
+        }
+      },
+      "zod": {
+        "logicalBytes": 4343491,
+        "duKiB": 6152,
+        "categories": {
+          "other": 2760061,
+          "js": 1583430
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "hono": {
+        "logicalBytes": 1396425,
+        "duKiB": 2848,
+        "categories": {
+          "other": 409060,
+          "js": 987365
+        }
+      },
+      "ajv": {
+        "logicalBytes": 1033496,
+        "duKiB": 2364,
+        "categories": {
+          "other": 459877,
+          "js": 293601,
+          "source-map": 280018
+        }
+      },
+      "simple-git": {
+        "logicalBytes": 951189,
+        "duKiB": 1316,
+        "categories": {
+          "js": 281738,
+          "other": 147769,
+          "source-map": 521682
+        }
+      },
+      "minimatch": {
+        "logicalBytes": 536122,
+        "duKiB": 664,
+        "categories": {
+          "other": 43899,
+          "source-map": 324985,
+          "js": 167238
+        }
+      },
+      "node-addon-api": {
+        "logicalBytes": 420314,
+        "duKiB": 452,
+        "categories": {
+          "other": 24131,
+          "native-source": 375569,
+          "js": 20614
+        }
+      },
+      "qs": {
+        "logicalBytes": 374851,
+        "duKiB": 416,
+        "categories": {
+          "other": 84545,
+          "js": 290306
+        }
+      },
+      "ip-address": {
+        "logicalBytes": 366191,
+        "duKiB": 424,
+        "categories": {
+          "other": 101278,
+          "source-map": 159157,
+          "js": 105756
+        }
+      },
+      "iconv-lite": {
+        "logicalBytes": 344185,
+        "duKiB": 400,
+        "categories": {
+          "other": 234642,
+          "js": 109543
+        }
+      },
+      "mime-db": {
+        "logicalBytes": 225566,
+        "duKiB": 236,
+        "categories": {
+          "other": 225377,
+          "js": 189
+        }
+      },
+      "fast-uri": {
+        "logicalBytes": 220886,
+        "duKiB": 328,
+        "categories": {
+          "other": 33253,
+          "js": 187633
+        }
+      },
+      "zod-to-json-schema": {
+        "logicalBytes": 219264,
+        "duKiB": 620,
+        "categories": {
+          "other": 101213,
+          "js": 118051
+        }
+      },
+      "jose": {
+        "logicalBytes": 210660,
+        "duKiB": 408,
+        "categories": {
+          "other": 90610,
+          "js": 120050
+        }
+      },
+      "commander": {
+        "logicalBytes": 208654,
+        "duKiB": 240,
+        "categories": {
+          "other": 81752,
+          "js": 126902
+        }
+      },
+      "json-schema-typed": {
+        "logicalBytes": 197188,
+        "duKiB": 208,
+        "categories": {
+          "other": 160181,
+          "js": 37007
+        }
+      },
+      "express-rate-limit": {
+        "logicalBytes": 154628,
+        "duKiB": 172,
+        "categories": {
+          "other": 79825,
+          "js": 74803
+        }
+      },
+      "ws": {
+        "logicalBytes": 151087,
+        "duKiB": 196,
+        "categories": {
+          "other": 18242,
+          "js": 132845
+        }
+      },
+      "chokidar": {
+        "logicalBytes": 148759,
+        "duKiB": 172,
+        "categories": {
+          "other": 39700,
+          "js": 109059
+        }
+      },
+      "eventsource": {
+        "logicalBytes": 147304,
+        "duKiB": 176,
+        "categories": {
+          "other": 56538,
+          "js": 29810,
+          "source-map": 60956
+        }
+      },
+      "@hono/node-server": {
+        "logicalBytes": 134687,
+        "duKiB": 220,
+        "categories": {
+          "other": 26898,
+          "js": 107789
+        }
+      },
+      "readable-stream": {
+        "logicalBytes": 123971,
+        "duKiB": 180,
+        "categories": {
+          "js": 108045,
+          "other": 15926
+        }
+      },
+      "eventsource-parser": {
+        "logicalBytes": 123553,
+        "duKiB": 160,
+        "categories": {
+          "js": 17568,
+          "other": 52903,
+          "source-map": 53082
+        }
+      },
+      "@simple-git/argv-parser": {
+        "logicalBytes": 105361,
+        "duKiB": 176,
+        "categories": {
+          "other": 11464,
+          "source-map": 73810,
+          "js": 20087
+        }
+      },
+      "object-inspect": {
+        "logicalBytes": 102920,
+        "duKiB": 200,
+        "categories": {
+          "other": 45946,
+          "js": 56974
+        }
+      },
+      "semver": {
+        "logicalBytes": 101065,
+        "duKiB": 268,
+        "categories": {
+          "js": 72268,
+          "other": 28797
+        }
+      },
+      "brace-expansion": {
+        "logicalBytes": 84997,
+        "duKiB": 124,
+        "categories": {
+          "other": 6469,
+          "js": 27684,
+          "source-map": 50844
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "buffer": {
+        "logicalBytes": 82527,
+        "duKiB": 96,
+        "categories": {
+          "other": 32430,
+          "js": 50097
+        }
+      },
+      "express": {
+        "logicalBytes": 75429,
+        "duKiB": 96,
+        "categories": {
+          "other": 13932,
+          "js": 61497
+        }
+      },
+      "body-parser": {
+        "logicalBytes": 65672,
+        "duKiB": 104,
+        "categories": {
+          "other": 30515,
+          "js": 23649,
+          "source-map": 11508
+        }
+      },
+      "bl": {
+        "logicalBytes": 64427,
+        "duKiB": 92,
+        "categories": {
+          "other": 15038,
+          "js": 49389
+        }
+      },
+      "path-to-regexp": {
+        "logicalBytes": 59680,
+        "duKiB": 68,
+        "categories": {
+          "other": 14412,
+          "js": 14528,
+          "source-map": 30740
+        }
+      },
+      "open": {
+        "logicalBytes": 58937,
+        "duKiB": 68,
+        "categories": {
+          "other": 47383,
+          "js": 11554
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      },
+      "ajv-formats": {
+        "logicalBytes": 56763,
+        "duKiB": 88,
+        "categories": {
+          "other": 28620,
+          "js": 16671,
+          "source-map": 11472
+        }
+      },
+      "minimist": {
+        "logicalBytes": 54477,
+        "duKiB": 120,
+        "categories": {
+          "other": 29331,
+          "js": 25146
+        }
+      },
+      "negotiator": {
+        "logicalBytes": 47543,
+        "duKiB": 76,
+        "categories": {
+          "other": 13610,
+          "js": 22425,
+          "source-map": 11508
+        }
+      },
+      "router": {
+        "logicalBytes": 46851,
+        "duKiB": 64,
+        "categories": {
+          "other": 21497,
+          "js": 25354
+        }
+      },
+      "get-intrinsic": {
+        "logicalBytes": 46542,
+        "duKiB": 68,
+        "categories": {
+          "other": 23345,
+          "js": 23197
+        }
+      },
+      "type-is": {
+        "logicalBytes": 44405,
+        "duKiB": 68,
+        "categories": {
+          "other": 21744,
+          "js": 11153,
+          "source-map": 11508
+        }
+      },
+      "chalk": {
+        "logicalBytes": 44342,
+        "duKiB": 72,
+        "categories": {
+          "other": 27615,
+          "js": 16727
+        }
+      },
+      "debug": {
+        "logicalBytes": 42793,
+        "duKiB": 60,
+        "categories": {
+          "other": 24733,
+          "js": 18060
+        }
+      },
+      "safer-buffer": {
+        "logicalBytes": 42299,
+        "duKiB": 60,
+        "categories": {
+          "other": 22971,
+          "js": 19328
+        }
+      },
+      "ipaddr.js": {
+        "logicalBytes": 42145,
+        "duKiB": 56,
+        "categories": {
+          "other": 13074,
+          "js": 29071
+        }
+      },
+      "readdirp": {
+        "logicalBytes": 36127,
+        "duKiB": 52,
+        "categories": {
+          "other": 16606,
+          "js": 19521
+        }
+      },
+      "prebuild-install": {
+        "logicalBytes": 34180,
+        "duKiB": 76,
+        "categories": {
+          "js": 16113,
+          "other": 18067
+        }
+      },
+      "tar-fs": {
+        "logicalBytes": 32792,
+        "duKiB": 56,
+        "categories": {
+          "other": 9502,
+          "js": 23290
+        }
+      },
+      "send": {
+        "logicalBytes": 32200,
+        "duKiB": 40,
+        "categories": {
+          "other": 11859,
+          "js": 20341
+        }
+      },
+      "safe-buffer": {
+        "logicalBytes": 32101,
+        "duKiB": 44,
+        "categories": {
+          "other": 30431,
+          "js": 1670
+        }
+      },
+      "function-bind": {
+        "logicalBytes": 31427,
+        "duKiB": 68,
+        "categories": {
+          "other": 20267,
+          "js": 11160
+        }
+      },
+      "tar-stream": {
+        "logicalBytes": 27671,
+        "duKiB": 48,
+        "categories": {
+          "other": 7673,
+          "js": 19998
+        }
+      },
+      "depd": {
+        "logicalBytes": 27117,
+        "duKiB": 40,
+        "categories": {
+          "other": 14673,
+          "js": 12444
+        }
+      },
+      "detect-libc": {
+        "logicalBytes": 26437,
+        "duKiB": 44,
+        "categories": {
+          "other": 16286,
+          "js": 10151
+        }
+      },
+      "has-symbols": {
+        "logicalBytes": 23409,
+        "duKiB": 72,
+        "categories": {
+          "other": 16690,
+          "js": 6719
+        }
+      },
+      "cookie": {
+        "logicalBytes": 23382,
+        "duKiB": 32,
+        "categories": {
+          "other": 15216,
+          "js": 8166
+        }
+      },
+      "mime-types": {
+        "logicalBytes": 22871,
+        "duKiB": 40,
+        "categories": {
+          "other": 16828,
+          "js": 6043
+        }
+      },
+      "side-channel": {
+        "logicalBytes": 22864,
+        "duKiB": 56,
+        "categories": {
+          "other": 18711,
+          "js": 4153
+        }
+      },
+      "json-schema-traverse": {
+        "logicalBytes": 22220,
+        "duKiB": 56,
+        "categories": {
+          "other": 8206,
+          "js": 14014
+        }
+      },
+      "cors": {
+        "logicalBytes": 19956,
+        "duKiB": 28,
+        "categories": {
+          "other": 13369,
+          "js": 6587
+        }
+      },
+      "content-disposition": {
+        "logicalBytes": 19928,
+        "duKiB": 32,
+        "categories": {
+          "other": 7365,
+          "js": 12563
+        }
+      },
+      "http-errors": {
+        "logicalBytes": 19064,
+        "duKiB": 28,
+        "categories": {
+          "other": 12634,
+          "js": 6430
+        }
+      },
+      "raw-body": {
+        "logicalBytes": 18495,
+        "duKiB": 28,
+        "categories": {
+          "other": 11324,
+          "js": 7171
+        }
+      },
+      "node-abi": {
+        "logicalBytes": 18402,
+        "duKiB": 28,
+        "categories": {
+          "other": 11914,
+          "js": 6488
+        }
+      },
+      "pkce-challenge": {
+        "logicalBytes": 18211,
+        "duKiB": 40,
+        "categories": {
+          "other": 9403,
+          "js": 8808
+        }
+      },
+      "finalhandler": {
+        "logicalBytes": 18111,
+        "duKiB": 32,
+        "categories": {
+          "other": 12293,
+          "js": 5818
+        }
+      },
+      "balanced-match": {
+        "logicalBytes": 17584,
+        "duKiB": 60,
+        "categories": {
+          "other": 5207,
+          "js": 3387,
+          "source-map": 8990
+        }
+      },
+      "math-intrinsics": {
+        "logicalBytes": 17323,
+        "duKiB": 156,
+        "categories": {
+          "js": 8672,
+          "other": 8651
+        }
+      },
+      "rc": {
+        "logicalBytes": 17255,
+        "duKiB": 52,
+        "categories": {
+          "other": 9867,
+          "js": 7388
+        }
+      },
+      "call-bound": {
+        "logicalBytes": 17106,
+        "duKiB": 48,
+        "categories": {
+          "other": 14001,
+          "js": 3105
+        }
+      },
+      "side-channel-list": {
+        "logicalBytes": 16973,
+        "duKiB": 56,
+        "categories": {
+          "other": 9554,
+          "js": 7419
+        }
+      },
+      "accepts": {
+        "logicalBytes": 16917,
+        "duKiB": 32,
+        "categories": {
+          "other": 11664,
+          "js": 5253
+        }
+      },
+      "tunnel-agent": {
+        "logicalBytes": 16679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9795,
+          "js": 6884
+        }
+      },
+      "proxy-addr": {
+        "logicalBytes": 16326,
+        "duKiB": 28,
+        "categories": {
+          "other": 8986,
+          "js": 7340
+        }
+      },
+      "cross-spawn": {
+        "logicalBytes": 16094,
+        "duKiB": 40,
+        "categories": {
+          "other": 6877,
+          "js": 9217
+        }
+      },
+      "call-bind-apply-helpers": {
+        "logicalBytes": 15952,
+        "duKiB": 84,
+        "categories": {
+          "other": 11911,
+          "js": 4041
+        }
+      },
+      "simple-get": {
+        "logicalBytes": 14971,
+        "duKiB": 28,
+        "categories": {
+          "other": 10914,
+          "js": 4057
+        }
+      },
+      "side-channel-weakmap": {
+        "logicalBytes": 14667,
+        "duKiB": 48,
+        "categories": {
+          "other": 8990,
+          "js": 5677
+        }
+      },
+      "string_decoder": {
+        "logicalBytes": 14427,
+        "duKiB": 24,
+        "categories": {
+          "other": 4962,
+          "js": 9465
+        }
+      },
+      "@kwsites/file-exists": {
+        "logicalBytes": 14361,
+        "duKiB": 64,
+        "categories": {
+          "other": 4286,
+          "js": 5233,
+          "source-map": 4842
+        }
+      },
+      "serve-static": {
+        "logicalBytes": 14335,
+        "duKiB": 24,
+        "categories": {
+          "other": 9846,
+          "js": 4489
+        }
+      },
+      "node-gyp-build": {
+        "logicalBytes": 13864,
+        "duKiB": 40,
+        "categories": {
+          "other": 4761,
+          "js": 9103
+        }
+      },
+      "on-finished": {
+        "logicalBytes": 13679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9249,
+          "js": 4430
+        }
+      },
+      "side-channel-map": {
+        "logicalBytes": 13348,
+        "duKiB": 48,
+        "categories": {
+          "other": 8492,
+          "js": 4856
+        }
+      },
+      "dunder-proto": {
+        "logicalBytes": 13003,
+        "duKiB": 60,
+        "categories": {
+          "other": 7858,
+          "js": 5145
+        }
+      },
+      "fast-deep-equal": {
+        "logicalBytes": 12966,
+        "duKiB": 44,
+        "categories": {
+          "other": 6194,
+          "js": 6772
+        }
+      },
+      "napi-build-utils": {
+        "logicalBytes": 12670,
+        "duKiB": 24,
+        "categories": {
+          "other": 5336,
+          "js": 7334
+        }
+      },
+      "statuses": {
+        "logicalBytes": 12505,
+        "duKiB": 24,
+        "categories": {
+          "other": 9895,
+          "js": 2610
+        }
+      },
+      "es-errors": {
+        "logicalBytes": 12324,
+        "duKiB": 88,
+        "categories": {
+          "js": 880,
+          "other": 11444
+        }
+      },
+      "bytes": {
+        "logicalBytes": 12270,
+        "duKiB": 24,
+        "categories": {
+          "other": 8657,
+          "js": 3613
+        }
+      },
+      "es-object-atoms": {
+        "logicalBytes": 11967,
+        "duKiB": 64,
+        "categories": {
+          "other": 10079,
+          "js": 1888
+        }
+      },
+      "bindings": {
+        "logicalBytes": 11230,
+        "duKiB": 20,
+        "categories": {
+          "other": 5244,
+          "js": 5986
+        }
+      },
+      "isexe": {
+        "logicalBytes": 10956,
+        "duKiB": 36,
+        "categories": {
+          "other": 2969,
+          "js": 7987
+        }
+      },
+      "get-proto": {
+        "logicalBytes": 10840,
+        "duKiB": 60,
+        "categories": {
+          "other": 7354,
+          "js": 3486
+        }
+      },
+      "etag": {
+        "logicalBytes": 10809,
+        "duKiB": 24,
+        "categories": {
+          "other": 8330,
+          "js": 2479
+        }
+      },
+      "content-type": {
+        "logicalBytes": 10471,
+        "duKiB": 24,
+        "categories": {
+          "other": 5469,
+          "js": 5002
+        }
+      },
+      "hasown": {
+        "logicalBytes": 10332,
+        "duKiB": 40,
+        "categories": {
+          "other": 9990,
+          "js": 342
+        }
+      },
+      "parseurl": {
+        "logicalBytes": 10299,
+        "duKiB": 20,
+        "categories": {
+          "other": 7490,
+          "js": 2809
+        }
+      },
+      "fresh": {
+        "logicalBytes": 10289,
+        "duKiB": 20,
+        "categories": {
+          "other": 7584,
+          "js": 2705
+        }
+      },
+      "es-define-property": {
+        "logicalBytes": 10217,
+        "duKiB": 44,
+        "categories": {
+          "other": 8630,
+          "js": 1587
+        }
+      },
+      "wsl-utils": {
+        "logicalBytes": 10178,
+        "duKiB": 24,
+        "categories": {
+          "other": 6968,
+          "js": 3210
+        }
+      },
+      "which": {
+        "logicalBytes": 9975,
+        "duKiB": 24,
+        "categories": {
+          "other": 6812,
+          "js": 3163
+        }
+      },
+      "gopd": {
+        "logicalBytes": 9869,
+        "duKiB": 48,
+        "categories": {
+          "js": 959,
+          "other": 8910
+        }
+      },
+      "powershell-utils": {
+        "logicalBytes": 9813,
+        "duKiB": 20,
+        "categories": {
+          "other": 8376,
+          "js": 1437
+        }
+      },
+      "base64-js": {
+        "logicalBytes": 9624,
+        "duKiB": 24,
+        "categories": {
+          "js": 6124,
+          "other": 3500
+        }
+      },
+      "ini": {
+        "logicalBytes": 9304,
+        "duKiB": 20,
+        "categories": {
+          "other": 4328,
+          "js": 4976
+        }
+      },
+      "media-typer": {
+        "logicalBytes": 9299,
+        "duKiB": 20,
+        "categories": {
+          "other": 6363,
+          "js": 2936
+        }
+      },
+      "deep-extend": {
+        "logicalBytes": 9190,
+        "duKiB": 28,
+        "categories": {
+          "other": 4850,
+          "js": 4340
+        }
+      },
+      "range-parser": {
+        "logicalBytes": 8967,
+        "duKiB": 20,
+        "categories": {
+          "other": 5762,
+          "js": 3205
+        }
+      },
+      "pump": {
+        "logicalBytes": 8913,
+        "duKiB": 40,
+        "categories": {
+          "js": 4478,
+          "other": 4435
+        }
+      },
+      "vary": {
+        "logicalBytes": 8747,
+        "duKiB": 20,
+        "categories": {
+          "other": 5817,
+          "js": 2930
+        }
+      },
+      "file-uri-to-path": {
+        "logicalBytes": 8068,
+        "duKiB": 40,
+        "categories": {
+          "other": 5679,
+          "js": 2389
+        }
+      },
+      "default-browser": {
+        "logicalBytes": 7013,
+        "duKiB": 24,
+        "categories": {
+          "other": 3137,
+          "js": 3876
+        }
+      },
+      "encodeurl": {
+        "logicalBytes": 6980,
+        "duKiB": 16,
+        "categories": {
+          "other": 5402,
+          "js": 1578
+        }
+      },
+      "ieee754": {
+        "logicalBytes": 6796,
+        "duKiB": 20,
+        "categories": {
+          "other": 4642,
+          "js": 2154
+        }
+      },
+      "ms": {
+        "logicalBytes": 6721,
+        "duKiB": 16,
+        "categories": {
+          "other": 3697,
+          "js": 3024
+        }
+      },
+      "end-of-stream": {
+        "logicalBytes": 6295,
+        "duKiB": 16,
+        "categories": {
+          "other": 3556,
+          "js": 2739
+        }
+      },
+      "ee-first": {
+        "logicalBytes": 6259,
+        "duKiB": 16,
+        "categories": {
+          "other": 4575,
+          "js": 1684
+        }
+      },
+      "@kwsites/promise-deferred": {
+        "logicalBytes": 6196,
+        "duKiB": 20,
+        "categories": {
+          "other": 3914,
+          "js": 1446,
+          "source-map": 836
+        }
+      },
+      "mimic-response": {
+        "logicalBytes": 6003,
+        "duKiB": 20,
+        "categories": {
+          "other": 4422,
+          "js": 1581
+        }
+      },
+      "forwarded": {
+        "logicalBytes": 5876,
+        "duKiB": 20,
+        "categories": {
+          "other": 4298,
+          "js": 1578
+        }
+      },
+      "chownr": {
+        "logicalBytes": 5709,
+        "duKiB": 20,
+        "categories": {
+          "other": 1434,
+          "js": 4275
+        }
+      },
+      "@simple-git/args-pathspec": {
+        "logicalBytes": 5645,
+        "duKiB": 40,
+        "categories": {
+          "other": 2220,
+          "source-map": 2772,
+          "js": 653
+        }
+      },
+      "object-assign": {
+        "logicalBytes": 5493,
+        "duKiB": 16,
+        "categories": {
+          "other": 3385,
+          "js": 2108
+        }
+      },
+      "util-deprecate": {
+        "logicalBytes": 5481,
+        "duKiB": 24,
+        "categories": {
+          "other": 3744,
+          "js": 1737
+        }
+      },
+      "decompress-response": {
+        "logicalBytes": 5472,
+        "duKiB": 20,
+        "categories": {
+          "other": 4152,
+          "js": 1320
+        }
+      },
+      "expand-template": {
+        "logicalBytes": 5410,
+        "duKiB": 24,
+        "categories": {
+          "js": 2434,
+          "other": 2976
+        }
+      },
+      "run-applescript": {
+        "logicalBytes": 5355,
+        "duKiB": 20,
+        "categories": {
+          "other": 4349,
+          "js": 1006
+        }
+      },
+      "strip-json-comments": {
+        "logicalBytes": 5061,
+        "duKiB": 16,
+        "categories": {
+          "other": 3361,
+          "js": 1700
+        }
+      },
+      "cookie-signature": {
+        "logicalBytes": 4993,
+        "duKiB": 20,
+        "categories": {
+          "other": 3580,
+          "js": 1413
+        }
+      },
+      "toidentifier": {
+        "logicalBytes": 4685,
+        "duKiB": 20,
+        "categories": {
+          "other": 4181,
+          "js": 504
+        }
+      },
+      "simple-concat": {
+        "logicalBytes": 4624,
+        "duKiB": 24,
+        "categories": {
+          "other": 3407,
+          "js": 1217
+        }
+      },
+      "github-from-package": {
+        "logicalBytes": 4608,
+        "duKiB": 52,
+        "categories": {
+          "other": 3499,
+          "js": 1109
+        }
+      },
+      "path-key": {
+        "logicalBytes": 4553,
+        "duKiB": 20,
+        "categories": {
+          "other": 4138,
+          "js": 415
+        }
+      },
+      "mkdirp-classic": {
+        "logicalBytes": 4498,
+        "duKiB": 16,
+        "categories": {
+          "other": 1868,
+          "js": 2630
+        }
+      },
+      "define-lazy-prop": {
+        "logicalBytes": 4415,
+        "duKiB": 20,
+        "categories": {
+          "other": 3986,
+          "js": 429
+        }
+      },
+      "merge-descriptors": {
+        "logicalBytes": 4373,
+        "duKiB": 20,
+        "categories": {
+          "other": 3757,
+          "js": 616
+        }
+      },
+      "unpipe": {
+        "logicalBytes": 4311,
+        "duKiB": 20,
+        "categories": {
+          "other": 3193,
+          "js": 1118
+        }
+      },
+      "once": {
+        "logicalBytes": 4046,
+        "duKiB": 16,
+        "categories": {
+          "other": 3111,
+          "js": 935
+        }
+      },
+      "setprototypeof": {
+        "logicalBytes": 4025,
+        "duKiB": 24,
+        "categories": {
+          "other": 2928,
+          "js": 1097
+        }
+      },
+      "inherits": {
+        "logicalBytes": 3958,
+        "duKiB": 20,
+        "categories": {
+          "other": 2955,
+          "js": 1003
+        }
+      },
+      "is-wsl": {
+        "logicalBytes": 3664,
+        "duKiB": 20,
+        "categories": {
+          "other": 2902,
+          "js": 762
+        }
+      },
+      "escape-html": {
+        "logicalBytes": 3660,
+        "duKiB": 16,
+        "categories": {
+          "other": 2298,
+          "js": 1362
+        }
+      },
+      "is-in-ssh": {
+        "logicalBytes": 3632,
+        "duKiB": 20,
+        "categories": {
+          "other": 3466,
+          "js": 166
+        }
+      },
+      "bundle-name": {
+        "logicalBytes": 3578,
+        "duKiB": 16,
+        "categories": {
+          "other": 2784,
+          "js": 794
+        }
+      },
+      "is-inside-container": {
+        "logicalBytes": 3480,
+        "duKiB": 24,
+        "categories": {
+          "other": 2900,
+          "js": 580
+        }
+      },
+      "require-from-string": {
+        "logicalBytes": 3422,
+        "duKiB": 16,
+        "categories": {
+          "other": 2556,
+          "js": 866
+        }
+      },
+      "default-browser-id": {
+        "logicalBytes": 3173,
+        "duKiB": 16,
+        "categories": {
+          "other": 2366,
+          "js": 807
+        }
+      },
+      "is-docker": {
+        "logicalBytes": 3154,
+        "duKiB": 24,
+        "categories": {
+          "other": 2514,
+          "js": 640
+        }
+      },
+      "wrappy": {
+        "logicalBytes": 2961,
+        "duKiB": 16,
+        "categories": {
+          "other": 2056,
+          "js": 905
+        }
+      },
+      "is-promise": {
+        "logicalBytes": 2958,
+        "duKiB": 24,
+        "categories": {
+          "other": 2606,
+          "js": 352
+        }
+      },
+      "shebang-regex": {
+        "logicalBytes": 2828,
+        "duKiB": 20,
+        "categories": {
+          "other": 2786,
+          "js": 42
+        }
+      },
+      "shebang-command": {
+        "logicalBytes": 2556,
+        "duKiB": 16,
+        "categories": {
+          "other": 2169,
+          "js": 387
+        }
+      },
+      "fs-constants": {
+        "logicalBytes": 2223,
+        "duKiB": 20,
+        "categories": {
+          "other": 2120,
+          "js": 103
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26956201,
+        "duKiB": 27424,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 27328,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 26100,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  },
+  "graph-before": {
+    "logicalBytes": 251969163,
+    "duKiB": 264432,
+    "categories": {
+      "other": 10909863,
+      "js": 10978505,
+      "source-map": 7324398,
+      "wasm": 40651383,
+      "native-source": 93631910,
+      "native-binary": 88473104
+    },
+    "dependencies": {
+      "tree-sitter-c-sharp": {
+        "logicalBytes": 68022151,
+        "duKiB": 67672,
+        "categories": {
+          "js": 56345,
+          "other": 419380,
+          "wasm": 5350581,
+          "native-source": 29700949,
+          "native-binary": 32494896
+        }
+      },
+      "tree-sitter-cpp": {
+        "logicalBytes": 42392814,
+        "duKiB": 42820,
+        "categories": {
+          "js": 39704,
+          "other": 581059,
+          "wasm": 3434931,
+          "native-source": 17323264,
+          "native-binary": 21013856
+        }
+      },
+      "tree-sitter-ruby": {
+        "logicalBytes": 30832828,
+        "duKiB": 30684,
+        "categories": {
+          "js": 36076,
+          "other": 273085,
+          "wasm": 2106352,
+          "native-source": 15334059,
+          "native-binary": 13083256
+        }
+      },
+      "tree-sitter-php": {
+        "logicalBytes": 29836331,
+        "duKiB": 30056,
+        "categories": {
+          "wasm": 2060448,
+          "other": 707044,
+          "js": 48703,
+          "native-source": 14084584,
+          "native-binary": 12935552
+        }
+      },
+      "depwire-cli": {
+        "logicalBytes": 26956201,
+        "duKiB": 26464,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "better-sqlite3": {
+        "logicalBytes": 12321465,
+        "duKiB": 13176,
+        "categories": {
+          "other": 18918,
+          "js": 24328,
+          "native-source": 10345499,
+          "native-binary": 1932720
+        }
+      },
+      "tree-sitter-c": {
+        "logicalBytes": 8967502,
+        "duKiB": 9208,
+        "categories": {
+          "wasm": 620090,
+          "js": 38942,
+          "other": 327622,
+          "native-source": 3887688,
+          "native-binary": 4093160
+        }
+      },
+      "tree-sitter-java": {
+        "logicalBytes": 6223115,
+        "duKiB": 6740,
+        "categories": {
+          "js": 32741,
+          "other": 275771,
+          "wasm": 414641,
+          "native-source": 2580298,
+          "native-binary": 2919664
+        }
+      },
+      "web-tree-sitter": {
+        "logicalBytes": 4523037,
+        "duKiB": 4460,
+        "categories": {
+          "source-map": 2691221,
+          "js": 736552,
+          "other": 87694,
+          "wasm": 1007570
+        }
+      },
+      "@modelcontextprotocol/sdk": {
+        "logicalBytes": 4343917,
+        "duKiB": 6112,
+        "categories": {
+          "other": 1417691,
+          "source-map": 1330284,
+          "js": 1595942
+        }
+      },
+      "zod": {
+        "logicalBytes": 4343491,
+        "duKiB": 6152,
+        "categories": {
+          "other": 2760061,
+          "js": 1583430
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "hono": {
+        "logicalBytes": 1396425,
+        "duKiB": 2848,
+        "categories": {
+          "other": 409060,
+          "js": 987365
+        }
+      },
+      "ajv": {
+        "logicalBytes": 1033496,
+        "duKiB": 2364,
+        "categories": {
+          "other": 459877,
+          "js": 293601,
+          "source-map": 280018
+        }
+      },
+      "simple-git": {
+        "logicalBytes": 951189,
+        "duKiB": 1316,
+        "categories": {
+          "js": 281738,
+          "other": 147769,
+          "source-map": 521682
+        }
+      },
+      "minimatch": {
+        "logicalBytes": 536122,
+        "duKiB": 664,
+        "categories": {
+          "other": 43899,
+          "source-map": 324985,
+          "js": 167238
+        }
+      },
+      "node-addon-api": {
+        "logicalBytes": 420314,
+        "duKiB": 452,
+        "categories": {
+          "other": 24131,
+          "native-source": 375569,
+          "js": 20614
+        }
+      },
+      "qs": {
+        "logicalBytes": 374851,
+        "duKiB": 416,
+        "categories": {
+          "other": 84545,
+          "js": 290306
+        }
+      },
+      "ip-address": {
+        "logicalBytes": 366191,
+        "duKiB": 424,
+        "categories": {
+          "other": 101278,
+          "source-map": 159157,
+          "js": 105756
+        }
+      },
+      "iconv-lite": {
+        "logicalBytes": 344185,
+        "duKiB": 400,
+        "categories": {
+          "other": 234642,
+          "js": 109543
+        }
+      },
+      "mime-db": {
+        "logicalBytes": 225566,
+        "duKiB": 236,
+        "categories": {
+          "other": 225377,
+          "js": 189
+        }
+      },
+      "fast-uri": {
+        "logicalBytes": 220886,
+        "duKiB": 328,
+        "categories": {
+          "other": 33253,
+          "js": 187633
+        }
+      },
+      "zod-to-json-schema": {
+        "logicalBytes": 219264,
+        "duKiB": 620,
+        "categories": {
+          "other": 101213,
+          "js": 118051
+        }
+      },
+      "jose": {
+        "logicalBytes": 210660,
+        "duKiB": 408,
+        "categories": {
+          "other": 90610,
+          "js": 120050
+        }
+      },
+      "commander": {
+        "logicalBytes": 208654,
+        "duKiB": 240,
+        "categories": {
+          "other": 81752,
+          "js": 126902
+        }
+      },
+      "json-schema-typed": {
+        "logicalBytes": 197188,
+        "duKiB": 208,
+        "categories": {
+          "other": 160181,
+          "js": 37007
+        }
+      },
+      "express-rate-limit": {
+        "logicalBytes": 154628,
+        "duKiB": 172,
+        "categories": {
+          "other": 79825,
+          "js": 74803
+        }
+      },
+      "ws": {
+        "logicalBytes": 151087,
+        "duKiB": 196,
+        "categories": {
+          "other": 18242,
+          "js": 132845
+        }
+      },
+      "chokidar": {
+        "logicalBytes": 148759,
+        "duKiB": 172,
+        "categories": {
+          "other": 39700,
+          "js": 109059
+        }
+      },
+      "eventsource": {
+        "logicalBytes": 147304,
+        "duKiB": 176,
+        "categories": {
+          "other": 56538,
+          "js": 29810,
+          "source-map": 60956
+        }
+      },
+      "@hono/node-server": {
+        "logicalBytes": 134687,
+        "duKiB": 220,
+        "categories": {
+          "other": 26898,
+          "js": 107789
+        }
+      },
+      "readable-stream": {
+        "logicalBytes": 123971,
+        "duKiB": 180,
+        "categories": {
+          "js": 108045,
+          "other": 15926
+        }
+      },
+      "eventsource-parser": {
+        "logicalBytes": 123553,
+        "duKiB": 160,
+        "categories": {
+          "js": 17568,
+          "other": 52903,
+          "source-map": 53082
+        }
+      },
+      "@simple-git/argv-parser": {
+        "logicalBytes": 105361,
+        "duKiB": 176,
+        "categories": {
+          "other": 11464,
+          "source-map": 73810,
+          "js": 20087
+        }
+      },
+      "object-inspect": {
+        "logicalBytes": 102920,
+        "duKiB": 200,
+        "categories": {
+          "other": 45946,
+          "js": 56974
+        }
+      },
+      "semver": {
+        "logicalBytes": 101065,
+        "duKiB": 268,
+        "categories": {
+          "js": 72268,
+          "other": 28797
+        }
+      },
+      "brace-expansion": {
+        "logicalBytes": 84997,
+        "duKiB": 124,
+        "categories": {
+          "other": 6469,
+          "js": 27684,
+          "source-map": 50844
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "buffer": {
+        "logicalBytes": 82527,
+        "duKiB": 96,
+        "categories": {
+          "other": 32430,
+          "js": 50097
+        }
+      },
+      "express": {
+        "logicalBytes": 75429,
+        "duKiB": 96,
+        "categories": {
+          "other": 13932,
+          "js": 61497
+        }
+      },
+      "body-parser": {
+        "logicalBytes": 65672,
+        "duKiB": 104,
+        "categories": {
+          "other": 30515,
+          "js": 23649,
+          "source-map": 11508
+        }
+      },
+      "bl": {
+        "logicalBytes": 64427,
+        "duKiB": 92,
+        "categories": {
+          "other": 15038,
+          "js": 49389
+        }
+      },
+      "path-to-regexp": {
+        "logicalBytes": 59680,
+        "duKiB": 68,
+        "categories": {
+          "other": 14412,
+          "js": 14528,
+          "source-map": 30740
+        }
+      },
+      "open": {
+        "logicalBytes": 58937,
+        "duKiB": 68,
+        "categories": {
+          "other": 47383,
+          "js": 11554
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      },
+      "ajv-formats": {
+        "logicalBytes": 56763,
+        "duKiB": 88,
+        "categories": {
+          "other": 28620,
+          "js": 16671,
+          "source-map": 11472
+        }
+      },
+      "minimist": {
+        "logicalBytes": 54477,
+        "duKiB": 120,
+        "categories": {
+          "other": 29331,
+          "js": 25146
+        }
+      },
+      "negotiator": {
+        "logicalBytes": 47543,
+        "duKiB": 76,
+        "categories": {
+          "other": 13610,
+          "js": 22425,
+          "source-map": 11508
+        }
+      },
+      "router": {
+        "logicalBytes": 46851,
+        "duKiB": 64,
+        "categories": {
+          "other": 21497,
+          "js": 25354
+        }
+      },
+      "get-intrinsic": {
+        "logicalBytes": 46542,
+        "duKiB": 68,
+        "categories": {
+          "other": 23345,
+          "js": 23197
+        }
+      },
+      "type-is": {
+        "logicalBytes": 44405,
+        "duKiB": 68,
+        "categories": {
+          "other": 21744,
+          "js": 11153,
+          "source-map": 11508
+        }
+      },
+      "chalk": {
+        "logicalBytes": 44342,
+        "duKiB": 72,
+        "categories": {
+          "other": 27615,
+          "js": 16727
+        }
+      },
+      "debug": {
+        "logicalBytes": 42793,
+        "duKiB": 60,
+        "categories": {
+          "other": 24733,
+          "js": 18060
+        }
+      },
+      "safer-buffer": {
+        "logicalBytes": 42299,
+        "duKiB": 60,
+        "categories": {
+          "other": 22971,
+          "js": 19328
+        }
+      },
+      "ipaddr.js": {
+        "logicalBytes": 42145,
+        "duKiB": 56,
+        "categories": {
+          "other": 13074,
+          "js": 29071
+        }
+      },
+      "readdirp": {
+        "logicalBytes": 36127,
+        "duKiB": 52,
+        "categories": {
+          "other": 16606,
+          "js": 19521
+        }
+      },
+      "prebuild-install": {
+        "logicalBytes": 34180,
+        "duKiB": 76,
+        "categories": {
+          "js": 16113,
+          "other": 18067
+        }
+      },
+      "tar-fs": {
+        "logicalBytes": 32792,
+        "duKiB": 56,
+        "categories": {
+          "other": 9502,
+          "js": 23290
+        }
+      },
+      "send": {
+        "logicalBytes": 32200,
+        "duKiB": 40,
+        "categories": {
+          "other": 11859,
+          "js": 20341
+        }
+      },
+      "safe-buffer": {
+        "logicalBytes": 32101,
+        "duKiB": 44,
+        "categories": {
+          "other": 30431,
+          "js": 1670
+        }
+      },
+      "function-bind": {
+        "logicalBytes": 31427,
+        "duKiB": 68,
+        "categories": {
+          "other": 20267,
+          "js": 11160
+        }
+      },
+      "tar-stream": {
+        "logicalBytes": 27671,
+        "duKiB": 48,
+        "categories": {
+          "other": 7673,
+          "js": 19998
+        }
+      },
+      "depd": {
+        "logicalBytes": 27117,
+        "duKiB": 40,
+        "categories": {
+          "other": 14673,
+          "js": 12444
+        }
+      },
+      "detect-libc": {
+        "logicalBytes": 26437,
+        "duKiB": 44,
+        "categories": {
+          "other": 16286,
+          "js": 10151
+        }
+      },
+      "has-symbols": {
+        "logicalBytes": 23409,
+        "duKiB": 72,
+        "categories": {
+          "other": 16690,
+          "js": 6719
+        }
+      },
+      "cookie": {
+        "logicalBytes": 23382,
+        "duKiB": 32,
+        "categories": {
+          "other": 15216,
+          "js": 8166
+        }
+      },
+      "mime-types": {
+        "logicalBytes": 22871,
+        "duKiB": 40,
+        "categories": {
+          "other": 16828,
+          "js": 6043
+        }
+      },
+      "side-channel": {
+        "logicalBytes": 22864,
+        "duKiB": 56,
+        "categories": {
+          "other": 18711,
+          "js": 4153
+        }
+      },
+      "json-schema-traverse": {
+        "logicalBytes": 22220,
+        "duKiB": 56,
+        "categories": {
+          "other": 8206,
+          "js": 14014
+        }
+      },
+      "cors": {
+        "logicalBytes": 19956,
+        "duKiB": 28,
+        "categories": {
+          "other": 13369,
+          "js": 6587
+        }
+      },
+      "content-disposition": {
+        "logicalBytes": 19928,
+        "duKiB": 32,
+        "categories": {
+          "other": 7365,
+          "js": 12563
+        }
+      },
+      "http-errors": {
+        "logicalBytes": 19064,
+        "duKiB": 28,
+        "categories": {
+          "other": 12634,
+          "js": 6430
+        }
+      },
+      "raw-body": {
+        "logicalBytes": 18495,
+        "duKiB": 28,
+        "categories": {
+          "other": 11324,
+          "js": 7171
+        }
+      },
+      "node-abi": {
+        "logicalBytes": 18402,
+        "duKiB": 28,
+        "categories": {
+          "other": 11914,
+          "js": 6488
+        }
+      },
+      "pkce-challenge": {
+        "logicalBytes": 18211,
+        "duKiB": 40,
+        "categories": {
+          "other": 9403,
+          "js": 8808
+        }
+      },
+      "finalhandler": {
+        "logicalBytes": 18111,
+        "duKiB": 32,
+        "categories": {
+          "other": 12293,
+          "js": 5818
+        }
+      },
+      "balanced-match": {
+        "logicalBytes": 17584,
+        "duKiB": 60,
+        "categories": {
+          "other": 5207,
+          "js": 3387,
+          "source-map": 8990
+        }
+      },
+      "math-intrinsics": {
+        "logicalBytes": 17323,
+        "duKiB": 156,
+        "categories": {
+          "js": 8672,
+          "other": 8651
+        }
+      },
+      "rc": {
+        "logicalBytes": 17255,
+        "duKiB": 52,
+        "categories": {
+          "other": 9867,
+          "js": 7388
+        }
+      },
+      "call-bound": {
+        "logicalBytes": 17106,
+        "duKiB": 48,
+        "categories": {
+          "other": 14001,
+          "js": 3105
+        }
+      },
+      "side-channel-list": {
+        "logicalBytes": 16973,
+        "duKiB": 56,
+        "categories": {
+          "other": 9554,
+          "js": 7419
+        }
+      },
+      "accepts": {
+        "logicalBytes": 16917,
+        "duKiB": 32,
+        "categories": {
+          "other": 11664,
+          "js": 5253
+        }
+      },
+      "tunnel-agent": {
+        "logicalBytes": 16679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9795,
+          "js": 6884
+        }
+      },
+      "proxy-addr": {
+        "logicalBytes": 16326,
+        "duKiB": 28,
+        "categories": {
+          "other": 8986,
+          "js": 7340
+        }
+      },
+      "cross-spawn": {
+        "logicalBytes": 16094,
+        "duKiB": 40,
+        "categories": {
+          "other": 6877,
+          "js": 9217
+        }
+      },
+      "call-bind-apply-helpers": {
+        "logicalBytes": 15952,
+        "duKiB": 84,
+        "categories": {
+          "other": 11911,
+          "js": 4041
+        }
+      },
+      "simple-get": {
+        "logicalBytes": 14971,
+        "duKiB": 28,
+        "categories": {
+          "other": 10914,
+          "js": 4057
+        }
+      },
+      "side-channel-weakmap": {
+        "logicalBytes": 14667,
+        "duKiB": 48,
+        "categories": {
+          "other": 8990,
+          "js": 5677
+        }
+      },
+      "string_decoder": {
+        "logicalBytes": 14427,
+        "duKiB": 24,
+        "categories": {
+          "other": 4962,
+          "js": 9465
+        }
+      },
+      "@kwsites/file-exists": {
+        "logicalBytes": 14361,
+        "duKiB": 64,
+        "categories": {
+          "other": 4286,
+          "js": 5233,
+          "source-map": 4842
+        }
+      },
+      "serve-static": {
+        "logicalBytes": 14335,
+        "duKiB": 24,
+        "categories": {
+          "other": 9846,
+          "js": 4489
+        }
+      },
+      "node-gyp-build": {
+        "logicalBytes": 13864,
+        "duKiB": 40,
+        "categories": {
+          "other": 4761,
+          "js": 9103
+        }
+      },
+      "on-finished": {
+        "logicalBytes": 13679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9249,
+          "js": 4430
+        }
+      },
+      "side-channel-map": {
+        "logicalBytes": 13348,
+        "duKiB": 48,
+        "categories": {
+          "other": 8492,
+          "js": 4856
+        }
+      },
+      "dunder-proto": {
+        "logicalBytes": 13003,
+        "duKiB": 60,
+        "categories": {
+          "other": 7858,
+          "js": 5145
+        }
+      },
+      "fast-deep-equal": {
+        "logicalBytes": 12966,
+        "duKiB": 44,
+        "categories": {
+          "other": 6194,
+          "js": 6772
+        }
+      },
+      "napi-build-utils": {
+        "logicalBytes": 12670,
+        "duKiB": 24,
+        "categories": {
+          "other": 5336,
+          "js": 7334
+        }
+      },
+      "statuses": {
+        "logicalBytes": 12505,
+        "duKiB": 24,
+        "categories": {
+          "other": 9895,
+          "js": 2610
+        }
+      },
+      "es-errors": {
+        "logicalBytes": 12324,
+        "duKiB": 88,
+        "categories": {
+          "js": 880,
+          "other": 11444
+        }
+      },
+      "bytes": {
+        "logicalBytes": 12270,
+        "duKiB": 24,
+        "categories": {
+          "other": 8657,
+          "js": 3613
+        }
+      },
+      "es-object-atoms": {
+        "logicalBytes": 11967,
+        "duKiB": 64,
+        "categories": {
+          "other": 10079,
+          "js": 1888
+        }
+      },
+      "bindings": {
+        "logicalBytes": 11230,
+        "duKiB": 20,
+        "categories": {
+          "other": 5244,
+          "js": 5986
+        }
+      },
+      "isexe": {
+        "logicalBytes": 10956,
+        "duKiB": 36,
+        "categories": {
+          "other": 2969,
+          "js": 7987
+        }
+      },
+      "get-proto": {
+        "logicalBytes": 10840,
+        "duKiB": 60,
+        "categories": {
+          "other": 7354,
+          "js": 3486
+        }
+      },
+      "etag": {
+        "logicalBytes": 10809,
+        "duKiB": 24,
+        "categories": {
+          "other": 8330,
+          "js": 2479
+        }
+      },
+      "content-type": {
+        "logicalBytes": 10471,
+        "duKiB": 24,
+        "categories": {
+          "other": 5469,
+          "js": 5002
+        }
+      },
+      "hasown": {
+        "logicalBytes": 10332,
+        "duKiB": 40,
+        "categories": {
+          "other": 9990,
+          "js": 342
+        }
+      },
+      "parseurl": {
+        "logicalBytes": 10299,
+        "duKiB": 20,
+        "categories": {
+          "other": 7490,
+          "js": 2809
+        }
+      },
+      "fresh": {
+        "logicalBytes": 10289,
+        "duKiB": 20,
+        "categories": {
+          "other": 7584,
+          "js": 2705
+        }
+      },
+      "es-define-property": {
+        "logicalBytes": 10217,
+        "duKiB": 44,
+        "categories": {
+          "other": 8630,
+          "js": 1587
+        }
+      },
+      "wsl-utils": {
+        "logicalBytes": 10178,
+        "duKiB": 24,
+        "categories": {
+          "other": 6968,
+          "js": 3210
+        }
+      },
+      "which": {
+        "logicalBytes": 9975,
+        "duKiB": 24,
+        "categories": {
+          "other": 6812,
+          "js": 3163
+        }
+      },
+      "gopd": {
+        "logicalBytes": 9869,
+        "duKiB": 48,
+        "categories": {
+          "js": 959,
+          "other": 8910
+        }
+      },
+      "powershell-utils": {
+        "logicalBytes": 9813,
+        "duKiB": 20,
+        "categories": {
+          "other": 8376,
+          "js": 1437
+        }
+      },
+      "base64-js": {
+        "logicalBytes": 9624,
+        "duKiB": 24,
+        "categories": {
+          "js": 6124,
+          "other": 3500
+        }
+      },
+      "ini": {
+        "logicalBytes": 9304,
+        "duKiB": 20,
+        "categories": {
+          "other": 4328,
+          "js": 4976
+        }
+      },
+      "media-typer": {
+        "logicalBytes": 9299,
+        "duKiB": 20,
+        "categories": {
+          "other": 6363,
+          "js": 2936
+        }
+      },
+      "deep-extend": {
+        "logicalBytes": 9190,
+        "duKiB": 28,
+        "categories": {
+          "other": 4850,
+          "js": 4340
+        }
+      },
+      "range-parser": {
+        "logicalBytes": 8967,
+        "duKiB": 20,
+        "categories": {
+          "other": 5762,
+          "js": 3205
+        }
+      },
+      "pump": {
+        "logicalBytes": 8913,
+        "duKiB": 40,
+        "categories": {
+          "js": 4478,
+          "other": 4435
+        }
+      },
+      "vary": {
+        "logicalBytes": 8747,
+        "duKiB": 20,
+        "categories": {
+          "other": 5817,
+          "js": 2930
+        }
+      },
+      "file-uri-to-path": {
+        "logicalBytes": 8068,
+        "duKiB": 40,
+        "categories": {
+          "other": 5679,
+          "js": 2389
+        }
+      },
+      "default-browser": {
+        "logicalBytes": 7013,
+        "duKiB": 24,
+        "categories": {
+          "other": 3137,
+          "js": 3876
+        }
+      },
+      "encodeurl": {
+        "logicalBytes": 6980,
+        "duKiB": 16,
+        "categories": {
+          "other": 5402,
+          "js": 1578
+        }
+      },
+      "ieee754": {
+        "logicalBytes": 6796,
+        "duKiB": 20,
+        "categories": {
+          "other": 4642,
+          "js": 2154
+        }
+      },
+      "ms": {
+        "logicalBytes": 6721,
+        "duKiB": 16,
+        "categories": {
+          "other": 3697,
+          "js": 3024
+        }
+      },
+      "end-of-stream": {
+        "logicalBytes": 6295,
+        "duKiB": 16,
+        "categories": {
+          "other": 3556,
+          "js": 2739
+        }
+      },
+      "ee-first": {
+        "logicalBytes": 6259,
+        "duKiB": 16,
+        "categories": {
+          "other": 4575,
+          "js": 1684
+        }
+      },
+      "@kwsites/promise-deferred": {
+        "logicalBytes": 6196,
+        "duKiB": 20,
+        "categories": {
+          "other": 3914,
+          "js": 1446,
+          "source-map": 836
+        }
+      },
+      "mimic-response": {
+        "logicalBytes": 6003,
+        "duKiB": 20,
+        "categories": {
+          "other": 4422,
+          "js": 1581
+        }
+      },
+      "forwarded": {
+        "logicalBytes": 5876,
+        "duKiB": 20,
+        "categories": {
+          "other": 4298,
+          "js": 1578
+        }
+      },
+      "chownr": {
+        "logicalBytes": 5709,
+        "duKiB": 20,
+        "categories": {
+          "other": 1434,
+          "js": 4275
+        }
+      },
+      "@simple-git/args-pathspec": {
+        "logicalBytes": 5645,
+        "duKiB": 40,
+        "categories": {
+          "other": 2220,
+          "source-map": 2772,
+          "js": 653
+        }
+      },
+      "object-assign": {
+        "logicalBytes": 5493,
+        "duKiB": 16,
+        "categories": {
+          "other": 3385,
+          "js": 2108
+        }
+      },
+      "util-deprecate": {
+        "logicalBytes": 5481,
+        "duKiB": 24,
+        "categories": {
+          "other": 3744,
+          "js": 1737
+        }
+      },
+      "decompress-response": {
+        "logicalBytes": 5472,
+        "duKiB": 20,
+        "categories": {
+          "other": 4152,
+          "js": 1320
+        }
+      },
+      "expand-template": {
+        "logicalBytes": 5410,
+        "duKiB": 24,
+        "categories": {
+          "js": 2434,
+          "other": 2976
+        }
+      },
+      "run-applescript": {
+        "logicalBytes": 5355,
+        "duKiB": 20,
+        "categories": {
+          "other": 4349,
+          "js": 1006
+        }
+      },
+      "strip-json-comments": {
+        "logicalBytes": 5061,
+        "duKiB": 16,
+        "categories": {
+          "other": 3361,
+          "js": 1700
+        }
+      },
+      "cookie-signature": {
+        "logicalBytes": 4993,
+        "duKiB": 20,
+        "categories": {
+          "other": 3580,
+          "js": 1413
+        }
+      },
+      "toidentifier": {
+        "logicalBytes": 4685,
+        "duKiB": 20,
+        "categories": {
+          "other": 4181,
+          "js": 504
+        }
+      },
+      "simple-concat": {
+        "logicalBytes": 4624,
+        "duKiB": 24,
+        "categories": {
+          "other": 3407,
+          "js": 1217
+        }
+      },
+      "github-from-package": {
+        "logicalBytes": 4608,
+        "duKiB": 52,
+        "categories": {
+          "other": 3499,
+          "js": 1109
+        }
+      },
+      "path-key": {
+        "logicalBytes": 4553,
+        "duKiB": 20,
+        "categories": {
+          "other": 4138,
+          "js": 415
+        }
+      },
+      "mkdirp-classic": {
+        "logicalBytes": 4498,
+        "duKiB": 16,
+        "categories": {
+          "other": 1868,
+          "js": 2630
+        }
+      },
+      "define-lazy-prop": {
+        "logicalBytes": 4415,
+        "duKiB": 20,
+        "categories": {
+          "other": 3986,
+          "js": 429
+        }
+      },
+      "merge-descriptors": {
+        "logicalBytes": 4373,
+        "duKiB": 20,
+        "categories": {
+          "other": 3757,
+          "js": 616
+        }
+      },
+      "unpipe": {
+        "logicalBytes": 4311,
+        "duKiB": 20,
+        "categories": {
+          "other": 3193,
+          "js": 1118
+        }
+      },
+      "once": {
+        "logicalBytes": 4046,
+        "duKiB": 16,
+        "categories": {
+          "other": 3111,
+          "js": 935
+        }
+      },
+      "setprototypeof": {
+        "logicalBytes": 4025,
+        "duKiB": 24,
+        "categories": {
+          "other": 2928,
+          "js": 1097
+        }
+      },
+      "inherits": {
+        "logicalBytes": 3958,
+        "duKiB": 20,
+        "categories": {
+          "other": 2955,
+          "js": 1003
+        }
+      },
+      "is-wsl": {
+        "logicalBytes": 3664,
+        "duKiB": 20,
+        "categories": {
+          "other": 2902,
+          "js": 762
+        }
+      },
+      "escape-html": {
+        "logicalBytes": 3660,
+        "duKiB": 16,
+        "categories": {
+          "other": 2298,
+          "js": 1362
+        }
+      },
+      "is-in-ssh": {
+        "logicalBytes": 3632,
+        "duKiB": 20,
+        "categories": {
+          "other": 3466,
+          "js": 166
+        }
+      },
+      "bundle-name": {
+        "logicalBytes": 3578,
+        "duKiB": 16,
+        "categories": {
+          "other": 2784,
+          "js": 794
+        }
+      },
+      "is-inside-container": {
+        "logicalBytes": 3480,
+        "duKiB": 24,
+        "categories": {
+          "other": 2900,
+          "js": 580
+        }
+      },
+      "require-from-string": {
+        "logicalBytes": 3422,
+        "duKiB": 16,
+        "categories": {
+          "other": 2556,
+          "js": 866
+        }
+      },
+      "default-browser-id": {
+        "logicalBytes": 3173,
+        "duKiB": 16,
+        "categories": {
+          "other": 2366,
+          "js": 807
+        }
+      },
+      "is-docker": {
+        "logicalBytes": 3154,
+        "duKiB": 24,
+        "categories": {
+          "other": 2514,
+          "js": 640
+        }
+      },
+      "wrappy": {
+        "logicalBytes": 2961,
+        "duKiB": 16,
+        "categories": {
+          "other": 2056,
+          "js": 905
+        }
+      },
+      "is-promise": {
+        "logicalBytes": 2958,
+        "duKiB": 24,
+        "categories": {
+          "other": 2606,
+          "js": 352
+        }
+      },
+      "shebang-regex": {
+        "logicalBytes": 2828,
+        "duKiB": 20,
+        "categories": {
+          "other": 2786,
+          "js": 42
+        }
+      },
+      "shebang-command": {
+        "logicalBytes": 2556,
+        "duKiB": 16,
+        "categories": {
+          "other": 2169,
+          "js": 387
+        }
+      },
+      "fs-constants": {
+        "logicalBytes": 2223,
+        "duKiB": 20,
+        "categories": {
+          "other": 2120,
+          "js": 103
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26956201,
+        "duKiB": 26464,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 26368,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 25140,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  },
+  "optional-install": {
+    "logicalBytes": 29829294,
+    "duKiB": 29368,
+    "categories": {
+      "other": 216951,
+      "js": 2271390,
+      "source-map": 1684183,
+      "wasm": 25656770
+    },
+    "dependencies": {
+      "depwire-cli": {
+        "logicalBytes": 26956201,
+        "duKiB": 26416,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26956201,
+        "duKiB": 26416,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 26320,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 25092,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  },
+  "peers-install": {
+    "logicalBytes": 29831300,
+    "duKiB": 29372,
+    "categories": {
+      "other": 218957,
+      "js": 2271390,
+      "source-map": 1684183,
+      "wasm": 25656770
+    },
+    "dependencies": {
+      "depwire-cli": {
+        "logicalBytes": 26957101,
+        "duKiB": 26420,
+        "categories": {
+          "other": 142611,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26957101,
+        "duKiB": 26420,
+        "categories": {
+          "other": 142611,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 26320,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 25092,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  },
+  "separate-install": {
+    "logicalBytes": 3051810,
+    "duKiB": 3144,
+    "categories": {
+      "other": 134074,
+      "js": 1233553,
+      "source-map": 1684183
+    },
+    "dependencies": {
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "@depwire/graph-measurement-only": {
+        "logicalBytes": 179347,
+        "duKiB": 192,
+        "categories": {
+          "other": 59464,
+          "js": 119883
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      }
+    }
+  },
+  "unused-native-install": {
+    "logicalBytes": 65255512,
+    "duKiB": 75692,
+    "categories": {
+      "other": 8292278,
+      "js": 10696277,
+      "source-map": 7324398,
+      "wasm": 26664340,
+      "native-source": 10345499,
+      "native-binary": 1932720
+    },
+    "dependencies": {
+      "depwire-cli": {
+        "logicalBytes": 26956201,
+        "duKiB": 26416,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "better-sqlite3": {
+        "logicalBytes": 12321465,
+        "duKiB": 12160,
+        "categories": {
+          "other": 18918,
+          "js": 24328,
+          "native-source": 10345499,
+          "native-binary": 1932720
+        }
+      },
+      "web-tree-sitter": {
+        "logicalBytes": 4523037,
+        "duKiB": 4460,
+        "categories": {
+          "source-map": 2691221,
+          "js": 736552,
+          "other": 87694,
+          "wasm": 1007570
+        }
+      },
+      "@modelcontextprotocol/sdk": {
+        "logicalBytes": 4343917,
+        "duKiB": 6112,
+        "categories": {
+          "other": 1417691,
+          "source-map": 1330284,
+          "js": 1595942
+        }
+      },
+      "zod": {
+        "logicalBytes": 4343491,
+        "duKiB": 6152,
+        "categories": {
+          "other": 2760061,
+          "js": 1583430
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "hono": {
+        "logicalBytes": 1396425,
+        "duKiB": 2848,
+        "categories": {
+          "other": 409060,
+          "js": 987365
+        }
+      },
+      "ajv": {
+        "logicalBytes": 1033496,
+        "duKiB": 2364,
+        "categories": {
+          "other": 459877,
+          "js": 293601,
+          "source-map": 280018
+        }
+      },
+      "simple-git": {
+        "logicalBytes": 951189,
+        "duKiB": 1316,
+        "categories": {
+          "js": 281738,
+          "other": 147769,
+          "source-map": 521682
+        }
+      },
+      "minimatch": {
+        "logicalBytes": 536122,
+        "duKiB": 664,
+        "categories": {
+          "other": 43899,
+          "source-map": 324985,
+          "js": 167238
+        }
+      },
+      "qs": {
+        "logicalBytes": 374851,
+        "duKiB": 416,
+        "categories": {
+          "other": 84545,
+          "js": 290306
+        }
+      },
+      "ip-address": {
+        "logicalBytes": 366191,
+        "duKiB": 424,
+        "categories": {
+          "other": 101278,
+          "source-map": 159157,
+          "js": 105756
+        }
+      },
+      "iconv-lite": {
+        "logicalBytes": 344185,
+        "duKiB": 400,
+        "categories": {
+          "other": 234642,
+          "js": 109543
+        }
+      },
+      "mime-db": {
+        "logicalBytes": 225566,
+        "duKiB": 236,
+        "categories": {
+          "other": 225377,
+          "js": 189
+        }
+      },
+      "fast-uri": {
+        "logicalBytes": 220886,
+        "duKiB": 328,
+        "categories": {
+          "other": 33253,
+          "js": 187633
+        }
+      },
+      "zod-to-json-schema": {
+        "logicalBytes": 219264,
+        "duKiB": 620,
+        "categories": {
+          "other": 101213,
+          "js": 118051
+        }
+      },
+      "jose": {
+        "logicalBytes": 210660,
+        "duKiB": 408,
+        "categories": {
+          "other": 90610,
+          "js": 120050
+        }
+      },
+      "commander": {
+        "logicalBytes": 208654,
+        "duKiB": 240,
+        "categories": {
+          "other": 81752,
+          "js": 126902
+        }
+      },
+      "json-schema-typed": {
+        "logicalBytes": 197188,
+        "duKiB": 208,
+        "categories": {
+          "other": 160181,
+          "js": 37007
+        }
+      },
+      "express-rate-limit": {
+        "logicalBytes": 154628,
+        "duKiB": 172,
+        "categories": {
+          "other": 79825,
+          "js": 74803
+        }
+      },
+      "ws": {
+        "logicalBytes": 151087,
+        "duKiB": 196,
+        "categories": {
+          "other": 18242,
+          "js": 132845
+        }
+      },
+      "chokidar": {
+        "logicalBytes": 148759,
+        "duKiB": 172,
+        "categories": {
+          "other": 39700,
+          "js": 109059
+        }
+      },
+      "eventsource": {
+        "logicalBytes": 147304,
+        "duKiB": 176,
+        "categories": {
+          "other": 56538,
+          "js": 29810,
+          "source-map": 60956
+        }
+      },
+      "@hono/node-server": {
+        "logicalBytes": 134687,
+        "duKiB": 220,
+        "categories": {
+          "other": 26898,
+          "js": 107789
+        }
+      },
+      "readable-stream": {
+        "logicalBytes": 123971,
+        "duKiB": 180,
+        "categories": {
+          "js": 108045,
+          "other": 15926
+        }
+      },
+      "eventsource-parser": {
+        "logicalBytes": 123553,
+        "duKiB": 160,
+        "categories": {
+          "js": 17568,
+          "other": 52903,
+          "source-map": 53082
+        }
+      },
+      "@simple-git/argv-parser": {
+        "logicalBytes": 105361,
+        "duKiB": 176,
+        "categories": {
+          "other": 11464,
+          "source-map": 73810,
+          "js": 20087
+        }
+      },
+      "object-inspect": {
+        "logicalBytes": 102920,
+        "duKiB": 200,
+        "categories": {
+          "other": 45946,
+          "js": 56974
+        }
+      },
+      "semver": {
+        "logicalBytes": 101065,
+        "duKiB": 268,
+        "categories": {
+          "js": 72268,
+          "other": 28797
+        }
+      },
+      "brace-expansion": {
+        "logicalBytes": 84997,
+        "duKiB": 124,
+        "categories": {
+          "other": 6469,
+          "js": 27684,
+          "source-map": 50844
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "buffer": {
+        "logicalBytes": 82527,
+        "duKiB": 96,
+        "categories": {
+          "other": 32430,
+          "js": 50097
+        }
+      },
+      "express": {
+        "logicalBytes": 75429,
+        "duKiB": 96,
+        "categories": {
+          "other": 13932,
+          "js": 61497
+        }
+      },
+      "body-parser": {
+        "logicalBytes": 65672,
+        "duKiB": 104,
+        "categories": {
+          "other": 30515,
+          "js": 23649,
+          "source-map": 11508
+        }
+      },
+      "bl": {
+        "logicalBytes": 64427,
+        "duKiB": 92,
+        "categories": {
+          "other": 15038,
+          "js": 49389
+        }
+      },
+      "path-to-regexp": {
+        "logicalBytes": 59680,
+        "duKiB": 68,
+        "categories": {
+          "other": 14412,
+          "js": 14528,
+          "source-map": 30740
+        }
+      },
+      "open": {
+        "logicalBytes": 58937,
+        "duKiB": 68,
+        "categories": {
+          "other": 47383,
+          "js": 11554
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      },
+      "ajv-formats": {
+        "logicalBytes": 56763,
+        "duKiB": 88,
+        "categories": {
+          "other": 28620,
+          "js": 16671,
+          "source-map": 11472
+        }
+      },
+      "minimist": {
+        "logicalBytes": 54477,
+        "duKiB": 120,
+        "categories": {
+          "other": 29331,
+          "js": 25146
+        }
+      },
+      "negotiator": {
+        "logicalBytes": 47543,
+        "duKiB": 76,
+        "categories": {
+          "other": 13610,
+          "js": 22425,
+          "source-map": 11508
+        }
+      },
+      "router": {
+        "logicalBytes": 46851,
+        "duKiB": 64,
+        "categories": {
+          "other": 21497,
+          "js": 25354
+        }
+      },
+      "get-intrinsic": {
+        "logicalBytes": 46542,
+        "duKiB": 68,
+        "categories": {
+          "other": 23345,
+          "js": 23197
+        }
+      },
+      "type-is": {
+        "logicalBytes": 44405,
+        "duKiB": 68,
+        "categories": {
+          "other": 21744,
+          "js": 11153,
+          "source-map": 11508
+        }
+      },
+      "chalk": {
+        "logicalBytes": 44342,
+        "duKiB": 72,
+        "categories": {
+          "other": 27615,
+          "js": 16727
+        }
+      },
+      "debug": {
+        "logicalBytes": 42793,
+        "duKiB": 60,
+        "categories": {
+          "other": 24733,
+          "js": 18060
+        }
+      },
+      "safer-buffer": {
+        "logicalBytes": 42299,
+        "duKiB": 60,
+        "categories": {
+          "other": 22971,
+          "js": 19328
+        }
+      },
+      "ipaddr.js": {
+        "logicalBytes": 42145,
+        "duKiB": 56,
+        "categories": {
+          "other": 13074,
+          "js": 29071
+        }
+      },
+      "readdirp": {
+        "logicalBytes": 36127,
+        "duKiB": 52,
+        "categories": {
+          "other": 16606,
+          "js": 19521
+        }
+      },
+      "prebuild-install": {
+        "logicalBytes": 34180,
+        "duKiB": 76,
+        "categories": {
+          "js": 16113,
+          "other": 18067
+        }
+      },
+      "tar-fs": {
+        "logicalBytes": 32792,
+        "duKiB": 56,
+        "categories": {
+          "other": 9502,
+          "js": 23290
+        }
+      },
+      "send": {
+        "logicalBytes": 32200,
+        "duKiB": 40,
+        "categories": {
+          "other": 11859,
+          "js": 20341
+        }
+      },
+      "safe-buffer": {
+        "logicalBytes": 32101,
+        "duKiB": 44,
+        "categories": {
+          "other": 30431,
+          "js": 1670
+        }
+      },
+      "function-bind": {
+        "logicalBytes": 31427,
+        "duKiB": 68,
+        "categories": {
+          "other": 20267,
+          "js": 11160
+        }
+      },
+      "tar-stream": {
+        "logicalBytes": 27671,
+        "duKiB": 48,
+        "categories": {
+          "other": 7673,
+          "js": 19998
+        }
+      },
+      "depd": {
+        "logicalBytes": 27117,
+        "duKiB": 40,
+        "categories": {
+          "other": 14673,
+          "js": 12444
+        }
+      },
+      "detect-libc": {
+        "logicalBytes": 26437,
+        "duKiB": 44,
+        "categories": {
+          "other": 16286,
+          "js": 10151
+        }
+      },
+      "has-symbols": {
+        "logicalBytes": 23409,
+        "duKiB": 72,
+        "categories": {
+          "other": 16690,
+          "js": 6719
+        }
+      },
+      "cookie": {
+        "logicalBytes": 23382,
+        "duKiB": 32,
+        "categories": {
+          "other": 15216,
+          "js": 8166
+        }
+      },
+      "mime-types": {
+        "logicalBytes": 22871,
+        "duKiB": 40,
+        "categories": {
+          "other": 16828,
+          "js": 6043
+        }
+      },
+      "side-channel": {
+        "logicalBytes": 22864,
+        "duKiB": 56,
+        "categories": {
+          "other": 18711,
+          "js": 4153
+        }
+      },
+      "json-schema-traverse": {
+        "logicalBytes": 22220,
+        "duKiB": 56,
+        "categories": {
+          "other": 8206,
+          "js": 14014
+        }
+      },
+      "cors": {
+        "logicalBytes": 19956,
+        "duKiB": 28,
+        "categories": {
+          "other": 13369,
+          "js": 6587
+        }
+      },
+      "content-disposition": {
+        "logicalBytes": 19928,
+        "duKiB": 32,
+        "categories": {
+          "other": 7365,
+          "js": 12563
+        }
+      },
+      "http-errors": {
+        "logicalBytes": 19064,
+        "duKiB": 28,
+        "categories": {
+          "other": 12634,
+          "js": 6430
+        }
+      },
+      "raw-body": {
+        "logicalBytes": 18495,
+        "duKiB": 28,
+        "categories": {
+          "other": 11324,
+          "js": 7171
+        }
+      },
+      "node-abi": {
+        "logicalBytes": 18402,
+        "duKiB": 28,
+        "categories": {
+          "other": 11914,
+          "js": 6488
+        }
+      },
+      "pkce-challenge": {
+        "logicalBytes": 18211,
+        "duKiB": 40,
+        "categories": {
+          "other": 9403,
+          "js": 8808
+        }
+      },
+      "finalhandler": {
+        "logicalBytes": 18111,
+        "duKiB": 32,
+        "categories": {
+          "other": 12293,
+          "js": 5818
+        }
+      },
+      "balanced-match": {
+        "logicalBytes": 17584,
+        "duKiB": 60,
+        "categories": {
+          "other": 5207,
+          "js": 3387,
+          "source-map": 8990
+        }
+      },
+      "math-intrinsics": {
+        "logicalBytes": 17323,
+        "duKiB": 156,
+        "categories": {
+          "js": 8672,
+          "other": 8651
+        }
+      },
+      "rc": {
+        "logicalBytes": 17255,
+        "duKiB": 52,
+        "categories": {
+          "other": 9867,
+          "js": 7388
+        }
+      },
+      "call-bound": {
+        "logicalBytes": 17106,
+        "duKiB": 48,
+        "categories": {
+          "other": 14001,
+          "js": 3105
+        }
+      },
+      "side-channel-list": {
+        "logicalBytes": 16973,
+        "duKiB": 56,
+        "categories": {
+          "other": 9554,
+          "js": 7419
+        }
+      },
+      "accepts": {
+        "logicalBytes": 16917,
+        "duKiB": 32,
+        "categories": {
+          "other": 11664,
+          "js": 5253
+        }
+      },
+      "tunnel-agent": {
+        "logicalBytes": 16679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9795,
+          "js": 6884
+        }
+      },
+      "proxy-addr": {
+        "logicalBytes": 16326,
+        "duKiB": 28,
+        "categories": {
+          "other": 8986,
+          "js": 7340
+        }
+      },
+      "cross-spawn": {
+        "logicalBytes": 16094,
+        "duKiB": 40,
+        "categories": {
+          "other": 6877,
+          "js": 9217
+        }
+      },
+      "call-bind-apply-helpers": {
+        "logicalBytes": 15952,
+        "duKiB": 84,
+        "categories": {
+          "other": 11911,
+          "js": 4041
+        }
+      },
+      "simple-get": {
+        "logicalBytes": 14971,
+        "duKiB": 28,
+        "categories": {
+          "other": 10914,
+          "js": 4057
+        }
+      },
+      "side-channel-weakmap": {
+        "logicalBytes": 14667,
+        "duKiB": 48,
+        "categories": {
+          "other": 8990,
+          "js": 5677
+        }
+      },
+      "string_decoder": {
+        "logicalBytes": 14427,
+        "duKiB": 24,
+        "categories": {
+          "other": 4962,
+          "js": 9465
+        }
+      },
+      "@kwsites/file-exists": {
+        "logicalBytes": 14361,
+        "duKiB": 64,
+        "categories": {
+          "other": 4286,
+          "js": 5233,
+          "source-map": 4842
+        }
+      },
+      "serve-static": {
+        "logicalBytes": 14335,
+        "duKiB": 24,
+        "categories": {
+          "other": 9846,
+          "js": 4489
+        }
+      },
+      "on-finished": {
+        "logicalBytes": 13679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9249,
+          "js": 4430
+        }
+      },
+      "side-channel-map": {
+        "logicalBytes": 13348,
+        "duKiB": 48,
+        "categories": {
+          "other": 8492,
+          "js": 4856
+        }
+      },
+      "dunder-proto": {
+        "logicalBytes": 13003,
+        "duKiB": 60,
+        "categories": {
+          "other": 7858,
+          "js": 5145
+        }
+      },
+      "fast-deep-equal": {
+        "logicalBytes": 12966,
+        "duKiB": 44,
+        "categories": {
+          "other": 6194,
+          "js": 6772
+        }
+      },
+      "napi-build-utils": {
+        "logicalBytes": 12670,
+        "duKiB": 24,
+        "categories": {
+          "other": 5336,
+          "js": 7334
+        }
+      },
+      "statuses": {
+        "logicalBytes": 12505,
+        "duKiB": 24,
+        "categories": {
+          "other": 9895,
+          "js": 2610
+        }
+      },
+      "es-errors": {
+        "logicalBytes": 12324,
+        "duKiB": 88,
+        "categories": {
+          "js": 880,
+          "other": 11444
+        }
+      },
+      "bytes": {
+        "logicalBytes": 12270,
+        "duKiB": 24,
+        "categories": {
+          "other": 8657,
+          "js": 3613
+        }
+      },
+      "es-object-atoms": {
+        "logicalBytes": 11967,
+        "duKiB": 64,
+        "categories": {
+          "other": 10079,
+          "js": 1888
+        }
+      },
+      "bindings": {
+        "logicalBytes": 11230,
+        "duKiB": 20,
+        "categories": {
+          "other": 5244,
+          "js": 5986
+        }
+      },
+      "isexe": {
+        "logicalBytes": 10956,
+        "duKiB": 36,
+        "categories": {
+          "other": 2969,
+          "js": 7987
+        }
+      },
+      "get-proto": {
+        "logicalBytes": 10840,
+        "duKiB": 60,
+        "categories": {
+          "other": 7354,
+          "js": 3486
+        }
+      },
+      "etag": {
+        "logicalBytes": 10809,
+        "duKiB": 24,
+        "categories": {
+          "other": 8330,
+          "js": 2479
+        }
+      },
+      "content-type": {
+        "logicalBytes": 10471,
+        "duKiB": 24,
+        "categories": {
+          "other": 5469,
+          "js": 5002
+        }
+      },
+      "hasown": {
+        "logicalBytes": 10332,
+        "duKiB": 40,
+        "categories": {
+          "other": 9990,
+          "js": 342
+        }
+      },
+      "parseurl": {
+        "logicalBytes": 10299,
+        "duKiB": 20,
+        "categories": {
+          "other": 7490,
+          "js": 2809
+        }
+      },
+      "fresh": {
+        "logicalBytes": 10289,
+        "duKiB": 20,
+        "categories": {
+          "other": 7584,
+          "js": 2705
+        }
+      },
+      "es-define-property": {
+        "logicalBytes": 10217,
+        "duKiB": 44,
+        "categories": {
+          "other": 8630,
+          "js": 1587
+        }
+      },
+      "wsl-utils": {
+        "logicalBytes": 10178,
+        "duKiB": 24,
+        "categories": {
+          "other": 6968,
+          "js": 3210
+        }
+      },
+      "which": {
+        "logicalBytes": 9975,
+        "duKiB": 24,
+        "categories": {
+          "other": 6812,
+          "js": 3163
+        }
+      },
+      "gopd": {
+        "logicalBytes": 9869,
+        "duKiB": 48,
+        "categories": {
+          "js": 959,
+          "other": 8910
+        }
+      },
+      "powershell-utils": {
+        "logicalBytes": 9813,
+        "duKiB": 20,
+        "categories": {
+          "other": 8376,
+          "js": 1437
+        }
+      },
+      "base64-js": {
+        "logicalBytes": 9624,
+        "duKiB": 24,
+        "categories": {
+          "js": 6124,
+          "other": 3500
+        }
+      },
+      "ini": {
+        "logicalBytes": 9304,
+        "duKiB": 20,
+        "categories": {
+          "other": 4328,
+          "js": 4976
+        }
+      },
+      "media-typer": {
+        "logicalBytes": 9299,
+        "duKiB": 20,
+        "categories": {
+          "other": 6363,
+          "js": 2936
+        }
+      },
+      "deep-extend": {
+        "logicalBytes": 9190,
+        "duKiB": 28,
+        "categories": {
+          "other": 4850,
+          "js": 4340
+        }
+      },
+      "range-parser": {
+        "logicalBytes": 8967,
+        "duKiB": 20,
+        "categories": {
+          "other": 5762,
+          "js": 3205
+        }
+      },
+      "pump": {
+        "logicalBytes": 8913,
+        "duKiB": 40,
+        "categories": {
+          "js": 4478,
+          "other": 4435
+        }
+      },
+      "vary": {
+        "logicalBytes": 8747,
+        "duKiB": 20,
+        "categories": {
+          "other": 5817,
+          "js": 2930
+        }
+      },
+      "file-uri-to-path": {
+        "logicalBytes": 8068,
+        "duKiB": 40,
+        "categories": {
+          "other": 5679,
+          "js": 2389
+        }
+      },
+      "default-browser": {
+        "logicalBytes": 7013,
+        "duKiB": 24,
+        "categories": {
+          "other": 3137,
+          "js": 3876
+        }
+      },
+      "encodeurl": {
+        "logicalBytes": 6980,
+        "duKiB": 16,
+        "categories": {
+          "other": 5402,
+          "js": 1578
+        }
+      },
+      "ieee754": {
+        "logicalBytes": 6796,
+        "duKiB": 20,
+        "categories": {
+          "other": 4642,
+          "js": 2154
+        }
+      },
+      "ms": {
+        "logicalBytes": 6721,
+        "duKiB": 16,
+        "categories": {
+          "other": 3697,
+          "js": 3024
+        }
+      },
+      "end-of-stream": {
+        "logicalBytes": 6295,
+        "duKiB": 16,
+        "categories": {
+          "other": 3556,
+          "js": 2739
+        }
+      },
+      "ee-first": {
+        "logicalBytes": 6259,
+        "duKiB": 16,
+        "categories": {
+          "other": 4575,
+          "js": 1684
+        }
+      },
+      "@kwsites/promise-deferred": {
+        "logicalBytes": 6196,
+        "duKiB": 20,
+        "categories": {
+          "other": 3914,
+          "js": 1446,
+          "source-map": 836
+        }
+      },
+      "mimic-response": {
+        "logicalBytes": 6003,
+        "duKiB": 20,
+        "categories": {
+          "other": 4422,
+          "js": 1581
+        }
+      },
+      "forwarded": {
+        "logicalBytes": 5876,
+        "duKiB": 20,
+        "categories": {
+          "other": 4298,
+          "js": 1578
+        }
+      },
+      "chownr": {
+        "logicalBytes": 5709,
+        "duKiB": 20,
+        "categories": {
+          "other": 1434,
+          "js": 4275
+        }
+      },
+      "@simple-git/args-pathspec": {
+        "logicalBytes": 5645,
+        "duKiB": 40,
+        "categories": {
+          "other": 2220,
+          "source-map": 2772,
+          "js": 653
+        }
+      },
+      "object-assign": {
+        "logicalBytes": 5493,
+        "duKiB": 16,
+        "categories": {
+          "other": 3385,
+          "js": 2108
+        }
+      },
+      "util-deprecate": {
+        "logicalBytes": 5481,
+        "duKiB": 24,
+        "categories": {
+          "other": 3744,
+          "js": 1737
+        }
+      },
+      "decompress-response": {
+        "logicalBytes": 5472,
+        "duKiB": 20,
+        "categories": {
+          "other": 4152,
+          "js": 1320
+        }
+      },
+      "expand-template": {
+        "logicalBytes": 5410,
+        "duKiB": 24,
+        "categories": {
+          "js": 2434,
+          "other": 2976
+        }
+      },
+      "run-applescript": {
+        "logicalBytes": 5355,
+        "duKiB": 20,
+        "categories": {
+          "other": 4349,
+          "js": 1006
+        }
+      },
+      "strip-json-comments": {
+        "logicalBytes": 5061,
+        "duKiB": 16,
+        "categories": {
+          "other": 3361,
+          "js": 1700
+        }
+      },
+      "cookie-signature": {
+        "logicalBytes": 4993,
+        "duKiB": 20,
+        "categories": {
+          "other": 3580,
+          "js": 1413
+        }
+      },
+      "toidentifier": {
+        "logicalBytes": 4685,
+        "duKiB": 20,
+        "categories": {
+          "other": 4181,
+          "js": 504
+        }
+      },
+      "simple-concat": {
+        "logicalBytes": 4624,
+        "duKiB": 24,
+        "categories": {
+          "other": 3407,
+          "js": 1217
+        }
+      },
+      "github-from-package": {
+        "logicalBytes": 4608,
+        "duKiB": 52,
+        "categories": {
+          "other": 3499,
+          "js": 1109
+        }
+      },
+      "path-key": {
+        "logicalBytes": 4553,
+        "duKiB": 20,
+        "categories": {
+          "other": 4138,
+          "js": 415
+        }
+      },
+      "mkdirp-classic": {
+        "logicalBytes": 4498,
+        "duKiB": 16,
+        "categories": {
+          "other": 1868,
+          "js": 2630
+        }
+      },
+      "define-lazy-prop": {
+        "logicalBytes": 4415,
+        "duKiB": 20,
+        "categories": {
+          "other": 3986,
+          "js": 429
+        }
+      },
+      "merge-descriptors": {
+        "logicalBytes": 4373,
+        "duKiB": 20,
+        "categories": {
+          "other": 3757,
+          "js": 616
+        }
+      },
+      "unpipe": {
+        "logicalBytes": 4311,
+        "duKiB": 20,
+        "categories": {
+          "other": 3193,
+          "js": 1118
+        }
+      },
+      "once": {
+        "logicalBytes": 4046,
+        "duKiB": 16,
+        "categories": {
+          "other": 3111,
+          "js": 935
+        }
+      },
+      "setprototypeof": {
+        "logicalBytes": 4025,
+        "duKiB": 24,
+        "categories": {
+          "other": 2928,
+          "js": 1097
+        }
+      },
+      "inherits": {
+        "logicalBytes": 3958,
+        "duKiB": 20,
+        "categories": {
+          "other": 2955,
+          "js": 1003
+        }
+      },
+      "is-wsl": {
+        "logicalBytes": 3664,
+        "duKiB": 20,
+        "categories": {
+          "other": 2902,
+          "js": 762
+        }
+      },
+      "escape-html": {
+        "logicalBytes": 3660,
+        "duKiB": 16,
+        "categories": {
+          "other": 2298,
+          "js": 1362
+        }
+      },
+      "is-in-ssh": {
+        "logicalBytes": 3632,
+        "duKiB": 20,
+        "categories": {
+          "other": 3466,
+          "js": 166
+        }
+      },
+      "bundle-name": {
+        "logicalBytes": 3578,
+        "duKiB": 16,
+        "categories": {
+          "other": 2784,
+          "js": 794
+        }
+      },
+      "is-inside-container": {
+        "logicalBytes": 3480,
+        "duKiB": 24,
+        "categories": {
+          "other": 2900,
+          "js": 580
+        }
+      },
+      "require-from-string": {
+        "logicalBytes": 3422,
+        "duKiB": 16,
+        "categories": {
+          "other": 2556,
+          "js": 866
+        }
+      },
+      "default-browser-id": {
+        "logicalBytes": 3173,
+        "duKiB": 16,
+        "categories": {
+          "other": 2366,
+          "js": 807
+        }
+      },
+      "is-docker": {
+        "logicalBytes": 3154,
+        "duKiB": 24,
+        "categories": {
+          "other": 2514,
+          "js": 640
+        }
+      },
+      "wrappy": {
+        "logicalBytes": 2961,
+        "duKiB": 16,
+        "categories": {
+          "other": 2056,
+          "js": 905
+        }
+      },
+      "is-promise": {
+        "logicalBytes": 2958,
+        "duKiB": 24,
+        "categories": {
+          "other": 2606,
+          "js": 352
+        }
+      },
+      "shebang-regex": {
+        "logicalBytes": 2828,
+        "duKiB": 20,
+        "categories": {
+          "other": 2786,
+          "js": 42
+        }
+      },
+      "shebang-command": {
+        "logicalBytes": 2556,
+        "duKiB": 16,
+        "categories": {
+          "other": 2169,
+          "js": 387
+        }
+      },
+      "fs-constants": {
+        "logicalBytes": 2223,
+        "duKiB": 20,
+        "categories": {
+          "other": 2120,
+          "js": 103
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26956201,
+        "duKiB": 26416,
+        "categories": {
+          "other": 141711,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 26320,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 25092,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  },
+  "full-after": {
+    "logicalBytes": 251970078,
+    "duKiB": 264060,
+    "categories": {
+      "other": 10910778,
+      "js": 10978505,
+      "source-map": 7324398,
+      "wasm": 40651383,
+      "native-source": 93631910,
+      "native-binary": 88473104
+    },
+    "dependencies": {
+      "tree-sitter-c-sharp": {
+        "logicalBytes": 68022151,
+        "duKiB": 68040,
+        "categories": {
+          "js": 56345,
+          "other": 419380,
+          "wasm": 5350581,
+          "native-source": 29700949,
+          "native-binary": 32494896
+        }
+      },
+      "tree-sitter-cpp": {
+        "logicalBytes": 42392814,
+        "duKiB": 42564,
+        "categories": {
+          "js": 39704,
+          "other": 581059,
+          "wasm": 3434931,
+          "native-source": 17323264,
+          "native-binary": 21013856
+        }
+      },
+      "tree-sitter-ruby": {
+        "logicalBytes": 30832828,
+        "duKiB": 30636,
+        "categories": {
+          "js": 36076,
+          "other": 273085,
+          "wasm": 2106352,
+          "native-source": 15334059,
+          "native-binary": 13083256
+        }
+      },
+      "tree-sitter-php": {
+        "logicalBytes": 29836331,
+        "duKiB": 29832,
+        "categories": {
+          "wasm": 2060448,
+          "other": 707044,
+          "js": 48703,
+          "native-source": 14084584,
+          "native-binary": 12935552
+        }
+      },
+      "depwire-cli": {
+        "logicalBytes": 26957112,
+        "duKiB": 27260,
+        "categories": {
+          "other": 142622,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "better-sqlite3": {
+        "logicalBytes": 12321465,
+        "duKiB": 12200,
+        "categories": {
+          "other": 18918,
+          "js": 24328,
+          "native-source": 10345499,
+          "native-binary": 1932720
+        }
+      },
+      "tree-sitter-c": {
+        "logicalBytes": 8967502,
+        "duKiB": 9176,
+        "categories": {
+          "wasm": 620090,
+          "js": 38942,
+          "other": 327622,
+          "native-source": 3887688,
+          "native-binary": 4093160
+        }
+      },
+      "tree-sitter-java": {
+        "logicalBytes": 6223115,
+        "duKiB": 6740,
+        "categories": {
+          "js": 32741,
+          "other": 275771,
+          "wasm": 414641,
+          "native-source": 2580298,
+          "native-binary": 2919664
+        }
+      },
+      "web-tree-sitter": {
+        "logicalBytes": 4523037,
+        "duKiB": 4460,
+        "categories": {
+          "source-map": 2691221,
+          "js": 736552,
+          "other": 87694,
+          "wasm": 1007570
+        }
+      },
+      "@modelcontextprotocol/sdk": {
+        "logicalBytes": 4343917,
+        "duKiB": 6112,
+        "categories": {
+          "other": 1417691,
+          "source-map": 1330284,
+          "js": 1595942
+        }
+      },
+      "zod": {
+        "logicalBytes": 4343491,
+        "duKiB": 6152,
+        "categories": {
+          "other": 2760061,
+          "js": 1583430
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "hono": {
+        "logicalBytes": 1396425,
+        "duKiB": 2848,
+        "categories": {
+          "other": 409060,
+          "js": 987365
+        }
+      },
+      "ajv": {
+        "logicalBytes": 1033496,
+        "duKiB": 2364,
+        "categories": {
+          "other": 459877,
+          "js": 293601,
+          "source-map": 280018
+        }
+      },
+      "simple-git": {
+        "logicalBytes": 951189,
+        "duKiB": 1316,
+        "categories": {
+          "js": 281738,
+          "other": 147769,
+          "source-map": 521682
+        }
+      },
+      "minimatch": {
+        "logicalBytes": 536122,
+        "duKiB": 664,
+        "categories": {
+          "other": 43899,
+          "source-map": 324985,
+          "js": 167238
+        }
+      },
+      "node-addon-api": {
+        "logicalBytes": 420314,
+        "duKiB": 452,
+        "categories": {
+          "other": 24131,
+          "native-source": 375569,
+          "js": 20614
+        }
+      },
+      "qs": {
+        "logicalBytes": 374851,
+        "duKiB": 416,
+        "categories": {
+          "other": 84545,
+          "js": 290306
+        }
+      },
+      "ip-address": {
+        "logicalBytes": 366191,
+        "duKiB": 424,
+        "categories": {
+          "other": 101278,
+          "source-map": 159157,
+          "js": 105756
+        }
+      },
+      "iconv-lite": {
+        "logicalBytes": 344185,
+        "duKiB": 400,
+        "categories": {
+          "other": 234642,
+          "js": 109543
+        }
+      },
+      "mime-db": {
+        "logicalBytes": 225566,
+        "duKiB": 236,
+        "categories": {
+          "other": 225377,
+          "js": 189
+        }
+      },
+      "fast-uri": {
+        "logicalBytes": 220886,
+        "duKiB": 328,
+        "categories": {
+          "other": 33253,
+          "js": 187633
+        }
+      },
+      "zod-to-json-schema": {
+        "logicalBytes": 219264,
+        "duKiB": 620,
+        "categories": {
+          "other": 101213,
+          "js": 118051
+        }
+      },
+      "jose": {
+        "logicalBytes": 210660,
+        "duKiB": 408,
+        "categories": {
+          "other": 90610,
+          "js": 120050
+        }
+      },
+      "commander": {
+        "logicalBytes": 208654,
+        "duKiB": 240,
+        "categories": {
+          "other": 81752,
+          "js": 126902
+        }
+      },
+      "json-schema-typed": {
+        "logicalBytes": 197188,
+        "duKiB": 208,
+        "categories": {
+          "other": 160181,
+          "js": 37007
+        }
+      },
+      "express-rate-limit": {
+        "logicalBytes": 154628,
+        "duKiB": 172,
+        "categories": {
+          "other": 79825,
+          "js": 74803
+        }
+      },
+      "ws": {
+        "logicalBytes": 151087,
+        "duKiB": 196,
+        "categories": {
+          "other": 18242,
+          "js": 132845
+        }
+      },
+      "chokidar": {
+        "logicalBytes": 148759,
+        "duKiB": 172,
+        "categories": {
+          "other": 39700,
+          "js": 109059
+        }
+      },
+      "eventsource": {
+        "logicalBytes": 147304,
+        "duKiB": 176,
+        "categories": {
+          "other": 56538,
+          "js": 29810,
+          "source-map": 60956
+        }
+      },
+      "@hono/node-server": {
+        "logicalBytes": 134687,
+        "duKiB": 220,
+        "categories": {
+          "other": 26898,
+          "js": 107789
+        }
+      },
+      "readable-stream": {
+        "logicalBytes": 123971,
+        "duKiB": 180,
+        "categories": {
+          "js": 108045,
+          "other": 15926
+        }
+      },
+      "eventsource-parser": {
+        "logicalBytes": 123553,
+        "duKiB": 160,
+        "categories": {
+          "js": 17568,
+          "other": 52903,
+          "source-map": 53082
+        }
+      },
+      "@simple-git/argv-parser": {
+        "logicalBytes": 105361,
+        "duKiB": 176,
+        "categories": {
+          "other": 11464,
+          "source-map": 73810,
+          "js": 20087
+        }
+      },
+      "object-inspect": {
+        "logicalBytes": 102920,
+        "duKiB": 200,
+        "categories": {
+          "other": 45946,
+          "js": 56974
+        }
+      },
+      "semver": {
+        "logicalBytes": 101065,
+        "duKiB": 268,
+        "categories": {
+          "js": 72268,
+          "other": 28797
+        }
+      },
+      "brace-expansion": {
+        "logicalBytes": 84997,
+        "duKiB": 124,
+        "categories": {
+          "other": 6469,
+          "js": 27684,
+          "source-map": 50844
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "buffer": {
+        "logicalBytes": 82527,
+        "duKiB": 96,
+        "categories": {
+          "other": 32430,
+          "js": 50097
+        }
+      },
+      "express": {
+        "logicalBytes": 75429,
+        "duKiB": 96,
+        "categories": {
+          "other": 13932,
+          "js": 61497
+        }
+      },
+      "body-parser": {
+        "logicalBytes": 65672,
+        "duKiB": 104,
+        "categories": {
+          "other": 30515,
+          "js": 23649,
+          "source-map": 11508
+        }
+      },
+      "bl": {
+        "logicalBytes": 64427,
+        "duKiB": 92,
+        "categories": {
+          "other": 15038,
+          "js": 49389
+        }
+      },
+      "path-to-regexp": {
+        "logicalBytes": 59680,
+        "duKiB": 68,
+        "categories": {
+          "other": 14412,
+          "js": 14528,
+          "source-map": 30740
+        }
+      },
+      "open": {
+        "logicalBytes": 58937,
+        "duKiB": 68,
+        "categories": {
+          "other": 47383,
+          "js": 11554
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      },
+      "ajv-formats": {
+        "logicalBytes": 56763,
+        "duKiB": 88,
+        "categories": {
+          "other": 28620,
+          "js": 16671,
+          "source-map": 11472
+        }
+      },
+      "minimist": {
+        "logicalBytes": 54477,
+        "duKiB": 120,
+        "categories": {
+          "other": 29331,
+          "js": 25146
+        }
+      },
+      "negotiator": {
+        "logicalBytes": 47543,
+        "duKiB": 76,
+        "categories": {
+          "other": 13610,
+          "js": 22425,
+          "source-map": 11508
+        }
+      },
+      "router": {
+        "logicalBytes": 46851,
+        "duKiB": 64,
+        "categories": {
+          "other": 21497,
+          "js": 25354
+        }
+      },
+      "get-intrinsic": {
+        "logicalBytes": 46542,
+        "duKiB": 68,
+        "categories": {
+          "other": 23345,
+          "js": 23197
+        }
+      },
+      "type-is": {
+        "logicalBytes": 44405,
+        "duKiB": 68,
+        "categories": {
+          "other": 21744,
+          "js": 11153,
+          "source-map": 11508
+        }
+      },
+      "chalk": {
+        "logicalBytes": 44342,
+        "duKiB": 72,
+        "categories": {
+          "other": 27615,
+          "js": 16727
+        }
+      },
+      "debug": {
+        "logicalBytes": 42793,
+        "duKiB": 60,
+        "categories": {
+          "other": 24733,
+          "js": 18060
+        }
+      },
+      "safer-buffer": {
+        "logicalBytes": 42299,
+        "duKiB": 60,
+        "categories": {
+          "other": 22971,
+          "js": 19328
+        }
+      },
+      "ipaddr.js": {
+        "logicalBytes": 42145,
+        "duKiB": 56,
+        "categories": {
+          "other": 13074,
+          "js": 29071
+        }
+      },
+      "readdirp": {
+        "logicalBytes": 36127,
+        "duKiB": 52,
+        "categories": {
+          "other": 16606,
+          "js": 19521
+        }
+      },
+      "prebuild-install": {
+        "logicalBytes": 34180,
+        "duKiB": 76,
+        "categories": {
+          "js": 16113,
+          "other": 18067
+        }
+      },
+      "tar-fs": {
+        "logicalBytes": 32792,
+        "duKiB": 56,
+        "categories": {
+          "other": 9502,
+          "js": 23290
+        }
+      },
+      "send": {
+        "logicalBytes": 32200,
+        "duKiB": 40,
+        "categories": {
+          "other": 11859,
+          "js": 20341
+        }
+      },
+      "safe-buffer": {
+        "logicalBytes": 32101,
+        "duKiB": 44,
+        "categories": {
+          "other": 30431,
+          "js": 1670
+        }
+      },
+      "function-bind": {
+        "logicalBytes": 31427,
+        "duKiB": 68,
+        "categories": {
+          "other": 20267,
+          "js": 11160
+        }
+      },
+      "tar-stream": {
+        "logicalBytes": 27671,
+        "duKiB": 48,
+        "categories": {
+          "other": 7673,
+          "js": 19998
+        }
+      },
+      "depd": {
+        "logicalBytes": 27117,
+        "duKiB": 40,
+        "categories": {
+          "other": 14673,
+          "js": 12444
+        }
+      },
+      "detect-libc": {
+        "logicalBytes": 26437,
+        "duKiB": 44,
+        "categories": {
+          "other": 16286,
+          "js": 10151
+        }
+      },
+      "has-symbols": {
+        "logicalBytes": 23409,
+        "duKiB": 72,
+        "categories": {
+          "other": 16690,
+          "js": 6719
+        }
+      },
+      "cookie": {
+        "logicalBytes": 23382,
+        "duKiB": 32,
+        "categories": {
+          "other": 15216,
+          "js": 8166
+        }
+      },
+      "mime-types": {
+        "logicalBytes": 22871,
+        "duKiB": 40,
+        "categories": {
+          "other": 16828,
+          "js": 6043
+        }
+      },
+      "side-channel": {
+        "logicalBytes": 22864,
+        "duKiB": 56,
+        "categories": {
+          "other": 18711,
+          "js": 4153
+        }
+      },
+      "json-schema-traverse": {
+        "logicalBytes": 22220,
+        "duKiB": 56,
+        "categories": {
+          "other": 8206,
+          "js": 14014
+        }
+      },
+      "cors": {
+        "logicalBytes": 19956,
+        "duKiB": 28,
+        "categories": {
+          "other": 13369,
+          "js": 6587
+        }
+      },
+      "content-disposition": {
+        "logicalBytes": 19928,
+        "duKiB": 32,
+        "categories": {
+          "other": 7365,
+          "js": 12563
+        }
+      },
+      "http-errors": {
+        "logicalBytes": 19064,
+        "duKiB": 28,
+        "categories": {
+          "other": 12634,
+          "js": 6430
+        }
+      },
+      "raw-body": {
+        "logicalBytes": 18495,
+        "duKiB": 28,
+        "categories": {
+          "other": 11324,
+          "js": 7171
+        }
+      },
+      "node-abi": {
+        "logicalBytes": 18402,
+        "duKiB": 28,
+        "categories": {
+          "other": 11914,
+          "js": 6488
+        }
+      },
+      "pkce-challenge": {
+        "logicalBytes": 18211,
+        "duKiB": 40,
+        "categories": {
+          "other": 9403,
+          "js": 8808
+        }
+      },
+      "finalhandler": {
+        "logicalBytes": 18111,
+        "duKiB": 32,
+        "categories": {
+          "other": 12293,
+          "js": 5818
+        }
+      },
+      "balanced-match": {
+        "logicalBytes": 17584,
+        "duKiB": 60,
+        "categories": {
+          "other": 5207,
+          "js": 3387,
+          "source-map": 8990
+        }
+      },
+      "math-intrinsics": {
+        "logicalBytes": 17323,
+        "duKiB": 156,
+        "categories": {
+          "js": 8672,
+          "other": 8651
+        }
+      },
+      "rc": {
+        "logicalBytes": 17255,
+        "duKiB": 52,
+        "categories": {
+          "other": 9867,
+          "js": 7388
+        }
+      },
+      "call-bound": {
+        "logicalBytes": 17106,
+        "duKiB": 48,
+        "categories": {
+          "other": 14001,
+          "js": 3105
+        }
+      },
+      "side-channel-list": {
+        "logicalBytes": 16973,
+        "duKiB": 56,
+        "categories": {
+          "other": 9554,
+          "js": 7419
+        }
+      },
+      "accepts": {
+        "logicalBytes": 16917,
+        "duKiB": 32,
+        "categories": {
+          "other": 11664,
+          "js": 5253
+        }
+      },
+      "tunnel-agent": {
+        "logicalBytes": 16679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9795,
+          "js": 6884
+        }
+      },
+      "proxy-addr": {
+        "logicalBytes": 16326,
+        "duKiB": 28,
+        "categories": {
+          "other": 8986,
+          "js": 7340
+        }
+      },
+      "cross-spawn": {
+        "logicalBytes": 16094,
+        "duKiB": 40,
+        "categories": {
+          "other": 6877,
+          "js": 9217
+        }
+      },
+      "call-bind-apply-helpers": {
+        "logicalBytes": 15952,
+        "duKiB": 84,
+        "categories": {
+          "other": 11911,
+          "js": 4041
+        }
+      },
+      "simple-get": {
+        "logicalBytes": 14971,
+        "duKiB": 28,
+        "categories": {
+          "other": 10914,
+          "js": 4057
+        }
+      },
+      "side-channel-weakmap": {
+        "logicalBytes": 14667,
+        "duKiB": 48,
+        "categories": {
+          "other": 8990,
+          "js": 5677
+        }
+      },
+      "string_decoder": {
+        "logicalBytes": 14427,
+        "duKiB": 24,
+        "categories": {
+          "other": 4962,
+          "js": 9465
+        }
+      },
+      "@kwsites/file-exists": {
+        "logicalBytes": 14361,
+        "duKiB": 64,
+        "categories": {
+          "other": 4286,
+          "js": 5233,
+          "source-map": 4842
+        }
+      },
+      "serve-static": {
+        "logicalBytes": 14335,
+        "duKiB": 24,
+        "categories": {
+          "other": 9846,
+          "js": 4489
+        }
+      },
+      "node-gyp-build": {
+        "logicalBytes": 13864,
+        "duKiB": 40,
+        "categories": {
+          "other": 4761,
+          "js": 9103
+        }
+      },
+      "on-finished": {
+        "logicalBytes": 13679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9249,
+          "js": 4430
+        }
+      },
+      "side-channel-map": {
+        "logicalBytes": 13348,
+        "duKiB": 48,
+        "categories": {
+          "other": 8492,
+          "js": 4856
+        }
+      },
+      "dunder-proto": {
+        "logicalBytes": 13003,
+        "duKiB": 60,
+        "categories": {
+          "other": 7858,
+          "js": 5145
+        }
+      },
+      "fast-deep-equal": {
+        "logicalBytes": 12966,
+        "duKiB": 44,
+        "categories": {
+          "other": 6194,
+          "js": 6772
+        }
+      },
+      "napi-build-utils": {
+        "logicalBytes": 12670,
+        "duKiB": 24,
+        "categories": {
+          "other": 5336,
+          "js": 7334
+        }
+      },
+      "statuses": {
+        "logicalBytes": 12505,
+        "duKiB": 24,
+        "categories": {
+          "other": 9895,
+          "js": 2610
+        }
+      },
+      "es-errors": {
+        "logicalBytes": 12324,
+        "duKiB": 88,
+        "categories": {
+          "js": 880,
+          "other": 11444
+        }
+      },
+      "bytes": {
+        "logicalBytes": 12270,
+        "duKiB": 24,
+        "categories": {
+          "other": 8657,
+          "js": 3613
+        }
+      },
+      "es-object-atoms": {
+        "logicalBytes": 11967,
+        "duKiB": 64,
+        "categories": {
+          "other": 10079,
+          "js": 1888
+        }
+      },
+      "bindings": {
+        "logicalBytes": 11230,
+        "duKiB": 20,
+        "categories": {
+          "other": 5244,
+          "js": 5986
+        }
+      },
+      "isexe": {
+        "logicalBytes": 10956,
+        "duKiB": 36,
+        "categories": {
+          "other": 2969,
+          "js": 7987
+        }
+      },
+      "get-proto": {
+        "logicalBytes": 10840,
+        "duKiB": 60,
+        "categories": {
+          "other": 7354,
+          "js": 3486
+        }
+      },
+      "etag": {
+        "logicalBytes": 10809,
+        "duKiB": 24,
+        "categories": {
+          "other": 8330,
+          "js": 2479
+        }
+      },
+      "content-type": {
+        "logicalBytes": 10471,
+        "duKiB": 24,
+        "categories": {
+          "other": 5469,
+          "js": 5002
+        }
+      },
+      "hasown": {
+        "logicalBytes": 10332,
+        "duKiB": 40,
+        "categories": {
+          "other": 9990,
+          "js": 342
+        }
+      },
+      "parseurl": {
+        "logicalBytes": 10299,
+        "duKiB": 20,
+        "categories": {
+          "other": 7490,
+          "js": 2809
+        }
+      },
+      "fresh": {
+        "logicalBytes": 10289,
+        "duKiB": 20,
+        "categories": {
+          "other": 7584,
+          "js": 2705
+        }
+      },
+      "es-define-property": {
+        "logicalBytes": 10217,
+        "duKiB": 44,
+        "categories": {
+          "other": 8630,
+          "js": 1587
+        }
+      },
+      "wsl-utils": {
+        "logicalBytes": 10178,
+        "duKiB": 24,
+        "categories": {
+          "other": 6968,
+          "js": 3210
+        }
+      },
+      "which": {
+        "logicalBytes": 9975,
+        "duKiB": 24,
+        "categories": {
+          "other": 6812,
+          "js": 3163
+        }
+      },
+      "gopd": {
+        "logicalBytes": 9869,
+        "duKiB": 48,
+        "categories": {
+          "js": 959,
+          "other": 8910
+        }
+      },
+      "powershell-utils": {
+        "logicalBytes": 9813,
+        "duKiB": 20,
+        "categories": {
+          "other": 8376,
+          "js": 1437
+        }
+      },
+      "base64-js": {
+        "logicalBytes": 9624,
+        "duKiB": 24,
+        "categories": {
+          "js": 6124,
+          "other": 3500
+        }
+      },
+      "ini": {
+        "logicalBytes": 9304,
+        "duKiB": 20,
+        "categories": {
+          "other": 4328,
+          "js": 4976
+        }
+      },
+      "media-typer": {
+        "logicalBytes": 9299,
+        "duKiB": 20,
+        "categories": {
+          "other": 6363,
+          "js": 2936
+        }
+      },
+      "deep-extend": {
+        "logicalBytes": 9190,
+        "duKiB": 28,
+        "categories": {
+          "other": 4850,
+          "js": 4340
+        }
+      },
+      "range-parser": {
+        "logicalBytes": 8967,
+        "duKiB": 20,
+        "categories": {
+          "other": 5762,
+          "js": 3205
+        }
+      },
+      "pump": {
+        "logicalBytes": 8913,
+        "duKiB": 40,
+        "categories": {
+          "js": 4478,
+          "other": 4435
+        }
+      },
+      "vary": {
+        "logicalBytes": 8747,
+        "duKiB": 20,
+        "categories": {
+          "other": 5817,
+          "js": 2930
+        }
+      },
+      "file-uri-to-path": {
+        "logicalBytes": 8068,
+        "duKiB": 40,
+        "categories": {
+          "other": 5679,
+          "js": 2389
+        }
+      },
+      "default-browser": {
+        "logicalBytes": 7013,
+        "duKiB": 24,
+        "categories": {
+          "other": 3137,
+          "js": 3876
+        }
+      },
+      "encodeurl": {
+        "logicalBytes": 6980,
+        "duKiB": 16,
+        "categories": {
+          "other": 5402,
+          "js": 1578
+        }
+      },
+      "ieee754": {
+        "logicalBytes": 6796,
+        "duKiB": 20,
+        "categories": {
+          "other": 4642,
+          "js": 2154
+        }
+      },
+      "ms": {
+        "logicalBytes": 6721,
+        "duKiB": 16,
+        "categories": {
+          "other": 3697,
+          "js": 3024
+        }
+      },
+      "end-of-stream": {
+        "logicalBytes": 6295,
+        "duKiB": 16,
+        "categories": {
+          "other": 3556,
+          "js": 2739
+        }
+      },
+      "ee-first": {
+        "logicalBytes": 6259,
+        "duKiB": 16,
+        "categories": {
+          "other": 4575,
+          "js": 1684
+        }
+      },
+      "@kwsites/promise-deferred": {
+        "logicalBytes": 6196,
+        "duKiB": 20,
+        "categories": {
+          "other": 3914,
+          "js": 1446,
+          "source-map": 836
+        }
+      },
+      "mimic-response": {
+        "logicalBytes": 6003,
+        "duKiB": 20,
+        "categories": {
+          "other": 4422,
+          "js": 1581
+        }
+      },
+      "forwarded": {
+        "logicalBytes": 5876,
+        "duKiB": 20,
+        "categories": {
+          "other": 4298,
+          "js": 1578
+        }
+      },
+      "chownr": {
+        "logicalBytes": 5709,
+        "duKiB": 20,
+        "categories": {
+          "other": 1434,
+          "js": 4275
+        }
+      },
+      "@simple-git/args-pathspec": {
+        "logicalBytes": 5645,
+        "duKiB": 40,
+        "categories": {
+          "other": 2220,
+          "source-map": 2772,
+          "js": 653
+        }
+      },
+      "object-assign": {
+        "logicalBytes": 5493,
+        "duKiB": 16,
+        "categories": {
+          "other": 3385,
+          "js": 2108
+        }
+      },
+      "util-deprecate": {
+        "logicalBytes": 5481,
+        "duKiB": 24,
+        "categories": {
+          "other": 3744,
+          "js": 1737
+        }
+      },
+      "decompress-response": {
+        "logicalBytes": 5472,
+        "duKiB": 20,
+        "categories": {
+          "other": 4152,
+          "js": 1320
+        }
+      },
+      "expand-template": {
+        "logicalBytes": 5410,
+        "duKiB": 24,
+        "categories": {
+          "js": 2434,
+          "other": 2976
+        }
+      },
+      "run-applescript": {
+        "logicalBytes": 5355,
+        "duKiB": 20,
+        "categories": {
+          "other": 4349,
+          "js": 1006
+        }
+      },
+      "strip-json-comments": {
+        "logicalBytes": 5061,
+        "duKiB": 16,
+        "categories": {
+          "other": 3361,
+          "js": 1700
+        }
+      },
+      "cookie-signature": {
+        "logicalBytes": 4993,
+        "duKiB": 20,
+        "categories": {
+          "other": 3580,
+          "js": 1413
+        }
+      },
+      "toidentifier": {
+        "logicalBytes": 4685,
+        "duKiB": 20,
+        "categories": {
+          "other": 4181,
+          "js": 504
+        }
+      },
+      "simple-concat": {
+        "logicalBytes": 4624,
+        "duKiB": 24,
+        "categories": {
+          "other": 3407,
+          "js": 1217
+        }
+      },
+      "github-from-package": {
+        "logicalBytes": 4608,
+        "duKiB": 52,
+        "categories": {
+          "other": 3499,
+          "js": 1109
+        }
+      },
+      "path-key": {
+        "logicalBytes": 4553,
+        "duKiB": 20,
+        "categories": {
+          "other": 4138,
+          "js": 415
+        }
+      },
+      "mkdirp-classic": {
+        "logicalBytes": 4498,
+        "duKiB": 16,
+        "categories": {
+          "other": 1868,
+          "js": 2630
+        }
+      },
+      "define-lazy-prop": {
+        "logicalBytes": 4415,
+        "duKiB": 20,
+        "categories": {
+          "other": 3986,
+          "js": 429
+        }
+      },
+      "merge-descriptors": {
+        "logicalBytes": 4373,
+        "duKiB": 20,
+        "categories": {
+          "other": 3757,
+          "js": 616
+        }
+      },
+      "unpipe": {
+        "logicalBytes": 4311,
+        "duKiB": 20,
+        "categories": {
+          "other": 3193,
+          "js": 1118
+        }
+      },
+      "once": {
+        "logicalBytes": 4046,
+        "duKiB": 16,
+        "categories": {
+          "other": 3111,
+          "js": 935
+        }
+      },
+      "setprototypeof": {
+        "logicalBytes": 4025,
+        "duKiB": 24,
+        "categories": {
+          "other": 2928,
+          "js": 1097
+        }
+      },
+      "inherits": {
+        "logicalBytes": 3958,
+        "duKiB": 20,
+        "categories": {
+          "other": 2955,
+          "js": 1003
+        }
+      },
+      "is-wsl": {
+        "logicalBytes": 3664,
+        "duKiB": 20,
+        "categories": {
+          "other": 2902,
+          "js": 762
+        }
+      },
+      "escape-html": {
+        "logicalBytes": 3660,
+        "duKiB": 16,
+        "categories": {
+          "other": 2298,
+          "js": 1362
+        }
+      },
+      "is-in-ssh": {
+        "logicalBytes": 3632,
+        "duKiB": 20,
+        "categories": {
+          "other": 3466,
+          "js": 166
+        }
+      },
+      "bundle-name": {
+        "logicalBytes": 3578,
+        "duKiB": 16,
+        "categories": {
+          "other": 2784,
+          "js": 794
+        }
+      },
+      "is-inside-container": {
+        "logicalBytes": 3480,
+        "duKiB": 24,
+        "categories": {
+          "other": 2900,
+          "js": 580
+        }
+      },
+      "require-from-string": {
+        "logicalBytes": 3422,
+        "duKiB": 16,
+        "categories": {
+          "other": 2556,
+          "js": 866
+        }
+      },
+      "default-browser-id": {
+        "logicalBytes": 3173,
+        "duKiB": 16,
+        "categories": {
+          "other": 2366,
+          "js": 807
+        }
+      },
+      "is-docker": {
+        "logicalBytes": 3154,
+        "duKiB": 24,
+        "categories": {
+          "other": 2514,
+          "js": 640
+        }
+      },
+      "wrappy": {
+        "logicalBytes": 2961,
+        "duKiB": 16,
+        "categories": {
+          "other": 2056,
+          "js": 905
+        }
+      },
+      "is-promise": {
+        "logicalBytes": 2958,
+        "duKiB": 24,
+        "categories": {
+          "other": 2606,
+          "js": 352
+        }
+      },
+      "shebang-regex": {
+        "logicalBytes": 2828,
+        "duKiB": 20,
+        "categories": {
+          "other": 2786,
+          "js": 42
+        }
+      },
+      "shebang-command": {
+        "logicalBytes": 2556,
+        "duKiB": 16,
+        "categories": {
+          "other": 2169,
+          "js": 387
+        }
+      },
+      "fs-constants": {
+        "logicalBytes": 2223,
+        "duKiB": 20,
+        "categories": {
+          "other": 2120,
+          "js": 103
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26957112,
+        "duKiB": 27260,
+        "categories": {
+          "other": 142622,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 27164,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 25936,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  },
+  "graph-after": {
+    "logicalBytes": 251970079,
+    "duKiB": 266028,
+    "categories": {
+      "other": 10910779,
+      "js": 10978505,
+      "source-map": 7324398,
+      "wasm": 40651383,
+      "native-source": 93631910,
+      "native-binary": 88473104
+    },
+    "dependencies": {
+      "tree-sitter-c-sharp": {
+        "logicalBytes": 68022151,
+        "duKiB": 68248,
+        "categories": {
+          "js": 56345,
+          "other": 419380,
+          "wasm": 5350581,
+          "native-source": 29700949,
+          "native-binary": 32494896
+        }
+      },
+      "tree-sitter-cpp": {
+        "logicalBytes": 42392814,
+        "duKiB": 42404,
+        "categories": {
+          "js": 39704,
+          "other": 581059,
+          "wasm": 3434931,
+          "native-source": 17323264,
+          "native-binary": 21013856
+        }
+      },
+      "tree-sitter-ruby": {
+        "logicalBytes": 30832828,
+        "duKiB": 30684,
+        "categories": {
+          "js": 36076,
+          "other": 273085,
+          "wasm": 2106352,
+          "native-source": 15334059,
+          "native-binary": 13083256
+        }
+      },
+      "tree-sitter-php": {
+        "logicalBytes": 29836331,
+        "duKiB": 30760,
+        "categories": {
+          "wasm": 2060448,
+          "other": 707044,
+          "js": 48703,
+          "native-source": 14084584,
+          "native-binary": 12935552
+        }
+      },
+      "depwire-cli": {
+        "logicalBytes": 26957112,
+        "duKiB": 28220,
+        "categories": {
+          "other": 142622,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "better-sqlite3": {
+        "logicalBytes": 12321465,
+        "duKiB": 12184,
+        "categories": {
+          "other": 18918,
+          "js": 24328,
+          "native-source": 10345499,
+          "native-binary": 1932720
+        }
+      },
+      "tree-sitter-c": {
+        "logicalBytes": 8967502,
+        "duKiB": 9176,
+        "categories": {
+          "wasm": 620090,
+          "js": 38942,
+          "other": 327622,
+          "native-source": 3887688,
+          "native-binary": 4093160
+        }
+      },
+      "tree-sitter-java": {
+        "logicalBytes": 6223115,
+        "duKiB": 6740,
+        "categories": {
+          "js": 32741,
+          "other": 275771,
+          "wasm": 414641,
+          "native-source": 2580298,
+          "native-binary": 2919664
+        }
+      },
+      "web-tree-sitter": {
+        "logicalBytes": 4523037,
+        "duKiB": 4460,
+        "categories": {
+          "source-map": 2691221,
+          "js": 736552,
+          "other": 87694,
+          "wasm": 1007570
+        }
+      },
+      "@modelcontextprotocol/sdk": {
+        "logicalBytes": 4343917,
+        "duKiB": 6112,
+        "categories": {
+          "other": 1417691,
+          "source-map": 1330284,
+          "js": 1595942
+        }
+      },
+      "zod": {
+        "logicalBytes": 4343491,
+        "duKiB": 6152,
+        "categories": {
+          "other": 2760061,
+          "js": 1583430
+        }
+      },
+      "graphology": {
+        "logicalBytes": 2729833,
+        "duKiB": 2724,
+        "categories": {
+          "other": 5351,
+          "js": 1040299,
+          "source-map": 1684183
+        }
+      },
+      "hono": {
+        "logicalBytes": 1396425,
+        "duKiB": 2848,
+        "categories": {
+          "other": 409060,
+          "js": 987365
+        }
+      },
+      "ajv": {
+        "logicalBytes": 1033496,
+        "duKiB": 2364,
+        "categories": {
+          "other": 459877,
+          "js": 293601,
+          "source-map": 280018
+        }
+      },
+      "simple-git": {
+        "logicalBytes": 951189,
+        "duKiB": 1316,
+        "categories": {
+          "js": 281738,
+          "other": 147769,
+          "source-map": 521682
+        }
+      },
+      "minimatch": {
+        "logicalBytes": 536122,
+        "duKiB": 664,
+        "categories": {
+          "other": 43899,
+          "source-map": 324985,
+          "js": 167238
+        }
+      },
+      "node-addon-api": {
+        "logicalBytes": 420314,
+        "duKiB": 452,
+        "categories": {
+          "other": 24131,
+          "native-source": 375569,
+          "js": 20614
+        }
+      },
+      "qs": {
+        "logicalBytes": 374851,
+        "duKiB": 416,
+        "categories": {
+          "other": 84545,
+          "js": 290306
+        }
+      },
+      "ip-address": {
+        "logicalBytes": 366191,
+        "duKiB": 424,
+        "categories": {
+          "other": 101278,
+          "source-map": 159157,
+          "js": 105756
+        }
+      },
+      "iconv-lite": {
+        "logicalBytes": 344185,
+        "duKiB": 400,
+        "categories": {
+          "other": 234642,
+          "js": 109543
+        }
+      },
+      "mime-db": {
+        "logicalBytes": 225566,
+        "duKiB": 236,
+        "categories": {
+          "other": 225377,
+          "js": 189
+        }
+      },
+      "fast-uri": {
+        "logicalBytes": 220886,
+        "duKiB": 328,
+        "categories": {
+          "other": 33253,
+          "js": 187633
+        }
+      },
+      "zod-to-json-schema": {
+        "logicalBytes": 219264,
+        "duKiB": 620,
+        "categories": {
+          "other": 101213,
+          "js": 118051
+        }
+      },
+      "jose": {
+        "logicalBytes": 210660,
+        "duKiB": 408,
+        "categories": {
+          "other": 90610,
+          "js": 120050
+        }
+      },
+      "commander": {
+        "logicalBytes": 208654,
+        "duKiB": 240,
+        "categories": {
+          "other": 81752,
+          "js": 126902
+        }
+      },
+      "json-schema-typed": {
+        "logicalBytes": 197188,
+        "duKiB": 208,
+        "categories": {
+          "other": 160181,
+          "js": 37007
+        }
+      },
+      "express-rate-limit": {
+        "logicalBytes": 154628,
+        "duKiB": 172,
+        "categories": {
+          "other": 79825,
+          "js": 74803
+        }
+      },
+      "ws": {
+        "logicalBytes": 151087,
+        "duKiB": 196,
+        "categories": {
+          "other": 18242,
+          "js": 132845
+        }
+      },
+      "chokidar": {
+        "logicalBytes": 148759,
+        "duKiB": 172,
+        "categories": {
+          "other": 39700,
+          "js": 109059
+        }
+      },
+      "eventsource": {
+        "logicalBytes": 147304,
+        "duKiB": 176,
+        "categories": {
+          "other": 56538,
+          "js": 29810,
+          "source-map": 60956
+        }
+      },
+      "@hono/node-server": {
+        "logicalBytes": 134687,
+        "duKiB": 220,
+        "categories": {
+          "other": 26898,
+          "js": 107789
+        }
+      },
+      "readable-stream": {
+        "logicalBytes": 123971,
+        "duKiB": 180,
+        "categories": {
+          "js": 108045,
+          "other": 15926
+        }
+      },
+      "eventsource-parser": {
+        "logicalBytes": 123553,
+        "duKiB": 160,
+        "categories": {
+          "js": 17568,
+          "other": 52903,
+          "source-map": 53082
+        }
+      },
+      "@simple-git/argv-parser": {
+        "logicalBytes": 105361,
+        "duKiB": 176,
+        "categories": {
+          "other": 11464,
+          "source-map": 73810,
+          "js": 20087
+        }
+      },
+      "object-inspect": {
+        "logicalBytes": 102920,
+        "duKiB": 200,
+        "categories": {
+          "other": 45946,
+          "js": 56974
+        }
+      },
+      "semver": {
+        "logicalBytes": 101065,
+        "duKiB": 268,
+        "categories": {
+          "js": 72268,
+          "other": 28797
+        }
+      },
+      "brace-expansion": {
+        "logicalBytes": 84997,
+        "duKiB": 124,
+        "categories": {
+          "other": 6469,
+          "js": 27684,
+          "source-map": 50844
+        }
+      },
+      "events": {
+        "logicalBytes": 82778,
+        "duKiB": 156,
+        "categories": {
+          "other": 9407,
+          "js": 73371
+        }
+      },
+      "buffer": {
+        "logicalBytes": 82527,
+        "duKiB": 96,
+        "categories": {
+          "other": 32430,
+          "js": 50097
+        }
+      },
+      "express": {
+        "logicalBytes": 75429,
+        "duKiB": 96,
+        "categories": {
+          "other": 13932,
+          "js": 61497
+        }
+      },
+      "body-parser": {
+        "logicalBytes": 65672,
+        "duKiB": 104,
+        "categories": {
+          "other": 30515,
+          "js": 23649,
+          "source-map": 11508
+        }
+      },
+      "bl": {
+        "logicalBytes": 64427,
+        "duKiB": 92,
+        "categories": {
+          "other": 15038,
+          "js": 49389
+        }
+      },
+      "path-to-regexp": {
+        "logicalBytes": 59680,
+        "duKiB": 68,
+        "categories": {
+          "other": 14412,
+          "js": 14528,
+          "source-map": 30740
+        }
+      },
+      "open": {
+        "logicalBytes": 58937,
+        "duKiB": 68,
+        "categories": {
+          "other": 47383,
+          "js": 11554
+        }
+      },
+      "graphology-types": {
+        "logicalBytes": 58067,
+        "duKiB": 68,
+        "categories": {
+          "other": 58067
+        }
+      },
+      "ajv-formats": {
+        "logicalBytes": 56763,
+        "duKiB": 88,
+        "categories": {
+          "other": 28620,
+          "js": 16671,
+          "source-map": 11472
+        }
+      },
+      "minimist": {
+        "logicalBytes": 54477,
+        "duKiB": 120,
+        "categories": {
+          "other": 29331,
+          "js": 25146
+        }
+      },
+      "negotiator": {
+        "logicalBytes": 47543,
+        "duKiB": 76,
+        "categories": {
+          "other": 13610,
+          "js": 22425,
+          "source-map": 11508
+        }
+      },
+      "router": {
+        "logicalBytes": 46851,
+        "duKiB": 64,
+        "categories": {
+          "other": 21497,
+          "js": 25354
+        }
+      },
+      "get-intrinsic": {
+        "logicalBytes": 46542,
+        "duKiB": 68,
+        "categories": {
+          "other": 23345,
+          "js": 23197
+        }
+      },
+      "type-is": {
+        "logicalBytes": 44405,
+        "duKiB": 68,
+        "categories": {
+          "other": 21744,
+          "js": 11153,
+          "source-map": 11508
+        }
+      },
+      "chalk": {
+        "logicalBytes": 44342,
+        "duKiB": 72,
+        "categories": {
+          "other": 27615,
+          "js": 16727
+        }
+      },
+      "debug": {
+        "logicalBytes": 42793,
+        "duKiB": 60,
+        "categories": {
+          "other": 24733,
+          "js": 18060
+        }
+      },
+      "safer-buffer": {
+        "logicalBytes": 42299,
+        "duKiB": 60,
+        "categories": {
+          "other": 22971,
+          "js": 19328
+        }
+      },
+      "ipaddr.js": {
+        "logicalBytes": 42145,
+        "duKiB": 56,
+        "categories": {
+          "other": 13074,
+          "js": 29071
+        }
+      },
+      "readdirp": {
+        "logicalBytes": 36127,
+        "duKiB": 52,
+        "categories": {
+          "other": 16606,
+          "js": 19521
+        }
+      },
+      "prebuild-install": {
+        "logicalBytes": 34180,
+        "duKiB": 76,
+        "categories": {
+          "js": 16113,
+          "other": 18067
+        }
+      },
+      "tar-fs": {
+        "logicalBytes": 32792,
+        "duKiB": 56,
+        "categories": {
+          "other": 9502,
+          "js": 23290
+        }
+      },
+      "send": {
+        "logicalBytes": 32200,
+        "duKiB": 40,
+        "categories": {
+          "other": 11859,
+          "js": 20341
+        }
+      },
+      "safe-buffer": {
+        "logicalBytes": 32101,
+        "duKiB": 44,
+        "categories": {
+          "other": 30431,
+          "js": 1670
+        }
+      },
+      "function-bind": {
+        "logicalBytes": 31427,
+        "duKiB": 68,
+        "categories": {
+          "other": 20267,
+          "js": 11160
+        }
+      },
+      "tar-stream": {
+        "logicalBytes": 27671,
+        "duKiB": 48,
+        "categories": {
+          "other": 7673,
+          "js": 19998
+        }
+      },
+      "depd": {
+        "logicalBytes": 27117,
+        "duKiB": 40,
+        "categories": {
+          "other": 14673,
+          "js": 12444
+        }
+      },
+      "detect-libc": {
+        "logicalBytes": 26437,
+        "duKiB": 44,
+        "categories": {
+          "other": 16286,
+          "js": 10151
+        }
+      },
+      "has-symbols": {
+        "logicalBytes": 23409,
+        "duKiB": 72,
+        "categories": {
+          "other": 16690,
+          "js": 6719
+        }
+      },
+      "cookie": {
+        "logicalBytes": 23382,
+        "duKiB": 32,
+        "categories": {
+          "other": 15216,
+          "js": 8166
+        }
+      },
+      "mime-types": {
+        "logicalBytes": 22871,
+        "duKiB": 40,
+        "categories": {
+          "other": 16828,
+          "js": 6043
+        }
+      },
+      "side-channel": {
+        "logicalBytes": 22864,
+        "duKiB": 56,
+        "categories": {
+          "other": 18711,
+          "js": 4153
+        }
+      },
+      "json-schema-traverse": {
+        "logicalBytes": 22220,
+        "duKiB": 56,
+        "categories": {
+          "other": 8206,
+          "js": 14014
+        }
+      },
+      "cors": {
+        "logicalBytes": 19956,
+        "duKiB": 28,
+        "categories": {
+          "other": 13369,
+          "js": 6587
+        }
+      },
+      "content-disposition": {
+        "logicalBytes": 19928,
+        "duKiB": 32,
+        "categories": {
+          "other": 7365,
+          "js": 12563
+        }
+      },
+      "http-errors": {
+        "logicalBytes": 19064,
+        "duKiB": 28,
+        "categories": {
+          "other": 12634,
+          "js": 6430
+        }
+      },
+      "raw-body": {
+        "logicalBytes": 18495,
+        "duKiB": 28,
+        "categories": {
+          "other": 11324,
+          "js": 7171
+        }
+      },
+      "node-abi": {
+        "logicalBytes": 18402,
+        "duKiB": 28,
+        "categories": {
+          "other": 11914,
+          "js": 6488
+        }
+      },
+      "pkce-challenge": {
+        "logicalBytes": 18211,
+        "duKiB": 40,
+        "categories": {
+          "other": 9403,
+          "js": 8808
+        }
+      },
+      "finalhandler": {
+        "logicalBytes": 18111,
+        "duKiB": 32,
+        "categories": {
+          "other": 12293,
+          "js": 5818
+        }
+      },
+      "balanced-match": {
+        "logicalBytes": 17584,
+        "duKiB": 60,
+        "categories": {
+          "other": 5207,
+          "js": 3387,
+          "source-map": 8990
+        }
+      },
+      "math-intrinsics": {
+        "logicalBytes": 17323,
+        "duKiB": 156,
+        "categories": {
+          "js": 8672,
+          "other": 8651
+        }
+      },
+      "rc": {
+        "logicalBytes": 17255,
+        "duKiB": 52,
+        "categories": {
+          "other": 9867,
+          "js": 7388
+        }
+      },
+      "call-bound": {
+        "logicalBytes": 17106,
+        "duKiB": 48,
+        "categories": {
+          "other": 14001,
+          "js": 3105
+        }
+      },
+      "side-channel-list": {
+        "logicalBytes": 16973,
+        "duKiB": 56,
+        "categories": {
+          "other": 9554,
+          "js": 7419
+        }
+      },
+      "accepts": {
+        "logicalBytes": 16917,
+        "duKiB": 32,
+        "categories": {
+          "other": 11664,
+          "js": 5253
+        }
+      },
+      "tunnel-agent": {
+        "logicalBytes": 16679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9795,
+          "js": 6884
+        }
+      },
+      "proxy-addr": {
+        "logicalBytes": 16326,
+        "duKiB": 28,
+        "categories": {
+          "other": 8986,
+          "js": 7340
+        }
+      },
+      "cross-spawn": {
+        "logicalBytes": 16094,
+        "duKiB": 40,
+        "categories": {
+          "other": 6877,
+          "js": 9217
+        }
+      },
+      "call-bind-apply-helpers": {
+        "logicalBytes": 15952,
+        "duKiB": 84,
+        "categories": {
+          "other": 11911,
+          "js": 4041
+        }
+      },
+      "simple-get": {
+        "logicalBytes": 14971,
+        "duKiB": 28,
+        "categories": {
+          "other": 10914,
+          "js": 4057
+        }
+      },
+      "side-channel-weakmap": {
+        "logicalBytes": 14667,
+        "duKiB": 48,
+        "categories": {
+          "other": 8990,
+          "js": 5677
+        }
+      },
+      "string_decoder": {
+        "logicalBytes": 14427,
+        "duKiB": 24,
+        "categories": {
+          "other": 4962,
+          "js": 9465
+        }
+      },
+      "@kwsites/file-exists": {
+        "logicalBytes": 14361,
+        "duKiB": 64,
+        "categories": {
+          "other": 4286,
+          "js": 5233,
+          "source-map": 4842
+        }
+      },
+      "serve-static": {
+        "logicalBytes": 14335,
+        "duKiB": 24,
+        "categories": {
+          "other": 9846,
+          "js": 4489
+        }
+      },
+      "node-gyp-build": {
+        "logicalBytes": 13864,
+        "duKiB": 40,
+        "categories": {
+          "other": 4761,
+          "js": 9103
+        }
+      },
+      "on-finished": {
+        "logicalBytes": 13679,
+        "duKiB": 28,
+        "categories": {
+          "other": 9249,
+          "js": 4430
+        }
+      },
+      "side-channel-map": {
+        "logicalBytes": 13348,
+        "duKiB": 48,
+        "categories": {
+          "other": 8492,
+          "js": 4856
+        }
+      },
+      "dunder-proto": {
+        "logicalBytes": 13003,
+        "duKiB": 60,
+        "categories": {
+          "other": 7858,
+          "js": 5145
+        }
+      },
+      "fast-deep-equal": {
+        "logicalBytes": 12966,
+        "duKiB": 44,
+        "categories": {
+          "other": 6194,
+          "js": 6772
+        }
+      },
+      "napi-build-utils": {
+        "logicalBytes": 12670,
+        "duKiB": 24,
+        "categories": {
+          "other": 5336,
+          "js": 7334
+        }
+      },
+      "statuses": {
+        "logicalBytes": 12505,
+        "duKiB": 24,
+        "categories": {
+          "other": 9895,
+          "js": 2610
+        }
+      },
+      "es-errors": {
+        "logicalBytes": 12324,
+        "duKiB": 88,
+        "categories": {
+          "js": 880,
+          "other": 11444
+        }
+      },
+      "bytes": {
+        "logicalBytes": 12270,
+        "duKiB": 24,
+        "categories": {
+          "other": 8657,
+          "js": 3613
+        }
+      },
+      "es-object-atoms": {
+        "logicalBytes": 11967,
+        "duKiB": 64,
+        "categories": {
+          "other": 10079,
+          "js": 1888
+        }
+      },
+      "bindings": {
+        "logicalBytes": 11230,
+        "duKiB": 20,
+        "categories": {
+          "other": 5244,
+          "js": 5986
+        }
+      },
+      "isexe": {
+        "logicalBytes": 10956,
+        "duKiB": 36,
+        "categories": {
+          "other": 2969,
+          "js": 7987
+        }
+      },
+      "get-proto": {
+        "logicalBytes": 10840,
+        "duKiB": 60,
+        "categories": {
+          "other": 7354,
+          "js": 3486
+        }
+      },
+      "etag": {
+        "logicalBytes": 10809,
+        "duKiB": 24,
+        "categories": {
+          "other": 8330,
+          "js": 2479
+        }
+      },
+      "content-type": {
+        "logicalBytes": 10471,
+        "duKiB": 24,
+        "categories": {
+          "other": 5469,
+          "js": 5002
+        }
+      },
+      "hasown": {
+        "logicalBytes": 10332,
+        "duKiB": 40,
+        "categories": {
+          "other": 9990,
+          "js": 342
+        }
+      },
+      "parseurl": {
+        "logicalBytes": 10299,
+        "duKiB": 20,
+        "categories": {
+          "other": 7490,
+          "js": 2809
+        }
+      },
+      "fresh": {
+        "logicalBytes": 10289,
+        "duKiB": 20,
+        "categories": {
+          "other": 7584,
+          "js": 2705
+        }
+      },
+      "es-define-property": {
+        "logicalBytes": 10217,
+        "duKiB": 44,
+        "categories": {
+          "other": 8630,
+          "js": 1587
+        }
+      },
+      "wsl-utils": {
+        "logicalBytes": 10178,
+        "duKiB": 24,
+        "categories": {
+          "other": 6968,
+          "js": 3210
+        }
+      },
+      "which": {
+        "logicalBytes": 9975,
+        "duKiB": 24,
+        "categories": {
+          "other": 6812,
+          "js": 3163
+        }
+      },
+      "gopd": {
+        "logicalBytes": 9869,
+        "duKiB": 48,
+        "categories": {
+          "js": 959,
+          "other": 8910
+        }
+      },
+      "powershell-utils": {
+        "logicalBytes": 9813,
+        "duKiB": 20,
+        "categories": {
+          "other": 8376,
+          "js": 1437
+        }
+      },
+      "base64-js": {
+        "logicalBytes": 9624,
+        "duKiB": 24,
+        "categories": {
+          "js": 6124,
+          "other": 3500
+        }
+      },
+      "ini": {
+        "logicalBytes": 9304,
+        "duKiB": 20,
+        "categories": {
+          "other": 4328,
+          "js": 4976
+        }
+      },
+      "media-typer": {
+        "logicalBytes": 9299,
+        "duKiB": 20,
+        "categories": {
+          "other": 6363,
+          "js": 2936
+        }
+      },
+      "deep-extend": {
+        "logicalBytes": 9190,
+        "duKiB": 28,
+        "categories": {
+          "other": 4850,
+          "js": 4340
+        }
+      },
+      "range-parser": {
+        "logicalBytes": 8967,
+        "duKiB": 20,
+        "categories": {
+          "other": 5762,
+          "js": 3205
+        }
+      },
+      "pump": {
+        "logicalBytes": 8913,
+        "duKiB": 40,
+        "categories": {
+          "js": 4478,
+          "other": 4435
+        }
+      },
+      "vary": {
+        "logicalBytes": 8747,
+        "duKiB": 20,
+        "categories": {
+          "other": 5817,
+          "js": 2930
+        }
+      },
+      "file-uri-to-path": {
+        "logicalBytes": 8068,
+        "duKiB": 40,
+        "categories": {
+          "other": 5679,
+          "js": 2389
+        }
+      },
+      "default-browser": {
+        "logicalBytes": 7013,
+        "duKiB": 24,
+        "categories": {
+          "other": 3137,
+          "js": 3876
+        }
+      },
+      "encodeurl": {
+        "logicalBytes": 6980,
+        "duKiB": 16,
+        "categories": {
+          "other": 5402,
+          "js": 1578
+        }
+      },
+      "ieee754": {
+        "logicalBytes": 6796,
+        "duKiB": 20,
+        "categories": {
+          "other": 4642,
+          "js": 2154
+        }
+      },
+      "ms": {
+        "logicalBytes": 6721,
+        "duKiB": 16,
+        "categories": {
+          "other": 3697,
+          "js": 3024
+        }
+      },
+      "end-of-stream": {
+        "logicalBytes": 6295,
+        "duKiB": 16,
+        "categories": {
+          "other": 3556,
+          "js": 2739
+        }
+      },
+      "ee-first": {
+        "logicalBytes": 6259,
+        "duKiB": 16,
+        "categories": {
+          "other": 4575,
+          "js": 1684
+        }
+      },
+      "@kwsites/promise-deferred": {
+        "logicalBytes": 6196,
+        "duKiB": 20,
+        "categories": {
+          "other": 3914,
+          "js": 1446,
+          "source-map": 836
+        }
+      },
+      "mimic-response": {
+        "logicalBytes": 6003,
+        "duKiB": 20,
+        "categories": {
+          "other": 4422,
+          "js": 1581
+        }
+      },
+      "forwarded": {
+        "logicalBytes": 5876,
+        "duKiB": 20,
+        "categories": {
+          "other": 4298,
+          "js": 1578
+        }
+      },
+      "chownr": {
+        "logicalBytes": 5709,
+        "duKiB": 20,
+        "categories": {
+          "other": 1434,
+          "js": 4275
+        }
+      },
+      "@simple-git/args-pathspec": {
+        "logicalBytes": 5645,
+        "duKiB": 40,
+        "categories": {
+          "other": 2220,
+          "source-map": 2772,
+          "js": 653
+        }
+      },
+      "object-assign": {
+        "logicalBytes": 5493,
+        "duKiB": 16,
+        "categories": {
+          "other": 3385,
+          "js": 2108
+        }
+      },
+      "util-deprecate": {
+        "logicalBytes": 5481,
+        "duKiB": 24,
+        "categories": {
+          "other": 3744,
+          "js": 1737
+        }
+      },
+      "decompress-response": {
+        "logicalBytes": 5472,
+        "duKiB": 20,
+        "categories": {
+          "other": 4152,
+          "js": 1320
+        }
+      },
+      "expand-template": {
+        "logicalBytes": 5410,
+        "duKiB": 24,
+        "categories": {
+          "js": 2434,
+          "other": 2976
+        }
+      },
+      "run-applescript": {
+        "logicalBytes": 5355,
+        "duKiB": 20,
+        "categories": {
+          "other": 4349,
+          "js": 1006
+        }
+      },
+      "strip-json-comments": {
+        "logicalBytes": 5061,
+        "duKiB": 16,
+        "categories": {
+          "other": 3361,
+          "js": 1700
+        }
+      },
+      "cookie-signature": {
+        "logicalBytes": 4993,
+        "duKiB": 20,
+        "categories": {
+          "other": 3580,
+          "js": 1413
+        }
+      },
+      "toidentifier": {
+        "logicalBytes": 4685,
+        "duKiB": 20,
+        "categories": {
+          "other": 4181,
+          "js": 504
+        }
+      },
+      "simple-concat": {
+        "logicalBytes": 4624,
+        "duKiB": 24,
+        "categories": {
+          "other": 3407,
+          "js": 1217
+        }
+      },
+      "github-from-package": {
+        "logicalBytes": 4608,
+        "duKiB": 52,
+        "categories": {
+          "other": 3499,
+          "js": 1109
+        }
+      },
+      "path-key": {
+        "logicalBytes": 4553,
+        "duKiB": 20,
+        "categories": {
+          "other": 4138,
+          "js": 415
+        }
+      },
+      "mkdirp-classic": {
+        "logicalBytes": 4498,
+        "duKiB": 16,
+        "categories": {
+          "other": 1868,
+          "js": 2630
+        }
+      },
+      "define-lazy-prop": {
+        "logicalBytes": 4415,
+        "duKiB": 20,
+        "categories": {
+          "other": 3986,
+          "js": 429
+        }
+      },
+      "merge-descriptors": {
+        "logicalBytes": 4373,
+        "duKiB": 20,
+        "categories": {
+          "other": 3757,
+          "js": 616
+        }
+      },
+      "unpipe": {
+        "logicalBytes": 4311,
+        "duKiB": 20,
+        "categories": {
+          "other": 3193,
+          "js": 1118
+        }
+      },
+      "once": {
+        "logicalBytes": 4046,
+        "duKiB": 16,
+        "categories": {
+          "other": 3111,
+          "js": 935
+        }
+      },
+      "setprototypeof": {
+        "logicalBytes": 4025,
+        "duKiB": 24,
+        "categories": {
+          "other": 2928,
+          "js": 1097
+        }
+      },
+      "inherits": {
+        "logicalBytes": 3958,
+        "duKiB": 20,
+        "categories": {
+          "other": 2955,
+          "js": 1003
+        }
+      },
+      "is-wsl": {
+        "logicalBytes": 3664,
+        "duKiB": 20,
+        "categories": {
+          "other": 2902,
+          "js": 762
+        }
+      },
+      "escape-html": {
+        "logicalBytes": 3660,
+        "duKiB": 16,
+        "categories": {
+          "other": 2298,
+          "js": 1362
+        }
+      },
+      "is-in-ssh": {
+        "logicalBytes": 3632,
+        "duKiB": 20,
+        "categories": {
+          "other": 3466,
+          "js": 166
+        }
+      },
+      "bundle-name": {
+        "logicalBytes": 3578,
+        "duKiB": 16,
+        "categories": {
+          "other": 2784,
+          "js": 794
+        }
+      },
+      "is-inside-container": {
+        "logicalBytes": 3480,
+        "duKiB": 24,
+        "categories": {
+          "other": 2900,
+          "js": 580
+        }
+      },
+      "require-from-string": {
+        "logicalBytes": 3422,
+        "duKiB": 16,
+        "categories": {
+          "other": 2556,
+          "js": 866
+        }
+      },
+      "default-browser-id": {
+        "logicalBytes": 3173,
+        "duKiB": 16,
+        "categories": {
+          "other": 2366,
+          "js": 807
+        }
+      },
+      "is-docker": {
+        "logicalBytes": 3154,
+        "duKiB": 24,
+        "categories": {
+          "other": 2514,
+          "js": 640
+        }
+      },
+      "wrappy": {
+        "logicalBytes": 2961,
+        "duKiB": 16,
+        "categories": {
+          "other": 2056,
+          "js": 905
+        }
+      },
+      "is-promise": {
+        "logicalBytes": 2958,
+        "duKiB": 24,
+        "categories": {
+          "other": 2606,
+          "js": 352
+        }
+      },
+      "shebang-regex": {
+        "logicalBytes": 2828,
+        "duKiB": 20,
+        "categories": {
+          "other": 2786,
+          "js": 42
+        }
+      },
+      "shebang-command": {
+        "logicalBytes": 2556,
+        "duKiB": 16,
+        "categories": {
+          "other": 2169,
+          "js": 387
+        }
+      },
+      "fs-constants": {
+        "logicalBytes": 2223,
+        "duKiB": 20,
+        "categories": {
+          "other": 2120,
+          "js": 103
+        }
+      }
+    },
+    "depwireDirectories": {
+      ".": {
+        "logicalBytes": 26957112,
+        "duKiB": 28220,
+        "categories": {
+          "other": 142622,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist": {
+        "logicalBytes": 26865398,
+        "duKiB": 28124,
+        "categories": {
+          "other": 50908,
+          "js": 1157720,
+          "wasm": 25656770
+        }
+      },
+      "dist/parser/grammars": {
+        "logicalBytes": 25656770,
+        "duKiB": 26896,
+        "categories": {
+          "wasm": 25656770
+        }
+      },
+      "dist/viz": {
+        "logicalBytes": 60846,
+        "duKiB": 76,
+        "categories": {
+          "other": 17981,
+          "js": 42865
+        }
+      },
+      "dist/security": {
+        "logicalBytes": 1651,
+        "duKiB": 4,
+        "categories": {
+          "other": 1651
+        }
+      }
+    }
+  }
+}

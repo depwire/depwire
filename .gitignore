@@ -21,6 +21,7 @@ real-test.json
 
 # Test scripts
 *.mjs
+!scripts/check-sdk-closure.mjs
 
 # Logs
 *.log

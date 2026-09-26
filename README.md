@@ -525,6 +525,19 @@ import {
 
 The SDK is the stable public API surface. All integrations should import from `depwire-cli/sdk` — never from internal paths.
 
+For stored-graph consumers, `depwire-cli/graph` provides graph queries,
+serialization and simulation; `depwire-cli/tools` provides the canonical graph
+tool registry. Their complete runtime closures use Graphology, `path` and
+`events`, without the parser, filesystem or SQLite. Cloudflare Workers consumers
+should retain their Node compatibility configuration for those built-ins.
+
+These entry points reduce the **runtime bundle**, not the npm installation:
+npm still installs the package's declared dependencies and bundled grammar assets.
+The full parser API remains `depwire-cli/sdk`. No separate lightweight package is
+published by this change. See [the package-size investigation](recon/lightweight-package-report.md)
+for measured options and compatibility decisions.
+
+
 ---
 
 ## Why Depwire

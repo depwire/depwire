@@ -1,0 +1,201 @@
+[
+  {
+    "id": "depwire-cli@1.20.1",
+    "name": "depwire-cli",
+    "version": "1.20.1",
+    "size": 2425992,
+    "unpackedSize": 26956201,
+    "shasum": "68e464b56cee26bc6339b1b2c173303dc1f4d50a",
+    "integrity": "sha512-yMgAjPJ4hWqASWaPNOYPi/ZgkPLAp0U8OoYxRGMynO2+vx62qnGR8U1aOfW/lAKDDGiy8f0DEVS0yOZAKMLJRg==",
+    "filename": "depwire-cli-1.20.1.tgz",
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 5133,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 39676,
+        "mode": 420
+      },
+      {
+        "path": "dist/chunk-CELATLRH.js",
+        "size": 105770,
+        "mode": 420
+      },
+      {
+        "path": "dist/chunk-KSEPGA74.js",
+        "size": 769211,
+        "mode": 420
+      },
+      {
+        "path": "dist/graph.d.ts",
+        "size": 13115,
+        "mode": 420
+      },
+      {
+        "path": "dist/graph.js",
+        "size": 47902,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 20,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 115469,
+        "mode": 493
+      },
+      {
+        "path": "dist/mcpb-entry.d.ts",
+        "size": 20,
+        "mode": 420
+      },
+      {
+        "path": "dist/mcpb-entry.js",
+        "size": 2829,
+        "mode": 493
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-c_sharp.wasm",
+        "size": 5350581,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-c.wasm",
+        "size": 625918,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-cpp.wasm",
+        "size": 3434931,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-go.wasm",
+        "size": 218901,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-java.wasm",
+        "size": 414641,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-javascript.wasm",
+        "size": 416499,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-kotlin.wasm",
+        "size": 4096463,
+        "mode": 493
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-php.wasm",
+        "size": 1058041,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-python.wasm",
+        "size": 460119,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-ruby.wasm",
+        "size": 2106352,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-rust.wasm",
+        "size": 1044842,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-swift.wasm",
+        "size": 3560492,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-tsx.wasm",
+        "size": 1450769,
+        "mode": 420
+      },
+      {
+        "path": "dist/parser/grammars/tree-sitter-typescript.wasm",
+        "size": 1418221,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk.d.ts",
+        "size": 17163,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk.js",
+        "size": 1693,
+        "mode": 420
+      },
+      {
+        "path": "dist/security/native-binding-allowlist.json",
+        "size": 1651,
+        "mode": 420
+      },
+      {
+        "path": "dist/tools.d.ts",
+        "size": 958,
+        "mode": 420
+      },
+      {
+        "path": "dist/tools.js",
+        "size": 71981,
+        "mode": 420
+      },
+      {
+        "path": "dist/viz/public/arc.js",
+        "size": 26210,
+        "mode": 420
+      },
+      {
+        "path": "dist/viz/public/index.html",
+        "size": 2354,
+        "mode": 420
+      },
+      {
+        "path": "dist/viz/public/style.css",
+        "size": 4842,
+        "mode": 420
+      },
+      {
+        "path": "dist/viz/public/temporal.css",
+        "size": 6112,
+        "mode": 420
+      },
+      {
+        "path": "dist/viz/public/temporal.html",
+        "size": 4673,
+        "mode": 420
+      },
+      {
+        "path": "dist/viz/public/temporal.js",
+        "size": 16655,
+        "mode": 420
+      },
+      {
+        "path": "icon.png",
+        "size": 42795,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 3199,
+        "mode": 420
+      }
+    ],
+    "entryCount": 37,
+    "bundled": []
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "@depwire/graph-measurement-only@1.20.1",
+    "name": "@depwire/graph-measurement-only",
+    "version": "1.20.1",
+    "size": 44959,
+    "unpackedSize": 179347,
+    "shasum": "7584ab7b52a5fd84382b666936c8047b6e417e65",
+    "integrity": "sha512-jV6WsPdaOiwpnKKwwEvUv2eKieH4Av1VDuo4GY6zcLU43DDuPFiYEftVFpOKJqs2rplgneXjMldmIV0VJeWB5g==",
+    "filename": "depwire-graph-measurement-only-1.20.1.tgz",
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 5133,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 39676,
+        "mode": 420
+      },
+      {
+        "path": "dist/graph.d.ts",
+        "size": 13115,
+        "mode": 420
+      },
+      {
+        "path": "dist/graph.js",
+        "size": 47902,
+        "mode": 420
+      },
+      {
+        "path": "dist/tools.d.ts",
+        "size": 958,
+        "mode": 420
+      },
+      {
+        "path": "dist/tools.js",
+        "size": 71981,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 582,
+        "mode": 420
+      }
+    ],
+    "entryCount": 7,
+    "bundled": []
+  }
+]

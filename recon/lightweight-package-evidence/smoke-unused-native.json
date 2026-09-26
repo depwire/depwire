@@ -1,0 +1,11 @@
+{
+  "install": "/var/folders/h9/p97r1qf53mnf8r952mfr7f880000gn/T/depwire-lightweight-4_i99oj7/unused-native-install",
+  "version": "1.20.1",
+  "tools": 24,
+  "symbols": 2,
+  "edges": 1,
+  "graphExports": 23,
+  "toolRegistry": 10,
+  "allowlist": true,
+  "fixture": "/var/folders/h9/p97r1qf53mnf8r952mfr7f880000gn/T/depwire-light-smoke-4GdNxq"
+}

@@ -1,0 +1,501 @@
+[
+  {
+    "entry": "src/graph.ts",
+    "files": [
+      "node_modules/graphology/dist/graphology.mjs",
+      "src/graph/serializer.ts",
+      "src/core/exclusions.ts",
+      "src/graph/counts.ts",
+      "src/graph/queries.ts",
+      "src/graph/dependency-paths.ts",
+      "src/health/metrics.ts",
+      "src/simulation/engine.ts",
+      "src/graph.ts"
+    ],
+    "inputBytes": 245440,
+    "bundleBytes": 184197,
+    "externals": [
+      "events",
+      "path"
+    ],
+    "inputs": {
+      "node_modules/graphology/dist/graphology.mjs": {
+        "bytes": 178150,
+        "imports": [
+          {
+            "path": "events",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "src/graph/serializer.ts": {
+        "bytes": 3168,
+        "imports": [
+          {
+            "path": "node_modules/graphology/dist/graphology.mjs",
+            "kind": "import-statement",
+            "original": "graphology"
+          },
+          {
+            "path": "../parser/types.js",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "src/core/exclusions.ts": {
+        "bytes": 3200,
+        "imports": [],
+        "format": "esm"
+      },
+      "src/graph/counts.ts": {
+        "bytes": 496,
+        "imports": [],
+        "format": "esm"
+      },
+      "src/graph/queries.ts": {
+        "bytes": 13169,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "../parser/types.js",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/core/exclusions.ts",
+            "kind": "import-statement",
+            "original": "../core/exclusions.js"
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/graph/counts.ts",
+            "kind": "import-statement",
+            "original": "./counts.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/graph/dependency-paths.ts": {
+        "bytes": 8883,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "src/health/metrics.ts": {
+        "bytes": 18954,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "./types.js",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/graph/dependency-paths.ts",
+            "kind": "import-statement",
+            "original": "../graph/dependency-paths.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/simulation/engine.ts": {
+        "bytes": 18081,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/health/metrics.ts",
+            "kind": "import-statement",
+            "original": "../health/metrics.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/graph.ts": {
+        "bytes": 1339,
+        "imports": [
+          {
+            "path": "src/graph/serializer.ts",
+            "kind": "import-statement",
+            "original": "./graph/serializer.js"
+          },
+          {
+            "path": "src/graph/queries.ts",
+            "kind": "import-statement",
+            "original": "./graph/queries.js"
+          },
+          {
+            "path": "src/graph/counts.ts",
+            "kind": "import-statement",
+            "original": "./graph/counts.js"
+          },
+          {
+            "path": "src/graph/serializer.ts",
+            "kind": "import-statement",
+            "original": "./graph/serializer.js"
+          },
+          {
+            "path": "src/simulation/engine.ts",
+            "kind": "import-statement",
+            "original": "./simulation/engine.js"
+          },
+          {
+            "path": "src/health/metrics.ts",
+            "kind": "import-statement",
+            "original": "./health/metrics.js"
+          }
+        ],
+        "format": "esm"
+      }
+    }
+  },
+  {
+    "entry": "src/tools.ts",
+    "files": [
+      "node_modules/graphology/dist/graphology.mjs",
+      "src/graph/serializer.ts",
+      "src/core/exclusions.ts",
+      "src/graph/counts.ts",
+      "src/graph/queries.ts",
+      "src/graph/dependency-paths.ts",
+      "src/health/metrics.ts",
+      "src/simulation/engine.ts",
+      "src/graph.ts",
+      "src/tools.ts"
+    ],
+    "inputBytes": 274869,
+    "bundleBytes": 208248,
+    "externals": [
+      "events",
+      "path"
+    ],
+    "inputs": {
+      "node_modules/graphology/dist/graphology.mjs": {
+        "bytes": 178150,
+        "imports": [
+          {
+            "path": "events",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "src/graph/serializer.ts": {
+        "bytes": 3168,
+        "imports": [
+          {
+            "path": "node_modules/graphology/dist/graphology.mjs",
+            "kind": "import-statement",
+            "original": "graphology"
+          },
+          {
+            "path": "../parser/types.js",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "src/core/exclusions.ts": {
+        "bytes": 3200,
+        "imports": [],
+        "format": "esm"
+      },
+      "src/graph/counts.ts": {
+        "bytes": 496,
+        "imports": [],
+        "format": "esm"
+      },
+      "src/graph/queries.ts": {
+        "bytes": 13169,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "../parser/types.js",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/core/exclusions.ts",
+            "kind": "import-statement",
+            "original": "../core/exclusions.js"
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/graph/counts.ts",
+            "kind": "import-statement",
+            "original": "./counts.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/graph/dependency-paths.ts": {
+        "bytes": 8883,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "src/health/metrics.ts": {
+        "bytes": 18954,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "./types.js",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/graph/dependency-paths.ts",
+            "kind": "import-statement",
+            "original": "../graph/dependency-paths.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/simulation/engine.ts": {
+        "bytes": 18081,
+        "imports": [
+          {
+            "path": "graphology",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/health/metrics.ts",
+            "kind": "import-statement",
+            "original": "../health/metrics.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/graph.ts": {
+        "bytes": 1339,
+        "imports": [
+          {
+            "path": "src/graph/serializer.ts",
+            "kind": "import-statement",
+            "original": "./graph/serializer.js"
+          },
+          {
+            "path": "src/graph/queries.ts",
+            "kind": "import-statement",
+            "original": "./graph/queries.js"
+          },
+          {
+            "path": "src/graph/counts.ts",
+            "kind": "import-statement",
+            "original": "./graph/counts.js"
+          },
+          {
+            "path": "src/graph/serializer.ts",
+            "kind": "import-statement",
+            "original": "./graph/serializer.js"
+          },
+          {
+            "path": "src/simulation/engine.ts",
+            "kind": "import-statement",
+            "original": "./simulation/engine.js"
+          },
+          {
+            "path": "src/health/metrics.ts",
+            "kind": "import-statement",
+            "original": "./health/metrics.js"
+          }
+        ],
+        "format": "esm"
+      },
+      "src/tools.ts": {
+        "bytes": 29429,
+        "imports": [
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "src/graph.ts",
+            "kind": "import-statement",
+            "original": "./graph.js"
+          },
+          {
+            "path": "src/graph/counts.ts",
+            "kind": "import-statement",
+            "original": "./graph/counts.js"
+          }
+        ],
+        "format": "esm"
+      }
+    }
+  },
+  {
+    "entry": "dist/graph.js",
+    "files": [
+      "node_modules/graphology/dist/graphology.mjs",
+      "dist/graph.js"
+    ],
+    "inputBytes": 226052,
+    "bundleBytes": 183925,
+    "externals": [
+      "events",
+      "path"
+    ],
+    "inputs": {
+      "node_modules/graphology/dist/graphology.mjs": {
+        "bytes": 178150,
+        "imports": [
+          {
+            "path": "events",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "dist/graph.js": {
+        "bytes": 47902,
+        "imports": [
+          {
+            "path": "node_modules/graphology/dist/graphology.mjs",
+            "kind": "import-statement",
+            "original": "graphology"
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      }
+    }
+  },
+  {
+    "entry": "dist/tools.js",
+    "files": [
+      "node_modules/graphology/dist/graphology.mjs",
+      "dist/tools.js"
+    ],
+    "inputBytes": 250131,
+    "bundleBytes": 208005,
+    "externals": [
+      "events",
+      "path"
+    ],
+    "inputs": {
+      "node_modules/graphology/dist/graphology.mjs": {
+        "bytes": 178150,
+        "imports": [
+          {
+            "path": "events",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      },
+      "dist/tools.js": {
+        "bytes": 71981,
+        "imports": [
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "node_modules/graphology/dist/graphology.mjs",
+            "kind": "import-statement",
+            "original": "graphology"
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          },
+          {
+            "path": "path",
+            "kind": "import-statement",
+            "external": true
+          }
+        ],
+        "format": "esm"
+      }
+    }
+  }
+]
