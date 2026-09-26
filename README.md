@@ -399,6 +399,24 @@ depwire mcp . --from-cache   # error if no cache found
 depwire mcp . --no-cache     # force full re-parse
 ```
 
+`depwire parse [directory]` reads the specified directory, or cwd when omitted
+(without walking up to an ancestor project). It writes `depwire-output.json` to
+`--output <dir>` when provided, otherwise to `[directory]`, otherwise cwd.
+Relative paths are resolved from cwd; `--output` is a directory.
+
+| Parse outcome | Exit code | Result |
+| --- | --- | --- |
+| One or more files parsed successfully | 0 | Graph exported |
+| Some files parsed, some failed | 0 | Partial graph exported; non-fatal warning on stderr |
+| No files parsed (empty, unsupported, excluded, oversized, or all failed) | 2 | Clear stderr message; no graph exported |
+| Directory traversal, graph construction, or output write failed | 1 | Error on stderr |
+
+SDK callers receive per-file failures in `parseProject(...).errorFiles` and must
+check both `length` and `errorFiles`. The exported graph format is unchanged;
+partial-parse diagnostics are not embedded in the JSON graph. An unsuccessful
+parse does not replace or delete a previous output file: CI must check the exit
+code before consuming that file.
+
 **Cursor** — Settings → Features → Experimental → Enable MCP → Add Server:
 - Command: `npx`
 - Args: `-y depwire-cli mcp`

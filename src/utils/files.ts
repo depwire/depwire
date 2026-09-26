@@ -31,7 +31,7 @@ export function scanDirectory(
           continue;
         }
       } catch (err) {
-        continue;
+        throw new Error(`Unable to inspect ${fullPath}`, { cause: err });
       }
       
       const stats = statSync(fullPath);
@@ -69,7 +69,7 @@ export function scanDirectory(
       }
     }
   } catch (err) {
-    console.error(`Error scanning directory ${baseDir}:`, err);
+    throw new Error(`Error scanning directory ${baseDir}`, { cause: err });
   }
   
   return files;

@@ -1,0 +1,67 @@
+[
+  {
+    "scenario": "success",
+    "before": 0,
+    "after": 0
+  },
+  {
+    "scenario": "partial",
+    "before": 0,
+    "after": 0
+  },
+  {
+    "scenario": "empty",
+    "before": 0,
+    "after": 2
+  },
+  {
+    "scenario": "unsupported",
+    "before": 0,
+    "after": 2
+  },
+  {
+    "scenario": "excluded",
+    "before": 0,
+    "after": 2
+  },
+  {
+    "scenario": "oversized",
+    "before": 0,
+    "after": 2
+  },
+  {
+    "scenario": "all-failed",
+    "before": 0,
+    "after": 2
+  },
+  {
+    "scenario": "missing",
+    "before": 0,
+    "after": 1
+  },
+  {
+    "scenario": "not-directory",
+    "before": 1,
+    "after": 1
+  },
+  {
+    "scenario": "output-failure",
+    "before": 1,
+    "after": 1
+  },
+  {
+    "scenario": "invalid-option",
+    "before": 1,
+    "after": 1
+  },
+  {
+    "scenario": "help",
+    "before": 0,
+    "after": 0
+  },
+  {
+    "scenario": "grammar-initialization-failure",
+    "before": 0,
+    "after": 2
+  }
+]

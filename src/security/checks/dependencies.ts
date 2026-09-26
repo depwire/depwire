@@ -66,7 +66,10 @@ async function checkNpmAudit(projectRoot: string): Promise<SecurityFinding[]> {
   }
   try {
     const audit = JSON.parse(output);
-    if (audit.error) throw new Error('npm audit returned an error');
+    if (!audit || audit.error || !audit.vulnerabilities
+      || typeof audit.vulnerabilities !== 'object' || Array.isArray(audit.vulnerabilities)) {
+      throw new Error('npm audit returned an invalid report');
+    }
     let packages = {};
     try {
       packages = JSON.parse(readFileSync(join(projectRoot, 'package-lock.json'), 'utf-8')).packages || {};

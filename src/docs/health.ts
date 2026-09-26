@@ -16,6 +16,9 @@ export function generateHealth(
   
   // Calculate health score
   const report = calculateHealthScore(graph, projectRoot);
+  if (report.status === 'no_parseable_files') {
+    return header('Dependency Health Score') + report.summary + '\n';
+  }
   
   // Header with timestamp
   const now = new Date().toISOString().split('T')[0];
