@@ -1,0 +1,21 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "simple-git": {
+      "severity": "high", "range": "<3.36.0", "isDirect": true,
+      "nodes": ["node_modules/simple-git"],
+      "via": [{"source":1117673,"name":"simple-git","title":"simple-git is vulnerable to Remote Code Execution","url":"https://github.com/advisories/GHSA-hffm-xvc3-vprc","range":"<3.36.0"}],
+      "fixAvailable": {"name":"simple-git","version":"3.36.0","isSemVerMajor":false}
+    },
+    "depwire-cli": {
+      "severity":"high", "range":"*", "isDirect": true,
+      "nodes":["node_modules/depwire-cli"], "via":["simple-git"], "fixAvailable":false
+    },
+    "unpatched-fixture": {
+      "severity":"moderate", "range":"*", "isDirect":true,
+      "nodes":["node_modules/unpatched-fixture"],
+      "via":[{"source":999999,"name":"unpatched-fixture","title":"Unpatched fixture advisory","url":"https://github.com/advisories/GHSA-aaaa-bbbb-cccc","range":"*"}],
+      "fixAvailable":false
+    }
+  }
+}

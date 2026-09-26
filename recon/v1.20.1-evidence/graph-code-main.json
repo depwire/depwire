@@ -1,0 +1,189 @@
+{
+  "files": 260,
+  "errors": [],
+  "symbols": 6939,
+  "edges": {
+    "calls": 1796,
+    "imports": 708,
+    "references-type": 1082,
+    "references": 1,
+    "inherits": 3,
+    "injects": 1,
+    "rest-api": 6
+  },
+  "health": {
+    "status": "scored",
+    "overall": 71,
+    "grade": "C",
+    "dimensions": [
+      {
+        "name": "Coupling",
+        "score": 70,
+        "weight": 0.25,
+        "grade": "C",
+        "details": "Average 4.9 connections per file, max 224, 6% cross-directory",
+        "metrics": {
+          "avgConnections": 4.91,
+          "maxConnections": 224,
+          "crossDirCoupling": 6.1
+        }
+      },
+      {
+        "name": "Cohesion",
+        "score": 60,
+        "weight": 0.2,
+        "grade": "D",
+        "details": "Average 46% internal dependencies per directory",
+        "metrics": {
+          "avgInternalRatio": 45.9,
+          "directories": 36
+        }
+      },
+      {
+        "name": "Circular Dependencies",
+        "score": 100,
+        "weight": 0.2,
+        "grade": "A",
+        "details": "No circular dependencies detected",
+        "metrics": {
+          "cycles": 0,
+          "cyclesPer100": 0
+        }
+      },
+      {
+        "name": "God Files",
+        "score": 60,
+        "weight": 0.15,
+        "grade": "D",
+        "details": "12 god files (>37 connections)",
+        "metrics": {
+          "godFiles": 12,
+          "threshold": 37.2,
+          "godFilesPer100": 4.6
+        }
+      },
+      {
+        "name": "Orphans & Dead Code",
+        "score": 89,
+        "weight": 0.1,
+        "grade": "B",
+        "details": "4 orphan files (3%), 156 dead symbols (2.2%)",
+        "metrics": {
+          "orphans": 4,
+          "orphanPercentage": 3.1,
+          "deadSymbols": 156,
+          "deadCodePercentage": 2.2
+        }
+      },
+      {
+        "name": "Dependency Depth",
+        "score": 40,
+        "weight": 0.1,
+        "grade": "F",
+        "details": "Maximum dependency chain: 11 levels",
+        "metrics": {
+          "maxDepth": 11
+        }
+      }
+    ],
+    "summary": "Project health score is 71/100 (Grade: C). Moderate architecture quality. Consider refactoring high-risk areas.",
+    "recommendations": [
+      "Low cohesion: Only 45.9% internal dependencies. Reorganize files by feature or domain.",
+      "12 god files detected with >37.2 connections (4.6 per 100 files). Split into smaller, focused modules.",
+      "Maximum dependency depth is 11 levels. Consider flattening the deepest chains."
+    ],
+    "projectStats": {
+      "files": 259,
+      "symbols": 6939,
+      "edges": 3597,
+      "languages": {
+        "JavaScript": 351,
+        "TypeScript": 6432,
+        "Other": 107,
+        "Go": 21,
+        "Python": 28
+      }
+    }
+  },
+  "architecture": {
+    "fileCount": 259,
+    "symbolCount": 6939,
+    "edgeCount": 3597,
+    "mostConnectedFiles": [
+      {
+        "filePath": "src/parser/types.ts",
+        "connections": 53
+      },
+      {
+        "filePath": "src/parser/index.ts",
+        "connections": 40
+      },
+      {
+        "filePath": "src/graph/counts.ts",
+        "connections": 29
+      },
+      {
+        "filePath": "src/mcp/tools.ts",
+        "connections": 28
+      },
+      {
+        "filePath": "src/index.ts",
+        "connections": 25
+      }
+    ],
+    "orphanFiles": [
+      "scripts/diagnostics/simulate-cloud.js",
+      "scripts/diagnostics/spot-check-indegree.js",
+      "scripts/sync-release-metadata.mjs",
+      "scripts/validate-release-metadata.mjs",
+      "src/viz/public/index.html",
+      "src/viz/public/temporal.html",
+      "test/docs-only.test.ts",
+      "test/fixtures/block-scope-ids/scopes.js",
+      "test/fixtures/block-scope-ids/scopes.ts",
+      "test/fixtures/generate-dead-code-snapshot.mjs",
+      "test/fixtures/go-project/config/config.go",
+      "test/fixtures/go-project/main.go",
+      "test/fixtures/go-project/models/admin.go",
+      "test/fixtures/go-project/models/user.go",
+      "test/fixtures/go-project/services/user_service.go",
+      "test/fixtures/go-project/utils/validators.go",
+      "test/fixtures/java-multimodule/module-a/src/main/java/com/example/a/ServiceA.java",
+      "test/fixtures/java-multimodule/module-b/src/main/java/com/example/b/ServiceB.java",
+      "test/fixtures/javascript-project/components/UserCard.jsx",
+      "test/fixtures/kotlin-multimodule/build.gradle.kts",
+      "test/fixtures/kotlin-multimodule/module-a/build.gradle.kts",
+      "test/fixtures/kotlin-multimodule/module-a/src/main/kotlin/com/example/a/ServiceA.kt",
+      "test/fixtures/kotlin-multimodule/module-b/build.gradle.kts",
+      "test/fixtures/kotlin-multimodule/module-b/src/main/kotlin/com/example/b/ServiceB.kt",
+      "test/fixtures/kotlin-multimodule/settings.gradle.kts",
+      "test/fixtures/lang-audit/sample.cpp",
+      "test/fixtures/lang-audit/Sample.cs",
+      "test/fixtures/lang-audit/sample.dart",
+      "test/fixtures/lang-audit/sample.mojo",
+      "test/fixtures/lang-audit/sample.php",
+      "test/fixtures/lang-audit/sample.R",
+      "test/fixtures/lang-audit/sample.rb",
+      "test/fixtures/lang-audit/sample.swift",
+      "test/fixtures/mixed-project/api-client.js",
+      "test/fixtures/mixed-project/api-config.ts",
+      "test/fixtures/mixed-project/processor.py",
+      "test/fixtures/parse-errors/unparseable.ts",
+      "test/fixtures/parse-errors/valid.ts",
+      "test/fixtures/parser-p1-sweep-2/calls.dart",
+      "test/fixtures/parser-p1-sweep-2/calls.R",
+      "test/fixtures/parser-p1-sweep-2/extraction.cpp",
+      "test/fixtures/parser-p1-sweep-2/qualified.cpp",
+      "test/fixtures/python-project/config.py",
+      "test/fixtures/python-project/main.py",
+      "test/fixtures/spec-gating/spec/protocol_spec.ts",
+      "test/fixtures/spec-gating/spec/protocol.ts",
+      "test/fixtures/type-imports/forward-reference.ts",
+      "test/fixtures/type-imports/scope-check.ts",
+      "test/parse-output-path.test.ts",
+      "test/query-json.test.ts",
+      "website/index.html",
+      "website/privacy.html"
+    ]
+  }
+}

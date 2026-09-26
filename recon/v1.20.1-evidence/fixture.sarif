@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "depwire",
+          "version": "1.20.0",
+          "rules": [
+            {
+              "id": "SEC-1",
+              "shortDescription": {
+                "text": "Vulnerable dependency: simple-git"
+              },
+              "fullDescription": {
+                "text": "simple-git 3.35.2: simple-git is vulnerable to Remote Code Execution. Affected range (simple-git): <3.36.0. GHSA-hffm-xvc3-vprc — https://github.com/advisories/GHSA-hffm-xvc3-vprc."
+              },
+              "help": {
+                "text": "npm proposes updating simple-git to 3.36.0. Upstream patch available for simple-git (GHSA-hffm-xvc3-vprc): 3.36.0."
+              },
+              "properties": {
+                "severity": "high",
+                "vulnerabilityClass": "dependency-cve"
+              }
+            },
+            {
+              "id": "SEC-2",
+              "shortDescription": {
+                "text": "Dependency vulnerable via transitives: depwire-cli"
+              },
+              "fullDescription": {
+                "text": "depwire-cli is flagged only because of vulnerable dependencies. depwire-cli → simple-git 3.35.2: simple-git is vulnerable to Remote Code Execution. Affected range (simple-git): <3.36.0. GHSA-hffm-xvc3-vprc — https://github.com/advisories/GHSA-hffm-xvc3-vprc."
+              },
+              "help": {
+                "text": "No automatic fix available in this dependency tree. Upstream patch available for simple-git (GHSA-hffm-xvc3-vprc): 3.36.0."
+              },
+              "properties": {
+                "severity": "high",
+                "vulnerabilityClass": "dependency-cve"
+              }
+            },
+            {
+              "id": "SEC-3",
+              "shortDescription": {
+                "text": "Vulnerable dependency: unpatched-fixture"
+              },
+              "fullDescription": {
+                "text": "unpatched-fixture: Unpatched fixture advisory. Affected range (unpatched-fixture): *. GHSA-aaaa-bbbb-cccc — https://github.com/advisories/GHSA-aaaa-bbbb-cccc."
+              },
+              "help": {
+                "text": "No automatic fix available in this dependency tree. No upstream patch exists for unpatched-fixture (GHSA-aaaa-bbbb-cccc), according to the advisory."
+              },
+              "properties": {
+                "severity": "medium",
+                "vulnerabilityClass": "dependency-cve"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "SEC-1",
+          "level": "error",
+          "message": {
+            "text": "Vulnerable dependency: simple-git: simple-git 3.35.2: simple-git is vulnerable to Remote Code Execution. Affected range (simple-git): <3.36.0. GHSA-hffm-xvc3-vprc — https://github.com/advisories/GHSA-hffm-xvc3-vprc."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-2",
+          "level": "error",
+          "message": {
+            "text": "Dependency vulnerable via transitives: depwire-cli: depwire-cli is flagged only because of vulnerable dependencies. depwire-cli → simple-git 3.35.2: simple-git is vulnerable to Remote Code Execution. Affected range (simple-git): <3.36.0. GHSA-hffm-xvc3-vprc — https://github.com/advisories/GHSA-hffm-xvc3-vprc."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SEC-3",
+          "level": "warning",
+          "message": {
+            "text": "Vulnerable dependency: unpatched-fixture: unpatched-fixture: Unpatched fixture advisory. Affected range (unpatched-fixture): *. GHSA-aaaa-bbbb-cccc — https://github.com/advisories/GHSA-aaaa-bbbb-cccc."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

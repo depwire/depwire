@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import type { SecurityFinding } from '../src/security/types.js';
 import { suppressAllowlistedNativeBindings } from '../src/security/native-bindings.js';
 import { scanSecurity } from '../src/security/scanner.js';
+import { formatTable, formatJSON, formatSARIF } from '../src/security/reporter.js';
 
 function lifecycleFinding(packageName: string): SecurityFinding {
   return {
@@ -71,6 +72,11 @@ describe('native-binding lifecycle allowlist', () => {
       expect.objectContaining({ file: 'node_modules/esbuild/package.json', severity: 'none' }),
     ]);
     expect(result.summary.suppressed).toBe(1);
+    expect(formatTable(result, 0)).toContain('SUPPRESSED (NONE) — 1');
+    expect(JSON.parse(formatJSON(result)).suppressed[0].severity).toBe('none');
+    const sarif = JSON.parse(formatSARIF(result, '1.20.0')).runs[0];
+    expect(sarif.results.find((f: any) => f.ruleId.startsWith('SUP-')).message.text)
+      .toContain('suppressed by native-binding allowlist v1');
     expect(result.findings).toContainEqual(expect.objectContaining({
       file: 'node_modules/unknown-native-addon/package.json',
       severity: 'high',
