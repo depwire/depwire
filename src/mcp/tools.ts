@@ -1,3 +1,4 @@
+import { isWithinRoot, canonicalPath, normalizePath } from '../graph/paths.js';
 import { DirectedGraph } from "graphology";
 import { dirname, join, resolve } from "path";
 import { existsSync, readFileSync } from "fs";
@@ -56,13 +57,7 @@ interface ToolDefinition {
  * Windows clients may pass backslash paths (e.g. "src\app\component.ts"),
  * which would otherwise never match. Normalize before any graph lookup.
  */
-function normalizePath(p: string | undefined): string | undefined {
-  if (!p) return p;
-  return p
-    .replace(/\\/g, '/')   // backslash → forward slash
-    .replace(/^\.\//, '')  // strip leading ./
-    .replace(/\/+$/, '');  // strip trailing slash
-}
+
 
 export function getToolsList(): ToolDefinition[] {
   return [
@@ -986,10 +981,10 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph, file?: strin
   // If file parameter is provided, filter matches to that file
   let filteredMatches = matches;
   if (file) {
-    const normalizedFile = normalizePath(file)!;
+    const normalizedFile = canonicalPath(file, graph.getAttribute('projectRoot'));
     filteredMatches = matches.filter(m => {
-      const mfp = normalizePath(m.filePath)!;
-      return mfp === normalizedFile || mfp.endsWith(normalizedFile);
+      const mfp = m.filePath;
+      return mfp === normalizedFile || mfp.endsWith('/' + normalizedFile);
     });
     if (filteredMatches.length === 0) {
       return {
@@ -1053,13 +1048,13 @@ function handleImpactAnalysis(symbol: string, graph: DirectedGraph, file?: strin
 const MAX_CONTENT_BYTES = 32768; // 32KB limit for MCP responses
 
 function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph, startLine?: number, endLine?: number) {
-  const normalized = normalizePath(filePath);
+  const normalized = canonicalPath(filePath ?? '', graph.getAttribute('projectRoot'));
   // Find all symbols in this file
   const fileSymbols: any[] = [];
   let fileFound = false;
   
   graph.forEachNode((nodeId, attrs) => {
-    if (normalizePath(attrs.filePath) === normalized) {
+    if (attrs.filePath === normalized) {
       fileFound = true;
       if (!isCountableSymbol(attrs.kind)) return;
       fileSymbols.push({
@@ -1102,10 +1097,10 @@ function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph
   const importsMap = new Map<string, Set<string>>();
   
   graph.forEachNode((nodeId, attrs) => {
-    if (normalizePath(attrs.filePath) === normalized) {
+    if (attrs.filePath === normalized) {
       graph.forEachOutEdge(nodeId, (edge, edgeAttrs, source, target) => {
         const targetAttrs = graph.getNodeAttributes(target);
-        if (normalizePath(targetAttrs.filePath) !== normalized) {
+        if (targetAttrs.filePath !== normalized) {
           if (!importsMap.has(targetAttrs.filePath)) {
             importsMap.set(targetAttrs.filePath, new Set());
           }
@@ -1124,10 +1119,10 @@ function handleGetFileContext(filePath: string | undefined, graph: DirectedGraph
   const importedByMap = new Map<string, Set<string>>();
   
   graph.forEachNode((nodeId, attrs) => {
-    if (normalizePath(attrs.filePath) === normalized) {
+    if (attrs.filePath === normalized) {
       graph.forEachInEdge(nodeId, (edge, edgeAttrs, source, target) => {
         const sourceAttrs = graph.getNodeAttributes(source);
-        if (normalizePath(sourceAttrs.filePath) !== normalized) {
+        if (sourceAttrs.filePath !== normalized) {
           if (!importedByMap.has(sourceAttrs.filePath)) {
             importedByMap.set(sourceAttrs.filePath, new Set());
           }
@@ -1221,6 +1216,7 @@ function handleAffectedFiles(
   maxDepth?: number,
   testsOnly?: boolean,
 ) {
+  filePath = canonicalPath(filePath ?? '', graph.getAttribute('projectRoot'));
   const result = getAffectedFiles(graph, filePath, {
     maxDepth: maxDepth ?? 5,
     testsOnly: testsOnly ?? false,
@@ -1233,7 +1229,7 @@ function handleAffectedFiles(
       test_files: [],
       total_affected: 0,
       total_tests: 0,
-      message: `No affected files found for '${filePath}'. Check the path is relative to the project root.`,
+      message: `No affected files found for '${filePath}'. The file was resolved; no dependents were found.`,
     };
   }
 
@@ -1287,11 +1283,12 @@ function handleGetArchitectureSummary(graph: DirectedGraph, projectRoot?: string
     .map(([name, stats]) => ({ name, ...stats }))
     .sort((a, b) => b.symbolCount - a.symbolCount);
   
-  const summaryText = `Project has ${summary.fileCount} files with ${summary.symbolCount} symbols and ${summary.edgeCount} edges. The most connected file is ${summary.mostConnectedFiles[0]?.filePath || 'N/A'} with ${summary.mostConnectedFiles[0]?.connections || 0} connections.`;
+  const summaryText = `Project has ${summary.fileCount} graph files with ${summary.symbolCount} symbols and ${summary.edgeCount} edges. The most connected file is ${summary.mostConnectedFiles[0]?.filePath || 'N/A'} with ${summary.mostConnectedFiles[0]?.connections || 0} connections.`;
   
   return {
     overview: {
       totalFiles: summary.fileCount,
+      parsedFiles: summary.parsedFileCount,
       totalSymbols: summary.symbolCount,
       totalEdges: summary.edgeCount,
       languages: languageBreakdown,
@@ -1311,8 +1308,8 @@ function handleListFiles(directory: string | undefined, graph: DirectedGraph) {
   
   let filtered = fileSummary;
   if (directory) {
-    const normalizedDir = normalizePath(directory)!;
-    filtered = fileSummary.filter(f => normalizePath(f.filePath)!.startsWith(normalizedDir));
+    const normalizedDir = canonicalPath(directory, graph.getAttribute('projectRoot'));
+    filtered = fileSummary.filter(f => (!normalizedDir || f.filePath.startsWith(normalizedDir + '/')));
   }
   
   const files = filtered.map(f => ({
@@ -1427,7 +1424,7 @@ Available document types:
     const filePath = join(docsDir, metadata.documents[doc].file);
     
     // Path containment check
-    if (!resolve(filePath).startsWith(resolve(docsDir))) {
+    if (!isWithinRoot(resolve(filePath), resolve(docsDir))) {
       missing.push(doc);
       continue;
     }
@@ -1736,7 +1733,7 @@ function handleSimulateChange(args: Record<string, any>, state: DepwireState): a
   const targetNodes = graph.filterNodes(
     (_node: string, attrs: any) => {
       const fp = attrs.filePath?.replace(/^\.\//, '').replace(/\/+$/, '');
-      const t = target.replace(/^\.\//, '').replace(/\/+$/, '');
+      const t = canonicalPath(target);
       return fp === t || fp?.endsWith('/' + t) || t.endsWith('/' + fp);
     }
   );

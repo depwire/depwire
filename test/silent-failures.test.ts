@@ -1,6 +1,13 @@
-import { afterEach, describe, expect, it } from 'vitest';
+vi.mock('fs', async (original) => {
+  const actual = await original<typeof import('fs')>();
+  return { ...actual, readFileSync: (...args: any[]) => {
+    if (String(args[0]).endsWith('unreadable.ts')) throw new Error('Injected EACCES');
+    return (actual.readFileSync as any)(...args);
+  } };
+});
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DirectedGraph } from 'graphology';
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generateHealth } from '../src/docs/health.js';
@@ -46,7 +53,6 @@ it('rejects security scans when only part of the project parsed', async () => {
   const root = temp();
   writeFileSync(join(root, 'valid.ts'), 'export const value = 1;');
   writeFileSync(join(root, 'unreadable.ts'), 'export const hidden = 1;');
-  chmodSync(join(root, 'unreadable.ts'), 0o000);
   await expect(scanSecurity(root, new DirectedGraph())).rejects.toThrow('1 files failed to parse');
 });
 

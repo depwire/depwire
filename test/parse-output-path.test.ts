@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, relative } from 'node:path';
 
 const cliPath = resolve(import.meta.dirname, '../dist/index.js');
 const tempDirs: string[] = [];
@@ -14,16 +14,19 @@ function tempDir(prefix: string): string {
 }
 
 afterEach(() => {
+  unreadable = undefined;
   for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
+let unreadable: string | undefined;
+
 function runParse(projectRoot: string, cwd: string, output?: string) {
-  const args = [cliPath, 'parse', projectRoot];
+  const args = ['--require', resolve(import.meta.dirname, 'helpers/fail-read.cjs'), cliPath, 'parse', projectRoot];
   if (output) args.push('--output', output);
   return spawnSync(process.execPath, args, {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+    env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1', DEPWIRE_TEST_UNREADABLE: unreadable },
   });
 }
 
@@ -36,7 +39,7 @@ describe('depwire parse output location', () => {
     writeFileSync(join(projectRoot, 'index.ts'), 'export const value = 1;\n');
     const unreadableFile = join(projectRoot, 'unreadable.ts');
     writeFileSync(unreadableFile, 'export const unreadable = true;\n');
-    chmodSync(unreadableFile, 0o000);
+    unreadable = unreadableFile;
 
     const result = runParse(projectRoot, cwd);
 
@@ -86,7 +89,7 @@ describe('parse exit codes and monorepo paths', () => {
     writeFileSync(join(repo, 'package.json'), '{"workspaces":["packages/*"]}');
     writeFileSync(join(backend, 'index.ts'), 'export const backend = 1;');
     const before = readdirSync(repo);
-    const result = runParse('../' + repo.split('/').pop() + '/packages/backend', cwd);
+    const result = runParse(relative(cwd, backend), cwd);
     expect(result.status).toBe(0);
     expect(existsSync(join(backend, 'depwire-output.json'))).toBe(true);
     expect(readdirSync(repo)).toEqual(before);
@@ -100,7 +103,7 @@ describe('parse exit codes and monorepo paths', () => {
     writeFileSync(join(repo, 'package.json'), '{}');
     writeFileSync(join(cwd, 'index.ts'), 'export const backend = 1;');
     const result = spawnSync(process.execPath, [cliPath, 'parse'], {
-      cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+      cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1', DEPWIRE_TEST_UNREADABLE: unreadable },
     });
     expect(result.status).toBe(0);
     expect(existsSync(join(cwd, 'depwire-output.json'))).toBe(true);
@@ -116,10 +119,10 @@ describe('parse exit codes and monorepo paths', () => {
       if (scenario === 'excluded' || scenario === 'all-failed') {
         writeFileSync(join(root, 'index.ts'), 'export const value = 1;');
       }
-      if (scenario === 'all-failed') chmodSync(join(root, 'index.ts'), 0o000);
-      const result = spawnSync(process.execPath, [cliPath, 'parse', root,
+      if (scenario === 'all-failed') unreadable = join(root, 'index.ts');
+      const result = spawnSync(process.execPath, ['--require', resolve(import.meta.dirname, 'helpers/fail-read.cjs'), cliPath, 'parse', root,
         ...(scenario === 'excluded' ? ['--exclude', '**/*.ts'] : [])], {
-        cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+        cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1', DEPWIRE_TEST_UNREADABLE: unreadable },
       });
       expect(result.status).toBe(2);
       expect(result.stderr).toContain('No parseable files found');
@@ -154,7 +157,7 @@ it('exits 2 when installed grammar assets are missing', () => {
     recursive: true, filter: (source) => !source.endsWith('.wasm'),
   });
   writeFileSync(join(install, 'package.json'), '{"type":"module","version":"test"}');
-  symlinkSync(resolve(import.meta.dirname, '../node_modules'), join(install, 'node_modules'), 'dir');
+  symlinkSync(resolve(import.meta.dirname, '../node_modules'), join(install, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
   const root = tempDir('depwire-grammar-project-');
   writeFileSync(join(root, 'index.ts'), 'export const value = 1;');
   const result = spawnSync(process.execPath, [join(install, 'dist/index.js'), 'parse', root], {

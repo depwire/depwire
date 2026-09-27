@@ -1,7 +1,7 @@
+import { canonicalPath, canonicalSymbolId } from './paths.js';
 import { DirectedGraph } from 'graphology';
 import { SymbolNode, EdgeKind } from '../parser/types.js';
 import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
-import { relative } from 'path';
 import { countGraphSymbols, isCountableSymbol } from './counts.js';
 
 const IMPACT_EDGE_KINDS = new Set<string>([
@@ -42,6 +42,7 @@ export interface SymbolMatch {
  * - Results are sorted by dependentCount descending (most impactful first)
  */
 export function findSymbols(graph: DirectedGraph, query: string): SymbolMatch[] {
+  query = canonicalSymbolId(query, graph.getAttribute('projectRoot'));
   // If query contains "::", try exact match on node ID first
   if (query.includes('::')) {
     if (graph.hasNode(query)) {
@@ -89,6 +90,7 @@ export function findSymbols(graph: DirectedGraph, query: string): SymbolMatch[] 
 }
 
 export function getDependencies(graph: DirectedGraph, symbolId: string): SymbolNode[] {
+  symbolId = canonicalSymbolId(symbolId, graph.getAttribute('projectRoot'));
   if (!graph.hasNode(symbolId)) return [];
   
   const dependencies: SymbolNode[] = [];
@@ -112,6 +114,7 @@ export function getDependencies(graph: DirectedGraph, symbolId: string): SymbolN
 }
 
 export function getDependents(graph: DirectedGraph, symbolId: string): SymbolNode[] {
+  symbolId = canonicalSymbolId(symbolId, graph.getAttribute('projectRoot'));
   if (!graph.hasNode(symbolId)) return [];
   
   const dependents: SymbolNode[] = [];
@@ -139,6 +142,7 @@ export function getImpact(graph: DirectedGraph, symbolId: string): {
   transitiveDependents: SymbolNode[];
   affectedFiles: string[];
 } {
+  symbolId = canonicalSymbolId(symbolId, graph.getAttribute('projectRoot'));
   if (!graph.hasNode(symbolId)) {
     return {
       directDependents: [],
@@ -336,6 +340,7 @@ export function getAffectedFiles(
   targetFilePath: string,
   options: { maxDepth?: number; testsOnly?: boolean } = {},
 ): { affected: AffectedFile[]; testFiles: AffectedFile[]; totalCount: number } {
+  targetFilePath = canonicalPath(targetFilePath, graph.getAttribute('projectRoot'));
   const maxDepth = options.maxDepth ?? 5;
 
   // Collect all node IDs that live in the target file
@@ -346,7 +351,7 @@ export function getAffectedFiles(
     }
   });
 
-  if (seedNodes.length === 0) return { affected: [], testFiles: [], totalCount: 0 };
+  if (seedNodes.length === 0) throw new Error(`File not found in graph: ${targetFilePath}. It may be excluded, unparsed, or contain no graph nodes.`);
 
   // BFS on reverse edges (inNeighbors)
   const visited = new Set<string>(seedNodes);
@@ -400,6 +405,7 @@ export function getAffectedFiles(
 
 export function getArchitectureSummary(graph: DirectedGraph, projectRoot?: string, includeFixtures = false): {
   fileCount: number;
+  parsedFileCount?: number;
   symbolCount: number;
   edgeCount: number;
   mostConnectedFiles: { filePath: string; connections: number }[];
@@ -427,7 +433,7 @@ export function getArchitectureSummary(graph: DirectedGraph, projectRoot?: strin
     .filter(f => {
       if (f.incomingRefs !== 0 || f.outgoingRefs !== 0) return false;
       if (projectRoot && !includeFixtures) {
-        const relativePath = relative(projectRoot, f.filePath);
+        const relativePath = canonicalPath(f.filePath, projectRoot);
         if (isExcludedFromOrphanReporting(relativePath, { includeFixtures })) {
           return false;
         }
@@ -438,6 +444,7 @@ export function getArchitectureSummary(graph: DirectedGraph, projectRoot?: strin
   
   return {
     fileCount: fileSet.size,
+    parsedFileCount: graph.getAttribute('parsedFileCount'),
     symbolCount: countGraphSymbols(graph),
     edgeCount: graph.size,
     mostConnectedFiles: fileConnections.slice(0, 5),

@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { join, resolve, dirname, sep } from 'path';
 import { existsSync, readFileSync } from 'fs';
 
@@ -199,7 +200,7 @@ function addSourceRootsForModule(
   ];
 
   for (const suffix of suffixes) {
-    const relativeRoot = join(modulePath, suffix);
+    const relativeRoot = canonicalPath(join(modulePath, suffix));
     const absoluteRoot = resolveWithinProject(projectRoot, relativeRoot);
 
     if (absoluteRoot && existsSync(absoluteRoot)) {

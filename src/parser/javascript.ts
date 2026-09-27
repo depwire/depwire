@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { resolveImportPath } from './resolver.js';
@@ -589,7 +590,7 @@ function resolveJavaScriptImport(importPath: string, currentFile: string, projec
     if (extname(importPath)) {
       const fullPath = targetPath;
       if (existsSync(fullPath)) {
-        return fullPath.substring(projectRoot.length + 1);
+        return canonicalPath(fullPath, projectRoot);
       }
       return null;
     }
@@ -598,7 +599,7 @@ function resolveJavaScriptImport(importPath: string, currentFile: string, projec
     for (const ext of extensions) {
       const candidate = `${targetPath}${ext}`;
       if (existsSync(candidate)) {
-        return candidate.substring(projectRoot.length + 1);
+        return canonicalPath(candidate, projectRoot);
       }
     }
     
@@ -606,7 +607,7 @@ function resolveJavaScriptImport(importPath: string, currentFile: string, projec
     for (const indexFile of indexFiles) {
       const candidate = join(targetPath, indexFile);
       if (existsSync(candidate)) {
-        return candidate.substring(projectRoot.length + 1);
+        return canonicalPath(candidate, projectRoot);
       }
     }
     

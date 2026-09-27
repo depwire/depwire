@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
@@ -212,7 +213,7 @@ describe('depwire query --json', () => {
         [
           '--input-type=module',
           '-e',
-          `import { deserializeGraph, serializeGraph } from ${JSON.stringify(resolve(import.meta.dirname, '../dist/graph.js'))};
+          `import { deserializeGraph, serializeGraph } from ${JSON.stringify(pathToFileURL(resolve(import.meta.dirname, '../dist/graph.js')).href)};
 const graph = deserializeGraph({
   formatVersion: 2,
   projectRoot: '/repo',

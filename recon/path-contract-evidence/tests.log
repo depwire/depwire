@@ -1,0 +1,13 @@
+
+> depwire-cli@1.20.1 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/atefataya/Developer/code-graph
+
+
+ Test Files  37 passed (37)
+      Tests  227 passed (227)
+   Start at  09:15:50
+   Duration  4.27s (transform 6.72s, setup 0ms, import 11.00s, tests 14.21s, environment 3ms)
+

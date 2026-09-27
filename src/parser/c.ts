@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -327,7 +328,7 @@ function resolveIncludePath(includePath: string, currentFile: string, projectRoo
   
   for (const absPath of possibleFiles) {
     if (existsSync(absPath)) {
-      const relPath = relative(projectRoot, absPath);
+      const relPath = canonicalPath(absPath, projectRoot);
       resolvedFiles.push(relPath);
     }
   }

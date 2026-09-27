@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { join, dirname } from 'path';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { fileExists } from '../utils/files.js';
@@ -100,7 +101,7 @@ function parseYamlPackagesList(yaml: string): string[] {
  * filesystem-scan fallback.
  */
 function expandGlobPattern(projectRoot: string, pattern: string): string[] {
-  const normalized = pattern.replace(/^\.\//, '');
+  const normalized = canonicalPath(pattern);
   if (!normalized.includes('*')) {
     const dir = join(projectRoot, normalized);
     return fileExists(join(dir, 'package.json')) ? [dir] : [];

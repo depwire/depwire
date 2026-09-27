@@ -1,3 +1,4 @@
+import { isWithinRoot, canonicalPath } from '../../graph/paths.js';
 import { readFileSync } from 'fs';
 import { join, resolve, basename } from 'path';
 import type { ParsedFile } from '../../parser/types.js';
@@ -145,7 +146,7 @@ export function detectSubprocessEdges(
 
   for (const file of files) {
     const fullPath = join(projectRoot, file.filePath);
-    if (!resolve(fullPath).startsWith(resolve(projectRoot))) continue;
+    if (!isWithinRoot(resolve(fullPath), resolve(projectRoot))) continue;
 
     let source: string;
     try {
@@ -157,6 +158,7 @@ export function detectSubprocessEdges(
     const calls = extractSubprocessCalls(source, file.filePath);
 
     for (const call of calls) {
+      call.calledFile = canonicalPath(call.calledFile, projectRoot);
       let targetFile: string | null = null;
       let confidence: 'high' | 'medium' = 'high';
 

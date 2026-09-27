@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import type { Graph } from "graphology";
 import {
   timestamp,
@@ -33,7 +34,7 @@ export function generateDeadCode(
   // Fix: Provide proper arguments to timestamp()
   const version = process.env.npm_package_version || '0.9.7';
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const fileCount = graph.order; // Total nodes in graph
+  const fileCount = new Set(graph.mapNodes((_id, attrs) => attrs.filePath)).size;
   const symbolCount = report.totalSymbols;
   output += timestamp(version, date, fileCount, symbolCount);
   output += "\n";
@@ -119,7 +120,7 @@ function generateConfidenceSection(
 
   const headers = ["Symbol", "Kind", "File", "Exported", "Reason"];
   const rows = symbols.map((s) => {
-    const relativePath = path.relative(projectRoot, s.file);
+    const relativePath = canonicalPath(s.file, projectRoot);
     return [
       code(s.name),
       s.kind,

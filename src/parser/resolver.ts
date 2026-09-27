@@ -1,3 +1,4 @@
+import { isWithinRoot, canonicalPath } from '../graph/paths.js';
 import { join, dirname, resolve, relative } from 'path';
 import { fileExists } from '../utils/files.js';
 import { readFileSync } from 'fs';
@@ -116,7 +117,7 @@ function loadTsConfigForDir(startDir: string, projectRoot: string): TsConfigPath
   let currentDir = resolve(startDir);
 
   // If startDir somehow isn't under projectRoot, don't search at all.
-  if (!currentDir.startsWith(resolvedRoot)) {
+  if (!isWithinRoot(currentDir, resolvedRoot)) {
     currentDir = resolvedRoot;
   }
 
@@ -194,7 +195,7 @@ function tryResolve(basePath: string, projectRoot: string): string | null {
 
   for (const candidate of candidates) {
     if (fileExists(candidate)) {
-      return relative(projectRoot, candidate);
+      return canonicalPath(candidate, projectRoot);
     }
   }
 
@@ -269,7 +270,7 @@ function resolveWorkspacePackageImport(
 
   for (const candidate of candidates) {
     if (fileExists(candidate)) {
-      return relative(projectRoot, candidate);
+      return canonicalPath(candidate, projectRoot);
     }
   }
   return null;

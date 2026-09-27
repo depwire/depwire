@@ -1,3 +1,4 @@
+import { isWithinRoot } from '../graph/paths.js';
 import simpleGit from 'simple-git';
 import { existsSync } from 'fs';
 import { join, basename, resolve } from 'path';
@@ -95,8 +96,7 @@ export async function connectToRepo(
       if (subdirectory) {
         const resolvedRoot = resolve(cloneDir);
         const resolvedProject = resolve(projectRoot);
-        if (!resolvedProject.startsWith(resolvedRoot + '/') && 
-            resolvedProject !== resolvedRoot) {
+        if (!isWithinRoot(resolvedProject, resolvedRoot)) {
           return { 
             error: 'Access denied', 
             message: 'Subdirectory must be within the project root' 
@@ -125,8 +125,7 @@ export async function connectToRepo(
       if (subdirectory) {
         const resolvedRoot = resolvedSource;
         const resolvedProject = resolve(projectRoot);
-        if (!resolvedProject.startsWith(resolvedRoot + '/') && 
-            resolvedProject !== resolvedRoot) {
+        if (!isWithinRoot(resolvedProject, resolvedRoot)) {
           return { 
             error: 'Access denied', 
             message: 'Subdirectory must be within the project root' 

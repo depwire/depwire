@@ -770,3 +770,45 @@ Commercial licensing: atef@depwire.dev
 ---
 
 Built with [tree-sitter](https://tree-sitter.github.io/tree-sitter/), [graphology](https://graphology.github.io/), [D3.js](https://d3js.org/), and the [Model Context Protocol](https://modelcontextprotocol.io/).
+
+### Paths and file counts
+
+Graph file paths, symbol-ID path prefixes, and file paths emitted by impact,
+`affected`, `verify-change`, `whatif`, dead-code, security, and MCP tools use
+**POSIX `/` separators on every platform**, relative to the analyzed project root.
+Native absolute paths remain appropriate for filesystem IO, the `projectRoot`
+metadata field, and output-directory arguments. Backslashes and leading `./` in
+file queries are accepted. Absolute queries require the matching graph project
+root. Filename case is preserved; distinct POSIX filenames are not case-folded.
+
+The shared graph ingress boundary canonicalizes parsed records (including cache
+records and resolver hints) before inter-file resolution, graph construction,
+and JSON restoration. Watcher updates use that boundary too. SDK consumers that
+construct graphology graphs directly must use canonical keys or load through
+`deserializeGraph`; existing JSON graphs are normalized when loaded.
+
+`affected_files` returns an error when a file cannot be found in the graph
+(including excluded files or files with no graph nodes). A successfully resolved
+file with no dependents returns an empty result. Check errors before interpreting
+an empty result as a clean analysis. `verify-change` counts unique canonical
+paths, including the changed file itself, in its blast radius.
+
+- **Graph files** / `fileCount` / `totalFiles`: unique files represented by graph
+  nodes, including structural file nodes. Architecture summaries, documentation,
+  graph JSON, and MCP use this definition. Filtered file listings count their
+  returned subset.
+- **Parsed files** / `parsedFileCount` (JSON metadata) / `parsedFiles` (MCP
+  architecture overview): files successfully parsed, including those with no
+  graph nodes. Failures remain in SDK `errorFiles` and do not count as parsed.
+  Older JSON may lack this count; it is omitted rather than inferred. Incremental
+  watcher mutations invalidate this count until the next full parse.
+
+For example, 58 successful parses with three comment-only files produce
+`Parsed files: 58` and `Graph files: 55`. Architecture and MCP report 55 graph
+files. This repository's architecture CLI entry is
+`depwire docs <path> --include architecture --stats`; there is no standalone
+`architecture` command. `depwire parse <path> --stats` prints graph statistics.
+
+This change keeps graph format version 2. Resolution cache version is 5:
+Windows path-key and resolver-target corrections require old cached parse
+records to be rebuilt. No node or edge kinds change.

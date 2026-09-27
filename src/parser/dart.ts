@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
 import { existsSync, readFileSync } from 'fs';
@@ -765,13 +766,13 @@ function resolveDartImport(importPath: string, currentFile: string, projectRoot:
   const dir = dirname(join(projectRoot, currentFile));
   const candidate = join(dir, importPath);
   if (existsSync(candidate)) {
-    return candidate.replace(projectRoot + '/', '');
+    return canonicalPath(candidate, projectRoot);
   }
 
   // Try lib/ directory
   const libCandidate = join(projectRoot, 'lib', importPath);
   if (existsSync(libCandidate)) {
-    return libCandidate.replace(projectRoot + '/', '');
+    return canonicalPath(libCandidate, projectRoot);
   }
 
   return null;

@@ -1,3 +1,5 @@
+import { canonicalParsedFile } from './path-boundary.js';
+import { canonicalPath } from './paths.js';
 import { DirectedGraph } from 'graphology';
 import { join } from 'path';
 import { readFileSync } from 'fs';
@@ -5,6 +7,7 @@ import { parseTypeScriptFile } from '../parser/typescript.js';
 import type { ParsedFile } from '../parser/types.js';
 
 export function removeFileFromGraph(graph: DirectedGraph, filePath: string): void {
+  filePath = canonicalPath(filePath, graph.getAttribute('projectRoot'));
   // Find all nodes where the file path matches
   const nodesToRemove: string[] = [];
 
@@ -14,6 +17,7 @@ export function removeFileFromGraph(graph: DirectedGraph, filePath: string): voi
     }
   });
 
+  if (nodesToRemove.length) graph.setAttribute('parsedFileCount', undefined);
   // Remove nodes (edges are automatically removed by graphology)
   nodesToRemove.forEach(node => {
     try {
@@ -25,6 +29,8 @@ export function removeFileFromGraph(graph: DirectedGraph, filePath: string): voi
 }
 
 export function addFileToGraph(graph: DirectedGraph, parsedFile: ParsedFile): void {
+  parsedFile = canonicalParsedFile(parsedFile, graph.getAttribute('projectRoot'));
+  graph.setAttribute('parsedFileCount', undefined);
   // Add all symbols as nodes
   for (const symbol of parsedFile.symbols) {
     const nodeId = symbol.id;
@@ -63,6 +69,8 @@ export async function updateFileInGraph(
   projectRoot: string,
   relativeFilePath: string
 ): Promise<void> {
+  relativeFilePath = canonicalPath(relativeFilePath, projectRoot);
+  // Parsed count cannot be inferred from graph nodes after an incremental update.
   // Parse new version
   const absolutePath = join(projectRoot, relativeFilePath);
   

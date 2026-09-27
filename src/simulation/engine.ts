@@ -1,3 +1,4 @@
+import { canonicalPath as normalizePath } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { dirname, join } from 'path';
 import {
@@ -94,9 +95,7 @@ export interface EdgeInfo {
 // ── SimulationEngine ───────────────────────────────────────────────
 
 // Normalize file paths: strip ./ prefix, trailing slashes
-function normalizePath(p: string): string {
-  return p.replace(/^\.\//, '').replace(/\/+$/, '');
-}
+
 
 function fileMatch(nodeFilePath: string, target: string): boolean {
   const a = normalizePath(nodeFilePath);
@@ -112,6 +111,13 @@ export class SimulationEngine {
   }
 
   simulate(action: SimulationAction): SimulationResult {
+    action = { ...action };
+    for (const key of ['target', 'destination', 'source', 'newFile'] as const) {
+      if (key in action) {
+        const paths = action as unknown as Record<string, string>;
+        paths[key] = normalizePath(paths[key], this.original.getAttribute('projectRoot'));
+      }
+    }
     const clone = this.original.copy();
 
     const brokenImports: BrokenImport[] = [];

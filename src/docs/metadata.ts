@@ -1,3 +1,4 @@
+import { isWithinRoot } from '../graph/paths.js';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 
@@ -23,7 +24,7 @@ export function loadMetadata(outputDir: string): ProjectMetadata | null {
   const resolvedDir = resolve(outputDir);
   const metadataPath = resolve(resolvedDir, 'metadata.json');
   
-  if (!metadataPath.startsWith(resolvedDir) || !existsSync(metadataPath)) {
+  if (!isWithinRoot(metadataPath, resolvedDir) || !existsSync(metadataPath)) {
     return null;
   }
   
@@ -42,7 +43,7 @@ export function loadMetadata(outputDir: string): ProjectMetadata | null {
 export function saveMetadata(outputDir: string, metadata: ProjectMetadata): void {
   const resolvedDir = resolve(outputDir);
   const metadataPath = resolve(resolvedDir, 'metadata.json');
-  if (!metadataPath.startsWith(resolvedDir)) {
+  if (!isWithinRoot(metadataPath, resolvedDir)) {
     throw new Error(`Path traversal attempt blocked: ${metadataPath}`);
   }
   writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');

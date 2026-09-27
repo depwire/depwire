@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { canonicalPath } from './graph/paths.js';
 
 // This is the entry point when running as an MCPB bundle in Claude Desktop
 // It reads config from environment variables set by Claude Desktop
@@ -40,7 +41,7 @@ async function main() {
       // Set initial state
       state.graph = graph;
       state.projectRoot = projectRoot;
-      state.projectName = projectRoot.split('/').pop() || 'project';
+      state.projectName = canonicalPath(projectRoot).split('/').pop() || 'project';
 
       // Start file watcher
       console.error("[MCPB] Starting file watcher...");

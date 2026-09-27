@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -471,7 +472,7 @@ function findGoFilesInDir(dir: string, projectRoot: string): string[] {
     
     return goFiles.map((f: string) => {
       const fullPath = join(dir, f);
-      return fullPath.substring(projectRoot.length + 1);
+      return canonicalPath(fullPath, projectRoot);
     });
   } catch (error) {
     console.error(`[findGoFilesInDir] Error:`, error);

@@ -1,3 +1,4 @@
+import { canonicalPath, normalizePath } from './graph/paths.js';
 import { dirname } from 'path';
 import {
   SimulationEngine,
@@ -39,13 +40,7 @@ export interface ToolDefinition {
   handler(args: any, ctx: ToolContext): Promise<ToolResult>;
 }
 
-function normalizePath(path: string | undefined): string | undefined {
-  if (!path) return path;
-  return path
-    .replace(/\\/g, '/')
-    .replace(/^\.\//, '')
-    .replace(/\/+$/, '');
-}
+
 
 function toToolResult(result: unknown): ToolResult {
   return {
@@ -215,10 +210,10 @@ function handleImpactAnalysis(
 
   let filteredMatches = matches;
   if (file) {
-    const normalizedFile = normalizePath(file)!;
+    const normalizedFile = canonicalPath(file, graph.getAttribute('projectRoot'));
     filteredMatches = matches.filter(match => {
-      const matchFile = normalizePath(match.filePath)!;
-      return matchFile === normalizedFile || matchFile.endsWith(normalizedFile);
+      const matchFile = match.filePath;
+      return matchFile === normalizedFile || matchFile.endsWith('/' + normalizedFile);
     });
 
     if (filteredMatches.length === 0) {
@@ -283,12 +278,12 @@ function handleGetFileContext(
   startLine?: number,
   endLine?: number,
 ) {
-  const normalized = normalizePath(filePath);
+  const normalized = canonicalPath(filePath ?? '', graph.getAttribute('projectRoot'));
   const fileSymbols: any[] = [];
   let fileFound = false;
 
   graph.forEachNode((nodeId, attrs) => {
-    if (normalizePath(attrs.filePath) === normalized) {
+    if (attrs.filePath === normalized) {
       fileFound = true;
       if (!isCountableSymbol(attrs.kind)) return;
       fileSymbols.push({
@@ -326,10 +321,10 @@ function handleGetFileContext(
 
   const importsMap = new Map<string, Set<string>>();
   graph.forEachNode((nodeId, attrs) => {
-    if (normalizePath(attrs.filePath) === normalized) {
+    if (attrs.filePath === normalized) {
       graph.forEachOutEdge(nodeId, (edge, edgeAttrs, source, target) => {
         const targetAttrs = graph.getNodeAttributes(target);
-        if (normalizePath(targetAttrs.filePath) !== normalized) {
+        if (targetAttrs.filePath !== normalized) {
           if (!importsMap.has(targetAttrs.filePath)) {
             importsMap.set(targetAttrs.filePath, new Set());
           }
@@ -346,10 +341,10 @@ function handleGetFileContext(
 
   const importedByMap = new Map<string, Set<string>>();
   graph.forEachNode((nodeId, attrs) => {
-    if (normalizePath(attrs.filePath) === normalized) {
+    if (attrs.filePath === normalized) {
       graph.forEachInEdge(nodeId, (edge, edgeAttrs, source) => {
         const sourceAttrs = graph.getNodeAttributes(source);
-        if (normalizePath(sourceAttrs.filePath) !== normalized) {
+        if (sourceAttrs.filePath !== normalized) {
           if (!importedByMap.has(sourceAttrs.filePath)) {
             importedByMap.set(sourceAttrs.filePath, new Set());
           }
@@ -430,6 +425,7 @@ function handleAffectedFiles(
   maxDepth?: number,
   testsOnly?: boolean,
 ) {
+  filePath = canonicalPath(filePath ?? '', graph.getAttribute('projectRoot'));
   const result = getAffectedFiles(graph, filePath, {
     maxDepth: maxDepth ?? 5,
     testsOnly: testsOnly ?? false,
@@ -442,7 +438,7 @@ function handleAffectedFiles(
       test_files: [],
       total_affected: 0,
       total_tests: 0,
-      message: `No affected files found for '${filePath}'. Check the path is relative to the project root.`,
+      message: `No affected files found for '${filePath}'. The file was resolved; no dependents were found.`,
     };
   }
 
@@ -488,11 +484,12 @@ function handleGetArchitectureSummary(graph: DepwireGraph, projectRoot?: string)
   const directories = Array.from(dirMap.entries())
     .map(([name, stats]) => ({ name, ...stats }))
     .sort((a, b) => b.symbolCount - a.symbolCount);
-  const summaryText = `Project has ${summary.fileCount} files with ${summary.symbolCount} symbols and ${summary.edgeCount} edges. The most connected file is ${summary.mostConnectedFiles[0]?.filePath || 'N/A'} with ${summary.mostConnectedFiles[0]?.connections || 0} connections.`;
+  const summaryText = `Project has ${summary.fileCount} graph files with ${summary.symbolCount} symbols and ${summary.edgeCount} edges. The most connected file is ${summary.mostConnectedFiles[0]?.filePath || 'N/A'} with ${summary.mostConnectedFiles[0]?.connections || 0} connections.`;
 
   return {
     overview: {
       totalFiles: summary.fileCount,
+      parsedFiles: summary.parsedFileCount,
       totalSymbols: summary.symbolCount,
       totalEdges: summary.edgeCount,
       languages: languageBreakdown,
@@ -511,8 +508,8 @@ function handleListFiles(directory: string | undefined, graph: DepwireGraph) {
   const fileSummary = getFileSummary(graph);
   let filtered = fileSummary;
   if (directory) {
-    const normalizedDir = normalizePath(directory)!;
-    filtered = fileSummary.filter(file => normalizePath(file.filePath)!.startsWith(normalizedDir));
+    const normalizedDir = canonicalPath(directory, graph.getAttribute('projectRoot'));
+    filtered = fileSummary.filter(file => (!normalizedDir || file.filePath.startsWith(normalizedDir + '/')));
   }
 
   const files = filtered.map(file => ({
@@ -558,7 +555,7 @@ function handleSimulateChange(args: Record<string, any>, graph: DepwireGraph): a
 
   const targetNodes = graph.filterNodes((_node, attrs) => {
     const filePath = attrs.filePath?.replace(/^\.\//, '').replace(/\/+$/, '');
-    const normalizedTarget = target.replace(/^\.\//, '').replace(/\/+$/, '');
+    const normalizedTarget = canonicalPath(target);
     return filePath === normalizedTarget
       || filePath?.endsWith('/' + normalizedTarget)
       || normalizedTarget.endsWith('/' + filePath);

@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 /**
  * Shared exclusion logic for orphan and dead-code reporting.
  * 
@@ -35,6 +36,7 @@ export function isExcludedFromOrphanReporting(
   filePath: string,
   options?: OrphanExclusionOptions
 ): boolean {
+  filePath = canonicalPath(filePath);
   const includeFixtures = options?.includeFixtures ?? false;
   
   if (includeFixtures) {
@@ -81,7 +83,7 @@ const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__"]);
  * - Filename containing .test. or .spec.
  */
 export function isTestFile(filePath: string): boolean {
-  const segments = filePath.split("\\").join("/").split("/");
+  const segments = canonicalPath(filePath).split("/");
   if (segments.some((seg) => TEST_DIR_SEGMENTS.has(seg))) {
     return true;
   }

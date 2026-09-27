@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -415,7 +416,7 @@ function resolveRustImport(importPath: string, context: Context): string[] {
     // Convert absolute paths to relative from project root
     return possibleFiles
       .filter(f => existsSync(f))
-      .map(f => relative(context.projectRoot, f));
+      .map(f => canonicalPath(f, context.projectRoot));
   }
   
   if (importPath.startsWith('super::')) {
@@ -432,7 +433,7 @@ function resolveRustImport(importPath: string, context: Context): string[] {
     
     return possibleFiles
       .filter(f => existsSync(f))
-      .map(f => relative(context.projectRoot, f));
+      .map(f => canonicalPath(f, context.projectRoot));
   }
   
   if (importPath.startsWith('self::')) {
@@ -448,7 +449,7 @@ function resolveRustImport(importPath: string, context: Context): string[] {
     
     return possibleFiles
       .filter(f => existsSync(f))
-      .map(f => relative(context.projectRoot, f));
+      .map(f => canonicalPath(f, context.projectRoot));
   }
   
   return [];
@@ -469,7 +470,7 @@ function resolveModuleFile(moduleName: string, context: Context): string[] {
   
   return possibleFiles
     .filter(f => existsSync(f))
-    .map(f => relative(context.projectRoot, f));
+    .map(f => canonicalPath(f, context.projectRoot));
 }
 
 function hasVisibility(node: Parser.SyntaxNode, visibility: string): boolean {

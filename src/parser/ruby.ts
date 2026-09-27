@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -595,7 +596,7 @@ function resolveRubyRequire(
     for (const ext of extensions) {
       const candidate = join(dir, requirePath + ext);
       if (existsSync(candidate)) {
-        const rel = candidate.replace(projectRoot + '/', '');
+        const rel = canonicalPath(candidate, projectRoot);
         return rel;
       }
     }
@@ -608,7 +609,7 @@ function resolveRubyRequire(
           ? join(projectRoot, root, requirePath + ext)
           : join(projectRoot, requirePath + ext);
         if (existsSync(candidate)) {
-          const rel = candidate.replace(projectRoot + '/', '');
+          const rel = canonicalPath(candidate, projectRoot);
           return rel;
         }
       }

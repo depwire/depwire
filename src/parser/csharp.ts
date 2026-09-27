@@ -1,3 +1,4 @@
+import { isWithinRoot, canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -608,8 +609,8 @@ function parseCsprojFile(
       // Resolve relative to the .csproj file's directory
       const csprojDir = dirname(join(projectRoot, filePath));
       const resolvedRef = resolve(csprojDir, refPath);
-      const relativeRef = resolvedRef.startsWith(projectRoot + '/')
-        ? resolvedRef.substring(projectRoot.length + 1)
+      const relativeRef = isWithinRoot(resolvedRef, projectRoot)
+        ? canonicalPath(resolvedRef, projectRoot)
         : null;
 
       if (relativeRef && existsSync(resolvedRef)) {
@@ -669,7 +670,7 @@ function resolveCSharpNamespace(
           if (csFiles.length > 0) {
             // Return the first .cs file as representative
             const fullPath = join(candidate, csFiles[0]);
-            return fullPath.substring(projectRoot.length + 1);
+            return canonicalPath(fullPath, projectRoot);
           }
         }
       } catch {

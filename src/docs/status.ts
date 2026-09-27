@@ -1,3 +1,4 @@
+import { isWithinRoot } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { readFileSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
@@ -74,7 +75,7 @@ function extractComments(projectRoot: string, filePath: string): Comment[] {
   const resolvedRoot = resolve(projectRoot);
   const fullPath = resolve(resolvedRoot, filePath);
   
-  if (!fullPath.startsWith(resolvedRoot)) {
+  if (!isWithinRoot(fullPath, resolvedRoot)) {
     return comments;
   }
   // Check if file exists and is readable

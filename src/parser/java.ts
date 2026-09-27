@@ -1,3 +1,4 @@
+import { isWithinRoot, canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -750,8 +751,8 @@ function parsePomXml(
       const modulePath = moduleMatch[1];
       const pomDir = dirname(join(projectRoot, filePath));
       const resolvedModule = resolve(pomDir, modulePath);
-      const relativeModule = resolvedModule.startsWith(projectRoot + '/')
-        ? resolvedModule.substring(projectRoot.length + 1)
+      const relativeModule = isWithinRoot(resolvedModule, projectRoot)
+        ? canonicalPath(resolvedModule, projectRoot)
         : null;
 
       // Check for pom.xml in the module directory

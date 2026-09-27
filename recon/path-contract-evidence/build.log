@@ -1,0 +1,37 @@
+
+> depwire-cli@1.20.1 build
+> tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && tsup src/graph.ts src/tools.ts --format esm --dts --no-splitting && npm run copy-static
+
+CLI Building entry: src/index.ts, src/mcpb-entry.ts, src/sdk.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2022
+CLI Cleaning output folder
+ESM Build start
+ESM dist/index.js          113.16 KB
+ESM dist/mcpb-entry.js     2.79 KB
+ESM dist/sdk.js            1.65 KB
+ESM dist/chunk-J3FV6CL4.js 103.99 KB
+ESM dist/chunk-3VWNCUSV.js 757.10 KB
+ESM ⚡️ Build success in 51ms
+DTS Build start
+DTS ⚡️ Build success in 3067ms
+DTS dist/index.d.ts      20.00 B
+DTS dist/sdk.d.ts        16.47 KB
+DTS dist/mcpb-entry.d.ts 20.00 B
+CLI Building entry: src/graph.ts, src/tools.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2022
+ESM Build start
+ESM dist/graph.js 49.47 KB
+ESM dist/tools.js 72.25 KB
+ESM ⚡️ Build success in 22ms
+DTS Build start
+DTS ⚡️ Build success in 1084ms
+DTS dist/tools.d.ts 958.00 B
+DTS dist/graph.d.ts 12.95 KB
+
+> depwire-cli@1.20.1 copy-static
+> node scripts/copy-static.mjs
+

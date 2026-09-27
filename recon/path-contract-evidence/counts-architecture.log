@@ -1,0 +1,13 @@
+Parsing project: /tmp/depwire-parse-main-9ffc248
+[Parser] Cache: 263 hits, 0 files re-parsed
+Parsed files: 263
+Cross-language edges: 8 rest-api, 0 subprocess detected
+Built graph: 6980 symbols, 3629 edges
+
+✅ Documentation generated successfully!
+Output directory: /tmp/depwire-path-count-docs
+Generated files: ARCHITECTURE.md
+
+=== Generation Statistics ===
+Time: 0.03s
+Files generated: 1

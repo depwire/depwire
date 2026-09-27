@@ -1,3 +1,4 @@
+import { isWithinRoot } from '../../graph/paths.js';
 import { readFileSync } from 'fs';
 import { join, resolve } from 'path';
 import type { ParsedFile } from '../../parser/types.js';
@@ -946,7 +947,7 @@ export function detectRestApiEdges(
   for (const file of files) {
     const fullPath = join(projectRoot, file.filePath);
     // Validate path containment
-    if (!resolve(fullPath).startsWith(resolve(projectRoot))) continue;
+    if (!isWithinRoot(resolve(fullPath), resolve(projectRoot))) continue;
 
     let source: string;
     try {

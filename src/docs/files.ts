@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { dirname, basename, relative } from 'path';
 import { header, timestamp, table, formatNumber, formatPercent, unorderedList } from './templates.js';
@@ -267,7 +268,7 @@ function generateOrphanFiles(graph: DirectedGraph, projectRoot: string): string 
   // HTML entry points (which have no real importer by design)
   const orphans = fileStats.filter(f => {
     if (f.totalConnections !== 0) return false;
-    const relativePath = relative(projectRoot, f.filePath);
+    const relativePath = canonicalPath(f.filePath, projectRoot);
     if (isExcludedFromOrphanReporting(relativePath)) return false;
     return true;
   });

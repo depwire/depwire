@@ -1,0 +1,22 @@
+Parsing project: /tmp/depwire-parse-main-9ffc248
+[Parser] Cache: 0 hits, 263 files re-parsed
+Parsed files: 263
+Cross-language edges: 8 rest-api, 0 subprocess detected
+Graph files: 262
+Graph exported to: /tmp/depwire-path-counts/depwire-output.json
+[2mGenerated .depwire/AGENTS.md[0m
+
+=== Project Statistics ===
+Graph files: 262
+Symbols: 6980
+Edges: 3629
+Time: 924ms
+
+Most Connected Files:
+  src/parser/types.ts (53 connections)
+  src/parser/index.ts (40 connections)
+  src/graph/counts.ts (29 connections)
+  src/mcp/tools.ts (28 connections)
+  src/index.ts (25 connections)
+
+Orphan Files (no cross-references): 4
