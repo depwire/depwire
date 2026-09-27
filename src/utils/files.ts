@@ -1,5 +1,6 @@
+import { canonicalPath } from '../graph/paths.js';
 import { readdirSync, statSync, existsSync, lstatSync, realpathSync } from 'fs';
-import { join, relative } from 'path';
+import { join, relative, basename, parse } from 'path';
 import os from 'os';
 
 export function scanDirectory(
@@ -64,7 +65,7 @@ export function scanDirectory(
         
         if (isTypeScript || isJavaScript || isPython || isGo || isRust || isC || isCpp || isCSharp || isJava || isKotlin || isPhp || isSwift || isMojo || isRuby || isDart || isR || isCppBuild || isHtml) {
           // Return path relative to root
-          files.push(relative(rootDir, fullPath));
+          files.push(canonicalPath(fullPath, rootDir));
         }
       }
     }
@@ -117,7 +118,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
   const blocklist = ['Library', 'System', 'Applications', 'usr', 'bin', 'etc', 'var', 'private'];
   
   let currentDir = startDir;
-  const rootDir = '/'; // Unix root (will work on Windows too via path normalization)
+  const rootDir = parse(startDir).root;
   const maxDepth = 10; // Maximum 10 levels up from starting directory
   let depth = 0;
   
@@ -126,7 +127,7 @@ export function findProjectRoot(startDir: string = process.cwd()): string {
   
   while (currentDir !== rootDir && depth < maxDepth) {
     // Check if current directory name is in blocklist
-    const dirName = currentDir.split('/').pop();
+    const dirName = basename(currentDir);
     if (dirName && blocklist.includes(dirName)) {
       console.warn(`⚠️  Skipping blocked directory: ${dirName}`);
       break;

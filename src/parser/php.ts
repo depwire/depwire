@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -628,7 +629,7 @@ function resolvePhpInclude(
   // Resolve relative to current file
   const currentDir = dirname(join(projectRoot, currentFile));
   const relativePath = join(currentDir, includePath);
-  const relativeToRoot = relativePath.replace(projectRoot + '/', '');
+  const relativeToRoot = canonicalPath(relativePath, projectRoot);
 
   if (existsSync(relativePath)) {
     return relativeToRoot;

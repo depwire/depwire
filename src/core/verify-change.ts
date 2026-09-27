@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 /**
  * verify_change — Core logic for deterministic safety reports on proposed code changes.
  * Shared by both the MCP tool and the CLI command.
@@ -79,10 +80,7 @@ export interface VerifyChangeContext {
 }
 
 /** Normalize a path for comparison against POSIX-style graph keys. */
-function normalizeFp(p: string | undefined): string {
-  if (!p) return '';
-  return p.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '');
-}
+const normalizeFp = (p: string | undefined) => canonicalPath(p ?? '');
 
 /**
  * Parse a unified diff to extract affected file paths
@@ -188,6 +186,7 @@ export async function verifyChange(
   ctx: VerifyChangeContext
 ): Promise<VerifyChangeOutput> {
   const { graph, projectRoot } = ctx;
+  args = { ...args, file_path: args.file_path === undefined ? undefined : canonicalPath(args.file_path, projectRoot) };
   const warnings: string[] = [];
 
   // Determine affected file(s) and whether we have full new_content to diff.
@@ -330,8 +329,8 @@ export async function verifyChange(
     }
   }
 
-  const blastRadius = allAffectedFiles.size;
-  const affectedFiles = Array.from(allAffectedFiles);
+  const affectedFiles = [...new Set([...allAffectedFiles].map(file => canonicalPath(file, projectRoot)))].sort();
+  const blastRadius = affectedFiles.length;
 
   // Run a security scan on the changed file(s) — informational context only.
   const securityFindings: SecurityFinding[] = [];

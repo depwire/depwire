@@ -1,3 +1,4 @@
+import { canonicalPath } from './graph/paths.js';
 import chokidar, { FSWatcher } from 'chokidar';
 import { join } from 'path';
 
@@ -50,14 +51,14 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp', '.php', '.swift', '.mojo', '.🔥', '.rb', '.rake', '.gemspec', '.dart', '.R', '.r', '.Rmd', '.rmd'];
     if (!validExtensions.some(ext => absolutePath.endsWith(ext))) return;
     // Also match build files by name
-    const fileName = absolutePath.split('/').pop() || '';
+    const fileName = canonicalPath(absolutePath).split('/').pop() || '';
     if (!validExtensions.some(ext => absolutePath.endsWith(ext)) && !['pom.xml', 'build.gradle', 'build.gradle.kts', 'settings.gradle.kts', 'settings.gradle', 'CMakeLists.txt', 'conanfile.txt', 'vcpkg.json', 'Package.swift', 'mojoproject.toml', 'Gemfile', 'pubspec.yaml', 'DESCRIPTION', 'NAMESPACE', 'renv.lock'].includes(fileName)) return;
     
     // Skip Go test files
     if (absolutePath.endsWith('_test.go')) return;
     
     // Convert absolute path to relative path for consistency
-    const relativePath = absolutePath.replace(projectRoot + '/', '');
+    const relativePath = canonicalPath(absolutePath, projectRoot);
     console.error(`[Watcher] Change event: ${relativePath}`);
     callbacks.onFileChanged(relativePath);
   });
@@ -65,14 +66,14 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
   watcher.on('add', (absolutePath: string) => {
     // Only process supported language files
     const validExtensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.c', '.h', '.cs', '.csx', '.csproj', '.java', '.kt', '.kts', '.cpp', '.cc', '.cxx', '.c++', '.hpp', '.hh', '.hxx', '.h++', '.inl', '.ipp', '.php', '.swift', '.mojo', '.🔥', '.rb', '.rake', '.gemspec', '.dart', '.R', '.r', '.Rmd', '.rmd'];
-    const addFileName = absolutePath.split('/').pop() || '';
+    const addFileName = canonicalPath(absolutePath).split('/').pop() || '';
     if (!validExtensions.some(ext => absolutePath.endsWith(ext)) && !['pom.xml', 'build.gradle', 'build.gradle.kts', 'settings.gradle.kts', 'settings.gradle', 'CMakeLists.txt', 'conanfile.txt', 'vcpkg.json', 'Package.swift', 'mojoproject.toml', 'Gemfile', 'pubspec.yaml', 'DESCRIPTION', 'NAMESPACE', 'renv.lock'].includes(addFileName)) return;
     
     // Skip Go test files
     if (absolutePath.endsWith('_test.go')) return;
     
     // Convert absolute path to relative path for consistency
-    const relativePath = absolutePath.replace(projectRoot + '/', '');
+    const relativePath = canonicalPath(absolutePath, projectRoot);
     console.error(`[Watcher] Add event: ${relativePath}`);
     callbacks.onFileAdded(relativePath);
   });
@@ -86,7 +87,7 @@ export function watchProject(projectRoot: string, callbacks: WatcherCallbacks): 
     if (absolutePath.endsWith('_test.go')) return;
     
     // Convert absolute path to relative path for consistency
-    const relativePath = absolutePath.replace(projectRoot + '/', '');
+    const relativePath = canonicalPath(absolutePath, projectRoot);
     console.error(`[Watcher] Unlink event: ${relativePath}`);
     callbacks.onFileDeleted(relativePath);
   });

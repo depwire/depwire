@@ -1,0 +1,304 @@
+{
+  "root": "/tmp/depwire-parse-main-9ffc248",
+  "metadata": {
+    "parsedAt": "2026-09-27T05:10:06.077Z",
+    "fileCount": 262,
+    "parsedFileCount": 263,
+    "nodeCount": 7153,
+    "edgeCount": 3629
+  },
+  "architecture": {
+    "fileCount": 262,
+    "parsedFileCount": 263,
+    "symbolCount": 6980,
+    "edgeCount": 3629,
+    "mostConnectedFiles": [
+      {
+        "filePath": "src/parser/types.ts",
+        "connections": 53
+      },
+      {
+        "filePath": "src/parser/index.ts",
+        "connections": 40
+      },
+      {
+        "filePath": "src/graph/counts.ts",
+        "connections": 29
+      },
+      {
+        "filePath": "src/mcp/tools.ts",
+        "connections": 28
+      },
+      {
+        "filePath": "src/index.ts",
+        "connections": 25
+      }
+    ],
+    "orphanFiles": [
+      "scripts/diagnostics/simulate-cloud.js",
+      "scripts/diagnostics/spot-check-indegree.js",
+      "scripts/sync-release-metadata.mjs",
+      "scripts/validate-release-metadata.mjs",
+      "src/viz/public/index.html",
+      "src/viz/public/temporal.html",
+      "test/docs-only.test.ts",
+      "test/fixtures/block-scope-ids/scopes.js",
+      "test/fixtures/block-scope-ids/scopes.ts",
+      "test/fixtures/generate-dead-code-snapshot.mjs",
+      "test/fixtures/go-project/config/config.go",
+      "test/fixtures/go-project/main.go",
+      "test/fixtures/go-project/models/admin.go",
+      "test/fixtures/go-project/models/user.go",
+      "test/fixtures/go-project/services/user_service.go",
+      "test/fixtures/go-project/utils/validators.go",
+      "test/fixtures/java-multimodule/module-a/src/main/java/com/example/a/ServiceA.java",
+      "test/fixtures/java-multimodule/module-b/src/main/java/com/example/b/ServiceB.java",
+      "test/fixtures/javascript-project/components/UserCard.jsx",
+      "test/fixtures/kotlin-multimodule/build.gradle.kts",
+      "test/fixtures/kotlin-multimodule/module-a/build.gradle.kts",
+      "test/fixtures/kotlin-multimodule/module-a/src/main/kotlin/com/example/a/ServiceA.kt",
+      "test/fixtures/kotlin-multimodule/module-b/build.gradle.kts",
+      "test/fixtures/kotlin-multimodule/module-b/src/main/kotlin/com/example/b/ServiceB.kt",
+      "test/fixtures/kotlin-multimodule/settings.gradle.kts",
+      "test/fixtures/lang-audit/sample.cpp",
+      "test/fixtures/lang-audit/Sample.cs",
+      "test/fixtures/lang-audit/sample.dart",
+      "test/fixtures/lang-audit/sample.mojo",
+      "test/fixtures/lang-audit/sample.php",
+      "test/fixtures/lang-audit/sample.R",
+      "test/fixtures/lang-audit/sample.rb",
+      "test/fixtures/lang-audit/sample.swift",
+      "test/fixtures/mixed-project/api-client.js",
+      "test/fixtures/mixed-project/api-config.ts",
+      "test/fixtures/mixed-project/processor.py",
+      "test/fixtures/parse-errors/unparseable.ts",
+      "test/fixtures/parse-errors/valid.ts",
+      "test/fixtures/parser-p1-sweep-2/calls.dart",
+      "test/fixtures/parser-p1-sweep-2/calls.R",
+      "test/fixtures/parser-p1-sweep-2/extraction.cpp",
+      "test/fixtures/parser-p1-sweep-2/qualified.cpp",
+      "test/fixtures/python-project/config.py",
+      "test/fixtures/python-project/main.py",
+      "test/fixtures/spec-gating/spec/protocol_spec.ts",
+      "test/fixtures/spec-gating/spec/protocol.ts",
+      "test/fixtures/type-imports/forward-reference.ts",
+      "test/fixtures/type-imports/scope-check.ts",
+      "test/parse-output-path.test.ts",
+      "test/query-json.test.ts",
+      "website/index.html",
+      "website/privacy.html"
+    ]
+  },
+  "mcp": {
+    "totalFiles": 262,
+    "parsedFiles": 263,
+    "totalSymbols": 6980,
+    "totalEdges": 3629,
+    "languages": {
+      "javascript": 16,
+      "typescript": 191,
+      "other": 45,
+      "python": 10
+    }
+  },
+  "fileContext": {
+    "filePath": "src/graph/index.ts",
+    "symbols": [
+      {
+        "name": "buildGraph",
+        "kind": "function",
+        "exported": true,
+        "startLine": 5,
+        "endLine": 105
+      },
+      {
+        "name": "graph",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 6,
+        "endLine": 6,
+        "scope": "buildGraph"
+      },
+      {
+        "name": "fileNodes",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 27,
+        "endLine": 27,
+        "scope": "buildGraph"
+      },
+      {
+        "name": "filePath",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 33,
+        "endLine": 33,
+        "scope": "buildGraph.$b1.$b0.$b0.$b0.$b0"
+      },
+      {
+        "name": "filePath",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 46,
+        "endLine": 46,
+        "scope": "buildGraph.$b1.$b0.$b0.$b0.$b1"
+      },
+      {
+        "name": "existing",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 64,
+        "endLine": 64,
+        "scope": "buildGraph.$b2.$b0.$b0.$b0.$b0"
+      },
+      {
+        "name": "existingKind",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 66,
+        "endLine": 66,
+        "scope": "buildGraph.$b2.$b0.$b0.$b0.$b0.$b0"
+      },
+      {
+        "name": "result",
+        "kind": "variable",
+        "exported": false,
+        "startLine": 98,
+        "endLine": 98,
+        "scope": "buildGraph.$b3"
+      }
+    ],
+    "imports": [
+      {
+        "from": "src/cross-language/index.ts",
+        "symbols": [
+          "detectCrossLanguageEdges"
+        ]
+      },
+      {
+        "from": "src/parser/types.ts",
+        "symbols": [
+          "ParsedFile",
+          "SymbolNode"
+        ]
+      }
+    ],
+    "importedBy": [
+      {
+        "file": "src/commands/affected.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/commands/security.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/commands/verify-change.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/commands/whatif.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/core/diff.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/index.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/mcp/connect.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/mcp/tools.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/mcpb-entry.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/sdk.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/temporal/index.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "src/viz/server.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/dead-code-cwd.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/health-empty.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/inheritance-kind-compatibility.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/namespace-declarations.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/parser-correctness.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/spec-gating.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      },
+      {
+        "file": "test/type-reference-consumers.test.ts",
+        "symbols": [
+          "buildGraph"
+        ]
+      }
+    ],
+    "summary": "src/graph/index.ts defines 8 symbol(s), imports from 2 file(s), and is imported by 19 file(s)."
+  }
+}

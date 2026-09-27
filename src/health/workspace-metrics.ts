@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { relative, resolve } from 'path';
 import { isExcludedFromOrphanReporting } from '../core/exclusions.js';
@@ -28,7 +29,7 @@ export function calculateWorkspaceOrphansScore(
           // attrs.filePath is project-relative by design; resolve against
           // projectRoot before diffing so this doesn't silently fall back to
           // process.cwd() (see detector.ts shouldExclude for the same fix).
-          const relativePath = relative(projectRoot, resolve(projectRoot, filePath));
+          const relativePath = canonicalPath(filePath, projectRoot);
           return isExcludedFromOrphanReporting(relativePath, { includeFixtures });
         },
   });

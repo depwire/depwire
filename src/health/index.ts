@@ -1,3 +1,4 @@
+import { isWithinRoot } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { HealthReport, HealthDimension, HealthHistory } from './types.js';
 import {
@@ -202,7 +203,7 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   const resolvedRoot = resolve(projectRoot);
   const historyFile = resolve(resolvedRoot, '.depwire', 'health-history.json');
   
-  if (!historyFile.startsWith(resolvedRoot)) {
+  if (!isWithinRoot(historyFile, resolvedRoot)) {
     return; // Path traversal blocked silently
   }
   
@@ -221,7 +222,7 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   
   if (existsSync(historyFile)) {
     try {
-      if (!historyFile.startsWith(resolvedRoot)) return; // resolve() containment
+      if (!isWithinRoot(historyFile, resolvedRoot)) return; // resolve() containment
       const content = readFileSync(historyFile, 'utf-8');
       history = JSON.parse(content);
     } catch {
@@ -239,7 +240,7 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   // Ensure directory exists before writing
   mkdirSync(dirname(historyFile), { recursive: true });
   
-  if (!historyFile.startsWith(resolvedRoot)) return; // resolve() containment
+  if (!isWithinRoot(historyFile, resolvedRoot)) return; // resolve() containment
   writeFileSync(historyFile, JSON.stringify(history, null, 2), 'utf-8');
 }
 
@@ -250,12 +251,12 @@ export function loadHealthHistory(projectRoot: string): HealthHistory[] {
   const resolvedRoot = resolve(projectRoot);
   const historyFile = resolve(resolvedRoot, '.depwire', 'health-history.json');
   
-  if (!historyFile.startsWith(resolvedRoot) || !existsSync(historyFile)) {
+  if (!isWithinRoot(historyFile, resolvedRoot) || !existsSync(historyFile)) {
     return [];
   }
   
   try {
-    if (!historyFile.startsWith(resolvedRoot)) return []; // resolve() containment
+    if (!isWithinRoot(historyFile, resolvedRoot)) return []; // resolve() containment
     const content = readFileSync(historyFile, 'utf-8');
     return JSON.parse(content);
   } catch {

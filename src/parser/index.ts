@@ -1,3 +1,5 @@
+import { isWithinRoot, canonicalPath } from '../graph/paths.js';
+import { canonicalParsedFile } from '../graph/path-boundary.js';
 /**
  * SECURITY: Parsing is READ-ONLY with respect to your source code.
  * Depwire never modifies or deletes any of your source files.
@@ -57,6 +59,8 @@ export async function parseProject(
   projectRoot: string,
   options?: { exclude?: string[]; verbose?: boolean; useCache?: boolean }
 ): Promise<ParseProjectResult> {
+  projectRoot = resolve(projectRoot);
+  options = { ...options, exclude: options?.exclude?.map(pattern => canonicalPath(pattern)) };
   const files = scanDirectory(projectRoot);
   const errorFiles: ParseErrorFile[] = [];
 
@@ -125,7 +129,7 @@ export async function parseProject(
       const fullPath = join(projectRoot, file);
       
       // Path containment check
-      if (!resolve(fullPath).startsWith(resolve(projectRoot))) {
+      if (!isWithinRoot(resolve(fullPath), resolve(projectRoot))) {
         skippedFiles++;
         continue;
       }
@@ -153,7 +157,7 @@ export async function parseProject(
       // Reuse the cached result for unchanged files.
       const cached = cachedMap.get(file);
       if (cached) {
-        parsedFiles.push(cached);
+        parsedFiles.push(canonicalParsedFile(cached, projectRoot));
         continue;
       }
       
@@ -171,7 +175,7 @@ export async function parseProject(
         continue;
       }
       
-      const parsed = parser.parseFile(file, sourceCode, projectRoot);
+      const parsed = canonicalParsedFile(parser.parseFile(file, sourceCode, projectRoot), projectRoot);
       parsedFiles.push(parsed);
       newlyParsed.push(parsed);
     } catch (err) {
@@ -377,7 +381,7 @@ export async function loadParsedFilesFromJson(
         data.nodes as SymbolNode[],
         data.edges as SymbolEdge[]
       );
-      return files.length > 0 ? files : null;
+      return files.length > 0 ? Object.assign(files.map(file => canonicalParsedFile(file, data.projectRoot)), { parsedFileCount: data.metadata?.parsedFileCount }) : null;
     }
 
     // Unversioned ParsedFile containers cannot prove which symbol-id scheme
@@ -394,7 +398,7 @@ export async function loadParsedFilesFromJson(
       && Array.isArray(data.files[0]?.symbols)
     ) {
       const files = data.files as ParsedFile[];
-      return files.length > 0 ? files : null;
+      return files.length > 0 ? Object.assign(files.map(file => canonicalParsedFile(file, data.projectRoot)), { parsedFileCount: data.metadata?.parsedFileCount }) : null;
     }
 
     return null;

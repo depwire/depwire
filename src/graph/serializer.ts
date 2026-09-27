@@ -1,3 +1,4 @@
+import { canonicalNode, canonicalEdge } from './path-boundary.js';
 import { DirectedGraph } from 'graphology';
 import { ProjectGraph, SymbolNode, SymbolEdge } from '../parser/types.js';
 
@@ -69,6 +70,7 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
     metadata: {
       parsedAt: new Date().toISOString(),
       fileCount: fileSet.size,
+      parsedFileCount: graph.getAttribute('parsedFileCount'),
       nodeCount: nodes.length,
       edgeCount: edges.length,
     },
@@ -79,9 +81,12 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   assertSupportedGraphFormat(json);
   const graph = new DirectedGraph();
   
-  // Add all nodes
-  for (const node of json.nodes) {
-    graph.addNode(node.id, {
+  graph.setAttribute('projectRoot', json.projectRoot);
+  graph.setAttribute('parsedFileCount', json.metadata.parsedFileCount);
+  // Restore legacy separator spellings at the same graph ingress boundary.
+  for (const raw of json.nodes) {
+    const node = canonicalNode(raw, json.projectRoot);
+    graph.mergeNode(node.id, {
       name: node.name,
       kind: node.kind,
       filePath: node.filePath,
@@ -94,7 +99,8 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   }
   
   // Add all edges
-  for (const edge of json.edges) {
+  for (const raw of json.edges) {
+    const edge = canonicalEdge(raw, json.projectRoot);
     if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
       graph.mergeEdge(edge.source, edge.target, {
         kind: edge.kind,

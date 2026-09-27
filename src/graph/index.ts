@@ -1,9 +1,15 @@
+import { canonicalParsedFile } from './path-boundary.js';
 import { DirectedGraph } from 'graphology';
 import { ParsedFile, SymbolNode } from '../parser/types.js';
 import { detectCrossLanguageEdges } from '../cross-language/index.js';
 
 export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): DirectedGraph {
+  const parsedFileCount = Object.hasOwn(parsedFiles, 'parsedFileCount')
+    ? (parsedFiles as ParsedFile[] & { parsedFileCount?: number }).parsedFileCount : parsedFiles.length;
+  parsedFiles = parsedFiles.map(file => canonicalParsedFile(file, projectRoot));
   const graph = new DirectedGraph();
+  graph.setAttribute('projectRoot', projectRoot ?? '');
+  graph.setAttribute('parsedFileCount', parsedFileCount);
   
   // First pass: Add all nodes
   for (const file of parsedFiles) {

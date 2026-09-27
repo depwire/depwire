@@ -1,3 +1,4 @@
+import { isWithinRoot } from '../graph/paths.js';
 import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { join, resolve } from 'path';
 import { TemporalSnapshot } from './types.js';
@@ -15,7 +16,7 @@ export function saveSnapshot(
   const filename = `${snapshot.commitHash.substring(0, 8)}.json`;
   const filepath = resolve(outputDir, filename);
 
-  if (!filepath.startsWith(resolve(outputDir))) {
+  if (!isWithinRoot(filepath, resolve(outputDir))) {
     throw new Error(`Path traversal attempt blocked: ${filepath}`);
   }
 
@@ -29,7 +30,7 @@ export function loadSnapshot(
   const shortHash = commitHash.substring(0, 8);
   const filepath = resolve(outputDir, `${shortHash}.json`);
 
-  if (!filepath.startsWith(resolve(outputDir)) || !existsSync(filepath)) {
+  if (!isWithinRoot(filepath, resolve(outputDir)) || !existsSync(filepath)) {
     return null;
   }
 
@@ -52,7 +53,7 @@ export function loadAllSnapshots(outputDir: string): TemporalSnapshot[] {
   for (const file of files) {
     try {
       const filepath = resolve(outputDir, file);
-      if (!filepath.startsWith(resolve(outputDir))) continue;
+      if (!isWithinRoot(filepath, resolve(outputDir))) continue;
       const content = readFileSync(filepath, 'utf-8');
       snapshots.push(JSON.parse(content));
     } catch {

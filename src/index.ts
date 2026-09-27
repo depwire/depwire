@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { canonicalPath } from './graph/paths.js';
 
 import { Command } from 'commander';
 import { resolve, dirname, join } from 'path';
@@ -75,7 +76,7 @@ program
         exclude: options.exclude,
         verbose: options.verbose
       });
-      console.log(`Parsed ${parsedFiles.length} files`);
+      console.log(`Parsed files: ${parsedFiles.length}`);
 
       // An empty parse is not a successful analysis, even when every candidate failed.
       if (parsedFiles.length === 0) {
@@ -92,6 +93,7 @@ program
       
       // Export to JSON
       const projectGraph = exportToJSON(graph, projectRoot);
+      console.log(`Graph files: ${projectGraph.metadata.fileCount}`);
       
       // Write to file
       const json = options.pretty 
@@ -132,7 +134,7 @@ program
         const summary = getArchitectureSummary(graph, projectRoot);
         
         console.log('\n=== Project Statistics ===');
-        console.log(`Files: ${summary.fileCount}`);
+        console.log(`Graph files: ${summary.fileCount}`);
         console.log(`Symbols: ${summary.symbolCount}`);
         console.log(`Edges: ${summary.edgeCount}`);
         console.log(`Time: ${elapsed}ms`);
@@ -354,7 +356,7 @@ program
         exclude: options.exclude,
         verbose: options.verbose
       });
-      console.log(`Parsed ${parsedFiles.length} files`);
+      console.log(`Parsed files: ${parsedFiles.length}`);
       
       // Build the graph
       const graph = buildGraph(parsedFiles, projectRoot);
@@ -530,7 +532,7 @@ program
         // Set initial state
         state.graph = graph;
         state.projectRoot = projectRootToConnect;
-        state.projectName = projectRootToConnect.split('/').pop() || 'project';
+        state.projectName = canonicalPath(projectRootToConnect).split('/').pop() || 'project';
 
         // Start file watcher
         console.error("Starting file watcher...");
@@ -643,7 +645,7 @@ program
         exclude: options.exclude,
         verbose: options.verbose
       });
-      console.log(`Parsed ${parsedFiles.length} files`);
+      console.log(`Parsed files: ${parsedFiles.length}`);
       
       // Build the graph
       const graph = buildGraph(parsedFiles, projectRoot);

@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, resolve, basename } from 'path';
 import { existsSync } from 'fs';
@@ -502,12 +503,12 @@ function resolveRSource(sourcePath: string, currentFile: string, projectRoot: st
   const dir = dirname(join(projectRoot, currentFile));
   const candidate = join(dir, sourcePath);
   if (existsSync(candidate)) {
-    return candidate.replace(projectRoot + '/', '');
+    return canonicalPath(candidate, projectRoot);
   }
   // Try from project root directly
   const rootCandidate = join(projectRoot, sourcePath);
   if (existsSync(rootCandidate)) {
-    return rootCandidate.replace(projectRoot + '/', '');
+    return canonicalPath(rootCandidate, projectRoot);
   }
   return null;
 }

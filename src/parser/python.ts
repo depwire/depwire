@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname } from 'path';
@@ -455,14 +456,14 @@ function resolveImportPath(moduleName: string, currentFile: string, projectRoot:
       for (const candidate of candidates) {
         if (existsSync(candidate)) {
           // Return relative to project root
-          return candidate.substring(projectRoot.length + 1);
+          return canonicalPath(candidate, projectRoot);
         }
       }
     } else {
       // from . import something → __init__.py in current directory
       const initPath = join(targetDir, '__init__.py');
       if (existsSync(initPath)) {
-        return initPath.substring(projectRoot.length + 1);
+        return canonicalPath(initPath, projectRoot);
       }
     }
     
@@ -478,7 +479,7 @@ function resolveImportPath(moduleName: string, currentFile: string, projectRoot:
   
   for (const candidate of candidates) {
     if (existsSync(candidate)) {
-      return candidate.substring(projectRoot.length + 1);
+      return canonicalPath(candidate, projectRoot);
     }
   }
   

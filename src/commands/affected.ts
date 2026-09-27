@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import { resolve, relative } from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
@@ -53,6 +54,8 @@ export async function affectedCommand(
     process.exit(1);
   }
 
+  changedFiles = [...new Set(changedFiles.map(file => canonicalPath(file, projectRoot)))];
+
   // Parse + build graph
   console.error(`Parsing project: ${projectRoot}`);
   const parsedFiles = await parseProject(projectRoot);
@@ -65,9 +68,7 @@ export async function affectedCommand(
 
   for (const changedFile of changedFiles) {
     // Normalize to relative path as stored in graph
-    const relPath = changedFile.startsWith('/')
-      ? relative(projectRoot, changedFile)
-      : changedFile;
+    const relPath = canonicalPath(changedFile, projectRoot);
 
     const result = getAffectedFiles(graph, relPath, { maxDepth });
 

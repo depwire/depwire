@@ -207,7 +207,9 @@ export interface ProjectGraph {
   edges: SymbolEdge[];
   metadata: {
     parsedAt: string;
+    /** Files represented by graph nodes (not all successfully parsed files). */
     fileCount: number;
+    parsedFileCount?: number;
     nodeCount: number;
     edgeCount: number;
   };

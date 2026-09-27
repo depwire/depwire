@@ -1,3 +1,4 @@
+import { isWithinRoot, canonicalPath } from '../graph/paths.js';
 import type { Graph } from "graphology";
 import path from "node:path";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
@@ -132,7 +133,7 @@ export function findDeadSymbols(
         if (graph.inDegree(node) === 0 && count < 10) {
           const attrs = graph.getNodeAttributes(node);
           const filePath = attrs.file || attrs.filePath || "unknown";
-          console.log(`  - ${attrs.name} (${attrs.kind}) in ${path.relative(projectRoot, path.resolve(projectRoot, filePath))}`);
+          console.log(`  - ${attrs.name} (${attrs.kind}) in ${canonicalPath(filePath, projectRoot)}`);
           count++;
         }
       });
@@ -266,7 +267,7 @@ function getPackageEntryPoints(projectRoot: string): Set<string> {
   const resolvedRoot = path.resolve(projectRoot);
   const packageJsonPath = path.resolve(resolvedRoot, "package.json");
   
-  if (!packageJsonPath.startsWith(resolvedRoot) || !existsSync(packageJsonPath)) {
+  if (!isWithinRoot(packageJsonPath, resolvedRoot) || !existsSync(packageJsonPath)) {
     return entryPoints;
   }
   
@@ -325,7 +326,7 @@ function shouldExclude(
   // the repo being analyzed. path.resolve() is a no-op if filePath is
   // already absolute, so this is safe regardless of caller.
   const absoluteFilePath = path.resolve(context.projectRoot, filePath);
-  const relativePath = path.relative(context.projectRoot, absoluteFilePath);
+  const relativePath = canonicalPath(absoluteFilePath, context.projectRoot);
 
   if (!includeTests && isTestFile(relativePath)) {
     return "test";
@@ -426,7 +427,7 @@ function isRealPackageEntryPoint(filePath: string, packageEntryPoints: Set<strin
 const TEST_DIR_SEGMENTS = new Set(["test", "tests", "__tests__"]);
 
 function isTestFile(filePath: string): boolean {
-  const segments = filePath.split(path.sep).join("/").split("/");
+  const segments = canonicalPath(filePath).split("/");
   if (segments.some((seg) => TEST_DIR_SEGMENTS.has(seg))) {
     return true;
   }
@@ -529,7 +530,7 @@ function isFrameworkAutoLoadedFile(
   filePath: string,
   markers: FrameworkMarkers = NO_FRAMEWORK_MARKERS
 ): boolean {
-  const segments = filePath.split(path.sep).join("/").split("/");
+  const segments = canonicalPath(filePath).split("/");
   const has = (seg: string) => segments.includes(seg);
 
   if (

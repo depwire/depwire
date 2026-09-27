@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import type { DirectedGraph } from 'graphology';
 import { existsSync } from 'fs';
 import { join } from 'path';
@@ -23,6 +24,7 @@ export async function scanSecurity(
   graph: DirectedGraph,
   options: SecurityScanOptions = {}
 ): Promise<SecurityScanResult> {
+  options = { ...options, target: options.target === undefined ? undefined : canonicalPath(options.target, projectRoot) };
   const startTime = Date.now();
 
   // Parse project to get files with content access
@@ -35,7 +37,7 @@ export async function scanSecurity(
 
   // Filter to target if specified
   const filteredFiles = options.target
-    ? parsedFiles.filter(f => f.filePath === options.target || f.filePath.endsWith(options.target!))
+    ? parsedFiles.filter(f => f.filePath === options.target || f.filePath.endsWith('/' + options.target!))
     : parsedFiles;
 
   if (filteredFiles.length === 0) {

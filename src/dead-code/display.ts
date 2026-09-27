@@ -1,3 +1,4 @@
+import { canonicalPath } from '../graph/paths.js';
 import chalk from "chalk";
 import path from "node:path";
 import type { DeadCodeReport, ConfidenceLevel, DeadSymbol } from "./types.js";
@@ -67,7 +68,7 @@ function displayConfidenceGroup(
     // Verbose mode: show table with all columns including Reason
     const headers = ["Symbol", "Kind", "File", "Reason"];
     const rows = symbols.map((symbol) => {
-      const relativePath = path.relative(projectRoot, symbol.file);
+      const relativePath = canonicalPath(symbol.file, projectRoot);
       return [
         chalk.bold(symbol.name),
         symbol.kind,
@@ -79,7 +80,7 @@ function displayConfidenceGroup(
   } else {
     // Non-verbose mode: show simple list format
     symbols.forEach((symbol) => {
-      const relativePath = path.relative(projectRoot, symbol.file);
+      const relativePath = canonicalPath(symbol.file, projectRoot);
       console.log(`  ${relativePath} :: ${symbol.name}`);
     });
   }
