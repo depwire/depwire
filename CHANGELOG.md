@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.20.2
+
+### Fixed — canonical paths and parse contracts
+
+- Canonicalize graph and request paths to project-relative POSIX separators,
+  fixing empty Windows `affected_files` results and duplicate file counts in
+  `verify-change`. Failed lookups now report an error; resolved files with no
+  dependents still return an empty result.
+- Write parse output using `--output` > explicit input directory > cwd.
+- Exit 2 when no files parse successfully, closing a silent-success gap.
+  Partial parses remain exit 0 with a warning and SDK `errorFiles`; valid
+  comment-only sources also remain successful even without graph nodes.
+- Label parsed files separately from graph files across CLI, architecture
+  documentation and MCP tools. Surface accidental swallowed failures identified
+  in the parse silent-failure sweep.
+- Bump `RESOLUTION_VERSION` from 4 to 5 to invalidate incompatible path caches.
+  Graph format remains 2. Symbols, edges and all health dimensions/raws remain
+  identical on the fixed POSIX code-graph, Nest and Drizzle fixtures.
+- Test Ubuntu and Windows on Node 20 and 22, including installed-tarball CLI,
+  parse and all 24 MCP tools. Full evidence is in
+  `recon/path-contracts-report.md` and `recon/parse-gates.md`.
+
 ## 1.20.1
 
 ### Fixed — dependency remediation and scanner accuracy
