@@ -30,7 +30,14 @@ try {
     return result.stdout.trim();
   }
   const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
-  if (cliRun(['--version']) !== version) throw new Error('Packed version mismatch');
+  // Preserve the original smoke test's installed npm bin/shim check.
+  const shim = join(install, 'node_modules/.bin', process.platform === 'win32' ? 'depwire.cmd' : 'depwire');
+  const installedCommand = spawnSync(process.platform === 'win32' ? `"${shim}"` : shim, ['--version'], {
+    cwd: install, env, encoding: 'utf8', shell: process.platform === 'win32',
+  });
+  if (installedCommand.status !== 0 || installedCommand.stdout.trim() !== version) {
+    throw new Error(`Installed depwire command failed: ${installedCommand.error ?? installedCommand.stderr}`);
+  }
   cliRun(['parse', fixture, '--output', join(temp, 'output')]);
   const child = spawn(process.execPath, [cli, 'mcp', fixture, '--no-cache'], { env, stdio: ['pipe', 'pipe', 'pipe'] });
   let stdout = '', stderr = '';
