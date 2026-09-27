@@ -8,14 +8,14 @@ CLI tsup v8.5.1
 CLI Target: es2022
 CLI Cleaning output folder
 ESM Build start
-ESM dist/sdk.js            1.65 KB
 ESM dist/index.js          113.16 KB
 ESM dist/mcpb-entry.js     2.79 KB
-ESM dist/chunk-RRZ2UIJL.js 103.99 KB
-ESM dist/chunk-VA6HCT62.js 757.08 KB
-ESM ⚡️ Build success in 63ms
+ESM dist/sdk.js            1.65 KB
+ESM dist/chunk-J3FV6CL4.js 103.99 KB
+ESM dist/chunk-3VWNCUSV.js 757.10 KB
+ESM ⚡️ Build success in 51ms
 DTS Build start
-DTS ⚡️ Build success in 3127ms
+DTS ⚡️ Build success in 3067ms
 DTS dist/index.d.ts      20.00 B
 DTS dist/sdk.d.ts        16.47 KB
 DTS dist/mcpb-entry.d.ts 20.00 B
@@ -26,9 +26,9 @@ CLI Target: es2022
 ESM Build start
 ESM dist/graph.js 49.47 KB
 ESM dist/tools.js 72.25 KB
-ESM ⚡️ Build success in 21ms
+ESM ⚡️ Build success in 22ms
 DTS Build start
-DTS ⚡️ Build success in 1075ms
+DTS ⚡️ Build success in 1084ms
 DTS dist/tools.d.ts 958.00 B
 DTS dist/graph.d.ts 12.95 KB
 

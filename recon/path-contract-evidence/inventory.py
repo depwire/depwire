@@ -23,6 +23,6 @@ for p in sorted(Path('src').rglob('*')):
   else:status='deliberate';reason='Workspace/repository, persistence, or process path; native absolute paths retained for IO. Graph payloads use serializer/build boundary.'
   rows.append([name,line,status,reason,code.strip()])
 with Path('recon/path-contract-evidence/path-sites.csv').open('w') as f:
- w=csv.writer(f);w.writerow(['file','line','status','rationale','source']);w.writerows(rows)
+ w=csv.writer(f,lineterminator="\n");w.writerow(['file','line','status','rationale','source']);w.writerows(rows)
 counts=collections.Counter(r[2] for r in rows)
 print(len(rows),'sites;',len(set(r[0] for r in rows)),'files;',dict(counts))

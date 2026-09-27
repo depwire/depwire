@@ -69,7 +69,7 @@ operations, graph-ID keys, browser consumers, and filesystem fields. Comments an
 HTTP route strings are distinguished from executable graph-path operations.
 Statuses describe the reviewed boundary/consumer families below; they do not
 claim that every native filesystem call should be rewritten as a graph path.
-Census: **7,907 indexed lines across 128 files** (240 fixed, 5,423 already-correct, 2,244 deliberate).
+Census: **7,908 indexed lines across 128 files** (242 fixed, 5,423 already-correct, 2,243 deliberate).
 Scope: all production `.ts`, `.js`, `.html` under `src`; tests/build/CI are listed
 separately below. No other repositories were changed.
 
@@ -80,7 +80,8 @@ separately below. No other repositories were changed.
 | `src/parser/index.ts` scan/exclude/cache/JSON load | fixed | Canonical paths and exclusions before matching/finalization; loaded records normalized. |
 | `src/parser/resolver.ts` tsconfig bounds, relative/alias/workspace results | fixed | Native resolution remains native; graph-facing results canonical; sibling prefixes no longer count as containment. |
 | C, C++, C#, Dart, Go, Java, JavaScript, PHP, Python, R, Ruby, Rust resolvers | fixed | Native-relative and substring/root-strip results routed through shared helper; Java/C# Windows project-reference guard corrected. |
-| Kotlin, Swift, Mojo, HTML parsers; JVM module discovery | already-correct | Output records pass ingress; native join/resolve/verified-root sets stay internally native. JVM discovery already uses `sep` for containment. |
+| Kotlin, Swift, Mojo, HTML parsers | already-correct | Output records pass ingress; native join/resolve/verified-root sets stay internally native. These do not independently strip native root separators. |
+| JVM module discovery | fixed / deliberate | First Windows CI exposed native-separator roots in the discovery API. Roots now canonical at output; verified absolute directories remain native; existing `sep` containment was correct. |
 | TypeScript IDs, imports, re-exports, namespace/super calls, template pairing | fixed / already-correct | Input filenames and resolver returns canonical before IDs/maps; pending records normalized before project finalizers. Resolver policies otherwise unchanged. |
 | Parser cache | fixed / deliberate | Version 5 invalidates old records. SQLite location/mtime IO remains native; cache file keys now come from canonical scanner records. Cache fail-open policy unchanged. |
 | `src/graph/index.ts`, `serializer.ts`, `updater.ts` | fixed | All supported graph entry paths canonicalize records. JSON node aliases merge under a single canonical ID. |
@@ -203,3 +204,9 @@ used an isolated temporary directory which was removed afterward.
 references, scanner keys and pending cross-file hints can now resolve where old
 spellings missed. Old caches must not retain missing or mismatched edges.
 `formatVersion` remains **2**, package version **1.20.1**, node/edge kinds unchanged.
+
+First hosted Windows run found two JVM root-output assertions and a test-only
+ESM import using a drive path rather than a file URL. The discovery output was
+fixed with the shared helper; the ESM test uses `pathToFileURL`. All original
+assertions remain. Windows path regression and count-contract tests passed on
+that first run; the full matrix is rerun after these corrections.
