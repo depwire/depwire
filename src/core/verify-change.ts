@@ -351,8 +351,9 @@ export async function verifyChange(
           });
         }
       }
-    } catch {
-      // Security scan may fail on files not on disk — non-fatal.
+    } catch (error) {
+      // Informational only, but unavailable must not look like a clean scan.
+      warnings.push(`Security scan unavailable for ${filePath}: ${error}`);
     }
   }
 

@@ -15,6 +15,10 @@ export function generateDeadCode(
   projectRoot: string,
   projectName: string
 ): string {
+  if (graph.order === 0) {
+    return header(`${projectName} - Dead Code Analysis`, 1)
+      + 'No parseable files found. Nothing was analyzed, so no dead-code report is available.\n';
+  }
   const report = analyzeDeadCode(graph, projectRoot, {
     confidence: "low",
     includeTests: false,

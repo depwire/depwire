@@ -107,7 +107,7 @@ export async function popStash(dir: string): Promise<void> {
       execSync('git stash pop -q', { cwd: dir, stdio: 'ignore' });
     }
   } catch (error) {
-    // Silently ignore - don't print anything to terminal
+    throw new Error(`Failed to restore stashed changes in ${dir}; run git stash list and resolve manually: ${error}`);
   }
 }
 

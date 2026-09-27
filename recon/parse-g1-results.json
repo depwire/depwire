@@ -1,0 +1,650 @@
+{
+  "baselineCommit": "9ffc248",
+  "corpora": {
+    "code-graph": "9ffc248",
+    "nest": "4c751c503bc753095f4b4f052e106f95218cc33f",
+    "drizzle": "b7862528fd8fc39bc2653a6c18dad7c1f4e68d10"
+  },
+  "method": "Identical frozen source trees; cold parse, useCache false; compare complete health excluding timestamp, symbols and edges by kind.",
+  "identical": true,
+  "before": {
+    "/tmp/depwire-parse-main-9ffc248": {
+      "files": 263,
+      "symbols": 6980,
+      "edges": {
+        "calls": 1803,
+        "imports": 719,
+        "references-type": 1096,
+        "references": 1,
+        "inherits": 3,
+        "injects": 1,
+        "rest-api": 6
+      },
+      "health": {
+        "status": "scored",
+        "overall": 71,
+        "grade": "C",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 4.9 connections per file, max 224, 7% cross-directory",
+            "metrics": {
+              "avgConnections": 4.92,
+              "maxConnections": 224,
+              "crossDirCoupling": 6.9
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "Average 46% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 46,
+              "directories": 36
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "No circular dependencies detected",
+            "metrics": {
+              "cycles": 0,
+              "cyclesPer100": 0
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "13 god files (>37 connections)",
+            "metrics": {
+              "godFiles": 13,
+              "threshold": 37.2,
+              "godFilesPer100": 5
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 89,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "4 orphan files (3%), 160 dead symbols (2.2%)",
+            "metrics": {
+              "orphans": 4,
+              "orphanPercentage": 3.1,
+              "deadSymbols": 160,
+              "deadCodePercentage": 2.2
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 11 levels",
+            "metrics": {
+              "maxDepth": 11
+            }
+          }
+        ],
+        "summary": "Project health score is 71/100 (Grade: C). Moderate architecture quality. Consider refactoring high-risk areas.",
+        "recommendations": [
+          "Low cohesion: Only 46% internal dependencies. Reorganize files by feature or domain.",
+          "13 god files detected with >37.2 connections (5.0 per 100 files). Split into smaller, focused modules.",
+          "Maximum dependency depth is 11 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 262,
+          "symbols": 6980,
+          "edges": 3629,
+          "languages": {
+            "JavaScript": 351,
+            "TypeScript": 6473,
+            "Other": 107,
+            "Go": 21,
+            "Python": 28
+          }
+        }
+      }
+    },
+    "/tmp/nest-repro": {
+      "files": 1836,
+      "symbols": 16841,
+      "edges": {
+        "references-type": 5087,
+        "imports": 6361,
+        "injects": 502,
+        "calls": 2843,
+        "inherits": 166,
+        "rest-api": 2
+      },
+      "health": {
+        "status": "scored",
+        "overall": 55,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 5.1 connections per file, max 876, 35% cross-directory",
+            "metrics": {
+              "avgConnections": 5.06,
+              "maxConnections": 876,
+              "crossDirCoupling": 35
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 14% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 13.6,
+              "directories": 468
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "59 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 59,
+              "cyclesPer100": 3.4
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "71 god files (>31 connections)",
+            "metrics": {
+              "godFiles": 71,
+              "threshold": 31.1,
+              "godFilesPer100": 4.1
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 68,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "34 orphan files (3%), 3300 dead symbols (18.0%)",
+            "metrics": {
+              "orphans": 34,
+              "orphanPercentage": 2.7,
+              "deadSymbols": 3300,
+              "deadCodePercentage": 18
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 20,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 22 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 22
+            }
+          }
+        ],
+        "summary": "Project health score is 55/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "Low cohesion: Only 13.6% internal dependencies. Reorganize files by feature or domain.",
+          "59 circular dependency cycles detected (3.4 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "71 god files detected with >31.1 connections (4.1 per 100 files). Split into smaller, focused modules.",
+          "34 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 22 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 1745,
+          "symbols": 16841,
+          "edges": 14961,
+          "languages": {
+            "TypeScript": 16805,
+            "Other": 4,
+            "JavaScript": 32
+          }
+        }
+      }
+    },
+    "/tmp/drizzle-repro": {
+      "files": 968,
+      "symbols": 30479,
+      "edges": {
+        "imports": 6122,
+        "calls": 4472,
+        "references-type": 12203,
+        "injects": 684,
+        "inherits": 700
+      },
+      "health": {
+        "status": "scored",
+        "overall": 34,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 10,
+            "weight": 0.25,
+            "grade": "F",
+            "details": "Average 15.1 connections per file, max 1418, 23% cross-directory",
+            "metrics": {
+              "avgConnections": 15.15,
+              "maxConnections": 1418,
+              "crossDirCoupling": 23.3
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 12% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 11.5,
+              "directories": 148
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 20,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "622 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 622,
+              "cyclesPer100": 70.3
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "50 god files (>95 connections)",
+            "metrics": {
+              "godFiles": 50,
+              "threshold": 95.3,
+              "godFilesPer100": 5.6
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 69,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "20 orphan files (3%), 5239 dead symbols (16.7%)",
+            "metrics": {
+              "orphans": 20,
+              "orphanPercentage": 3.2,
+              "deadSymbols": 5239,
+              "deadCodePercentage": 16.7
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 9 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 9
+            }
+          }
+        ],
+        "summary": "Project health score is 34/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "High coupling detected: Average 15.15 connections per file. Consider breaking down large modules.",
+          "Low cohesion: Only 11.5% internal dependencies. Reorganize files by feature or domain.",
+          "622 circular dependency cycles detected (70.3 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "50 god files detected with >95.3 connections (5.6 per 100 files). Split into smaller, focused modules.",
+          "20 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 9 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 885,
+          "symbols": 30479,
+          "edges": 24181,
+          "languages": {
+            "TypeScript": 29984,
+            "JavaScript": 495
+          }
+        }
+      }
+    }
+  },
+  "after": {
+    "/tmp/depwire-parse-main-9ffc248": {
+      "files": 263,
+      "symbols": 6980,
+      "edges": {
+        "calls": 1803,
+        "imports": 719,
+        "references-type": 1096,
+        "references": 1,
+        "inherits": 3,
+        "injects": 1,
+        "rest-api": 6
+      },
+      "health": {
+        "status": "scored",
+        "overall": 71,
+        "grade": "C",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 4.9 connections per file, max 224, 7% cross-directory",
+            "metrics": {
+              "avgConnections": 4.92,
+              "maxConnections": 224,
+              "crossDirCoupling": 6.9
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "Average 46% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 46,
+              "directories": 36
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "No circular dependencies detected",
+            "metrics": {
+              "cycles": 0,
+              "cyclesPer100": 0
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "13 god files (>37 connections)",
+            "metrics": {
+              "godFiles": 13,
+              "threshold": 37.2,
+              "godFilesPer100": 5
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 89,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "4 orphan files (3%), 160 dead symbols (2.2%)",
+            "metrics": {
+              "orphans": 4,
+              "orphanPercentage": 3.1,
+              "deadSymbols": 160,
+              "deadCodePercentage": 2.2
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 11 levels",
+            "metrics": {
+              "maxDepth": 11
+            }
+          }
+        ],
+        "summary": "Project health score is 71/100 (Grade: C). Moderate architecture quality. Consider refactoring high-risk areas.",
+        "recommendations": [
+          "Low cohesion: Only 46% internal dependencies. Reorganize files by feature or domain.",
+          "13 god files detected with >37.2 connections (5.0 per 100 files). Split into smaller, focused modules.",
+          "Maximum dependency depth is 11 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 262,
+          "symbols": 6980,
+          "edges": 3629,
+          "languages": {
+            "JavaScript": 351,
+            "TypeScript": 6473,
+            "Other": 107,
+            "Go": 21,
+            "Python": 28
+          }
+        }
+      }
+    },
+    "/tmp/nest-repro": {
+      "files": 1836,
+      "symbols": 16841,
+      "edges": {
+        "references-type": 5087,
+        "imports": 6361,
+        "injects": 502,
+        "calls": 2843,
+        "inherits": 166,
+        "rest-api": 2
+      },
+      "health": {
+        "status": "scored",
+        "overall": 55,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 5.1 connections per file, max 876, 35% cross-directory",
+            "metrics": {
+              "avgConnections": 5.06,
+              "maxConnections": 876,
+              "crossDirCoupling": 35
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 14% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 13.6,
+              "directories": 468
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "59 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 59,
+              "cyclesPer100": 3.4
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "71 god files (>31 connections)",
+            "metrics": {
+              "godFiles": 71,
+              "threshold": 31.1,
+              "godFilesPer100": 4.1
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 68,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "34 orphan files (3%), 3300 dead symbols (18.0%)",
+            "metrics": {
+              "orphans": 34,
+              "orphanPercentage": 2.7,
+              "deadSymbols": 3300,
+              "deadCodePercentage": 18
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 20,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 22 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 22
+            }
+          }
+        ],
+        "summary": "Project health score is 55/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "Low cohesion: Only 13.6% internal dependencies. Reorganize files by feature or domain.",
+          "59 circular dependency cycles detected (3.4 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "71 god files detected with >31.1 connections (4.1 per 100 files). Split into smaller, focused modules.",
+          "34 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 22 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 1745,
+          "symbols": 16841,
+          "edges": 14961,
+          "languages": {
+            "TypeScript": 16805,
+            "Other": 4,
+            "JavaScript": 32
+          }
+        }
+      }
+    },
+    "/tmp/drizzle-repro": {
+      "files": 968,
+      "symbols": 30479,
+      "edges": {
+        "imports": 6122,
+        "calls": 4472,
+        "references-type": 12203,
+        "injects": 684,
+        "inherits": 700
+      },
+      "health": {
+        "status": "scored",
+        "overall": 34,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 10,
+            "weight": 0.25,
+            "grade": "F",
+            "details": "Average 15.1 connections per file, max 1418, 23% cross-directory",
+            "metrics": {
+              "avgConnections": 15.15,
+              "maxConnections": 1418,
+              "crossDirCoupling": 23.3
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 12% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 11.5,
+              "directories": 148
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 20,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "622 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 622,
+              "cyclesPer100": 70.3
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "50 god files (>95 connections)",
+            "metrics": {
+              "godFiles": 50,
+              "threshold": 95.3,
+              "godFilesPer100": 5.6
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 69,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "20 orphan files (3%), 5239 dead symbols (16.7%)",
+            "metrics": {
+              "orphans": 20,
+              "orphanPercentage": 3.2,
+              "deadSymbols": 5239,
+              "deadCodePercentage": 16.7
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 9 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 9
+            }
+          }
+        ],
+        "summary": "Project health score is 34/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "High coupling detected: Average 15.15 connections per file. Consider breaking down large modules.",
+          "Low cohesion: Only 11.5% internal dependencies. Reorganize files by feature or domain.",
+          "622 circular dependency cycles detected (70.3 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "50 god files detected with >95.3 connections (5.6 per 100 files). Split into smaller, focused modules.",
+          "20 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 9 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 885,
+          "symbols": 30479,
+          "edges": 24181,
+          "languages": {
+            "TypeScript": 29984,
+            "JavaScript": 495
+          }
+        }
+      }
+    }
+  }
+}

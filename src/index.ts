@@ -55,7 +55,7 @@ program
 program
   .command('parse')
   .description('Parse a project and build dependency graph')
-  .argument('[directory]', 'Project directory to parse (defaults to current directory or auto-detected project root)')
+  .argument('[directory]', 'Project directory to parse (defaults to current directory)')
   .option('-o, --output <dir>', 'Output directory (takes precedence over the project path)')
   .option('--pretty', 'Pretty-print JSON output')
   .option('--stats', 'Print summary statistics')
@@ -66,7 +66,7 @@ program
     const startTime = Date.now();
     
     try {
-      const projectRoot = directory ? resolve(directory) : findProjectRoot();
+      const projectRoot = resolve(directory ?? process.cwd());
       
       console.log(`Parsing project: ${projectRoot}`);
       
@@ -76,10 +76,17 @@ program
         verbose: options.verbose
       });
       console.log(`Parsed ${parsedFiles.length} files`);
-      if (parsedFiles.errorFiles.length > 0) {
-        console.log(`${parsedFiles.errorFiles.length} files failed`);
+
+      // An empty parse is not a successful analysis, even when every candidate failed.
+      if (parsedFiles.length === 0) {
+        console.error(`No parseable files found in ${projectRoot}. No graph was exported.`);
+        process.exitCode = 2;
+        return;
       }
-      
+      if (parsedFiles.errorFiles.length > 0) {
+        console.error(`Warning: ${parsedFiles.errorFiles.length} files failed; graph is partial.`);
+      }
+
       // Build the graph
       const graph = buildGraph(parsedFiles, projectRoot);
       

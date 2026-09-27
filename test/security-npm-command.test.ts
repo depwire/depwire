@@ -27,9 +27,14 @@ it('uses identical rendering for successful and nonzero npm audit reports', asyn
   expect(nonzero).toHaveLength(3);
   expect(nonzero[1].description).toContain('depwire-cli → simple-git 3.35.2');
 });
-it.each(['not json', '{"error":{"code":"EAUDITNOLOCK"}}'])('retains an audit unavailable finding for %s', async payload => {
+it.each(['not json', '{"error":{"code":"EAUDITNOLOCK"}}', '{}', '[]', 'null', '{"vulnerabilities":[]}', '{"vulnerabilities":null}'])('retains an audit unavailable finding for %s', async payload => {
   vi.mocked(execSync).mockImplementation(() => { throw Object.assign(new Error('exit 1'), {stdout:payload}); });
   const findings = await checkDependencies([], project());
   expect(findings).toHaveLength(1);
   expect(findings[0].title).toBe('npm audit unavailable');
+});
+
+it('accepts a valid clean npm audit report', async () => {
+  vi.mocked(execSync).mockReturnValue('{"vulnerabilities":{}}');
+  expect(await checkDependencies([], project())).toEqual([]);
 });

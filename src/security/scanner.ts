@@ -28,10 +28,21 @@ export async function scanSecurity(
   // Parse project to get files with content access
   const parsedFiles = await parseProject(projectRoot);
 
+  // A failed parse cannot establish that a project has no security findings.
+  if (parsedFiles.errorFiles.length > 0) {
+    throw new Error(`Security scan incomplete: ${parsedFiles.errorFiles.length} files failed to parse.`);
+  }
+
   // Filter to target if specified
   const filteredFiles = options.target
     ? parsedFiles.filter(f => f.filePath === options.target || f.filePath.endsWith(options.target!))
     : parsedFiles;
+
+  if (filteredFiles.length === 0) {
+    throw new Error(options.target
+      ? `No parseable files found for security scan target: ${options.target}`
+      : 'No parseable files found for security scan.');
+  }
 
   // Check if frontend files exist
   const hasFrontendFiles = filteredFiles.some(f => /\.(?:tsx|jsx|html)$/.test(f.filePath));

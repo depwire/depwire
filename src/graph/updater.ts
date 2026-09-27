@@ -63,9 +63,6 @@ export async function updateFileInGraph(
   projectRoot: string,
   relativeFilePath: string
 ): Promise<void> {
-  // Remove old version
-  removeFileFromGraph(graph, relativeFilePath);
-
   // Parse new version
   const absolutePath = join(projectRoot, relativeFilePath);
   
@@ -73,10 +70,13 @@ export async function updateFileInGraph(
     const sourceCode = readFileSync(absolutePath, 'utf-8');
     const parsedFile = parseTypeScriptFile(relativeFilePath, sourceCode, projectRoot);
     
+    // Keep the previous graph if reading or parsing the replacement fails.
+    removeFileFromGraph(graph, relativeFilePath);
+
     // Add new version
     addFileToGraph(graph, parsedFile);
   } catch (error) {
     console.error(`Failed to parse file ${relativeFilePath}:`, error);
-    // Don't re-add if parsing failed
+    throw error;
   }
 }

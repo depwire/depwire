@@ -99,8 +99,9 @@ function resolveInput(
         while ((bytesRead = readSync(0, buf, 0, buf.length, null)) > 0) {
           chunks.push(Buffer.from(buf.subarray(0, bytesRead)));
         }
-      } catch {
-        // EOF or read error
+      } catch (error) {
+        // EOF is readSync returning zero; an exception means input is incomplete.
+        throw new Error('Failed to read change content from stdin', { cause: error });
       }
       const stdinContent = Buffer.concat(chunks).toString('utf-8');
       if (stdinContent.length > 0) {

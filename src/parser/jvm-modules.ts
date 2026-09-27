@@ -83,7 +83,8 @@ function discoverMavenModules(
   let content: string;
   try {
     content = readFileSync(normalizedPath, 'utf-8');
-  } catch {
+  } catch (error) {
+    errors.push({ path: pomRelativePath, reason: `Unable to read Maven module declaration: ${error}` });
     return [];
   }
 
@@ -136,7 +137,8 @@ function discoverGradleModules(projectRoot: string, errors: JvmModuleDiscoveryEr
     if (existsSync(fullPath)) {
       try {
         settingsContent = readFileSync(fullPath, 'utf-8');
-      } catch {
+      } catch (error) {
+        errors.push({ path: settingsFile, reason: `Unable to read Gradle settings: ${error}` });
         continue;
       }
       break;
