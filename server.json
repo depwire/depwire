@@ -7,12 +7,12 @@
     "url": "https://github.com/depwire/depwire",
     "source": "github"
   },
-  "version": "1.20.2",
+  "version": "1.21.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "depwire-cli",
-      "version": "1.20.2",
+      "version": "1.21.0",
       "transport": {
         "type": "stdio"
       }
