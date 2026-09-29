@@ -1,0 +1,8 @@
+[
+  "tree-sitter-c",
+  "tree-sitter-c-sharp",
+  "tree-sitter-cpp",
+  "tree-sitter-java",
+  "tree-sitter-php",
+  "tree-sitter-ruby"
+]
