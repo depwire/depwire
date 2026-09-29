@@ -1,7 +1,8 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { smokeLanguages } from './language-smoke.mjs';
 const root = process.cwd();
 const temp = mkdtempSync(join(tmpdir(), 'depwire-packed-'));
 const env = { ...process.env, DEPWIRE_NO_TELEMETRY: '1' };
@@ -24,6 +25,9 @@ try {
   const tarball = join(temp, filename);
   npm(['install', process.platform === 'win32' ? `"${tarball}"` : tarball], install);
   const cli = join(install, 'node_modules/depwire-cli/dist/index.js');
+  for (const name of ['tree-sitter-c', 'tree-sitter-c-sharp', 'tree-sitter-cpp', 'tree-sitter-java', 'tree-sitter-php', 'tree-sitter-ruby']) {
+    if (existsSync(join(install, 'node_modules', name))) throw new Error(`Unexpected runtime native grammar: ${name}`);
+  }
   function cliRun(args) {
     const result = spawnSync(process.execPath, [cli, ...args], { cwd: install, env, encoding: 'utf8' });
     if (result.status !== 0) throw new Error(result.stderr || String(result.error));
@@ -39,6 +43,13 @@ try {
     throw new Error(`Installed depwire command failed: ${installedCommand.error ?? installedCommand.stderr}`);
   }
   cliRun(['parse', fixture, '--output', join(temp, 'output')]);
+  const languageRoot = join(temp, 'languages');
+  const languages = await smokeLanguages(join(install, 'node_modules/depwire-cli/dist/sdk.js'), languageRoot);
+  // Exercise the CLI export path as well as every SDK language parser.
+  for (const language of ['csharp', 'cpp', 'java', 'php', 'ruby', 'python']) {
+    cliRun(['parse', join(languageRoot, language), '--output', join(temp, `output-${language}`)]);
+  }
+  console.log(`Native grammars absent; ${Object.keys(languages).length} language/grammar fixtures passed`);
   const child = spawn(process.execPath, [cli, 'mcp', fixture, '--no-cache'], { env, stdio: ['pipe', 'pipe', 'pipe'] });
   let stdout = '', stderr = '';
   const send = message => child.stdin.write(JSON.stringify(message) + '\n');

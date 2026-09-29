@@ -1,0 +1,1293 @@
+{
+  "typescript": {
+    "files": [
+      {
+        "filePath": "sample.ts",
+        "symbols": [
+          {
+            "id": "sample.ts::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.ts",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.ts::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.ts",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.ts::caller",
+            "target": "sample.ts::leaf",
+            "kind": "calls",
+            "filePath": "sample.ts",
+            "line": 2
+          }
+        ],
+        "unresolvedImports": [],
+        "unresolvedCalls": [],
+        "unresolvedTypeRefs": [],
+        "wildcardReExports": []
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.ts::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.ts",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.ts::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.ts",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.ts::caller",
+        "target": "sample.ts::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.ts",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "tsx": {
+    "files": [
+      {
+        "filePath": "sample.tsx",
+        "symbols": [
+          {
+            "id": "sample.tsx::Widget",
+            "name": "Widget",
+            "kind": "function",
+            "filePath": "sample.tsx",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          }
+        ],
+        "edges": [],
+        "unresolvedImports": [],
+        "unresolvedCalls": [],
+        "unresolvedTypeRefs": [],
+        "wildcardReExports": []
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.tsx::Widget",
+        "attributes": {
+          "name": "Widget",
+          "kind": "function",
+          "filePath": "sample.tsx",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      }
+    ],
+    "edges": []
+  },
+  "javascript": {
+    "files": [
+      {
+        "filePath": "sample.js",
+        "symbols": [
+          {
+            "id": "sample.js::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.js",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.js::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.js",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.js::caller",
+            "target": "sample.js::leaf",
+            "kind": "calls",
+            "filePath": "sample.js",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.js::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.js",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.js::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.js",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.js::caller",
+        "target": "sample.js::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.js",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "jsx": {
+    "files": [
+      {
+        "filePath": "sample.jsx",
+        "symbols": [
+          {
+            "id": "sample.jsx::Widget",
+            "name": "Widget",
+            "kind": "function",
+            "filePath": "sample.jsx",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          }
+        ],
+        "edges": []
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.jsx::Widget",
+        "attributes": {
+          "name": "Widget",
+          "kind": "function",
+          "filePath": "sample.jsx",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      }
+    ],
+    "edges": []
+  },
+  "python": {
+    "files": [
+      {
+        "filePath": "sample.py",
+        "symbols": [
+          {
+            "id": "sample.py::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.py",
+            "startLine": 1,
+            "endLine": 2,
+            "exported": true
+          },
+          {
+            "id": "sample.py::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.py",
+            "startLine": 3,
+            "endLine": 4,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.py::caller",
+            "target": "sample.py::leaf",
+            "kind": "calls",
+            "filePath": "sample.py",
+            "line": 4
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.py::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.py",
+          "startLine": 1,
+          "endLine": 2,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.py::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.py",
+          "startLine": 3,
+          "endLine": 4,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.py::caller",
+        "target": "sample.py::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.py",
+          "line": 4
+        }
+      }
+    ]
+  },
+  "go": {
+    "files": [
+      {
+        "filePath": "sample.go",
+        "symbols": [
+          {
+            "id": "sample.go::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.go",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": false
+          },
+          {
+            "id": "sample.go::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.go",
+            "startLine": 3,
+            "endLine": 3,
+            "exported": false
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.go::caller",
+            "target": "sample.go::leaf",
+            "kind": "calls",
+            "filePath": "sample.go",
+            "line": 3
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.go::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.go",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": false
+        }
+      },
+      {
+        "key": "sample.go::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.go",
+          "startLine": 3,
+          "endLine": 3,
+          "exported": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.go::caller",
+        "target": "sample.go::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.go",
+          "line": 3
+        }
+      }
+    ]
+  },
+  "rust": {
+    "files": [
+      {
+        "filePath": "sample.rs",
+        "symbols": [
+          {
+            "id": "sample.rs::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.rs",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.rs::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.rs",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": false
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.rs::caller",
+            "target": "sample.rs::leaf",
+            "kind": "calls",
+            "filePath": "sample.rs",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.rs::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.rs",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.rs::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.rs",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.rs::caller",
+        "target": "sample.rs::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.rs",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "c": {
+    "files": [
+      {
+        "filePath": "sample.c",
+        "symbols": [
+          {
+            "id": "sample.c::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.c",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.c::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.c",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.c::caller",
+            "target": "sample.c::leaf",
+            "kind": "calls",
+            "filePath": "sample.c",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.c::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.c",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.c::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.c",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.c::caller",
+        "target": "sample.c::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.c",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "csharp": {
+    "files": [
+      {
+        "filePath": "Sample.cs",
+        "symbols": [
+          {
+            "id": "Sample.cs::Sample",
+            "name": "Sample",
+            "kind": "class",
+            "filePath": "Sample.cs",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "Sample.cs::Sample.Leaf",
+            "name": "Leaf",
+            "kind": "method",
+            "filePath": "Sample.cs",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true,
+            "scope": "Sample"
+          },
+          {
+            "id": "Sample.cs::Sample.Caller",
+            "name": "Caller",
+            "kind": "method",
+            "filePath": "Sample.cs",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true,
+            "scope": "Sample"
+          }
+        ],
+        "edges": [
+          {
+            "source": "Sample.cs::Sample.Caller",
+            "target": "Sample.cs::Sample.Leaf",
+            "kind": "calls",
+            "filePath": "Sample.cs",
+            "line": 1
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "Sample.cs::Sample",
+        "attributes": {
+          "name": "Sample",
+          "kind": "class",
+          "filePath": "Sample.cs",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "Sample.cs::Sample.Leaf",
+        "attributes": {
+          "name": "Leaf",
+          "kind": "method",
+          "filePath": "Sample.cs",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true,
+          "scope": "Sample"
+        }
+      },
+      {
+        "key": "Sample.cs::Sample.Caller",
+        "attributes": {
+          "name": "Caller",
+          "kind": "method",
+          "filePath": "Sample.cs",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true,
+          "scope": "Sample"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "Sample.cs::Sample.Caller",
+        "target": "Sample.cs::Sample.Leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "Sample.cs",
+          "line": 1
+        }
+      }
+    ]
+  },
+  "java": {
+    "files": [
+      {
+        "filePath": "Sample.java",
+        "symbols": [
+          {
+            "id": "Sample.java::Sample",
+            "name": "Sample",
+            "kind": "class",
+            "filePath": "Sample.java",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "Sample.java::Sample.leaf",
+            "name": "leaf",
+            "kind": "method",
+            "filePath": "Sample.java",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true,
+            "scope": "Sample"
+          },
+          {
+            "id": "Sample.java::Sample.caller",
+            "name": "caller",
+            "kind": "method",
+            "filePath": "Sample.java",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true,
+            "scope": "Sample"
+          }
+        ],
+        "edges": [
+          {
+            "source": "Sample.java::Sample.caller",
+            "target": "Sample.java::Sample.leaf",
+            "kind": "calls",
+            "filePath": "Sample.java",
+            "line": 1
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "Sample.java::Sample",
+        "attributes": {
+          "name": "Sample",
+          "kind": "class",
+          "filePath": "Sample.java",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "Sample.java::Sample.leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "method",
+          "filePath": "Sample.java",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true,
+          "scope": "Sample"
+        }
+      },
+      {
+        "key": "Sample.java::Sample.caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "method",
+          "filePath": "Sample.java",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true,
+          "scope": "Sample"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "Sample.java::Sample.caller",
+        "target": "Sample.java::Sample.leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "Sample.java",
+          "line": 1
+        }
+      }
+    ]
+  },
+  "cpp": {
+    "files": [
+      {
+        "filePath": "sample.cpp",
+        "symbols": [
+          {
+            "id": "sample.cpp::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.cpp",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.cpp::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.cpp",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.cpp::caller",
+            "target": "sample.cpp::leaf",
+            "kind": "calls",
+            "filePath": "sample.cpp",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.cpp::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.cpp",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.cpp::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.cpp",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.cpp::caller",
+        "target": "sample.cpp::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.cpp",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "kotlin": {
+    "files": [
+      {
+        "filePath": "sample.kt",
+        "symbols": [
+          {
+            "id": "sample.kt::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.kt",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.kt::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.kt",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.kt::caller",
+            "target": "sample.kt::leaf",
+            "kind": "calls",
+            "filePath": "sample.kt",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.kt::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.kt",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.kt::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.kt",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.kt::caller",
+        "target": "sample.kt::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.kt",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "php": {
+    "files": [
+      {
+        "filePath": "sample.php",
+        "symbols": [
+          {
+            "id": "sample.php::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.php",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          },
+          {
+            "id": "sample.php::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.php",
+            "startLine": 3,
+            "endLine": 3,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.php::caller",
+            "target": "sample.php::leaf",
+            "kind": "calls",
+            "filePath": "sample.php",
+            "line": 3
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.php::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.php",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.php::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.php",
+          "startLine": 3,
+          "endLine": 3,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.php::caller",
+        "target": "sample.php::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.php",
+          "line": 3
+        }
+      }
+    ]
+  },
+  "swift": {
+    "files": [
+      {
+        "filePath": "sample.swift",
+        "symbols": [
+          {
+            "id": "sample.swift::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.swift",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.swift::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.swift",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.swift::caller",
+            "target": "sample.swift::leaf",
+            "kind": "calls",
+            "filePath": "sample.swift",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.swift::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.swift",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.swift::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.swift",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.swift::caller",
+        "target": "sample.swift::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.swift",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "mojo": {
+    "files": [
+      {
+        "filePath": "sample.mojo",
+        "symbols": [
+          {
+            "id": "sample.mojo::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.mojo",
+            "startLine": 1,
+            "endLine": 2,
+            "exported": true
+          },
+          {
+            "id": "sample.mojo::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.mojo",
+            "startLine": 3,
+            "endLine": 5,
+            "exported": true
+          }
+        ],
+        "edges": []
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.mojo::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.mojo",
+          "startLine": 1,
+          "endLine": 2,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.mojo::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.mojo",
+          "startLine": 3,
+          "endLine": 5,
+          "exported": true
+        }
+      }
+    ],
+    "edges": []
+  },
+  "ruby": {
+    "files": [
+      {
+        "filePath": "sample.rb",
+        "symbols": [
+          {
+            "id": "sample.rb::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.rb",
+            "startLine": 1,
+            "endLine": 3,
+            "exported": true
+          },
+          {
+            "id": "sample.rb::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.rb",
+            "startLine": 4,
+            "endLine": 6,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.rb::caller",
+            "target": "sample.rb::leaf",
+            "kind": "calls",
+            "filePath": "sample.rb",
+            "line": 5
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.rb::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.rb",
+          "startLine": 1,
+          "endLine": 3,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.rb::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.rb",
+          "startLine": 4,
+          "endLine": 6,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.rb::caller",
+        "target": "sample.rb::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.rb",
+          "line": 5
+        }
+      }
+    ]
+  },
+  "dart": {
+    "files": [
+      {
+        "filePath": "sample.dart",
+        "symbols": [
+          {
+            "id": "sample.dart::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.dart",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.dart::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.dart",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.dart::caller",
+            "target": "sample.dart::leaf",
+            "kind": "calls",
+            "filePath": "sample.dart",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.dart::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.dart",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.dart::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.dart",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.dart::caller",
+        "target": "sample.dart::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.dart",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "r": {
+    "files": [
+      {
+        "filePath": "sample.R",
+        "symbols": [
+          {
+            "id": "sample.R::leaf",
+            "name": "leaf",
+            "kind": "function",
+            "filePath": "sample.R",
+            "startLine": 1,
+            "endLine": 1,
+            "exported": true
+          },
+          {
+            "id": "sample.R::caller",
+            "name": "caller",
+            "kind": "function",
+            "filePath": "sample.R",
+            "startLine": 2,
+            "endLine": 2,
+            "exported": true
+          }
+        ],
+        "edges": [
+          {
+            "source": "sample.R::caller",
+            "target": "sample.R::leaf",
+            "kind": "calls",
+            "filePath": "sample.R",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.R::leaf",
+        "attributes": {
+          "name": "leaf",
+          "kind": "function",
+          "filePath": "sample.R",
+          "startLine": 1,
+          "endLine": 1,
+          "exported": true
+        }
+      },
+      {
+        "key": "sample.R::caller",
+        "attributes": {
+          "name": "caller",
+          "kind": "function",
+          "filePath": "sample.R",
+          "startLine": 2,
+          "endLine": 2,
+          "exported": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sample.R::caller",
+        "target": "sample.R::leaf",
+        "attributes": {
+          "kind": "calls",
+          "filePath": "sample.R",
+          "line": 2
+        }
+      }
+    ]
+  },
+  "html": {
+    "files": [
+      {
+        "filePath": "sample.html",
+        "symbols": [
+          {
+            "id": "sample.html::__template__",
+            "name": "sample.html",
+            "kind": "template",
+            "filePath": "sample.html",
+            "startLine": 1,
+            "endLine": 2,
+            "exported": false,
+            "metadata": {
+              "references": [
+                {
+                  "type": "component",
+                  "name": "app-child",
+                  "line": 1
+                }
+              ]
+            }
+          }
+        ],
+        "edges": []
+      }
+    ],
+    "nodes": [
+      {
+        "key": "sample.html::__template__",
+        "attributes": {
+          "name": "sample.html",
+          "kind": "template",
+          "filePath": "sample.html",
+          "startLine": 1,
+          "endLine": 2,
+          "exported": false,
+          "metadata": {
+            "references": [
+              {
+                "type": "component",
+                "name": "app-child",
+                "line": 1
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "edges": []
+  }
+}
