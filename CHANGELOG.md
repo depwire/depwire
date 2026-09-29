@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.21.0
+
+### Changed — smaller installation, unchanged runtime
+
+Install size reduced **74%: 251.88 MB → 65.17 MB**, measured with clean npm installs on macOS arm64 for both the full CLI and a graph-only consumer.
+
+Five native `tree-sitter-*` packages moved to `devDependencies` after verifying byte-identical parsing without them across **all 17 supported languages plus TSX/JSX (19 fixtures)**. The WASM-based parsers load bundled grammars via `web-tree-sitter`; the native packages were never used at runtime.
+
+All **33 packed runtime files/assets** are SHA-256 identical to v1.20.2. Graph output, all health dimensions/raws, **formatVersion 2** and **RESOLUTION_VERSION 5** are unchanged. This is a minor release because it changes the dependency contract.
+
+### Security
+
+Upgraded development-only `sharp` to **0.35.4**, clearing the last high-severity audit finding. One existing low-severity development finding in `esbuild` remains.
+
 ## 1.20.2
 
 ### Fixed — canonical paths and parse contracts
