@@ -28,9 +28,9 @@ function createTestGraph(): DirectedGraph {
   });
 
   // Edges: B depends on A, C depends on A and B
-  graph.mergeEdge('src/b.ts::Bar', 'src/a.ts::Foo', { kind: 'import' });
-  graph.mergeEdge('src/c.ts::Baz', 'src/a.ts::Foo', { kind: 'import' });
-  graph.mergeEdge('src/c.ts::Baz', 'src/b.ts::Bar', { kind: 'import' });
+  graph.mergeEdge('src/b.ts::Bar', 'src/a.ts::Foo', { kind: 'imports' });
+  graph.mergeEdge('src/c.ts::Baz', 'src/a.ts::Foo', { kind: 'imports' });
+  graph.mergeEdge('src/c.ts::Baz', 'src/b.ts::Bar', { kind: 'imports' });
 
   return graph;
 }

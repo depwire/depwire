@@ -1,0 +1,403 @@
+{
+  "cliVersion": "1.21.2",
+  "nodeVersion": "25.2.1",
+  "networkxVersion": "3.4.2",
+  "purpose": "phase-one diagnostic, not production implementation",
+  "corpora": [
+    {
+      "repo": "code-graph",
+      "files": 276,
+      "nodes": 7353,
+      "edges": 3844,
+      "legacyOverall": 71,
+      "legacyCircular": 100,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 0,
+        "cyclicFileCount": 0,
+        "fileCount": 276,
+        "cyclicFilePercentage": 0.0,
+        "largestGroupSize": 0,
+        "sizes": []
+      },
+      "projectedOverall": 71,
+      "inputSha256": "1e94c856728fe67d0a792f4ff6b56f85da02ec5b8ad9b8fba46236be472cc5f3",
+      "value-dependencies-v1": {
+        "groupCount": 0,
+        "cyclicFileCount": 0,
+        "fileCount": 276,
+        "cyclicFilePercentage": 0.0,
+        "largestGroupSize": 0,
+        "sizes": [],
+        "proposedScore": 100
+      },
+      "revision": "28ec599c841964d39d0bc67f0d534da50eddbf83"
+    },
+    {
+      "repo": "nest",
+      "files": 1745,
+      "nodes": 18328,
+      "edges": 14961,
+      "legacyOverall": 55,
+      "legacyCircular": 60,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 17,
+        "cyclicFileCount": 89,
+        "fileCount": 1745,
+        "cyclicFilePercentage": 5.1003,
+        "largestGroupSize": 48,
+        "sizes": [
+          48,
+          9,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "projectedOverall": 57,
+      "inputSha256": "6beb04e2f935d710e480b6fc5aa4d9714ee3852548b93cabae141153cc1880bd",
+      "value-dependencies-v1": {
+        "groupCount": 16,
+        "cyclicFileCount": 86,
+        "fileCount": 1745,
+        "cyclicFilePercentage": 4.9284,
+        "largestGroupSize": 48,
+        "sizes": [
+          48,
+          8,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "proposedScore": 66
+      },
+      "revision": "4c751c503bc753095f4b4f052e106f95218cc33f"
+    },
+    {
+      "repo": "drizzle",
+      "files": 885,
+      "nodes": 31284,
+      "edges": 24181,
+      "legacyOverall": 34,
+      "legacyCircular": 20,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 11,
+        "cyclicFileCount": 272,
+        "fileCount": 885,
+        "cyclicFilePercentage": 30.7345,
+        "largestGroupSize": 188,
+        "sizes": [
+          188,
+          19,
+          15,
+          14,
+          13,
+          13,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "projectedOverall": 37,
+      "inputSha256": "582d30ac22a9232380dcc3020acb64daac0fb3e14593d5b17c64010962dd585a",
+      "value-dependencies-v1": {
+        "groupCount": 18,
+        "cyclicFileCount": 207,
+        "fileCount": 885,
+        "cyclicFilePercentage": 23.3898,
+        "largestGroupSize": 43,
+        "sizes": [
+          43,
+          30,
+          30,
+          27,
+          18,
+          11,
+          7,
+          6,
+          6,
+          6,
+          5,
+          4,
+          4,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "proposedScore": 35
+      },
+      "revision": "b7862528fd8fc39bc2653a6c18dad7c1f4e68d10"
+    },
+    {
+      "repo": "hono",
+      "files": 359,
+      "nodes": 9904,
+      "edges": 5372,
+      "legacyOverall": 47,
+      "legacyCircular": 20,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 6,
+        "cyclicFileCount": 79,
+        "fileCount": 359,
+        "cyclicFilePercentage": 22.0056,
+        "largestGroupSize": 59,
+        "sizes": [
+          59,
+          9,
+          4,
+          3,
+          2,
+          2
+        ]
+      },
+      "projectedOverall": 53,
+      "inputSha256": "1e259b19976546d5f9b44e11343066f2944cc86c7d8bce291e6a4749fdde0810",
+      "value-dependencies-v1": {
+        "groupCount": 7,
+        "cyclicFileCount": 50,
+        "fileCount": 359,
+        "cyclicFilePercentage": 13.9276,
+        "largestGroupSize": 36,
+        "sizes": [
+          36,
+          4,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "proposedScore": 50
+      },
+      "revision": "8217d9ece6f4d302e446b8dc353d1b3cbf51d92e"
+    },
+    {
+      "repo": "express",
+      "files": 144,
+      "nodes": 1752,
+      "edges": 325,
+      "legacyOverall": 82,
+      "legacyCircular": 100,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 0,
+        "cyclicFileCount": 0,
+        "fileCount": 144,
+        "cyclicFilePercentage": 0.0,
+        "largestGroupSize": 0,
+        "sizes": []
+      },
+      "projectedOverall": 82,
+      "inputSha256": "2af0ba262ad5e5f66c398f7ba7c5430ba7d27ab7d99aa2369743fadafe4cbe39",
+      "value-dependencies-v1": {
+        "groupCount": 0,
+        "cyclicFileCount": 0,
+        "fileCount": 144,
+        "cyclicFilePercentage": 0.0,
+        "largestGroupSize": 0,
+        "sizes": [],
+        "proposedScore": 100
+      },
+      "revision": "7ef98448f8b38099ab1ded55e458538ad47a51e7"
+    },
+    {
+      "repo": "zod",
+      "files": 510,
+      "nodes": 13315,
+      "edges": 7657,
+      "legacyOverall": 58,
+      "legacyCircular": 60,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 2,
+        "cyclicFileCount": 14,
+        "fileCount": 510,
+        "cyclicFilePercentage": 2.7451,
+        "largestGroupSize": 9,
+        "sizes": [
+          9,
+          5
+        ]
+      },
+      "projectedOverall": 66,
+      "inputSha256": "b8624841fc737219fccebdcba12d89360d9408accecc62c135498ba70d01173d",
+      "value-dependencies-v1": {
+        "groupCount": 1,
+        "cyclicFileCount": 2,
+        "fileCount": 510,
+        "cyclicFilePercentage": 0.3922,
+        "largestGroupSize": 2,
+        "sizes": [
+          2
+        ],
+        "proposedScore": 98
+      },
+      "revision": "1d1b35a1ba47e08c3ac8645341deed4a9ca13fb7"
+    },
+    {
+      "repo": "flask",
+      "files": 99,
+      "nodes": 1543,
+      "edges": 515,
+      "legacyOverall": 76,
+      "legacyCircular": 20,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 2,
+        "cyclicFileCount": 21,
+        "fileCount": 99,
+        "cyclicFilePercentage": 21.2121,
+        "largestGroupSize": 19,
+        "sizes": [
+          19,
+          2
+        ]
+      },
+      "projectedOverall": 81,
+      "inputSha256": "a82a4fb6ec5a14e35481fc1afe9be4c8c2ee419b833e34b6b19a12bbbc63945e",
+      "value-dependencies-v1": {
+        "groupCount": 2,
+        "cyclicFileCount": 21,
+        "fileCount": 99,
+        "cyclicFilePercentage": 21.2121,
+        "largestGroupSize": 19,
+        "sizes": [
+          19,
+          2
+        ],
+        "proposedScore": 44
+      },
+      "revision": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35"
+    },
+    {
+      "repo": "fastapi",
+      "files": 974,
+      "nodes": 8032,
+      "edges": 1708,
+      "legacyOverall": 65,
+      "legacyCircular": 60,
+      "errors": 0,
+      "all-dependencies-v1": {
+        "groupCount": 2,
+        "cyclicFileCount": 22,
+        "fileCount": 974,
+        "cyclicFilePercentage": 2.2587,
+        "largestGroupSize": 15,
+        "sizes": [
+          15,
+          7
+        ]
+      },
+      "projectedOverall": 69,
+      "inputSha256": "93d1d7f4e939272915eb70a2c801280ba5150c93cd1fe47a7e37629b82fa28fe",
+      "value-dependencies-v1": {
+        "groupCount": 2,
+        "cyclicFileCount": 22,
+        "fileCount": 974,
+        "cyclicFilePercentage": 2.2587,
+        "largestGroupSize": 15,
+        "sizes": [
+          15,
+          7
+        ],
+        "proposedScore": 84
+      },
+      "revision": "33d411dbc3236275dd64d200bfe18d5d60a49b2e"
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "bidirected triangle",
+      "N": 3,
+      "edges": 6,
+      "groups": 1,
+      "cyclicFiles": 3,
+      "largest": 3,
+      "score": 19
+    },
+    {
+      "name": "clean layered",
+      "N": 100,
+      "edges": 900,
+      "groups": 0,
+      "cyclicFiles": 0,
+      "largest": 0,
+      "score": 100
+    },
+    {
+      "name": "one large dense tangle plus isolates",
+      "N": 1000,
+      "edges": 35156,
+      "groups": 1,
+      "cyclicFiles": 188,
+      "largest": 188,
+      "score": 35
+    },
+    {
+      "name": "94 disjoint pairs plus isolates",
+      "N": 1000,
+      "edges": 188,
+      "groups": 94,
+      "cyclicFiles": 188,
+      "largest": 2,
+      "score": 55
+    },
+    {
+      "name": "single long cycle",
+      "N": 100,
+      "edges": 100,
+      "groups": 1,
+      "cyclicFiles": 100,
+      "largest": 100,
+      "score": 2
+    },
+    {
+      "name": "before merge / after split",
+      "N": 100,
+      "edges": 5,
+      "groups": 2,
+      "cyclicFiles": 4,
+      "largest": 2,
+      "score": 84
+    },
+    {
+      "name": "after merge / before split",
+      "N": 100,
+      "edges": 6,
+      "groups": 1,
+      "cyclicFiles": 4,
+      "largest": 4,
+      "score": 82
+    }
+  ]
+}

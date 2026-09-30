@@ -1,3 +1,4 @@
+import { compareCyclicGroups, DIMENSIONS_VERSION } from '../graph/cyclic-groups.js';
 import { resolve } from 'path';
 import chalk from 'chalk';
 import { parseProject } from '../parser/index.js';
@@ -61,8 +62,8 @@ export async function whatif(dir: string, options: WhatIfOptions): Promise<void>
       action: { type: 'delete', target: '' },
       originalGraph: { nodeCount: graph.order, edgeCount: graph.size, healthScore: 0 },
       simulatedGraph: { nodeCount: graph.order, edgeCount: graph.size, healthScore: 0 },
-      diff: { addedEdges: [], removedEdges: [], affectedNodes: [], brokenImports: [], circularDepsIntroduced: [], circularDepsResolved: [] },
-      healthDelta: { before: 0, after: 0, delta: 0, improved: false, dimensionChanges: [] },
+      diff: { addedEdges: [], removedEdges: [], affectedNodes: [], brokenImports: [], cyclicGroupChanges: compareCyclicGroups(graph, graph) },
+      healthDelta: { dimensions_v: DIMENSIONS_VERSION, before: 0, after: 0, delta: 0, improved: false, dimensionChanges: [] },
     };
 
     const server = await serveWhatIfViz(vizData, vizData, emptyResult, 'none', '');
@@ -321,7 +322,7 @@ function printResult(result: SimulationResult): void {
   }
 
   console.log(
-    `${chalk.bold('Circular Deps:')}   ${diff.circularDepsIntroduced.length} introduced, ${diff.circularDepsResolved.length} resolved`
+    `${chalk.bold('Cyclic Group Changes:')} ${JSON.stringify(diff.cyclicGroupChanges)}`
   );
   console.log(`${chalk.bold('Added Edges:')}     ${diff.addedEdges.length}`);
   console.log(`${chalk.bold('Removed Edges:')}   ${diff.removedEdges.length}`);

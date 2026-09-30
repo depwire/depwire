@@ -67,7 +67,7 @@ describe('references-type consumer policy', () => {
     const markdown = generateDependencies(graph, '/repo', 'test');
     expect(markdown).toContain('## Type References');
     expect(markdown).toContain('type reference');
-    expect(markdown).toContain('No circular dependencies detected');
+    expect(markdown).toContain('0 cyclic dependency groups');
   });
 
   it('is exposed to viz data and rendered with a distinct dashed stroke', () => {

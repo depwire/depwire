@@ -1,3 +1,4 @@
+import { analyzeCyclicGroups } from '../graph/cyclic-groups.js';
 import { DirectedGraph } from 'graphology';
 import { HealthDimension } from './types.js';
 import { dirname } from 'path';
@@ -184,114 +185,19 @@ export function calculateCohesionScore(graph: DirectedGraph): HealthDimension {
   };
 }
 
-/**
- * Dimension 3: Circular Dependencies (Weight: 20%)
- * Detects files that depend on each other in cycles
- */
-export function calculateCircularDepsScore(graph: DirectedGraph): HealthDimension {
-  const files = new Set<string>();
-
-  graph.forEachNode((node, attrs) => {
-    files.add(attrs.filePath);
-  });
-
-  if (files.size === 0) {
-    return {
-      name: 'Circular Dependencies',
-      score: 100,
-      weight: 0.20,
-      grade: 'A',
-      details: 'No files to analyze',
-      metrics: { cycles: 0, cyclesPer100: 0 }
-    };
+/** Dimension 3: share and concentration of files in cyclic dependency groups. */
+export function calculateCyclicGroupsScore(graph: DirectedGraph): HealthDimension {
+  const result = analyzeCyclicGroups(graph);
+  if (result.status !== 'analyzed') {
+    if (result.status === 'unavailable') throw new Error(`Cyclic groups unavailable: ${result.reason}`);
+    return {name:'Cyclic Dependency Groups', key:'cyclicGroups', score:NaN, weight:0.20,
+      grade:'N/A',details:result.reason,metrics:{status:result.status}};
   }
-
-  // Build file-level graph
-  const fileGraph = new Map<string, Set<string>>();
-  
-  graph.forEachEdge((edge, attrs, source, target) => {
-    if (!isRuntimeHealthEdge(attrs.kind)) return;
-    const sourceFile = graph.getNodeAttributes(source).filePath;
-    const targetFile = graph.getNodeAttributes(target).filePath;
-    
-    if (sourceFile !== targetFile) {
-      if (!fileGraph.has(sourceFile)) {
-        fileGraph.set(sourceFile, new Set());
-      }
-      fileGraph.get(sourceFile)!.add(targetFile);
-    }
-  });
-  
-  // Find cycles using DFS
-  const visited = new Set<string>();
-  const recStack = new Set<string>();
-  const cycles: string[][] = [];
-  
-  function dfs(node: string, path: string[]): void {
-    if (recStack.has(node)) {
-      // Found a cycle
-      const cycleStart = path.indexOf(node);
-      if (cycleStart >= 0) {
-        cycles.push(path.slice(cycleStart));
-      }
-      return;
-    }
-    
-    if (visited.has(node)) {
-      return;
-    }
-    
-    visited.add(node);
-    recStack.add(node);
-    path.push(node);
-    
-    const neighbors = fileGraph.get(node);
-    if (neighbors) {
-      for (const neighbor of neighbors) {
-        dfs(neighbor, [...path]);
-      }
-    }
-    
-    recStack.delete(node);
-  }
-  
-  for (const node of fileGraph.keys()) {
-    if (!visited.has(node)) {
-      dfs(node, []);
-    }
-  }
-  
-  // Deduplicate cycles
-  const uniqueCycles = new Set<string>();
-  for (const cycle of cycles) {
-    const sorted = [...cycle].sort().join(',');
-    uniqueCycles.add(sorted);
-  }
-  
-  const cycleCount = uniqueCycles.size;
-  const cyclesPer100 = (cycleCount / files.size) * 100;
-  
-  let score = 100;
-  if (cycleCount === 0) {
-    score = 100;
-  } else if (cyclesPer100 <= 1) {
-    score = 80;
-  } else if (cyclesPer100 <= 5) {
-    score = 60;
-  } else if (cyclesPer100 <= 15) {
-    score = 40;
-  } else {
-    score = 20;
-  }
-  
-  return {
-    name: 'Circular Dependencies',
-    score,
-    weight: 0.20,
-    grade: scoreToGrade(score),
-    details: cycleCount === 0 ? 'No circular dependencies detected' : `${cycleCount} circular dependency cycle${cycleCount === 1 ? '' : 's'} detected`,
-    metrics: { cycles: cycleCount, cyclesPer100: parseFloat(cyclesPer100.toFixed(1)) }
-  };
+  return {name:'Cyclic Dependency Groups',key:'cyclicGroups',score:result.score!,weight:0.20,
+    grade:scoreToGrade(result.score!),
+    details:`${result.groupCount} cyclic groups; ${result.cyclicFileCount}/${result.graphFileCount} files (${(100*result.cyclicFileRatio).toFixed(2)}%); largest group ${result.largestGroupSize} files`,
+    metrics:{groupCount:result.groupCount,cyclicFileCount:result.cyclicFileCount,cyclicFileRatio:result.cyclicFileRatio,
+      largestGroupSize:result.largestGroupSize,graphFileCount:result.graphFileCount,edgeView:result.edgeView}};
 }
 
 /**

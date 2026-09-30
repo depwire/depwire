@@ -3,6 +3,7 @@
  */
 
 export interface HealthDimension {
+  key?: string;
   name: string;
   score: number;          // 0-100
   weight: number;         // 0-1
@@ -12,6 +13,8 @@ export interface HealthDimension {
 }
 
 export interface HealthReport {
+  dimensions_v: string;
+  cyclicGroups: import('../graph/cyclic-groups.js').CyclicGroupsResult;
   // 'scored' means the six dimensions were actually measured against real
   // symbols/edges. 'no_parseable_files' means nothing was analyzed — the
   // numeric fields below are placeholders, not a measurement, and must
@@ -36,6 +39,7 @@ export interface HealthReport {
 }
 
 export interface HealthHistory {
+  dimensions_v?: string;
   timestamp: string;
   score: number;
   grade: string;

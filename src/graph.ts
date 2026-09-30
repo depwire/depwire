@@ -42,9 +42,11 @@ export { SimulationEngine } from './simulation/engine.js';
 export {
   calculateCouplingScore,
   calculateCohesionScore,
-  calculateCircularDepsScore,
+  calculateCyclicGroupsScore,
   calculateGodFilesScore,
   calculateOrphansScore,
   calculateDepthScore,
   scoreToGrade,
 } from './health/metrics.js';
+
+export * from './graph/cyclic-groups.js';

@@ -1,0 +1,4131 @@
+{
+  "policyComparison": [
+    {
+      "repo": "code-graph",
+      "policies": {
+        "A": {
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "graphFileCount": 276,
+          "coveragePercent": 0.0,
+          "largestGroupSize": 0,
+          "dimensionScoreForComparison": 100
+        },
+        "B": {
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "graphFileCount": 276,
+          "coveragePercent": 0.0,
+          "largestGroupSize": 0,
+          "dimensionScoreForComparison": 100
+        },
+        "C": {
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "graphFileCount": 276,
+          "coveragePercent": 0.0,
+          "largestGroupSize": 0,
+          "dimensionScoreForComparison": 100
+        }
+      }
+    },
+    {
+      "repo": "nest",
+      "policies": {
+        "A": {
+          "groupCount": 17,
+          "cyclicFileCount": 89,
+          "graphFileCount": 1745,
+          "coveragePercent": 5.100286532951289,
+          "largestGroupSize": 48,
+          "dimensionScoreForComparison": 65
+        },
+        "B": {
+          "groupCount": 16,
+          "cyclicFileCount": 86,
+          "graphFileCount": 1745,
+          "coveragePercent": 4.92836676217765,
+          "largestGroupSize": 48,
+          "dimensionScoreForComparison": 66
+        },
+        "C": {
+          "groupCount": 17,
+          "cyclicFileCount": 89,
+          "graphFileCount": 1745,
+          "coveragePercent": 5.100286532951289,
+          "largestGroupSize": 48,
+          "dimensionScoreForComparison": 65
+        }
+      }
+    },
+    {
+      "repo": "drizzle",
+      "policies": {
+        "A": {
+          "groupCount": 11,
+          "cyclicFileCount": 272,
+          "graphFileCount": 885,
+          "coveragePercent": 30.73446327683616,
+          "largestGroupSize": 188,
+          "dimensionScoreForComparison": 20
+        },
+        "B": {
+          "groupCount": 18,
+          "cyclicFileCount": 207,
+          "graphFileCount": 885,
+          "coveragePercent": 23.389830508474578,
+          "largestGroupSize": 43,
+          "dimensionScoreForComparison": 35
+        },
+        "C": {
+          "groupCount": 11,
+          "cyclicFileCount": 272,
+          "graphFileCount": 885,
+          "coveragePercent": 30.73446327683616,
+          "largestGroupSize": 188,
+          "dimensionScoreForComparison": 20
+        }
+      }
+    },
+    {
+      "repo": "hono",
+      "policies": {
+        "A": {
+          "groupCount": 6,
+          "cyclicFileCount": 80,
+          "graphFileCount": 359,
+          "coveragePercent": 22.284122562674096,
+          "largestGroupSize": 60,
+          "dimensionScoreForComparison": 35
+        },
+        "B": {
+          "groupCount": 7,
+          "cyclicFileCount": 50,
+          "graphFileCount": 359,
+          "coveragePercent": 13.927576601671309,
+          "largestGroupSize": 36,
+          "dimensionScoreForComparison": 50
+        },
+        "C": {
+          "groupCount": 6,
+          "cyclicFileCount": 79,
+          "graphFileCount": 359,
+          "coveragePercent": 22.00557103064067,
+          "largestGroupSize": 59,
+          "dimensionScoreForComparison": 35
+        }
+      }
+    },
+    {
+      "repo": "express",
+      "policies": {
+        "A": {
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "graphFileCount": 144,
+          "coveragePercent": 0.0,
+          "largestGroupSize": 0,
+          "dimensionScoreForComparison": 100
+        },
+        "B": {
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "graphFileCount": 144,
+          "coveragePercent": 0.0,
+          "largestGroupSize": 0,
+          "dimensionScoreForComparison": 100
+        },
+        "C": {
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "graphFileCount": 144,
+          "coveragePercent": 0.0,
+          "largestGroupSize": 0,
+          "dimensionScoreForComparison": 100
+        }
+      }
+    },
+    {
+      "repo": "zod",
+      "policies": {
+        "A": {
+          "groupCount": 3,
+          "cyclicFileCount": 12,
+          "graphFileCount": 510,
+          "coveragePercent": 2.3529411764705883,
+          "largestGroupSize": 5,
+          "dimensionScoreForComparison": 88
+        },
+        "B": {
+          "groupCount": 1,
+          "cyclicFileCount": 2,
+          "graphFileCount": 510,
+          "coveragePercent": 0.39215686274509803,
+          "largestGroupSize": 2,
+          "dimensionScoreForComparison": 98
+        },
+        "C": {
+          "groupCount": 2,
+          "cyclicFileCount": 14,
+          "graphFileCount": 510,
+          "coveragePercent": 2.7450980392156863,
+          "largestGroupSize": 9,
+          "dimensionScoreForComparison": 84
+        }
+      }
+    },
+    {
+      "repo": "flask",
+      "policies": {
+        "A": {
+          "groupCount": 2,
+          "cyclicFileCount": 21,
+          "graphFileCount": 99,
+          "coveragePercent": 21.21212121212121,
+          "largestGroupSize": 19,
+          "dimensionScoreForComparison": 44
+        },
+        "B": {
+          "groupCount": 2,
+          "cyclicFileCount": 21,
+          "graphFileCount": 99,
+          "coveragePercent": 21.21212121212121,
+          "largestGroupSize": 19,
+          "dimensionScoreForComparison": 44
+        },
+        "C": {
+          "groupCount": 2,
+          "cyclicFileCount": 21,
+          "graphFileCount": 99,
+          "coveragePercent": 21.21212121212121,
+          "largestGroupSize": 19,
+          "dimensionScoreForComparison": 44
+        }
+      }
+    },
+    {
+      "repo": "fastapi",
+      "policies": {
+        "A": {
+          "groupCount": 2,
+          "cyclicFileCount": 22,
+          "graphFileCount": 974,
+          "coveragePercent": 2.2587268993839835,
+          "largestGroupSize": 15,
+          "dimensionScoreForComparison": 84
+        },
+        "B": {
+          "groupCount": 2,
+          "cyclicFileCount": 22,
+          "graphFileCount": 974,
+          "coveragePercent": 2.2587268993839835,
+          "largestGroupSize": 15,
+          "dimensionScoreForComparison": 84
+        },
+        "C": {
+          "groupCount": 2,
+          "cyclicFileCount": 22,
+          "graphFileCount": 974,
+          "coveragePercent": 2.2587268993839835,
+          "largestGroupSize": 15,
+          "dimensionScoreForComparison": 84
+        }
+      }
+    }
+  ],
+  "health": [
+    {
+      "repo": "code-graph",
+      "source": "/tmp/depwire-determinism/code-graph-forward.json",
+      "projectRoot": "/tmp/depwire-bun-spike/corpus",
+      "before": {
+        "status": "scored",
+        "overall": 71,
+        "grade": "C",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 5.4 connections per file, max 224, 8% cross-directory",
+            "metrics": {
+              "avgConnections": 5.43,
+              "maxConnections": 224,
+              "crossDirCoupling": 8.3
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "Average 45% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 45.1,
+              "directories": 38
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "No circular dependencies detected",
+            "metrics": {
+              "cycles": 0,
+              "cyclesPer100": 0
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "12 god files (>41 connections)",
+            "metrics": {
+              "godFiles": 12,
+              "threshold": 41,
+              "godFilesPer100": 4.3
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 89,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "6 orphan files (4%), 179 dead symbols (2.4%)",
+            "metrics": {
+              "orphans": 6,
+              "orphanPercentage": 4.4,
+              "deadSymbols": 179,
+              "deadCodePercentage": 2.4
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 12 levels",
+            "metrics": {
+              "maxDepth": 12
+            }
+          }
+        ],
+        "summary": "Project health score is 71/100 (Grade: C). Moderate architecture quality. Consider refactoring high-risk areas.",
+        "recommendations": [
+          "Low cohesion: Only 45.1% internal dependencies. Reorganize files by feature or domain.",
+          "12 god files detected with >41 connections (4.3 per 100 files). Split into smaller, focused modules.",
+          "Maximum dependency depth is 12 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 276,
+          "symbols": 7170,
+          "edges": 3844,
+          "languages": {
+            "Python": 38,
+            "JavaScript": 397,
+            "TypeScript": 6607,
+            "Other": 107,
+            "Go": 21
+          }
+        },
+        "timestamp": "2026-09-30T18:54:48.664Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 276,
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "cyclicFileRatio": 0,
+          "largestGroupSize": 0,
+          "score": 100,
+          "groups": []
+        },
+        "overall": 71,
+        "grade": "C",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 5.4 connections per file, max 224, 8% cross-directory",
+            "metrics": {
+              "avgConnections": 5.43,
+              "maxConnections": 224,
+              "crossDirCoupling": 8.3
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "Average 45% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 45.1,
+              "directories": 38
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "0 cyclic groups; 0/276 files (0.00%); largest group 0 files",
+            "metrics": {
+              "groupCount": 0,
+              "cyclicFileCount": 0,
+              "cyclicFileRatio": 0,
+              "largestGroupSize": 0,
+              "graphFileCount": 276,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "12 god files (>41 connections)",
+            "metrics": {
+              "godFiles": 12,
+              "threshold": 41,
+              "godFilesPer100": 4.3
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 89,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "6 orphan files (4%), 179 dead symbols (2.4%)",
+            "metrics": {
+              "orphans": 6,
+              "orphanPercentage": 4.4,
+              "deadSymbols": 179,
+              "deadCodePercentage": 2.4
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 12 levels",
+            "metrics": {
+              "maxDepth": 12
+            }
+          }
+        ],
+        "summary": "Project health score is 71/100 (Grade: C). Moderate architecture quality. Consider refactoring high-risk areas.",
+        "recommendations": [
+          "Low cohesion: Only 45.1% internal dependencies. Reorganize files by feature or domain.",
+          "12 god files detected with >41 connections (4.3 per 100 files). Split into smaller, focused modules.",
+          "Maximum dependency depth is 12 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 276,
+          "symbols": 7170,
+          "edges": 3844,
+          "languages": {
+            "Python": 38,
+            "JavaScript": 397,
+            "TypeScript": 6607,
+            "Other": 107,
+            "Go": 21
+          }
+        },
+        "timestamp": "2026-09-30T19:46:54.492Z"
+      }
+    },
+    {
+      "repo": "nest",
+      "source": "/tmp/depwire-determinism/nest-forward.json",
+      "projectRoot": "/tmp/nest-repro",
+      "before": {
+        "status": "scored",
+        "overall": 55,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 5.1 connections per file, max 876, 35% cross-directory",
+            "metrics": {
+              "avgConnections": 5.06,
+              "maxConnections": 876,
+              "crossDirCoupling": 35
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 14% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 13.6,
+              "directories": 468
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "59 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 59,
+              "cyclesPer100": 3.4
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "71 god files (>31 connections)",
+            "metrics": {
+              "godFiles": 71,
+              "threshold": 31.1,
+              "godFilesPer100": 4.1
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 68,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "34 orphan files (3%), 3300 dead symbols (18.0%)",
+            "metrics": {
+              "orphans": 34,
+              "orphanPercentage": 2.7,
+              "deadSymbols": 3300,
+              "deadCodePercentage": 18
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 20,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 22 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 22
+            }
+          }
+        ],
+        "summary": "Project health score is 55/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "Low cohesion: Only 13.6% internal dependencies. Reorganize files by feature or domain.",
+          "59 circular dependency cycles detected (3.4 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "71 god files detected with >31.1 connections (4.1 per 100 files). Split into smaller, focused modules.",
+          "34 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 22 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 1745,
+          "symbols": 16841,
+          "edges": 14961,
+          "languages": {
+            "TypeScript": 16805,
+            "Other": 4,
+            "JavaScript": 32
+          }
+        },
+        "timestamp": "2026-09-30T18:53:15.992Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 1745,
+          "groupCount": 17,
+          "cyclicFileCount": 89,
+          "cyclicFileRatio": 0.05100286532951289,
+          "largestGroupSize": 48,
+          "score": 65,
+          "groups": [
+            {
+              "key": "[\"integration/injector/src/circular-modules/circular.module.ts\",\"integration/injector/src/circular-modules/input.module.ts\"]",
+              "files": [
+                "integration/injector/src/circular-modules/circular.module.ts",
+                "integration/injector/src/circular-modules/input.module.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "integration/injector/src/circular-modules/circular.module.ts",
+                  "integration/injector/src/circular-modules/input.module.ts",
+                  "integration/injector/src/circular-modules/circular.module.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "integration/injector/src/circular-modules/circular.module.ts",
+                    "targetFile": "integration/injector/src/circular-modules/input.module.ts",
+                    "sourceSymbol": "integration/injector/src/circular-modules/circular.module.ts::__file__",
+                    "targetSymbol": "integration/injector/src/circular-modules/input.module.ts::InputModule",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "integration/injector/src/circular-modules/input.module.ts",
+                    "targetFile": "integration/injector/src/circular-modules/circular.module.ts",
+                    "sourceSymbol": "integration/injector/src/circular-modules/input.module.ts::__file__",
+                    "targetSymbol": "integration/injector/src/circular-modules/circular.module.ts::CircularModule",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"integration/injector/src/circular-properties/circular-properties.module.ts\",\"integration/injector/src/circular-properties/input-properties.module.ts\"]",
+              "files": [
+                "integration/injector/src/circular-properties/circular-properties.module.ts",
+                "integration/injector/src/circular-properties/input-properties.module.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "integration/injector/src/circular-properties/circular-properties.module.ts",
+                  "integration/injector/src/circular-properties/input-properties.module.ts",
+                  "integration/injector/src/circular-properties/circular-properties.module.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "integration/injector/src/circular-properties/circular-properties.module.ts",
+                    "targetFile": "integration/injector/src/circular-properties/input-properties.module.ts",
+                    "sourceSymbol": "integration/injector/src/circular-properties/circular-properties.module.ts::__file__",
+                    "targetSymbol": "integration/injector/src/circular-properties/input-properties.module.ts::InputPropertiesModule",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "integration/injector/src/circular-properties/input-properties.module.ts",
+                    "targetFile": "integration/injector/src/circular-properties/circular-properties.module.ts",
+                    "sourceSymbol": "integration/injector/src/circular-properties/input-properties.module.ts::__file__",
+                    "targetSymbol": "integration/injector/src/circular-properties/circular-properties.module.ts::CircularPropertiesModule",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"integration/inspector/src/circular-modules/circular.module.ts\",\"integration/inspector/src/circular-modules/input.module.ts\"]",
+              "files": [
+                "integration/inspector/src/circular-modules/circular.module.ts",
+                "integration/inspector/src/circular-modules/input.module.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "integration/inspector/src/circular-modules/circular.module.ts",
+                  "integration/inspector/src/circular-modules/input.module.ts",
+                  "integration/inspector/src/circular-modules/circular.module.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "integration/inspector/src/circular-modules/circular.module.ts",
+                    "targetFile": "integration/inspector/src/circular-modules/input.module.ts",
+                    "sourceSymbol": "integration/inspector/src/circular-modules/circular.module.ts::__file__",
+                    "targetSymbol": "integration/inspector/src/circular-modules/input.module.ts::InputModule",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "integration/inspector/src/circular-modules/input.module.ts",
+                    "targetFile": "integration/inspector/src/circular-modules/circular.module.ts",
+                    "sourceSymbol": "integration/inspector/src/circular-modules/input.module.ts::__file__",
+                    "targetSymbol": "integration/inspector/src/circular-modules/circular.module.ts::CircularModule",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"integration/inspector/src/circular-modules/circular.service.ts\",\"integration/inspector/src/circular-modules/input.service.ts\"]",
+              "files": [
+                "integration/inspector/src/circular-modules/circular.service.ts",
+                "integration/inspector/src/circular-modules/input.service.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "integration/inspector/src/circular-modules/circular.service.ts",
+                  "integration/inspector/src/circular-modules/input.service.ts",
+                  "integration/inspector/src/circular-modules/circular.service.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "integration/inspector/src/circular-modules/circular.service.ts",
+                    "targetFile": "integration/inspector/src/circular-modules/input.service.ts",
+                    "sourceSymbol": "integration/inspector/src/circular-modules/circular.service.ts::CircularService",
+                    "targetSymbol": "integration/inspector/src/circular-modules/input.service.ts::InputService",
+                    "kind": "injects",
+                    "line": 7,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "integration/inspector/src/circular-modules/input.service.ts",
+                    "targetFile": "integration/inspector/src/circular-modules/circular.service.ts",
+                    "sourceSymbol": "integration/inspector/src/circular-modules/input.service.ts::InputService",
+                    "targetSymbol": "integration/inspector/src/circular-modules/circular.service.ts::CircularService",
+                    "kind": "injects",
+                    "line": 7,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"integration/testing-module-override/circular-dependency/a.module.ts\",\"integration/testing-module-override/circular-dependency/b.module.ts\"]",
+              "files": [
+                "integration/testing-module-override/circular-dependency/a.module.ts",
+                "integration/testing-module-override/circular-dependency/b.module.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "integration/testing-module-override/circular-dependency/a.module.ts",
+                  "integration/testing-module-override/circular-dependency/b.module.ts",
+                  "integration/testing-module-override/circular-dependency/a.module.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "integration/testing-module-override/circular-dependency/a.module.ts",
+                    "targetFile": "integration/testing-module-override/circular-dependency/b.module.ts",
+                    "sourceSymbol": "integration/testing-module-override/circular-dependency/a.module.ts::__file__",
+                    "targetSymbol": "integration/testing-module-override/circular-dependency/b.module.ts::BModule",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "integration/testing-module-override/circular-dependency/b.module.ts",
+                    "targetFile": "integration/testing-module-override/circular-dependency/a.module.ts",
+                    "sourceSymbol": "integration/testing-module-override/circular-dependency/b.module.ts::__file__",
+                    "targetSymbol": "integration/testing-module-override/circular-dependency/a.module.ts::AModule",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/common/decorators/http/route-params.decorator.ts\",\"packages/common/utils/parameter-decorator-options.util.ts\"]",
+              "files": [
+                "packages/common/decorators/http/route-params.decorator.ts",
+                "packages/common/utils/parameter-decorator-options.util.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/common/decorators/http/route-params.decorator.ts",
+                  "packages/common/utils/parameter-decorator-options.util.ts",
+                  "packages/common/decorators/http/route-params.decorator.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/common/decorators/http/route-params.decorator.ts",
+                    "targetFile": "packages/common/utils/parameter-decorator-options.util.ts",
+                    "sourceSymbol": "packages/common/decorators/http/route-params.decorator.ts::Body",
+                    "targetSymbol": "packages/common/utils/parameter-decorator-options.util.ts::isParameterDecoratorOptions",
+                    "kind": "calls",
+                    "line": 668,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/common/utils/parameter-decorator-options.util.ts",
+                    "targetFile": "packages/common/decorators/http/route-params.decorator.ts",
+                    "sourceSymbol": "packages/common/utils/parameter-decorator-options.util.ts::__file__",
+                    "targetSymbol": "packages/common/decorators/http/route-params.decorator.ts::ParameterDecoratorOptions",
+                    "kind": "imports",
+                    "line": 1,
+                    "normalizedTypeOnlyImport": true
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/common/interfaces/middleware/middleware-config-proxy.interface.ts\",\"packages/common/interfaces/middleware/middleware-consumer.interface.ts\"]",
+              "files": [
+                "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts",
+                "packages/common/interfaces/middleware/middleware-consumer.interface.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts",
+                  "packages/common/interfaces/middleware/middleware-consumer.interface.ts",
+                  "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts",
+                    "targetFile": "packages/common/interfaces/middleware/middleware-consumer.interface.ts",
+                    "sourceSymbol": "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts::__file__",
+                    "targetSymbol": "packages/common/interfaces/middleware/middleware-consumer.interface.ts::MiddlewareConsumer",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/common/interfaces/middleware/middleware-consumer.interface.ts",
+                    "targetFile": "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts",
+                    "sourceSymbol": "packages/common/interfaces/middleware/middleware-consumer.interface.ts::__file__",
+                    "targetSymbol": "packages/common/interfaces/middleware/middleware-config-proxy.interface.ts::MiddlewareConfigProxy",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/common/interfaces/modules/dynamic-module.interface.ts\",\"packages/common/interfaces/modules/module-metadata.interface.ts\"]",
+              "files": [
+                "packages/common/interfaces/modules/dynamic-module.interface.ts",
+                "packages/common/interfaces/modules/module-metadata.interface.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/common/interfaces/modules/dynamic-module.interface.ts",
+                  "packages/common/interfaces/modules/module-metadata.interface.ts",
+                  "packages/common/interfaces/modules/dynamic-module.interface.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/common/interfaces/modules/dynamic-module.interface.ts",
+                    "targetFile": "packages/common/interfaces/modules/module-metadata.interface.ts",
+                    "sourceSymbol": "packages/common/interfaces/modules/dynamic-module.interface.ts::__file__",
+                    "targetSymbol": "packages/common/interfaces/modules/module-metadata.interface.ts::ModuleMetadata",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/common/interfaces/modules/module-metadata.interface.ts",
+                    "targetFile": "packages/common/interfaces/modules/dynamic-module.interface.ts",
+                    "sourceSymbol": "packages/common/interfaces/modules/module-metadata.interface.ts::__file__",
+                    "targetSymbol": "packages/common/interfaces/modules/dynamic-module.interface.ts::DynamicModule",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/common/services/console-logger.service.ts\",\"packages/common/services/logger.service.ts\",\"packages/common/services/utils/is-log-level-enabled.util.ts\"]",
+              "files": [
+                "packages/common/services/console-logger.service.ts",
+                "packages/common/services/logger.service.ts",
+                "packages/common/services/utils/is-log-level-enabled.util.ts"
+              ],
+              "size": 3,
+              "witness": {
+                "files": [
+                  "packages/common/services/console-logger.service.ts",
+                  "packages/common/services/logger.service.ts",
+                  "packages/common/services/console-logger.service.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/common/services/console-logger.service.ts",
+                    "targetFile": "packages/common/services/logger.service.ts",
+                    "sourceSymbol": "packages/common/services/console-logger.service.ts::__file__",
+                    "targetSymbol": "packages/common/services/logger.service.ts::LogLevel",
+                    "kind": "imports",
+                    "line": 10,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/common/services/logger.service.ts",
+                    "targetFile": "packages/common/services/console-logger.service.ts",
+                    "sourceSymbol": "packages/common/services/logger.service.ts::Logger.registerLocalInstanceRef",
+                    "targetSymbol": "packages/common/services/console-logger.service.ts::ConsoleLogger",
+                    "kind": "calls",
+                    "line": 338,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/core/application-config.ts\",\"packages/core/discovery/discoverable-meta-host-collection.ts\",\"packages/core/errors/exceptions/invalid-class-module.exception.ts\",\"packages/core/errors/exceptions/invalid-class-scope.exception.ts\",\"packages/core/errors/exceptions/invalid-class.exception.ts\",\"packages/core/errors/exceptions/invalid-exception-filter.exception.ts\",\"packages/core/errors/exceptions/invalid-module.exception.ts\",\"packages/core/errors/exceptions/undefined-dependency.exception.ts\",\"packages/core/errors/exceptions/undefined-forwardref.exception.ts\",\"packages/core/errors/exceptions/undefined-module.exception.ts\",\"packages/core/errors/exceptions/unknown-dependencies.exception.ts\",\"packages/core/errors/exceptions/unknown-export.exception.ts\",\"packages/core/errors/messages.ts\",\"packages/core/exceptions/base-exception-filter-context.ts\",\"packages/core/exceptions/exceptions-handler.ts\",\"packages/core/exceptions/external-exception-filter-context.ts\",\"packages/core/exceptions/external-exceptions-handler.ts\",\"packages/core/guards/guards-context-creator.ts\",\"packages/core/helpers/context-creator.ts\",\"packages/core/helpers/context-id-factory.ts\",\"packages/core/helpers/external-context-creator.ts\",\"packages/core/helpers/external-proxy.ts\",\"packages/core/helpers/handler-metadata-storage.ts\",\"packages/core/helpers/interfaces/external-handler-metadata.interface.ts\",\"packages/core/injector/abstract-instance-resolver.ts\",\"packages/core/injector/constants.ts\",\"packages/core/injector/container.ts\",\"packages/core/injector/index.ts\",\"packages/core/injector/injector.ts\",\"packages/core/injector/instance-links-host.ts\",\"packages/core/injector/instance-loader.ts\",\"packages/core/injector/instance-wrapper.ts\",\"packages/core/injector/internal-core-module/internal-core-module-factory.ts\",\"packages/core/injector/lazy-module-loader/lazy-module-loader.ts\",\"packages/core/injector/module-ref.ts\",\"packages/core/injector/module.ts\",\"packages/core/injector/modules-container.ts\",\"packages/core/injector/topology-tree/topology-tree.ts\",\"packages/core/inspector/graph-inspector.ts\",\"packages/core/inspector/interfaces/enhancer-metadata-cache-entry.interface.ts\",\"packages/core/inspector/interfaces/serialized-graph-json.interface.ts\",\"packages/core/inspector/interfaces/serialized-graph-metadata.interface.ts\",\"packages/core/inspector/partial-graph.host.ts\",\"packages/core/inspector/serialized-graph.ts\",\"packages/core/interceptors/interceptors-context-creator.ts\",\"packages/core/pipes/pipes-context-creator.ts\",\"packages/core/router/router-proxy.ts\",\"packages/core/scanner.ts\"]",
+              "files": [
+                "packages/core/application-config.ts",
+                "packages/core/discovery/discoverable-meta-host-collection.ts",
+                "packages/core/errors/exceptions/invalid-class-module.exception.ts",
+                "packages/core/errors/exceptions/invalid-class-scope.exception.ts",
+                "packages/core/errors/exceptions/invalid-class.exception.ts",
+                "packages/core/errors/exceptions/invalid-exception-filter.exception.ts",
+                "packages/core/errors/exceptions/invalid-module.exception.ts",
+                "packages/core/errors/exceptions/undefined-dependency.exception.ts",
+                "packages/core/errors/exceptions/undefined-forwardref.exception.ts",
+                "packages/core/errors/exceptions/undefined-module.exception.ts",
+                "packages/core/errors/exceptions/unknown-dependencies.exception.ts",
+                "packages/core/errors/exceptions/unknown-export.exception.ts",
+                "packages/core/errors/messages.ts",
+                "packages/core/exceptions/base-exception-filter-context.ts",
+                "packages/core/exceptions/exceptions-handler.ts",
+                "packages/core/exceptions/external-exception-filter-context.ts",
+                "packages/core/exceptions/external-exceptions-handler.ts",
+                "packages/core/guards/guards-context-creator.ts",
+                "packages/core/helpers/context-creator.ts",
+                "packages/core/helpers/context-id-factory.ts",
+                "packages/core/helpers/external-context-creator.ts",
+                "packages/core/helpers/external-proxy.ts",
+                "packages/core/helpers/handler-metadata-storage.ts",
+                "packages/core/helpers/interfaces/external-handler-metadata.interface.ts",
+                "packages/core/injector/abstract-instance-resolver.ts",
+                "packages/core/injector/constants.ts",
+                "packages/core/injector/container.ts",
+                "packages/core/injector/index.ts",
+                "packages/core/injector/injector.ts",
+                "packages/core/injector/instance-links-host.ts",
+                "packages/core/injector/instance-loader.ts",
+                "packages/core/injector/instance-wrapper.ts",
+                "packages/core/injector/internal-core-module/internal-core-module-factory.ts",
+                "packages/core/injector/lazy-module-loader/lazy-module-loader.ts",
+                "packages/core/injector/module-ref.ts",
+                "packages/core/injector/module.ts",
+                "packages/core/injector/modules-container.ts",
+                "packages/core/injector/topology-tree/topology-tree.ts",
+                "packages/core/inspector/graph-inspector.ts",
+                "packages/core/inspector/interfaces/enhancer-metadata-cache-entry.interface.ts",
+                "packages/core/inspector/interfaces/serialized-graph-json.interface.ts",
+                "packages/core/inspector/interfaces/serialized-graph-metadata.interface.ts",
+                "packages/core/inspector/partial-graph.host.ts",
+                "packages/core/inspector/serialized-graph.ts",
+                "packages/core/interceptors/interceptors-context-creator.ts",
+                "packages/core/pipes/pipes-context-creator.ts",
+                "packages/core/router/router-proxy.ts",
+                "packages/core/scanner.ts"
+              ],
+              "size": 48,
+              "witness": {
+                "files": [
+                  "packages/core/application-config.ts",
+                  "packages/core/injector/instance-wrapper.ts",
+                  "packages/core/injector/module.ts",
+                  "packages/core/application-config.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/core/application-config.ts",
+                    "targetFile": "packages/core/injector/instance-wrapper.ts",
+                    "sourceSymbol": "packages/core/application-config.ts::__file__",
+                    "targetSymbol": "packages/core/injector/instance-wrapper.ts::InstanceWrapper",
+                    "kind": "imports",
+                    "line": 13,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/core/injector/instance-wrapper.ts",
+                    "targetFile": "packages/core/injector/module.ts",
+                    "sourceSymbol": "packages/core/injector/instance-wrapper.ts::InstanceWrapper",
+                    "targetSymbol": "packages/core/injector/module.ts::Module",
+                    "kind": "injects",
+                    "line": 76,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/core/injector/module.ts",
+                    "targetFile": "packages/core/application-config.ts",
+                    "sourceSymbol": "packages/core/injector/module.ts::__file__",
+                    "targetSymbol": "packages/core/application-config.ts::ApplicationConfig",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/core/repl/native-functions/debug-repl-fn.ts\",\"packages/core/repl/native-functions/get-repl-fn.ts\",\"packages/core/repl/native-functions/help-repl-fn.ts\",\"packages/core/repl/native-functions/methods-repl-fn.ts\",\"packages/core/repl/native-functions/resolve-repl-fn.ts\",\"packages/core/repl/native-functions/select-relp-fn.ts\",\"packages/core/repl/repl-context.ts\",\"packages/core/repl/repl-function.ts\",\"packages/core/repl/repl.interfaces.ts\"]",
+              "files": [
+                "packages/core/repl/native-functions/debug-repl-fn.ts",
+                "packages/core/repl/native-functions/get-repl-fn.ts",
+                "packages/core/repl/native-functions/help-repl-fn.ts",
+                "packages/core/repl/native-functions/methods-repl-fn.ts",
+                "packages/core/repl/native-functions/resolve-repl-fn.ts",
+                "packages/core/repl/native-functions/select-relp-fn.ts",
+                "packages/core/repl/repl-context.ts",
+                "packages/core/repl/repl-function.ts",
+                "packages/core/repl/repl.interfaces.ts"
+              ],
+              "size": 9,
+              "witness": {
+                "files": [
+                  "packages/core/repl/native-functions/debug-repl-fn.ts",
+                  "packages/core/repl/repl-context.ts",
+                  "packages/core/repl/native-functions/debug-repl-fn.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/core/repl/native-functions/debug-repl-fn.ts",
+                    "targetFile": "packages/core/repl/repl-context.ts",
+                    "sourceSymbol": "packages/core/repl/native-functions/debug-repl-fn.ts::__file__",
+                    "targetSymbol": "packages/core/repl/repl-context.ts::ModuleDebugEntry",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "packages/core/repl/repl-context.ts",
+                    "targetFile": "packages/core/repl/native-functions/debug-repl-fn.ts",
+                    "sourceSymbol": "packages/core/repl/repl-context.ts::__file__",
+                    "targetSymbol": "packages/core/repl/native-functions/debug-repl-fn.ts::DebugReplFn",
+                    "kind": "imports",
+                    "line": 10,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/microservices/client/client-kafka.ts\",\"packages/microservices/helpers/kafka-reply-partition-assigner.ts\"]",
+              "files": [
+                "packages/microservices/client/client-kafka.ts",
+                "packages/microservices/helpers/kafka-reply-partition-assigner.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/microservices/client/client-kafka.ts",
+                  "packages/microservices/helpers/kafka-reply-partition-assigner.ts",
+                  "packages/microservices/client/client-kafka.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/microservices/client/client-kafka.ts",
+                    "targetFile": "packages/microservices/helpers/kafka-reply-partition-assigner.ts",
+                    "sourceSymbol": "packages/microservices/client/client-kafka.ts::ClientKafka.initializeClientAndConnections",
+                    "targetSymbol": "packages/microservices/helpers/kafka-reply-partition-assigner.ts::KafkaReplyPartitionAssigner",
+                    "kind": "calls",
+                    "line": 151,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/microservices/helpers/kafka-reply-partition-assigner.ts",
+                    "targetFile": "packages/microservices/client/client-kafka.ts",
+                    "sourceSymbol": "packages/microservices/helpers/kafka-reply-partition-assigner.ts::KafkaReplyPartitionAssigner",
+                    "targetSymbol": "packages/microservices/client/client-kafka.ts::ClientKafka",
+                    "kind": "injects",
+                    "line": 19,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/microservices/client/client-proxy.ts\",\"packages/microservices/interfaces/client-metadata.interface.ts\"]",
+              "files": [
+                "packages/microservices/client/client-proxy.ts",
+                "packages/microservices/interfaces/client-metadata.interface.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/microservices/client/client-proxy.ts",
+                  "packages/microservices/interfaces/client-metadata.interface.ts",
+                  "packages/microservices/client/client-proxy.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/microservices/client/client-proxy.ts",
+                    "targetFile": "packages/microservices/interfaces/client-metadata.interface.ts",
+                    "sourceSymbol": "packages/microservices/client/client-proxy.ts::__file__",
+                    "targetSymbol": "packages/microservices/interfaces/client-metadata.interface.ts::ClientOptions",
+                    "kind": "imports",
+                    "line": 15,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/microservices/interfaces/client-metadata.interface.ts",
+                    "targetFile": "packages/microservices/client/client-proxy.ts",
+                    "sourceSymbol": "packages/microservices/interfaces/client-metadata.interface.ts::__file__",
+                    "targetSymbol": "packages/microservices/client/client-proxy.ts::ClientProxy",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/microservices/interfaces/custom-transport-strategy.interface.ts\",\"packages/microservices/interfaces/microservice-configuration.interface.ts\"]",
+              "files": [
+                "packages/microservices/interfaces/custom-transport-strategy.interface.ts",
+                "packages/microservices/interfaces/microservice-configuration.interface.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/microservices/interfaces/custom-transport-strategy.interface.ts",
+                  "packages/microservices/interfaces/microservice-configuration.interface.ts",
+                  "packages/microservices/interfaces/custom-transport-strategy.interface.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/microservices/interfaces/custom-transport-strategy.interface.ts",
+                    "targetFile": "packages/microservices/interfaces/microservice-configuration.interface.ts",
+                    "sourceSymbol": "packages/microservices/interfaces/custom-transport-strategy.interface.ts::__file__",
+                    "targetSymbol": "packages/microservices/interfaces/microservice-configuration.interface.ts::TransportId",
+                    "kind": "imports",
+                    "line": 1,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/microservices/interfaces/microservice-configuration.interface.ts",
+                    "targetFile": "packages/microservices/interfaces/custom-transport-strategy.interface.ts",
+                    "sourceSymbol": "packages/microservices/interfaces/microservice-configuration.interface.ts::__file__",
+                    "targetSymbol": "packages/microservices/interfaces/custom-transport-strategy.interface.ts::CustomTransportStrategy",
+                    "kind": "imports",
+                    "line": 21,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/testing/interfaces/override-by.interface.ts\",\"packages/testing/interfaces/override-module.interface.ts\",\"packages/testing/testing-module.builder.ts\"]",
+              "files": [
+                "packages/testing/interfaces/override-by.interface.ts",
+                "packages/testing/interfaces/override-module.interface.ts",
+                "packages/testing/testing-module.builder.ts"
+              ],
+              "size": 3,
+              "witness": {
+                "files": [
+                  "packages/testing/interfaces/override-by.interface.ts",
+                  "packages/testing/testing-module.builder.ts",
+                  "packages/testing/interfaces/override-by.interface.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/testing/interfaces/override-by.interface.ts",
+                    "targetFile": "packages/testing/testing-module.builder.ts",
+                    "sourceSymbol": "packages/testing/interfaces/override-by.interface.ts::__file__",
+                    "targetSymbol": "packages/testing/testing-module.builder.ts::TestingModuleBuilder",
+                    "kind": "imports",
+                    "line": 1,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/testing/testing-module.builder.ts",
+                    "targetFile": "packages/testing/interfaces/override-by.interface.ts",
+                    "sourceSymbol": "packages/testing/testing-module.builder.ts::__file__",
+                    "targetSymbol": "packages/testing/interfaces/override-by.interface.ts::OverrideBy",
+                    "kind": "imports",
+                    "line": 7,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts\",\"sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts\"]",
+              "files": [
+                "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts",
+                "sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts",
+                  "sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts",
+                  "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts",
+                    "targetFile": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts",
+                    "sourceSymbol": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts::Post",
+                    "targetSymbol": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts::User",
+                    "kind": "injects",
+                    "line": 16,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts",
+                    "targetFile": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts",
+                    "sourceSymbol": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/user.model.ts::__file__",
+                    "targetSymbol": "sample/31-graphql-federation-code-first/posts-application/src/posts/models/post.model.ts::Post",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts\",\"sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts\"]",
+              "files": [
+                "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts",
+                "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts",
+                  "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts",
+                  "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts",
+                    "targetFile": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts",
+                    "sourceSymbol": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts::Post",
+                    "targetSymbol": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts::User",
+                    "kind": "injects",
+                    "line": 16,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts",
+                    "targetFile": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts",
+                    "sourceSymbol": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/user.model.ts::__file__",
+                    "targetSymbol": "sample/32-graphql-federation-schema-first/posts-application/src/posts/models/post.model.ts::Post",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "overall": 56,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 70,
+            "weight": 0.25,
+            "grade": "C",
+            "details": "Average 5.1 connections per file, max 876, 35% cross-directory",
+            "metrics": {
+              "avgConnections": 5.06,
+              "maxConnections": 876,
+              "crossDirCoupling": 35
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 14% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 13.6,
+              "directories": 468
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 65,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "17 cyclic groups; 89/1745 files (5.10%); largest group 48 files",
+            "metrics": {
+              "groupCount": 17,
+              "cyclicFileCount": 89,
+              "cyclicFileRatio": 0.05100286532951289,
+              "largestGroupSize": 48,
+              "graphFileCount": 1745,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "71 god files (>31 connections)",
+            "metrics": {
+              "godFiles": 71,
+              "threshold": 31.1,
+              "godFilesPer100": 4.1
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 68,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "34 orphan files (3%), 3300 dead symbols (18.0%)",
+            "metrics": {
+              "orphans": 34,
+              "orphanPercentage": 2.7,
+              "deadSymbols": 3300,
+              "deadCodePercentage": 18
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 20,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 22 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 22
+            }
+          }
+        ],
+        "summary": "Project health score is 56/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "Low cohesion: Only 13.6% internal dependencies. Reorganize files by feature or domain.",
+          "17 cyclic groups; 89/1745 files (5.10%); largest group 48 files. Separate mutually dependent responsibilities; use the group witnesses to investigate concrete dependencies.",
+          "71 god files detected with >31.1 connections (4.1 per 100 files). Split into smaller, focused modules.",
+          "34 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 22 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 1745,
+          "symbols": 16841,
+          "edges": 14961,
+          "languages": {
+            "TypeScript": 16805,
+            "Other": 4,
+            "JavaScript": 32
+          }
+        },
+        "timestamp": "2026-09-30T19:46:54.921Z"
+      }
+    },
+    {
+      "repo": "drizzle",
+      "source": "/tmp/depwire-determinism/drizzle-forward.json",
+      "projectRoot": "/tmp/drizzle-repro",
+      "before": {
+        "status": "scored",
+        "overall": 34,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 10,
+            "weight": 0.25,
+            "grade": "F",
+            "details": "Average 15.1 connections per file, max 1418, 23% cross-directory",
+            "metrics": {
+              "avgConnections": 15.15,
+              "maxConnections": 1418,
+              "crossDirCoupling": 23.3
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 12% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 11.5,
+              "directories": 148
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 20,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "622 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 622,
+              "cyclesPer100": 70.3
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "50 god files (>95 connections)",
+            "metrics": {
+              "godFiles": 50,
+              "threshold": 95.3,
+              "godFilesPer100": 5.6
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 69,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "20 orphan files (3%), 5239 dead symbols (16.7%)",
+            "metrics": {
+              "orphans": 20,
+              "orphanPercentage": 3.2,
+              "deadSymbols": 5239,
+              "deadCodePercentage": 16.7
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 9 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 9
+            }
+          }
+        ],
+        "summary": "Project health score is 34/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "High coupling detected: Average 15.15 connections per file. Consider breaking down large modules.",
+          "Low cohesion: Only 11.5% internal dependencies. Reorganize files by feature or domain.",
+          "622 circular dependency cycles detected (70.3 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "50 god files detected with >95.3 connections (5.6 per 100 files). Split into smaller, focused modules.",
+          "20 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 9 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 885,
+          "symbols": 30479,
+          "edges": 24181,
+          "languages": {
+            "TypeScript": 29984,
+            "JavaScript": 495
+          }
+        },
+        "timestamp": "2026-09-30T18:53:32.986Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 885,
+          "groupCount": 11,
+          "cyclicFileCount": 272,
+          "cyclicFileRatio": 0.3073446327683616,
+          "largestGroupSize": 188,
+          "score": 20,
+          "groups": [
+            {
+              "key": "[\"drizzle-kit/src/cli/commands/migrate.ts\",\"drizzle-kit/src/cli/commands/sqlitePushUtils.ts\",\"drizzle-kit/src/cli/commands/utils.ts\",\"drizzle-kit/src/cli/validations/gel.ts\",\"drizzle-kit/src/cli/validations/libsql.ts\",\"drizzle-kit/src/cli/validations/mysql.ts\",\"drizzle-kit/src/cli/validations/postgres.ts\",\"drizzle-kit/src/cli/validations/singlestore.ts\",\"drizzle-kit/src/cli/validations/sqlite.ts\",\"drizzle-kit/src/cli/validations/studio.ts\",\"drizzle-kit/src/cli/views.ts\",\"drizzle-kit/src/jsonStatements.ts\",\"drizzle-kit/src/migrationPreparator.ts\",\"drizzle-kit/src/serializer/index.ts\",\"drizzle-kit/src/serializer/studio.ts\",\"drizzle-kit/src/snapshotsDiffer.ts\",\"drizzle-kit/src/sqlgenerator.ts\",\"drizzle-kit/src/statementCombiner.ts\",\"drizzle-kit/src/utils.ts\"]",
+              "files": [
+                "drizzle-kit/src/cli/commands/migrate.ts",
+                "drizzle-kit/src/cli/commands/sqlitePushUtils.ts",
+                "drizzle-kit/src/cli/commands/utils.ts",
+                "drizzle-kit/src/cli/validations/gel.ts",
+                "drizzle-kit/src/cli/validations/libsql.ts",
+                "drizzle-kit/src/cli/validations/mysql.ts",
+                "drizzle-kit/src/cli/validations/postgres.ts",
+                "drizzle-kit/src/cli/validations/singlestore.ts",
+                "drizzle-kit/src/cli/validations/sqlite.ts",
+                "drizzle-kit/src/cli/validations/studio.ts",
+                "drizzle-kit/src/cli/views.ts",
+                "drizzle-kit/src/jsonStatements.ts",
+                "drizzle-kit/src/migrationPreparator.ts",
+                "drizzle-kit/src/serializer/index.ts",
+                "drizzle-kit/src/serializer/studio.ts",
+                "drizzle-kit/src/snapshotsDiffer.ts",
+                "drizzle-kit/src/sqlgenerator.ts",
+                "drizzle-kit/src/statementCombiner.ts",
+                "drizzle-kit/src/utils.ts"
+              ],
+              "size": 19,
+              "witness": {
+                "files": [
+                  "drizzle-kit/src/cli/commands/migrate.ts",
+                  "drizzle-kit/src/cli/views.ts",
+                  "drizzle-kit/src/cli/commands/migrate.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-kit/src/cli/commands/migrate.ts",
+                    "targetFile": "drizzle-kit/src/cli/views.ts",
+                    "sourceSymbol": "drizzle-kit/src/cli/commands/migrate.ts::__file__",
+                    "targetSymbol": "drizzle-kit/src/cli/views.ts::RenamePropmtItem",
+                    "kind": "imports",
+                    "line": 48,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-kit/src/cli/views.ts",
+                    "targetFile": "drizzle-kit/src/cli/commands/migrate.ts",
+                    "sourceSymbol": "drizzle-kit/src/cli/views.ts::ResolveColumnSelect",
+                    "targetSymbol": "drizzle-kit/src/cli/commands/migrate.ts::Named",
+                    "kind": "injects",
+                    "line": 96,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-kit/src/cli/validations/common.ts\",\"drizzle-kit/src/cli/validations/outputs.ts\"]",
+              "files": [
+                "drizzle-kit/src/cli/validations/common.ts",
+                "drizzle-kit/src/cli/validations/outputs.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "drizzle-kit/src/cli/validations/common.ts",
+                  "drizzle-kit/src/cli/validations/outputs.ts",
+                  "drizzle-kit/src/cli/validations/common.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-kit/src/cli/validations/common.ts",
+                    "targetFile": "drizzle-kit/src/cli/validations/outputs.ts",
+                    "sourceSymbol": "drizzle-kit/src/cli/validations/common.ts::__file__",
+                    "targetSymbol": "drizzle-kit/src/cli/validations/outputs.ts::outputs",
+                    "kind": "imports",
+                    "line": 5,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-kit/src/cli/validations/outputs.ts",
+                    "targetFile": "drizzle-kit/src/cli/validations/common.ts",
+                    "sourceSymbol": "drizzle-kit/src/cli/validations/outputs.ts::__file__",
+                    "targetSymbol": "drizzle-kit/src/cli/validations/common.ts::sqliteDriversLiterals",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/alias.ts\",\"drizzle-orm/src/cache/core/cache.ts\",\"drizzle-orm/src/casing.ts\",\"drizzle-orm/src/column-builder.ts\",\"drizzle-orm/src/column.ts\",\"drizzle-orm/src/gel-core/checks.ts\",\"drizzle-orm/src/gel-core/columns/all.ts\",\"drizzle-orm/src/gel-core/columns/bigint.ts\",\"drizzle-orm/src/gel-core/columns/bigintT.ts\",\"drizzle-orm/src/gel-core/columns/boolean.ts\",\"drizzle-orm/src/gel-core/columns/bytes.ts\",\"drizzle-orm/src/gel-core/columns/common.ts\",\"drizzle-orm/src/gel-core/columns/custom.ts\",\"drizzle-orm/src/gel-core/columns/date-duration.ts\",\"drizzle-orm/src/gel-core/columns/date.common.ts\",\"drizzle-orm/src/gel-core/columns/decimal.ts\",\"drizzle-orm/src/gel-core/columns/double-precision.ts\",\"drizzle-orm/src/gel-core/columns/duration.ts\",\"drizzle-orm/src/gel-core/columns/int.common.ts\",\"drizzle-orm/src/gel-core/columns/integer.ts\",\"drizzle-orm/src/gel-core/columns/json.ts\",\"drizzle-orm/src/gel-core/columns/localdate.ts\",\"drizzle-orm/src/gel-core/columns/localtime.ts\",\"drizzle-orm/src/gel-core/columns/real.ts\",\"drizzle-orm/src/gel-core/columns/relative-duration.ts\",\"drizzle-orm/src/gel-core/columns/smallint.ts\",\"drizzle-orm/src/gel-core/columns/text.ts\",\"drizzle-orm/src/gel-core/columns/timestamp.ts\",\"drizzle-orm/src/gel-core/columns/timestamptz.ts\",\"drizzle-orm/src/gel-core/columns/uuid.ts\",\"drizzle-orm/src/gel-core/foreign-keys.ts\",\"drizzle-orm/src/gel-core/indexes.ts\",\"drizzle-orm/src/gel-core/policies.ts\",\"drizzle-orm/src/gel-core/primary-keys.ts\",\"drizzle-orm/src/gel-core/table.ts\",\"drizzle-orm/src/gel-core/unique-constraint.ts\",\"drizzle-orm/src/mysql-core/checks.ts\",\"drizzle-orm/src/mysql-core/columns/all.ts\",\"drizzle-orm/src/mysql-core/columns/bigint.ts\",\"drizzle-orm/src/mysql-core/columns/binary.ts\",\"drizzle-orm/src/mysql-core/columns/boolean.ts\",\"drizzle-orm/src/mysql-core/columns/char.ts\",\"drizzle-orm/src/mysql-core/columns/common.ts\",\"drizzle-orm/src/mysql-core/columns/custom.ts\",\"drizzle-orm/src/mysql-core/columns/date.common.ts\",\"drizzle-orm/src/mysql-core/columns/date.ts\",\"drizzle-orm/src/mysql-core/columns/datetime.ts\",\"drizzle-orm/src/mysql-core/columns/decimal.ts\",\"drizzle-orm/src/mysql-core/columns/double.ts\",\"drizzle-orm/src/mysql-core/columns/enum.ts\",\"drizzle-orm/src/mysql-core/columns/float.ts\",\"drizzle-orm/src/mysql-core/columns/int.ts\",\"drizzle-orm/src/mysql-core/columns/json.ts\",\"drizzle-orm/src/mysql-core/columns/mediumint.ts\",\"drizzle-orm/src/mysql-core/columns/real.ts\",\"drizzle-orm/src/mysql-core/columns/serial.ts\",\"drizzle-orm/src/mysql-core/columns/smallint.ts\",\"drizzle-orm/src/mysql-core/columns/text.ts\",\"drizzle-orm/src/mysql-core/columns/time.ts\",\"drizzle-orm/src/mysql-core/columns/timestamp.ts\",\"drizzle-orm/src/mysql-core/columns/tinyint.ts\",\"drizzle-orm/src/mysql-core/columns/varbinary.ts\",\"drizzle-orm/src/mysql-core/columns/varchar.ts\",\"drizzle-orm/src/mysql-core/columns/year.ts\",\"drizzle-orm/src/mysql-core/foreign-keys.ts\",\"drizzle-orm/src/mysql-core/indexes.ts\",\"drizzle-orm/src/mysql-core/primary-keys.ts\",\"drizzle-orm/src/mysql-core/table.ts\",\"drizzle-orm/src/mysql-core/unique-constraint.ts\",\"drizzle-orm/src/operations.ts\",\"drizzle-orm/src/pg-core/checks.ts\",\"drizzle-orm/src/pg-core/columns/all.ts\",\"drizzle-orm/src/pg-core/columns/bigint.ts\",\"drizzle-orm/src/pg-core/columns/bigserial.ts\",\"drizzle-orm/src/pg-core/columns/boolean.ts\",\"drizzle-orm/src/pg-core/columns/char.ts\",\"drizzle-orm/src/pg-core/columns/cidr.ts\",\"drizzle-orm/src/pg-core/columns/common.ts\",\"drizzle-orm/src/pg-core/columns/custom.ts\",\"drizzle-orm/src/pg-core/columns/date.common.ts\",\"drizzle-orm/src/pg-core/columns/date.ts\",\"drizzle-orm/src/pg-core/columns/double-precision.ts\",\"drizzle-orm/src/pg-core/columns/enum.ts\",\"drizzle-orm/src/pg-core/columns/inet.ts\",\"drizzle-orm/src/pg-core/columns/int.common.ts\",\"drizzle-orm/src/pg-core/columns/integer.ts\",\"drizzle-orm/src/pg-core/columns/interval.ts\",\"drizzle-orm/src/pg-core/columns/json.ts\",\"drizzle-orm/src/pg-core/columns/jsonb.ts\",\"drizzle-orm/src/pg-core/columns/line.ts\",\"drizzle-orm/src/pg-core/columns/macaddr.ts\",\"drizzle-orm/src/pg-core/columns/macaddr8.ts\",\"drizzle-orm/src/pg-core/columns/numeric.ts\",\"drizzle-orm/src/pg-core/columns/point.ts\",\"drizzle-orm/src/pg-core/columns/postgis_extension/geometry.ts\",\"drizzle-orm/src/pg-core/columns/real.ts\",\"drizzle-orm/src/pg-core/columns/serial.ts\",\"drizzle-orm/src/pg-core/columns/smallint.ts\",\"drizzle-orm/src/pg-core/columns/smallserial.ts\",\"drizzle-orm/src/pg-core/columns/text.ts\",\"drizzle-orm/src/pg-core/columns/time.ts\",\"drizzle-orm/src/pg-core/columns/timestamp.ts\",\"drizzle-orm/src/pg-core/columns/uuid.ts\",\"drizzle-orm/src/pg-core/columns/varchar.ts\",\"drizzle-orm/src/pg-core/columns/vector_extension/bit.ts\",\"drizzle-orm/src/pg-core/columns/vector_extension/halfvec.ts\",\"drizzle-orm/src/pg-core/columns/vector_extension/sparsevec.ts\",\"drizzle-orm/src/pg-core/columns/vector_extension/vector.ts\",\"drizzle-orm/src/pg-core/foreign-keys.ts\",\"drizzle-orm/src/pg-core/indexes.ts\",\"drizzle-orm/src/pg-core/policies.ts\",\"drizzle-orm/src/pg-core/primary-keys.ts\",\"drizzle-orm/src/pg-core/table.ts\",\"drizzle-orm/src/pg-core/unique-constraint.ts\",\"drizzle-orm/src/query-builders/query-builder.ts\",\"drizzle-orm/src/query-builders/select.types.ts\",\"drizzle-orm/src/relations.ts\",\"drizzle-orm/src/runnable-query.ts\",\"drizzle-orm/src/selection-proxy.ts\",\"drizzle-orm/src/session.ts\",\"drizzle-orm/src/singlestore-core/columns/all.ts\",\"drizzle-orm/src/singlestore-core/columns/bigint.ts\",\"drizzle-orm/src/singlestore-core/columns/binary.ts\",\"drizzle-orm/src/singlestore-core/columns/boolean.ts\",\"drizzle-orm/src/singlestore-core/columns/char.ts\",\"drizzle-orm/src/singlestore-core/columns/common.ts\",\"drizzle-orm/src/singlestore-core/columns/custom.ts\",\"drizzle-orm/src/singlestore-core/columns/date.common.ts\",\"drizzle-orm/src/singlestore-core/columns/date.ts\",\"drizzle-orm/src/singlestore-core/columns/datetime.ts\",\"drizzle-orm/src/singlestore-core/columns/decimal.ts\",\"drizzle-orm/src/singlestore-core/columns/double.ts\",\"drizzle-orm/src/singlestore-core/columns/enum.ts\",\"drizzle-orm/src/singlestore-core/columns/float.ts\",\"drizzle-orm/src/singlestore-core/columns/int.ts\",\"drizzle-orm/src/singlestore-core/columns/json.ts\",\"drizzle-orm/src/singlestore-core/columns/mediumint.ts\",\"drizzle-orm/src/singlestore-core/columns/real.ts\",\"drizzle-orm/src/singlestore-core/columns/serial.ts\",\"drizzle-orm/src/singlestore-core/columns/smallint.ts\",\"drizzle-orm/src/singlestore-core/columns/text.ts\",\"drizzle-orm/src/singlestore-core/columns/time.ts\",\"drizzle-orm/src/singlestore-core/columns/timestamp.ts\",\"drizzle-orm/src/singlestore-core/columns/tinyint.ts\",\"drizzle-orm/src/singlestore-core/columns/varbinary.ts\",\"drizzle-orm/src/singlestore-core/columns/varchar.ts\",\"drizzle-orm/src/singlestore-core/columns/vector.ts\",\"drizzle-orm/src/singlestore-core/columns/year.ts\",\"drizzle-orm/src/singlestore-core/indexes.ts\",\"drizzle-orm/src/singlestore-core/primary-keys.ts\",\"drizzle-orm/src/singlestore-core/table.ts\",\"drizzle-orm/src/singlestore-core/unique-constraint.ts\",\"drizzle-orm/src/sql/expressions/conditions.ts\",\"drizzle-orm/src/sql/expressions/select.ts\",\"drizzle-orm/src/sql/sql.ts\",\"drizzle-orm/src/sqlite-core/checks.ts\",\"drizzle-orm/src/sqlite-core/columns/all.ts\",\"drizzle-orm/src/sqlite-core/columns/blob.ts\",\"drizzle-orm/src/sqlite-core/columns/common.ts\",\"drizzle-orm/src/sqlite-core/columns/custom.ts\",\"drizzle-orm/src/sqlite-core/columns/integer.ts\",\"drizzle-orm/src/sqlite-core/columns/numeric.ts\",\"drizzle-orm/src/sqlite-core/columns/real.ts\",\"drizzle-orm/src/sqlite-core/columns/text.ts\",\"drizzle-orm/src/sqlite-core/db.ts\",\"drizzle-orm/src/sqlite-core/dialect.ts\",\"drizzle-orm/src/sqlite-core/foreign-keys.ts\",\"drizzle-orm/src/sqlite-core/indexes.ts\",\"drizzle-orm/src/sqlite-core/primary-keys.ts\",\"drizzle-orm/src/sqlite-core/query-builders/count.ts\",\"drizzle-orm/src/sqlite-core/query-builders/delete.ts\",\"drizzle-orm/src/sqlite-core/query-builders/insert.ts\",\"drizzle-orm/src/sqlite-core/query-builders/query-builder.ts\",\"drizzle-orm/src/sqlite-core/query-builders/query.ts\",\"drizzle-orm/src/sqlite-core/query-builders/raw.ts\",\"drizzle-orm/src/sqlite-core/query-builders/select.ts\",\"drizzle-orm/src/sqlite-core/query-builders/select.types.ts\",\"drizzle-orm/src/sqlite-core/query-builders/update.ts\",\"drizzle-orm/src/sqlite-core/session.ts\",\"drizzle-orm/src/sqlite-core/subquery.ts\",\"drizzle-orm/src/sqlite-core/table.ts\",\"drizzle-orm/src/sqlite-core/unique-constraint.ts\",\"drizzle-orm/src/sqlite-core/utils.ts\",\"drizzle-orm/src/sqlite-core/view-base.ts\",\"drizzle-orm/src/sqlite-core/view.ts\",\"drizzle-orm/src/subquery.ts\",\"drizzle-orm/src/table.ts\",\"drizzle-orm/src/utils.ts\"]",
+              "files": [
+                "drizzle-orm/src/alias.ts",
+                "drizzle-orm/src/cache/core/cache.ts",
+                "drizzle-orm/src/casing.ts",
+                "drizzle-orm/src/column-builder.ts",
+                "drizzle-orm/src/column.ts",
+                "drizzle-orm/src/gel-core/checks.ts",
+                "drizzle-orm/src/gel-core/columns/all.ts",
+                "drizzle-orm/src/gel-core/columns/bigint.ts",
+                "drizzle-orm/src/gel-core/columns/bigintT.ts",
+                "drizzle-orm/src/gel-core/columns/boolean.ts",
+                "drizzle-orm/src/gel-core/columns/bytes.ts",
+                "drizzle-orm/src/gel-core/columns/common.ts",
+                "drizzle-orm/src/gel-core/columns/custom.ts",
+                "drizzle-orm/src/gel-core/columns/date-duration.ts",
+                "drizzle-orm/src/gel-core/columns/date.common.ts",
+                "drizzle-orm/src/gel-core/columns/decimal.ts",
+                "drizzle-orm/src/gel-core/columns/double-precision.ts",
+                "drizzle-orm/src/gel-core/columns/duration.ts",
+                "drizzle-orm/src/gel-core/columns/int.common.ts",
+                "drizzle-orm/src/gel-core/columns/integer.ts",
+                "drizzle-orm/src/gel-core/columns/json.ts",
+                "drizzle-orm/src/gel-core/columns/localdate.ts",
+                "drizzle-orm/src/gel-core/columns/localtime.ts",
+                "drizzle-orm/src/gel-core/columns/real.ts",
+                "drizzle-orm/src/gel-core/columns/relative-duration.ts",
+                "drizzle-orm/src/gel-core/columns/smallint.ts",
+                "drizzle-orm/src/gel-core/columns/text.ts",
+                "drizzle-orm/src/gel-core/columns/timestamp.ts",
+                "drizzle-orm/src/gel-core/columns/timestamptz.ts",
+                "drizzle-orm/src/gel-core/columns/uuid.ts",
+                "drizzle-orm/src/gel-core/foreign-keys.ts",
+                "drizzle-orm/src/gel-core/indexes.ts",
+                "drizzle-orm/src/gel-core/policies.ts",
+                "drizzle-orm/src/gel-core/primary-keys.ts",
+                "drizzle-orm/src/gel-core/table.ts",
+                "drizzle-orm/src/gel-core/unique-constraint.ts",
+                "drizzle-orm/src/mysql-core/checks.ts",
+                "drizzle-orm/src/mysql-core/columns/all.ts",
+                "drizzle-orm/src/mysql-core/columns/bigint.ts",
+                "drizzle-orm/src/mysql-core/columns/binary.ts",
+                "drizzle-orm/src/mysql-core/columns/boolean.ts",
+                "drizzle-orm/src/mysql-core/columns/char.ts",
+                "drizzle-orm/src/mysql-core/columns/common.ts",
+                "drizzle-orm/src/mysql-core/columns/custom.ts",
+                "drizzle-orm/src/mysql-core/columns/date.common.ts",
+                "drizzle-orm/src/mysql-core/columns/date.ts",
+                "drizzle-orm/src/mysql-core/columns/datetime.ts",
+                "drizzle-orm/src/mysql-core/columns/decimal.ts",
+                "drizzle-orm/src/mysql-core/columns/double.ts",
+                "drizzle-orm/src/mysql-core/columns/enum.ts",
+                "drizzle-orm/src/mysql-core/columns/float.ts",
+                "drizzle-orm/src/mysql-core/columns/int.ts",
+                "drizzle-orm/src/mysql-core/columns/json.ts",
+                "drizzle-orm/src/mysql-core/columns/mediumint.ts",
+                "drizzle-orm/src/mysql-core/columns/real.ts",
+                "drizzle-orm/src/mysql-core/columns/serial.ts",
+                "drizzle-orm/src/mysql-core/columns/smallint.ts",
+                "drizzle-orm/src/mysql-core/columns/text.ts",
+                "drizzle-orm/src/mysql-core/columns/time.ts",
+                "drizzle-orm/src/mysql-core/columns/timestamp.ts",
+                "drizzle-orm/src/mysql-core/columns/tinyint.ts",
+                "drizzle-orm/src/mysql-core/columns/varbinary.ts",
+                "drizzle-orm/src/mysql-core/columns/varchar.ts",
+                "drizzle-orm/src/mysql-core/columns/year.ts",
+                "drizzle-orm/src/mysql-core/foreign-keys.ts",
+                "drizzle-orm/src/mysql-core/indexes.ts",
+                "drizzle-orm/src/mysql-core/primary-keys.ts",
+                "drizzle-orm/src/mysql-core/table.ts",
+                "drizzle-orm/src/mysql-core/unique-constraint.ts",
+                "drizzle-orm/src/operations.ts",
+                "drizzle-orm/src/pg-core/checks.ts",
+                "drizzle-orm/src/pg-core/columns/all.ts",
+                "drizzle-orm/src/pg-core/columns/bigint.ts",
+                "drizzle-orm/src/pg-core/columns/bigserial.ts",
+                "drizzle-orm/src/pg-core/columns/boolean.ts",
+                "drizzle-orm/src/pg-core/columns/char.ts",
+                "drizzle-orm/src/pg-core/columns/cidr.ts",
+                "drizzle-orm/src/pg-core/columns/common.ts",
+                "drizzle-orm/src/pg-core/columns/custom.ts",
+                "drizzle-orm/src/pg-core/columns/date.common.ts",
+                "drizzle-orm/src/pg-core/columns/date.ts",
+                "drizzle-orm/src/pg-core/columns/double-precision.ts",
+                "drizzle-orm/src/pg-core/columns/enum.ts",
+                "drizzle-orm/src/pg-core/columns/inet.ts",
+                "drizzle-orm/src/pg-core/columns/int.common.ts",
+                "drizzle-orm/src/pg-core/columns/integer.ts",
+                "drizzle-orm/src/pg-core/columns/interval.ts",
+                "drizzle-orm/src/pg-core/columns/json.ts",
+                "drizzle-orm/src/pg-core/columns/jsonb.ts",
+                "drizzle-orm/src/pg-core/columns/line.ts",
+                "drizzle-orm/src/pg-core/columns/macaddr.ts",
+                "drizzle-orm/src/pg-core/columns/macaddr8.ts",
+                "drizzle-orm/src/pg-core/columns/numeric.ts",
+                "drizzle-orm/src/pg-core/columns/point.ts",
+                "drizzle-orm/src/pg-core/columns/postgis_extension/geometry.ts",
+                "drizzle-orm/src/pg-core/columns/real.ts",
+                "drizzle-orm/src/pg-core/columns/serial.ts",
+                "drizzle-orm/src/pg-core/columns/smallint.ts",
+                "drizzle-orm/src/pg-core/columns/smallserial.ts",
+                "drizzle-orm/src/pg-core/columns/text.ts",
+                "drizzle-orm/src/pg-core/columns/time.ts",
+                "drizzle-orm/src/pg-core/columns/timestamp.ts",
+                "drizzle-orm/src/pg-core/columns/uuid.ts",
+                "drizzle-orm/src/pg-core/columns/varchar.ts",
+                "drizzle-orm/src/pg-core/columns/vector_extension/bit.ts",
+                "drizzle-orm/src/pg-core/columns/vector_extension/halfvec.ts",
+                "drizzle-orm/src/pg-core/columns/vector_extension/sparsevec.ts",
+                "drizzle-orm/src/pg-core/columns/vector_extension/vector.ts",
+                "drizzle-orm/src/pg-core/foreign-keys.ts",
+                "drizzle-orm/src/pg-core/indexes.ts",
+                "drizzle-orm/src/pg-core/policies.ts",
+                "drizzle-orm/src/pg-core/primary-keys.ts",
+                "drizzle-orm/src/pg-core/table.ts",
+                "drizzle-orm/src/pg-core/unique-constraint.ts",
+                "drizzle-orm/src/query-builders/query-builder.ts",
+                "drizzle-orm/src/query-builders/select.types.ts",
+                "drizzle-orm/src/relations.ts",
+                "drizzle-orm/src/runnable-query.ts",
+                "drizzle-orm/src/selection-proxy.ts",
+                "drizzle-orm/src/session.ts",
+                "drizzle-orm/src/singlestore-core/columns/all.ts",
+                "drizzle-orm/src/singlestore-core/columns/bigint.ts",
+                "drizzle-orm/src/singlestore-core/columns/binary.ts",
+                "drizzle-orm/src/singlestore-core/columns/boolean.ts",
+                "drizzle-orm/src/singlestore-core/columns/char.ts",
+                "drizzle-orm/src/singlestore-core/columns/common.ts",
+                "drizzle-orm/src/singlestore-core/columns/custom.ts",
+                "drizzle-orm/src/singlestore-core/columns/date.common.ts",
+                "drizzle-orm/src/singlestore-core/columns/date.ts",
+                "drizzle-orm/src/singlestore-core/columns/datetime.ts",
+                "drizzle-orm/src/singlestore-core/columns/decimal.ts",
+                "drizzle-orm/src/singlestore-core/columns/double.ts",
+                "drizzle-orm/src/singlestore-core/columns/enum.ts",
+                "drizzle-orm/src/singlestore-core/columns/float.ts",
+                "drizzle-orm/src/singlestore-core/columns/int.ts",
+                "drizzle-orm/src/singlestore-core/columns/json.ts",
+                "drizzle-orm/src/singlestore-core/columns/mediumint.ts",
+                "drizzle-orm/src/singlestore-core/columns/real.ts",
+                "drizzle-orm/src/singlestore-core/columns/serial.ts",
+                "drizzle-orm/src/singlestore-core/columns/smallint.ts",
+                "drizzle-orm/src/singlestore-core/columns/text.ts",
+                "drizzle-orm/src/singlestore-core/columns/time.ts",
+                "drizzle-orm/src/singlestore-core/columns/timestamp.ts",
+                "drizzle-orm/src/singlestore-core/columns/tinyint.ts",
+                "drizzle-orm/src/singlestore-core/columns/varbinary.ts",
+                "drizzle-orm/src/singlestore-core/columns/varchar.ts",
+                "drizzle-orm/src/singlestore-core/columns/vector.ts",
+                "drizzle-orm/src/singlestore-core/columns/year.ts",
+                "drizzle-orm/src/singlestore-core/indexes.ts",
+                "drizzle-orm/src/singlestore-core/primary-keys.ts",
+                "drizzle-orm/src/singlestore-core/table.ts",
+                "drizzle-orm/src/singlestore-core/unique-constraint.ts",
+                "drizzle-orm/src/sql/expressions/conditions.ts",
+                "drizzle-orm/src/sql/expressions/select.ts",
+                "drizzle-orm/src/sql/sql.ts",
+                "drizzle-orm/src/sqlite-core/checks.ts",
+                "drizzle-orm/src/sqlite-core/columns/all.ts",
+                "drizzle-orm/src/sqlite-core/columns/blob.ts",
+                "drizzle-orm/src/sqlite-core/columns/common.ts",
+                "drizzle-orm/src/sqlite-core/columns/custom.ts",
+                "drizzle-orm/src/sqlite-core/columns/integer.ts",
+                "drizzle-orm/src/sqlite-core/columns/numeric.ts",
+                "drizzle-orm/src/sqlite-core/columns/real.ts",
+                "drizzle-orm/src/sqlite-core/columns/text.ts",
+                "drizzle-orm/src/sqlite-core/db.ts",
+                "drizzle-orm/src/sqlite-core/dialect.ts",
+                "drizzle-orm/src/sqlite-core/foreign-keys.ts",
+                "drizzle-orm/src/sqlite-core/indexes.ts",
+                "drizzle-orm/src/sqlite-core/primary-keys.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/count.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/delete.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/insert.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/query-builder.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/query.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/raw.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/select.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/select.types.ts",
+                "drizzle-orm/src/sqlite-core/query-builders/update.ts",
+                "drizzle-orm/src/sqlite-core/session.ts",
+                "drizzle-orm/src/sqlite-core/subquery.ts",
+                "drizzle-orm/src/sqlite-core/table.ts",
+                "drizzle-orm/src/sqlite-core/unique-constraint.ts",
+                "drizzle-orm/src/sqlite-core/utils.ts",
+                "drizzle-orm/src/sqlite-core/view-base.ts",
+                "drizzle-orm/src/sqlite-core/view.ts",
+                "drizzle-orm/src/subquery.ts",
+                "drizzle-orm/src/table.ts",
+                "drizzle-orm/src/utils.ts"
+              ],
+              "size": 188,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/alias.ts",
+                  "drizzle-orm/src/column.ts",
+                  "drizzle-orm/src/column-builder.ts",
+                  "drizzle-orm/src/sqlite-core/columns/common.ts",
+                  "drizzle-orm/src/sqlite-core/table.ts",
+                  "drizzle-orm/src/sqlite-core/columns/all.ts",
+                  "drizzle-orm/src/sqlite-core/columns/integer.ts",
+                  "drizzle-orm/src/sqlite-core/utils.ts",
+                  "drizzle-orm/src/sqlite-core/view.ts",
+                  "drizzle-orm/src/selection-proxy.ts",
+                  "drizzle-orm/src/alias.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/alias.ts",
+                    "targetFile": "drizzle-orm/src/column.ts",
+                    "sourceSymbol": "drizzle-orm/src/alias.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/column.ts::AnyColumn",
+                    "kind": "imports",
+                    "line": 1,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/column.ts",
+                    "targetFile": "drizzle-orm/src/column-builder.ts",
+                    "sourceSymbol": "drizzle-orm/src/column.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/column-builder.ts::ColumnBuilderBaseConfig",
+                    "kind": "imports",
+                    "line": 1,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/column-builder.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-core/columns/common.ts",
+                    "sourceSymbol": "drizzle-orm/src/column-builder.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/sqlite-core/columns/common.ts::SQLiteColumn",
+                    "kind": "imports",
+                    "line": 8,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-core/columns/common.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-core/table.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-core/columns/common.ts::SQLiteColumn",
+                    "targetSymbol": "drizzle-orm/src/sqlite-core/table.ts::SQLiteTable",
+                    "kind": "injects",
+                    "line": 111,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-core/table.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-core/columns/all.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-core/table.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/sqlite-core/columns/all.ts::SQLiteColumnBuilders",
+                    "kind": "imports",
+                    "line": 5,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-core/columns/all.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-core/columns/integer.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-core/columns/all.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/sqlite-core/columns/integer.ts::integer",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-core/columns/integer.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-core/utils.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-core/columns/integer.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/sqlite-core/utils.ts::OnConflict",
+                    "kind": "imports",
+                    "line": 13,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-core/utils.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-core/view.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-core/utils.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/sqlite-core/view.ts::SQLiteView",
+                    "kind": "imports",
+                    "line": 17,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-core/view.ts",
+                    "targetFile": "drizzle-orm/src/selection-proxy.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-core/view.ts::ManualViewBuilder.as",
+                    "targetSymbol": "drizzle-orm/src/selection-proxy.ts::SelectionProxyHandler",
+                    "kind": "calls",
+                    "line": 116,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/selection-proxy.ts",
+                    "targetFile": "drizzle-orm/src/alias.ts",
+                    "sourceSymbol": "drizzle-orm/src/selection-proxy.ts::SelectionProxyHandler.get",
+                    "targetSymbol": "drizzle-orm/src/alias.ts::ColumnAliasProxyHandler",
+                    "kind": "calls",
+                    "line": 104,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/gel-core/db.ts\",\"drizzle-orm/src/gel-core/dialect.ts\",\"drizzle-orm/src/gel-core/query-builders/count.ts\",\"drizzle-orm/src/gel-core/query-builders/delete.ts\",\"drizzle-orm/src/gel-core/query-builders/insert.ts\",\"drizzle-orm/src/gel-core/query-builders/query-builder.ts\",\"drizzle-orm/src/gel-core/query-builders/query.ts\",\"drizzle-orm/src/gel-core/query-builders/select.ts\",\"drizzle-orm/src/gel-core/query-builders/select.types.ts\",\"drizzle-orm/src/gel-core/query-builders/update.ts\",\"drizzle-orm/src/gel-core/session.ts\",\"drizzle-orm/src/gel-core/utils.ts\",\"drizzle-orm/src/gel-core/view.ts\"]",
+              "files": [
+                "drizzle-orm/src/gel-core/db.ts",
+                "drizzle-orm/src/gel-core/dialect.ts",
+                "drizzle-orm/src/gel-core/query-builders/count.ts",
+                "drizzle-orm/src/gel-core/query-builders/delete.ts",
+                "drizzle-orm/src/gel-core/query-builders/insert.ts",
+                "drizzle-orm/src/gel-core/query-builders/query-builder.ts",
+                "drizzle-orm/src/gel-core/query-builders/query.ts",
+                "drizzle-orm/src/gel-core/query-builders/select.ts",
+                "drizzle-orm/src/gel-core/query-builders/select.types.ts",
+                "drizzle-orm/src/gel-core/query-builders/update.ts",
+                "drizzle-orm/src/gel-core/session.ts",
+                "drizzle-orm/src/gel-core/utils.ts",
+                "drizzle-orm/src/gel-core/view.ts"
+              ],
+              "size": 13,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/gel-core/db.ts",
+                  "drizzle-orm/src/gel-core/session.ts",
+                  "drizzle-orm/src/gel-core/db.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/gel-core/db.ts",
+                    "targetFile": "drizzle-orm/src/gel-core/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/gel-core/db.ts::GelDatabase",
+                    "targetSymbol": "drizzle-orm/src/gel-core/session.ts::GelSession",
+                    "kind": "injects",
+                    "line": 51,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/gel-core/session.ts",
+                    "targetFile": "drizzle-orm/src/gel-core/db.ts",
+                    "sourceSymbol": "drizzle-orm/src/gel-core/session.ts::GelTransaction",
+                    "targetSymbol": "drizzle-orm/src/gel-core/db.ts::GelDatabase",
+                    "kind": "inherits",
+                    "line": 215,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/mysql-core/db.ts\",\"drizzle-orm/src/mysql-core/dialect.ts\",\"drizzle-orm/src/mysql-core/query-builders/count.ts\",\"drizzle-orm/src/mysql-core/query-builders/delete.ts\",\"drizzle-orm/src/mysql-core/query-builders/insert.ts\",\"drizzle-orm/src/mysql-core/query-builders/query-builder.ts\",\"drizzle-orm/src/mysql-core/query-builders/query.ts\",\"drizzle-orm/src/mysql-core/query-builders/select.ts\",\"drizzle-orm/src/mysql-core/query-builders/select.types.ts\",\"drizzle-orm/src/mysql-core/query-builders/update.ts\",\"drizzle-orm/src/mysql-core/session.ts\",\"drizzle-orm/src/mysql-core/subquery.ts\",\"drizzle-orm/src/mysql-core/utils.ts\",\"drizzle-orm/src/mysql-core/view.ts\"]",
+              "files": [
+                "drizzle-orm/src/mysql-core/db.ts",
+                "drizzle-orm/src/mysql-core/dialect.ts",
+                "drizzle-orm/src/mysql-core/query-builders/count.ts",
+                "drizzle-orm/src/mysql-core/query-builders/delete.ts",
+                "drizzle-orm/src/mysql-core/query-builders/insert.ts",
+                "drizzle-orm/src/mysql-core/query-builders/query-builder.ts",
+                "drizzle-orm/src/mysql-core/query-builders/query.ts",
+                "drizzle-orm/src/mysql-core/query-builders/select.ts",
+                "drizzle-orm/src/mysql-core/query-builders/select.types.ts",
+                "drizzle-orm/src/mysql-core/query-builders/update.ts",
+                "drizzle-orm/src/mysql-core/session.ts",
+                "drizzle-orm/src/mysql-core/subquery.ts",
+                "drizzle-orm/src/mysql-core/utils.ts",
+                "drizzle-orm/src/mysql-core/view.ts"
+              ],
+              "size": 14,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/mysql-core/db.ts",
+                  "drizzle-orm/src/mysql-core/session.ts",
+                  "drizzle-orm/src/mysql-core/db.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/mysql-core/db.ts",
+                    "targetFile": "drizzle-orm/src/mysql-core/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/mysql-core/db.ts::MySqlDatabase",
+                    "targetSymbol": "drizzle-orm/src/mysql-core/session.ts::Mode",
+                    "kind": "injects",
+                    "line": 60,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/mysql-core/session.ts",
+                    "targetFile": "drizzle-orm/src/mysql-core/db.ts",
+                    "sourceSymbol": "drizzle-orm/src/mysql-core/session.ts::MySqlTransaction",
+                    "targetSymbol": "drizzle-orm/src/mysql-core/db.ts::MySqlDatabase",
+                    "kind": "inherits",
+                    "line": 245,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/mysql-proxy/driver.ts\",\"drizzle-orm/src/mysql-proxy/session.ts\"]",
+              "files": [
+                "drizzle-orm/src/mysql-proxy/driver.ts",
+                "drizzle-orm/src/mysql-proxy/session.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/mysql-proxy/driver.ts",
+                  "drizzle-orm/src/mysql-proxy/session.ts",
+                  "drizzle-orm/src/mysql-proxy/driver.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/mysql-proxy/driver.ts",
+                    "targetFile": "drizzle-orm/src/mysql-proxy/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/mysql-proxy/driver.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/mysql-proxy/session.ts::MySqlRemotePreparedQueryHKT",
+                    "kind": "imports",
+                    "line": 12,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/mysql-proxy/session.ts",
+                    "targetFile": "drizzle-orm/src/mysql-proxy/driver.ts",
+                    "sourceSymbol": "drizzle-orm/src/mysql-proxy/session.ts::MySqlRemoteSession",
+                    "targetSymbol": "drizzle-orm/src/mysql-proxy/driver.ts::RemoteCallback",
+                    "kind": "injects",
+                    "line": 42,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/pg-core/db.ts\",\"drizzle-orm/src/pg-core/dialect.ts\",\"drizzle-orm/src/pg-core/query-builders/count.ts\",\"drizzle-orm/src/pg-core/query-builders/delete.ts\",\"drizzle-orm/src/pg-core/query-builders/insert.ts\",\"drizzle-orm/src/pg-core/query-builders/query-builder.ts\",\"drizzle-orm/src/pg-core/query-builders/query.ts\",\"drizzle-orm/src/pg-core/query-builders/refresh-materialized-view.ts\",\"drizzle-orm/src/pg-core/query-builders/select.ts\",\"drizzle-orm/src/pg-core/query-builders/select.types.ts\",\"drizzle-orm/src/pg-core/query-builders/update.ts\",\"drizzle-orm/src/pg-core/session.ts\",\"drizzle-orm/src/pg-core/subquery.ts\",\"drizzle-orm/src/pg-core/utils.ts\",\"drizzle-orm/src/pg-core/view.ts\"]",
+              "files": [
+                "drizzle-orm/src/pg-core/db.ts",
+                "drizzle-orm/src/pg-core/dialect.ts",
+                "drizzle-orm/src/pg-core/query-builders/count.ts",
+                "drizzle-orm/src/pg-core/query-builders/delete.ts",
+                "drizzle-orm/src/pg-core/query-builders/insert.ts",
+                "drizzle-orm/src/pg-core/query-builders/query-builder.ts",
+                "drizzle-orm/src/pg-core/query-builders/query.ts",
+                "drizzle-orm/src/pg-core/query-builders/refresh-materialized-view.ts",
+                "drizzle-orm/src/pg-core/query-builders/select.ts",
+                "drizzle-orm/src/pg-core/query-builders/select.types.ts",
+                "drizzle-orm/src/pg-core/query-builders/update.ts",
+                "drizzle-orm/src/pg-core/session.ts",
+                "drizzle-orm/src/pg-core/subquery.ts",
+                "drizzle-orm/src/pg-core/utils.ts",
+                "drizzle-orm/src/pg-core/view.ts"
+              ],
+              "size": 15,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/pg-core/db.ts",
+                  "drizzle-orm/src/pg-core/session.ts",
+                  "drizzle-orm/src/pg-core/db.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/pg-core/db.ts",
+                    "targetFile": "drizzle-orm/src/pg-core/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/pg-core/db.ts::PgDatabase",
+                    "targetSymbol": "drizzle-orm/src/pg-core/session.ts::PgSession",
+                    "kind": "injects",
+                    "line": 60,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/pg-core/session.ts",
+                    "targetFile": "drizzle-orm/src/pg-core/db.ts",
+                    "sourceSymbol": "drizzle-orm/src/pg-core/session.ts::PgTransaction",
+                    "targetSymbol": "drizzle-orm/src/pg-core/db.ts::PgDatabase",
+                    "kind": "inherits",
+                    "line": 240,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/pg-proxy/driver.ts\",\"drizzle-orm/src/pg-proxy/session.ts\"]",
+              "files": [
+                "drizzle-orm/src/pg-proxy/driver.ts",
+                "drizzle-orm/src/pg-proxy/session.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/pg-proxy/driver.ts",
+                  "drizzle-orm/src/pg-proxy/session.ts",
+                  "drizzle-orm/src/pg-proxy/driver.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/pg-proxy/driver.ts",
+                    "targetFile": "drizzle-orm/src/pg-proxy/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/pg-proxy/driver.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/pg-proxy/session.ts::PgRemoteQueryResultHKT",
+                    "kind": "imports",
+                    "line": 12,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/pg-proxy/session.ts",
+                    "targetFile": "drizzle-orm/src/pg-proxy/driver.ts",
+                    "sourceSymbol": "drizzle-orm/src/pg-proxy/session.ts::PgRemoteSession",
+                    "targetSymbol": "drizzle-orm/src/pg-proxy/driver.ts::RemoteCallback",
+                    "kind": "injects",
+                    "line": 33,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/singlestore-core/db.ts\",\"drizzle-orm/src/singlestore-core/dialect.ts\",\"drizzle-orm/src/singlestore-core/query-builders/count.ts\",\"drizzle-orm/src/singlestore-core/query-builders/delete.ts\",\"drizzle-orm/src/singlestore-core/query-builders/insert.ts\",\"drizzle-orm/src/singlestore-core/query-builders/query-builder.ts\",\"drizzle-orm/src/singlestore-core/query-builders/select.ts\",\"drizzle-orm/src/singlestore-core/query-builders/select.types.ts\",\"drizzle-orm/src/singlestore-core/query-builders/update.ts\",\"drizzle-orm/src/singlestore-core/session.ts\",\"drizzle-orm/src/singlestore-core/subquery.ts\",\"drizzle-orm/src/singlestore/driver.ts\",\"drizzle-orm/src/singlestore/session.ts\"]",
+              "files": [
+                "drizzle-orm/src/singlestore-core/db.ts",
+                "drizzle-orm/src/singlestore-core/dialect.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/count.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/delete.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/insert.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/query-builder.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/select.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/select.types.ts",
+                "drizzle-orm/src/singlestore-core/query-builders/update.ts",
+                "drizzle-orm/src/singlestore-core/session.ts",
+                "drizzle-orm/src/singlestore-core/subquery.ts",
+                "drizzle-orm/src/singlestore/driver.ts",
+                "drizzle-orm/src/singlestore/session.ts"
+              ],
+              "size": 13,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/singlestore-core/db.ts",
+                  "drizzle-orm/src/singlestore-core/session.ts",
+                  "drizzle-orm/src/singlestore-core/db.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/singlestore-core/db.ts",
+                    "targetFile": "drizzle-orm/src/singlestore-core/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/singlestore-core/db.ts::SingleStoreDatabase",
+                    "targetSymbol": "drizzle-orm/src/singlestore-core/session.ts::SingleStoreSession",
+                    "kind": "injects",
+                    "line": 53,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/singlestore-core/session.ts",
+                    "targetFile": "drizzle-orm/src/singlestore-core/db.ts",
+                    "sourceSymbol": "drizzle-orm/src/singlestore-core/session.ts::SingleStoreTransaction",
+                    "targetSymbol": "drizzle-orm/src/singlestore-core/db.ts::SingleStoreDatabase",
+                    "kind": "inherits",
+                    "line": 246,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/singlestore-proxy/driver.ts\",\"drizzle-orm/src/singlestore-proxy/session.ts\"]",
+              "files": [
+                "drizzle-orm/src/singlestore-proxy/driver.ts",
+                "drizzle-orm/src/singlestore-proxy/session.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/singlestore-proxy/driver.ts",
+                  "drizzle-orm/src/singlestore-proxy/session.ts",
+                  "drizzle-orm/src/singlestore-proxy/driver.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/singlestore-proxy/driver.ts",
+                    "targetFile": "drizzle-orm/src/singlestore-proxy/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/singlestore-proxy/driver.ts::__file__",
+                    "targetSymbol": "drizzle-orm/src/singlestore-proxy/session.ts::SingleStoreRemotePreparedQueryHKT",
+                    "kind": "imports",
+                    "line": 12,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/singlestore-proxy/session.ts",
+                    "targetFile": "drizzle-orm/src/singlestore-proxy/driver.ts",
+                    "sourceSymbol": "drizzle-orm/src/singlestore-proxy/session.ts::PreparedQuery",
+                    "targetSymbol": "drizzle-orm/src/singlestore-proxy/driver.ts::RemoteCallback",
+                    "kind": "injects",
+                    "line": 102,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"drizzle-orm/src/sqlite-proxy/driver.ts\",\"drizzle-orm/src/sqlite-proxy/session.ts\"]",
+              "files": [
+                "drizzle-orm/src/sqlite-proxy/driver.ts",
+                "drizzle-orm/src/sqlite-proxy/session.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "drizzle-orm/src/sqlite-proxy/driver.ts",
+                  "drizzle-orm/src/sqlite-proxy/session.ts",
+                  "drizzle-orm/src/sqlite-proxy/driver.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-proxy/driver.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-proxy/session.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-proxy/driver.ts::SqliteRemoteDatabase",
+                    "targetSymbol": "drizzle-orm/src/sqlite-proxy/session.ts::SQLiteRemoteSession",
+                    "kind": "injects",
+                    "line": 21,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "drizzle-orm/src/sqlite-proxy/session.ts",
+                    "targetFile": "drizzle-orm/src/sqlite-proxy/driver.ts",
+                    "sourceSymbol": "drizzle-orm/src/sqlite-proxy/session.ts::RemotePreparedQuery",
+                    "targetSymbol": "drizzle-orm/src/sqlite-proxy/driver.ts::RemoteCallback",
+                    "kind": "injects",
+                    "line": 151,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "overall": 34,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 10,
+            "weight": 0.25,
+            "grade": "F",
+            "details": "Average 15.1 connections per file, max 1418, 23% cross-directory",
+            "metrics": {
+              "avgConnections": 15.15,
+              "maxConnections": 1418,
+              "crossDirCoupling": 23.3
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 12% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 11.5,
+              "directories": 148
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 20,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "11 cyclic groups; 272/885 files (30.73%); largest group 188 files",
+            "metrics": {
+              "groupCount": 11,
+              "cyclicFileCount": 272,
+              "cyclicFileRatio": 0.3073446327683616,
+              "largestGroupSize": 188,
+              "graphFileCount": 885,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "50 god files (>95 connections)",
+            "metrics": {
+              "godFiles": 50,
+              "threshold": 95.3,
+              "godFilesPer100": 5.6
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 69,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "20 orphan files (3%), 5239 dead symbols (16.7%)",
+            "metrics": {
+              "orphans": 20,
+              "orphanPercentage": 3.2,
+              "deadSymbols": 5239,
+              "deadCodePercentage": 16.7
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 9 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 9
+            }
+          }
+        ],
+        "summary": "Project health score is 34/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "High coupling detected: Average 15.15 connections per file. Consider breaking down large modules.",
+          "Low cohesion: Only 11.5% internal dependencies. Reorganize files by feature or domain.",
+          "11 cyclic groups; 272/885 files (30.73%); largest group 188 files. Separate mutually dependent responsibilities; use the group witnesses to investigate concrete dependencies.",
+          "50 god files detected with >95.3 connections (5.6 per 100 files). Split into smaller, focused modules.",
+          "20 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 9 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 885,
+          "symbols": 30479,
+          "edges": 24181,
+          "languages": {
+            "TypeScript": 29984,
+            "JavaScript": 495
+          }
+        },
+        "timestamp": "2026-09-30T19:46:55.612Z"
+      }
+    },
+    {
+      "repo": "hono",
+      "source": "/tmp/depwire-cyclic-contract/hono.json",
+      "projectRoot": "/tmp/depwire-cyclic-contract/hono",
+      "before": {
+        "status": "scored",
+        "overall": 47,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 50,
+            "weight": 0.25,
+            "grade": "F",
+            "details": "Average 6.8 connections per file, max 275, 9% cross-directory",
+            "metrics": {
+              "avgConnections": 6.78,
+              "maxConnections": 275,
+              "crossDirCoupling": 9.4
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "Average 31% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 31.4,
+              "directories": 80
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 20,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "86 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 86,
+              "cyclesPer100": 24
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 40,
+            "weight": 0.15,
+            "grade": "F",
+            "details": "25 god files (>42 connections)",
+            "metrics": {
+              "godFiles": 25,
+              "threshold": 42.3,
+              "godFilesPer100": 7
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 82,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "7 orphan files (3%), 630 dead symbols (6.4%)",
+            "metrics": {
+              "orphans": 7,
+              "orphanPercentage": 3.2,
+              "deadSymbols": 630,
+              "deadCodePercentage": 6.4
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 12 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 12
+            }
+          }
+        ],
+        "summary": "Project health score is 47/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "High coupling detected: Average 6.78 connections per file. Consider breaking down large modules.",
+          "Low cohesion: Only 31.4% internal dependencies. Reorganize files by feature or domain.",
+          "86 circular dependency cycles detected (24.0 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "25 god files detected with >42.3 connections (7.0 per 100 files). Split into smaller, focused modules.",
+          "Maximum dependency depth is 12 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 359,
+          "symbols": 9615,
+          "edges": 5372,
+          "languages": {
+            "TypeScript": 9589,
+            "JavaScript": 22,
+            "Other": 4
+          }
+        },
+        "timestamp": "2026-09-30T19:13:36.007Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 359,
+          "groupCount": 6,
+          "cyclicFileCount": 80,
+          "cyclicFileRatio": 0.22284122562674094,
+          "largestGroupSize": 60,
+          "score": 35,
+          "groups": [
+            {
+              "key": "[\"benchmarks/handle-event/index.js\",\"runtime-tests/bun/index.test.tsx\",\"runtime-tests/deno/hono.test.ts\",\"runtime-tests/deno/middleware.test.tsx\",\"runtime-tests/deno/ssg.test.tsx\",\"runtime-tests/lambda-edge/index.test.ts\",\"runtime-tests/lambda/index.test.ts\",\"runtime-tests/node/index.test.ts\",\"runtime-tests/workerd/index.ts\",\"src/adapter/aws-lambda/handler.ts\",\"src/adapter/bun/conninfo.ts\",\"src/adapter/bun/index.ts\",\"src/adapter/bun/ssg.ts\",\"src/adapter/cloudflare-pages/handler.test.ts\",\"src/adapter/cloudflare-pages/handler.ts\",\"src/adapter/cloudflare-workers/serve-static.test.ts\",\"src/adapter/deno/index.ts\",\"src/adapter/deno/ssg.ts\",\"src/adapter/lambda-edge/handler.ts\",\"src/adapter/service-worker/handler.test.ts\",\"src/adapter/service-worker/handler.ts\",\"src/adapter/service-worker/index.ts\",\"src/adapter/vercel/handler.test.ts\",\"src/adapter/vercel/handler.ts\",\"src/client/client.test.ts\",\"src/client/client.ts\",\"src/client/index.ts\",\"src/client/types.ts\",\"src/client/utils.ts\",\"src/helper/dev/index.test.ts\",\"src/helper/dev/index.ts\",\"src/helper/factory/index.test.ts\",\"src/helper/proxy/index.test.ts\",\"src/helper/route/index.ts\",\"src/helper/ssg/middleware.ts\",\"src/helper/ssg/plugins.test.tsx\",\"src/helper/ssg/plugins.ts\",\"src/helper/ssg/ssg.test.tsx\",\"src/helper/ssg/ssg.ts\",\"src/helper/ssg/utils.ts\",\"src/helper/testing/index.ts\",\"src/hono-base.ts\",\"src/hono.test.ts\",\"src/hono.ts\",\"src/index.ts\",\"src/jsx/index.test.tsx\",\"src/jsx/jsx-runtime.test.tsx\",\"src/middleware/basic-auth/index.test.ts\",\"src/middleware/body-limit/index.test.ts\",\"src/middleware/cache/index.test.ts\",\"src/middleware/combine/index.test.ts\",\"src/middleware/context-storage/index.test.ts\",\"src/middleware/jsx-renderer/index.test.tsx\",\"src/middleware/jwt/index.test.ts\",\"src/middleware/method-override/index.ts\",\"src/middleware/pretty-json/index.test.ts\",\"src/middleware/timing/index.test.ts\",\"src/middleware/trailing-slash/index.test.ts\",\"src/types.test.ts\",\"src/validator/validator.test.ts\"]",
+              "files": [
+                "benchmarks/handle-event/index.js",
+                "runtime-tests/bun/index.test.tsx",
+                "runtime-tests/deno/hono.test.ts",
+                "runtime-tests/deno/middleware.test.tsx",
+                "runtime-tests/deno/ssg.test.tsx",
+                "runtime-tests/lambda-edge/index.test.ts",
+                "runtime-tests/lambda/index.test.ts",
+                "runtime-tests/node/index.test.ts",
+                "runtime-tests/workerd/index.ts",
+                "src/adapter/aws-lambda/handler.ts",
+                "src/adapter/bun/conninfo.ts",
+                "src/adapter/bun/index.ts",
+                "src/adapter/bun/ssg.ts",
+                "src/adapter/cloudflare-pages/handler.test.ts",
+                "src/adapter/cloudflare-pages/handler.ts",
+                "src/adapter/cloudflare-workers/serve-static.test.ts",
+                "src/adapter/deno/index.ts",
+                "src/adapter/deno/ssg.ts",
+                "src/adapter/lambda-edge/handler.ts",
+                "src/adapter/service-worker/handler.test.ts",
+                "src/adapter/service-worker/handler.ts",
+                "src/adapter/service-worker/index.ts",
+                "src/adapter/vercel/handler.test.ts",
+                "src/adapter/vercel/handler.ts",
+                "src/client/client.test.ts",
+                "src/client/client.ts",
+                "src/client/index.ts",
+                "src/client/types.ts",
+                "src/client/utils.ts",
+                "src/helper/dev/index.test.ts",
+                "src/helper/dev/index.ts",
+                "src/helper/factory/index.test.ts",
+                "src/helper/proxy/index.test.ts",
+                "src/helper/route/index.ts",
+                "src/helper/ssg/middleware.ts",
+                "src/helper/ssg/plugins.test.tsx",
+                "src/helper/ssg/plugins.ts",
+                "src/helper/ssg/ssg.test.tsx",
+                "src/helper/ssg/ssg.ts",
+                "src/helper/ssg/utils.ts",
+                "src/helper/testing/index.ts",
+                "src/hono-base.ts",
+                "src/hono.test.ts",
+                "src/hono.ts",
+                "src/index.ts",
+                "src/jsx/index.test.tsx",
+                "src/jsx/jsx-runtime.test.tsx",
+                "src/middleware/basic-auth/index.test.ts",
+                "src/middleware/body-limit/index.test.ts",
+                "src/middleware/cache/index.test.ts",
+                "src/middleware/combine/index.test.ts",
+                "src/middleware/context-storage/index.test.ts",
+                "src/middleware/jsx-renderer/index.test.tsx",
+                "src/middleware/jwt/index.test.ts",
+                "src/middleware/method-override/index.ts",
+                "src/middleware/pretty-json/index.test.ts",
+                "src/middleware/timing/index.test.ts",
+                "src/middleware/trailing-slash/index.test.ts",
+                "src/types.test.ts",
+                "src/validator/validator.test.ts"
+              ],
+              "size": 60,
+              "witness": {
+                "files": [
+                  "benchmarks/handle-event/index.js",
+                  "src/hono.test.ts",
+                  "src/hono-base.ts",
+                  "benchmarks/handle-event/index.js"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "benchmarks/handle-event/index.js",
+                    "targetFile": "src/hono.test.ts",
+                    "sourceSymbol": "benchmarks/handle-event/index.js::__file__",
+                    "targetSymbol": "src/hono.test.ts::__file__",
+                    "kind": "rest-api",
+                    "line": 21,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/hono.test.ts",
+                    "targetFile": "src/hono-base.ts",
+                    "sourceSymbol": "src/hono.test.ts::__file__",
+                    "targetSymbol": "src/hono-base.ts::__file__",
+                    "kind": "rest-api",
+                    "line": 491,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/hono-base.ts",
+                    "targetFile": "benchmarks/handle-event/index.js",
+                    "sourceSymbol": "src/hono-base.ts::__file__",
+                    "targetSymbol": "benchmarks/handle-event/index.js::__file__",
+                    "kind": "rest-api",
+                    "line": 204,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"src/context.ts\",\"src/request.ts\",\"src/types.ts\",\"src/utils/body.ts\"]",
+              "files": [
+                "src/context.ts",
+                "src/request.ts",
+                "src/types.ts",
+                "src/utils/body.ts"
+              ],
+              "size": 4,
+              "witness": {
+                "files": [
+                  "src/context.ts",
+                  "src/types.ts",
+                  "src/context.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "src/context.ts",
+                    "targetFile": "src/types.ts",
+                    "sourceSymbol": "src/context.ts::__file__",
+                    "targetSymbol": "src/types.ts::Env",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "src/types.ts",
+                    "targetFile": "src/context.ts",
+                    "sourceSymbol": "src/types.ts::__file__",
+                    "targetSymbol": "src/context.ts::Context",
+                    "kind": "imports",
+                    "line": 7,
+                    "normalizedTypeOnlyImport": true
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"src/helper/streaming/index.ts\",\"src/helper/streaming/text.ts\"]",
+              "files": [
+                "src/helper/streaming/index.ts",
+                "src/helper/streaming/text.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "src/helper/streaming/index.ts",
+                  "src/helper/streaming/text.ts",
+                  "src/helper/streaming/index.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "src/helper/streaming/index.ts",
+                    "targetFile": "src/helper/streaming/text.ts",
+                    "sourceSymbol": "src/helper/streaming/index.ts::streamText",
+                    "targetSymbol": "src/helper/streaming/text.ts::streamText",
+                    "kind": "imports",
+                    "line": 9,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/helper/streaming/text.ts",
+                    "targetFile": "src/helper/streaming/index.ts",
+                    "sourceSymbol": "src/helper/streaming/text.ts::__file__",
+                    "targetSymbol": "src/helper/streaming/index.ts::stream",
+                    "kind": "imports",
+                    "line": 4,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"src/jsx/base.ts\",\"src/jsx/children.ts\",\"src/jsx/context.ts\",\"src/jsx/dom/context.ts\",\"src/jsx/dom/render.ts\",\"src/jsx/hooks/index.ts\",\"src/jsx/intrinsic-element/common.ts\",\"src/jsx/intrinsic-element/components.ts\",\"src/jsx/types.ts\"]",
+              "files": [
+                "src/jsx/base.ts",
+                "src/jsx/children.ts",
+                "src/jsx/context.ts",
+                "src/jsx/dom/context.ts",
+                "src/jsx/dom/render.ts",
+                "src/jsx/hooks/index.ts",
+                "src/jsx/intrinsic-element/common.ts",
+                "src/jsx/intrinsic-element/components.ts",
+                "src/jsx/types.ts"
+              ],
+              "size": 9,
+              "witness": {
+                "files": [
+                  "src/jsx/base.ts",
+                  "src/jsx/context.ts",
+                  "src/jsx/base.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "src/jsx/base.ts",
+                    "targetFile": "src/jsx/context.ts",
+                    "sourceSymbol": "src/jsx/base.ts::JSXNode.toStringToBuffer",
+                    "targetSymbol": "src/jsx/context.ts::useContext",
+                    "kind": "calls",
+                    "line": 180,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/jsx/context.ts",
+                    "targetFile": "src/jsx/base.ts",
+                    "sourceSymbol": "src/jsx/context.ts::__file__",
+                    "targetSymbol": "src/jsx/base.ts::JSXFragmentNode",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"src/jsx/components.ts\",\"src/jsx/dom/components.ts\",\"src/jsx/streaming.ts\"]",
+              "files": [
+                "src/jsx/components.ts",
+                "src/jsx/dom/components.ts",
+                "src/jsx/streaming.ts"
+              ],
+              "size": 3,
+              "witness": {
+                "files": [
+                  "src/jsx/components.ts",
+                  "src/jsx/dom/components.ts",
+                  "src/jsx/components.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "src/jsx/components.ts",
+                    "targetFile": "src/jsx/dom/components.ts",
+                    "sourceSymbol": "src/jsx/components.ts::__file__",
+                    "targetSymbol": "src/jsx/dom/components.ts::ErrorBoundary",
+                    "kind": "imports",
+                    "line": 7,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/jsx/dom/components.ts",
+                    "targetFile": "src/jsx/components.ts",
+                    "sourceSymbol": "src/jsx/dom/components.ts::__file__",
+                    "targetSymbol": "src/jsx/components.ts::ErrorHandler",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": true
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"src/utils/jwt/jws.ts\",\"src/utils/jwt/types.ts\"]",
+              "files": [
+                "src/utils/jwt/jws.ts",
+                "src/utils/jwt/types.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "src/utils/jwt/jws.ts",
+                  "src/utils/jwt/types.ts",
+                  "src/utils/jwt/jws.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "src/utils/jwt/jws.ts",
+                    "targetFile": "src/utils/jwt/types.ts",
+                    "sourceSymbol": "src/utils/jwt/jws.ts::__file__",
+                    "targetSymbol": "src/utils/jwt/types.ts::CryptoKeyUsage",
+                    "kind": "imports",
+                    "line": 10,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/utils/jwt/types.ts",
+                    "targetFile": "src/utils/jwt/jws.ts",
+                    "sourceSymbol": "src/utils/jwt/types.ts::HonoJsonWebKey",
+                    "targetSymbol": "src/utils/jwt/jws.ts::HonoJsonWebKey",
+                    "kind": "imports",
+                    "line": 156,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "overall": 50,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 50,
+            "weight": 0.25,
+            "grade": "F",
+            "details": "Average 6.8 connections per file, max 275, 9% cross-directory",
+            "metrics": {
+              "avgConnections": 6.78,
+              "maxConnections": 275,
+              "crossDirCoupling": 9.4
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "Average 31% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 31.4,
+              "directories": 80
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 35,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "6 cyclic groups; 80/359 files (22.28%); largest group 60 files",
+            "metrics": {
+              "groupCount": 6,
+              "cyclicFileCount": 80,
+              "cyclicFileRatio": 0.22284122562674094,
+              "largestGroupSize": 60,
+              "graphFileCount": 359,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 40,
+            "weight": 0.15,
+            "grade": "F",
+            "details": "25 god files (>42 connections)",
+            "metrics": {
+              "godFiles": 25,
+              "threshold": 42.3,
+              "godFilesPer100": 7
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 82,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "7 orphan files (3%), 630 dead symbols (6.4%)",
+            "metrics": {
+              "orphans": 7,
+              "orphanPercentage": 3.2,
+              "deadSymbols": 630,
+              "deadCodePercentage": 6.4
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 40,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 12 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 12
+            }
+          }
+        ],
+        "summary": "Project health score is 50/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "High coupling detected: Average 6.78 connections per file. Consider breaking down large modules.",
+          "Low cohesion: Only 31.4% internal dependencies. Reorganize files by feature or domain.",
+          "6 cyclic groups; 80/359 files (22.28%); largest group 60 files. Separate mutually dependent responsibilities; use the group witnesses to investigate concrete dependencies.",
+          "25 god files detected with >42.3 connections (7.0 per 100 files). Split into smaller, focused modules.",
+          "Maximum dependency depth is 12 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 359,
+          "symbols": 9615,
+          "edges": 5372,
+          "languages": {
+            "TypeScript": 9589,
+            "JavaScript": 22,
+            "Other": 4
+          }
+        },
+        "timestamp": "2026-09-30T19:46:55.922Z"
+      }
+    },
+    {
+      "repo": "express",
+      "source": "/tmp/depwire-cyclic-contract/express.json",
+      "projectRoot": "/tmp/depwire-cyclic-contract/express",
+      "before": {
+        "status": "scored",
+        "overall": 82,
+        "grade": "B",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 2.2 connections per file, max 45, 51% cross-directory",
+            "metrics": {
+              "avgConnections": 2.15,
+              "maxConnections": 45,
+              "crossDirCoupling": 51
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 80,
+            "weight": 0.2,
+            "grade": "B",
+            "details": "Average 56% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 56.4,
+              "directories": 8
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "No circular dependencies detected",
+            "metrics": {
+              "cycles": 0,
+              "cyclesPer100": 0
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "7 god files (>24 connections)",
+            "metrics": {
+              "godFiles": 7,
+              "threshold": 24.5,
+              "godFilesPer100": 4.9
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 67,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "11 orphan files (24%), 27 dead symbols (1.5%)",
+            "metrics": {
+              "orphans": 11,
+              "orphanPercentage": 23.9,
+              "deadSymbols": 27,
+              "deadCodePercentage": 1.5
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 80,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "Maximum dependency chain: 5 levels",
+            "metrics": {
+              "maxDepth": 5
+            }
+          }
+        ],
+        "summary": "Project health score is 82/100 (Grade: B). Good architecture with some areas for improvement.",
+        "recommendations": [
+          "7 god files detected with >24.5 connections (4.9 per 100 files). Split into smaller, focused modules.",
+          "11 orphan files detected. Verify they're needed or remove dead code."
+        ],
+        "projectStats": {
+          "files": 144,
+          "symbols": 1629,
+          "edges": 325,
+          "languages": {
+            "JavaScript": 1621,
+            "Other": 8
+          }
+        },
+        "timestamp": "2026-09-30T19:13:36.262Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 144,
+          "groupCount": 0,
+          "cyclicFileCount": 0,
+          "cyclicFileRatio": 0,
+          "largestGroupSize": 0,
+          "score": 100,
+          "groups": []
+        },
+        "overall": 82,
+        "grade": "B",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 2.2 connections per file, max 45, 51% cross-directory",
+            "metrics": {
+              "avgConnections": 2.15,
+              "maxConnections": 45,
+              "crossDirCoupling": 51
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 80,
+            "weight": 0.2,
+            "grade": "B",
+            "details": "Average 56% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 56.4,
+              "directories": 8
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "0 cyclic groups; 0/144 files (0.00%); largest group 0 files",
+            "metrics": {
+              "groupCount": 0,
+              "cyclicFileCount": 0,
+              "cyclicFileRatio": 0,
+              "largestGroupSize": 0,
+              "graphFileCount": 144,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "7 god files (>24 connections)",
+            "metrics": {
+              "godFiles": 7,
+              "threshold": 24.5,
+              "godFilesPer100": 4.9
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 67,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "11 orphan files (24%), 27 dead symbols (1.5%)",
+            "metrics": {
+              "orphans": 11,
+              "orphanPercentage": 23.9,
+              "deadSymbols": 27,
+              "deadCodePercentage": 1.5
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 80,
+            "weight": 0.1,
+            "grade": "B",
+            "details": "Maximum dependency chain: 5 levels",
+            "metrics": {
+              "maxDepth": 5
+            }
+          }
+        ],
+        "summary": "Project health score is 82/100 (Grade: B). Good architecture with some areas for improvement.",
+        "recommendations": [
+          "7 god files detected with >24.5 connections (4.9 per 100 files). Split into smaller, focused modules.",
+          "11 orphan files detected. Verify they're needed or remove dead code."
+        ],
+        "projectStats": {
+          "files": 144,
+          "symbols": 1629,
+          "edges": 325,
+          "languages": {
+            "JavaScript": 1621,
+            "Other": 8
+          }
+        },
+        "timestamp": "2026-09-30T19:46:55.955Z"
+      }
+    },
+    {
+      "repo": "zod",
+      "source": "/tmp/depwire-cyclic-contract/zod.json",
+      "projectRoot": "/tmp/depwire-cyclic-contract/zod",
+      "before": {
+        "status": "scored",
+        "overall": 58,
+        "grade": "F",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 2.3 connections per file, max 190, 1% cross-directory",
+            "metrics": {
+              "avgConnections": 2.33,
+              "maxConnections": 190,
+              "crossDirCoupling": 0.5
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 15% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 14.7,
+              "directories": 27
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "7 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 7,
+              "cyclesPer100": 1.4
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "27 god files (>18 connections)",
+            "metrics": {
+              "godFiles": 27,
+              "threshold": 18.1,
+              "godFilesPer100": 5.3
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 45,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "86 orphan files (28%), 2254 dead symbols (16.9%)",
+            "metrics": {
+              "orphans": 86,
+              "orphanPercentage": 28.3,
+              "deadSymbols": 2254,
+              "deadCodePercentage": 16.9
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 20,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 16 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 16
+            }
+          }
+        ],
+        "summary": "Project health score is 58/100 (Grade: F). Poor architecture quality. Significant refactoring recommended.",
+        "recommendations": [
+          "Low cohesion: Only 14.7% internal dependencies. Reorganize files by feature or domain.",
+          "7 circular dependency cycles detected (1.4 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "27 god files detected with >18.1 connections (5.3 per 100 files). Split into smaller, focused modules.",
+          "86 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 16 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 510,
+          "symbols": 12899,
+          "edges": 7657,
+          "languages": {
+            "JavaScript": 12,
+            "TypeScript": 12885,
+            "Other": 2
+          }
+        },
+        "timestamp": "2026-09-30T19:13:38.137Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 510,
+          "groupCount": 3,
+          "cyclicFileCount": 12,
+          "cyclicFileRatio": 0.023529411764705882,
+          "largestGroupSize": 5,
+          "score": 88,
+          "groups": [
+            {
+              "key": "[\"packages/zod/src/v3/ZodError.ts\",\"packages/zod/src/v3/errors.ts\",\"packages/zod/src/v3/helpers/parseUtil.ts\",\"packages/zod/src/v3/helpers/partialUtil.ts\",\"packages/zod/src/v3/types.ts\"]",
+              "files": [
+                "packages/zod/src/v3/ZodError.ts",
+                "packages/zod/src/v3/errors.ts",
+                "packages/zod/src/v3/helpers/parseUtil.ts",
+                "packages/zod/src/v3/helpers/partialUtil.ts",
+                "packages/zod/src/v3/types.ts"
+              ],
+              "size": 5,
+              "witness": {
+                "files": [
+                  "packages/zod/src/v3/ZodError.ts",
+                  "packages/zod/src/v3/types.ts",
+                  "packages/zod/src/v3/ZodError.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/zod/src/v3/ZodError.ts",
+                    "targetFile": "packages/zod/src/v3/types.ts",
+                    "sourceSymbol": "packages/zod/src/v3/ZodError.ts::__file__",
+                    "targetSymbol": "packages/zod/src/v3/types.ts::TypeOf",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "packages/zod/src/v3/types.ts",
+                    "targetFile": "packages/zod/src/v3/ZodError.ts",
+                    "sourceSymbol": "packages/zod/src/v3/types.ts::ZodCatch._parse",
+                    "targetSymbol": "packages/zod/src/v3/ZodError.ts::ZodError",
+                    "kind": "calls",
+                    "line": 4662,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/zod/src/v4/core/core.ts\",\"packages/zod/src/v4/core/util.ts\"]",
+              "files": [
+                "packages/zod/src/v4/core/core.ts",
+                "packages/zod/src/v4/core/util.ts"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "packages/zod/src/v4/core/core.ts",
+                  "packages/zod/src/v4/core/util.ts",
+                  "packages/zod/src/v4/core/core.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/zod/src/v4/core/core.ts",
+                    "targetFile": "packages/zod/src/v4/core/util.ts",
+                    "sourceSymbol": "packages/zod/src/v4/core/core.ts::$constructor.init",
+                    "targetSymbol": "packages/zod/src/v4/core/util.ts::members",
+                    "kind": "calls",
+                    "line": 99,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/zod/src/v4/core/util.ts",
+                    "targetFile": "packages/zod/src/v4/core/core.ts",
+                    "sourceSymbol": "packages/zod/src/v4/core/util.ts::__file__",
+                    "targetSymbol": "packages/zod/src/v4/core/core.ts::$ZodConfig",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": true
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"packages/zod/src/v4/core/errors.ts\",\"packages/zod/src/v4/core/parse.ts\",\"packages/zod/src/v4/core/registries.ts\",\"packages/zod/src/v4/core/schemas.ts\",\"packages/zod/src/v4/core/to-json-schema.ts\"]",
+              "files": [
+                "packages/zod/src/v4/core/errors.ts",
+                "packages/zod/src/v4/core/parse.ts",
+                "packages/zod/src/v4/core/registries.ts",
+                "packages/zod/src/v4/core/schemas.ts",
+                "packages/zod/src/v4/core/to-json-schema.ts"
+              ],
+              "size": 5,
+              "witness": {
+                "files": [
+                  "packages/zod/src/v4/core/errors.ts",
+                  "packages/zod/src/v4/core/schemas.ts",
+                  "packages/zod/src/v4/core/parse.ts",
+                  "packages/zod/src/v4/core/errors.ts"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "packages/zod/src/v4/core/errors.ts",
+                    "targetFile": "packages/zod/src/v4/core/schemas.ts",
+                    "sourceSymbol": "packages/zod/src/v4/core/errors.ts::__file__",
+                    "targetSymbol": "packages/zod/src/v4/core/schemas.ts::$ZodType",
+                    "kind": "imports",
+                    "line": 3,
+                    "normalizedTypeOnlyImport": true
+                  },
+                  {
+                    "sourceFile": "packages/zod/src/v4/core/schemas.ts",
+                    "targetFile": "packages/zod/src/v4/core/parse.ts",
+                    "sourceSymbol": "packages/zod/src/v4/core/schemas.ts::__file__",
+                    "targetSymbol": "packages/zod/src/v4/core/parse.ts::parse",
+                    "kind": "imports",
+                    "line": 8,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "packages/zod/src/v4/core/parse.ts",
+                    "targetFile": "packages/zod/src/v4/core/errors.ts",
+                    "sourceSymbol": "packages/zod/src/v4/core/parse.ts::__file__",
+                    "targetSymbol": "packages/zod/src/v4/core/errors.ts::__file__",
+                    "kind": "imports",
+                    "line": 2,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "overall": 64,
+        "grade": "D",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 2.3 connections per file, max 190, 1% cross-directory",
+            "metrics": {
+              "avgConnections": 2.33,
+              "maxConnections": 190,
+              "crossDirCoupling": 0.5
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 15% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 14.7,
+              "directories": 27
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 88,
+            "weight": 0.2,
+            "grade": "B",
+            "details": "3 cyclic groups; 12/510 files (2.35%); largest group 5 files",
+            "metrics": {
+              "groupCount": 3,
+              "cyclicFileCount": 12,
+              "cyclicFileRatio": 0.023529411764705882,
+              "largestGroupSize": 5,
+              "graphFileCount": 510,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 60,
+            "weight": 0.15,
+            "grade": "D",
+            "details": "27 god files (>18 connections)",
+            "metrics": {
+              "godFiles": 27,
+              "threshold": 18.1,
+              "godFilesPer100": 5.3
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 45,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "86 orphan files (28%), 2254 dead symbols (16.9%)",
+            "metrics": {
+              "orphans": 86,
+              "orphanPercentage": 28.3,
+              "deadSymbols": 2254,
+              "deadCodePercentage": 16.9
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 20,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "Maximum dependency chain: 16 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 16
+            }
+          }
+        ],
+        "summary": "Project health score is 64/100 (Grade: D). Architecture needs improvement. Multiple issues detected.",
+        "recommendations": [
+          "Low cohesion: Only 14.7% internal dependencies. Reorganize files by feature or domain.",
+          "27 god files detected with >18.1 connections (5.3 per 100 files). Split into smaller, focused modules.",
+          "86 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 16 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 510,
+          "symbols": 12899,
+          "edges": 7657,
+          "languages": {
+            "JavaScript": 12,
+            "TypeScript": 12885,
+            "Other": 2
+          }
+        },
+        "timestamp": "2026-09-30T19:46:56.129Z"
+      }
+    },
+    {
+      "repo": "flask",
+      "source": "/tmp/depwire-cyclic-contract/flask.json",
+      "projectRoot": "/tmp/depwire-cyclic-contract/flask",
+      "before": {
+        "status": "scored",
+        "overall": 76,
+        "grade": "C",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 2.4 connections per file, max 46, 0% cross-directory",
+            "metrics": {
+              "avgConnections": 2.36,
+              "maxConnections": 46,
+              "crossDirCoupling": 0
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "Average 85% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 84.5,
+              "directories": 5
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 20,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "35 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 35,
+              "cyclesPer100": 35.4
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 100,
+            "weight": 0.15,
+            "grade": "A",
+            "details": "No god files detected",
+            "metrics": {
+              "godFiles": 0,
+              "threshold": 48.4,
+              "godFilesPer100": 0
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 48,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "6 orphan files (17%), 337 dead symbols (21.8%)",
+            "metrics": {
+              "orphans": 6,
+              "orphanPercentage": 17.1,
+              "deadSymbols": 337,
+              "deadCodePercentage": 21.8
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 100,
+            "weight": 0.1,
+            "grade": "A",
+            "details": "Maximum dependency chain: 2 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 2
+            }
+          }
+        ],
+        "summary": "Project health score is 76/100 (Grade: C). Moderate architecture quality. Consider refactoring high-risk areas.",
+        "recommendations": [
+          "35 circular dependency cycles detected (35.4 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "6 orphan files detected. Verify they're needed or remove dead code."
+        ],
+        "projectStats": {
+          "files": 99,
+          "symbols": 1515,
+          "edges": 515,
+          "languages": {
+            "Python": 1495,
+            "Other": 20
+          }
+        },
+        "timestamp": "2026-09-30T19:13:38.348Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 99,
+          "groupCount": 2,
+          "cyclicFileCount": 21,
+          "cyclicFileRatio": 0.21212121212121213,
+          "largestGroupSize": 19,
+          "score": 44,
+          "groups": [
+            {
+              "key": "[\"examples/tutorial/flaskr/auth.py\",\"examples/tutorial/flaskr/blog.py\"]",
+              "files": [
+                "examples/tutorial/flaskr/auth.py",
+                "examples/tutorial/flaskr/blog.py"
+              ],
+              "size": 2,
+              "witness": {
+                "files": [
+                  "examples/tutorial/flaskr/auth.py",
+                  "examples/tutorial/flaskr/blog.py",
+                  "examples/tutorial/flaskr/auth.py"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "examples/tutorial/flaskr/auth.py",
+                    "targetFile": "examples/tutorial/flaskr/blog.py",
+                    "sourceSymbol": "examples/tutorial/flaskr/auth.py::login_required",
+                    "targetSymbol": "examples/tutorial/flaskr/blog.py::create",
+                    "kind": "decorates",
+                    "line": 60,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "examples/tutorial/flaskr/blog.py",
+                    "targetFile": "examples/tutorial/flaskr/auth.py",
+                    "sourceSymbol": "examples/tutorial/flaskr/blog.py::__file__",
+                    "targetSymbol": "examples/tutorial/flaskr/auth.py::login_required",
+                    "kind": "imports",
+                    "line": 10,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"src/flask/app.py\",\"src/flask/blueprints.py\",\"src/flask/cli.py\",\"src/flask/config.py\",\"src/flask/ctx.py\",\"src/flask/debughelpers.py\",\"src/flask/globals.py\",\"src/flask/helpers.py\",\"src/flask/json/__init__.py\",\"src/flask/json/provider.py\",\"src/flask/json/tag.py\",\"src/flask/logging.py\",\"src/flask/sansio/app.py\",\"src/flask/sansio/blueprints.py\",\"src/flask/sansio/scaffold.py\",\"src/flask/sessions.py\",\"src/flask/templating.py\",\"src/flask/testing.py\",\"src/flask/wrappers.py\"]",
+              "files": [
+                "src/flask/app.py",
+                "src/flask/blueprints.py",
+                "src/flask/cli.py",
+                "src/flask/config.py",
+                "src/flask/ctx.py",
+                "src/flask/debughelpers.py",
+                "src/flask/globals.py",
+                "src/flask/helpers.py",
+                "src/flask/json/__init__.py",
+                "src/flask/json/provider.py",
+                "src/flask/json/tag.py",
+                "src/flask/logging.py",
+                "src/flask/sansio/app.py",
+                "src/flask/sansio/blueprints.py",
+                "src/flask/sansio/scaffold.py",
+                "src/flask/sessions.py",
+                "src/flask/templating.py",
+                "src/flask/testing.py",
+                "src/flask/wrappers.py"
+              ],
+              "size": 19,
+              "witness": {
+                "files": [
+                  "src/flask/app.py",
+                  "src/flask/ctx.py",
+                  "src/flask/app.py"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "src/flask/app.py",
+                    "targetFile": "src/flask/ctx.py",
+                    "sourceSymbol": "src/flask/app.py::Flask.app_context",
+                    "targetSymbol": "src/flask/ctx.py::AppContext",
+                    "kind": "calls",
+                    "line": 1502,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "src/flask/ctx.py",
+                    "targetFile": "src/flask/app.py",
+                    "sourceSymbol": "src/flask/ctx.py::__file__",
+                    "targetSymbol": "src/flask/app.py::Flask",
+                    "kind": "imports",
+                    "line": 21,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "overall": 81,
+        "grade": "B",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 2.4 connections per file, max 46, 0% cross-directory",
+            "metrics": {
+              "avgConnections": 2.36,
+              "maxConnections": 46,
+              "crossDirCoupling": 0
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 100,
+            "weight": 0.2,
+            "grade": "A",
+            "details": "Average 85% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 84.5,
+              "directories": 5
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 44,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "2 cyclic groups; 21/99 files (21.21%); largest group 19 files",
+            "metrics": {
+              "groupCount": 2,
+              "cyclicFileCount": 21,
+              "cyclicFileRatio": 0.21212121212121213,
+              "largestGroupSize": 19,
+              "graphFileCount": 99,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 100,
+            "weight": 0.15,
+            "grade": "A",
+            "details": "No god files detected",
+            "metrics": {
+              "godFiles": 0,
+              "threshold": 48.4,
+              "godFilesPer100": 0
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 48,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "6 orphan files (17%), 337 dead symbols (21.8%)",
+            "metrics": {
+              "orphans": 6,
+              "orphanPercentage": 17.1,
+              "deadSymbols": 337,
+              "deadCodePercentage": 21.8
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 100,
+            "weight": 0.1,
+            "grade": "A",
+            "details": "Maximum dependency chain: 2 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 2
+            }
+          }
+        ],
+        "summary": "Project health score is 81/100 (Grade: B). Good architecture with some areas for improvement.",
+        "recommendations": [
+          "2 cyclic groups; 21/99 files (21.21%); largest group 19 files. Separate mutually dependent responsibilities; use the group witnesses to investigate concrete dependencies.",
+          "6 orphan files detected. Verify they're needed or remove dead code."
+        ],
+        "projectStats": {
+          "files": 99,
+          "symbols": 1515,
+          "edges": 515,
+          "languages": {
+            "Python": 1495,
+            "Other": 20
+          }
+        },
+        "timestamp": "2026-09-30T19:46:56.162Z"
+      }
+    },
+    {
+      "repo": "fastapi",
+      "source": "/tmp/depwire-cyclic-contract/fastapi.json",
+      "projectRoot": "/tmp/depwire-cyclic-contract/fastapi",
+      "before": {
+        "status": "scored",
+        "overall": 65,
+        "grade": "D",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 0.8 connections per file, max 147, 33% cross-directory",
+            "metrics": {
+              "avgConnections": 0.78,
+              "maxConnections": 147,
+              "crossDirCoupling": 33
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 17% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 16.9,
+              "directories": 102
+            }
+          },
+          {
+            "name": "Circular Dependencies",
+            "score": 60,
+            "weight": 0.2,
+            "grade": "D",
+            "details": "20 circular dependency cycles detected",
+            "metrics": {
+              "cycles": 20,
+              "cyclesPer100": 2.1
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 80,
+            "weight": 0.15,
+            "grade": "B",
+            "details": "28 god files (>10 connections)",
+            "metrics": {
+              "godFiles": 28,
+              "threshold": 10.1,
+              "godFilesPer100": 2.9
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 41,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "274 orphan files (62%), 1628 dead symbols (20.3%)",
+            "metrics": {
+              "orphans": 274,
+              "orphanPercentage": 62.3,
+              "deadSymbols": 1628,
+              "deadCodePercentage": 20.3
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 60,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "Maximum dependency chain: 7 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 7
+            }
+          }
+        ],
+        "summary": "Project health score is 65/100 (Grade: D). Architecture needs improvement. Multiple issues detected.",
+        "recommendations": [
+          "Low cohesion: Only 16.9% internal dependencies. Reorganize files by feature or domain.",
+          "20 circular dependency cycles detected (2.1 per 100 files). Break cycles by introducing interfaces or extracting shared code.",
+          "274 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 7 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 974,
+          "symbols": 7134,
+          "edges": 1708,
+          "languages": {
+            "JavaScript": 96,
+            "Other": 5,
+            "Python": 7033
+          }
+        },
+        "timestamp": "2026-09-30T19:21:01.414Z"
+      },
+      "after": {
+        "status": "scored",
+        "dimensions_v": "2026-09-30-cyclic-groups-v1",
+        "cyclicGroups": {
+          "contractVersion": "cyclic-groups-v1",
+          "dimensions_v": "2026-09-30-cyclic-groups-v1",
+          "edgeView": "legacy-normalized-dependencies-v1",
+          "sourceCoverage": "unknown",
+          "status": "analyzed",
+          "graphFileCount": 974,
+          "groupCount": 2,
+          "cyclicFileCount": 22,
+          "cyclicFileRatio": 0.022587268993839837,
+          "largestGroupSize": 15,
+          "score": 84,
+          "groups": [
+            {
+              "key": "[\"tests/test_default_response_class.py\",\"tests/test_deprecated_responses.py\",\"tests/test_regex_deprecated_body.py\",\"tests/test_regex_deprecated_params.py\",\"tests/test_schema_compat_pydantic_v2.py\",\"tests/test_stringified_annotation_dependency_py314.py\",\"tests/test_stringified_annotations_simple.py\",\"tests/test_tutorial/test_background_tasks/test_tutorial001.py\",\"tests/test_tutorial/test_custom_docs_ui/test_tutorial001.py\",\"tests/test_tutorial/test_custom_docs_ui/test_tutorial002.py\",\"tests/test_tutorial/test_events/test_tutorial002.py\",\"tests/test_tutorial/test_static_files/test_tutorial001.py\",\"tests/test_tutorial/test_templates/test_tutorial001.py\",\"tests/test_typing_python39.py\",\"tests/utils.py\"]",
+              "files": [
+                "tests/test_default_response_class.py",
+                "tests/test_deprecated_responses.py",
+                "tests/test_regex_deprecated_body.py",
+                "tests/test_regex_deprecated_params.py",
+                "tests/test_schema_compat_pydantic_v2.py",
+                "tests/test_stringified_annotation_dependency_py314.py",
+                "tests/test_stringified_annotations_simple.py",
+                "tests/test_tutorial/test_background_tasks/test_tutorial001.py",
+                "tests/test_tutorial/test_custom_docs_ui/test_tutorial001.py",
+                "tests/test_tutorial/test_custom_docs_ui/test_tutorial002.py",
+                "tests/test_tutorial/test_events/test_tutorial002.py",
+                "tests/test_tutorial/test_static_files/test_tutorial001.py",
+                "tests/test_tutorial/test_templates/test_tutorial001.py",
+                "tests/test_typing_python39.py",
+                "tests/utils.py"
+              ],
+              "size": 15,
+              "witness": {
+                "files": [
+                  "tests/test_default_response_class.py",
+                  "tests/utils.py",
+                  "tests/test_default_response_class.py"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "tests/test_default_response_class.py",
+                    "targetFile": "tests/utils.py",
+                    "sourceSymbol": "tests/test_default_response_class.py::__file__",
+                    "targetSymbol": "tests/utils.py::needs_orjson",
+                    "kind": "imports",
+                    "line": 7,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "tests/utils.py",
+                    "targetFile": "tests/test_default_response_class.py",
+                    "sourceSymbol": "tests/utils.py::needs_orjson",
+                    "targetSymbol": "tests/test_default_response_class.py::test_app",
+                    "kind": "decorates",
+                    "line": 124,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            },
+            {
+              "key": "[\"tests/test_telemetry/_subprocess.py\",\"tests/test_telemetry/test_background.py\",\"tests/test_telemetry/test_environment_integrations.py\",\"tests/test_telemetry/test_http.py\",\"tests/test_telemetry/test_integrations.py\",\"tests/test_telemetry/test_native_integrations.py\",\"tests/test_telemetry/test_runtime.py\"]",
+              "files": [
+                "tests/test_telemetry/_subprocess.py",
+                "tests/test_telemetry/test_background.py",
+                "tests/test_telemetry/test_environment_integrations.py",
+                "tests/test_telemetry/test_http.py",
+                "tests/test_telemetry/test_integrations.py",
+                "tests/test_telemetry/test_native_integrations.py",
+                "tests/test_telemetry/test_runtime.py"
+              ],
+              "size": 7,
+              "witness": {
+                "files": [
+                  "tests/test_telemetry/_subprocess.py",
+                  "tests/test_telemetry/test_background.py",
+                  "tests/test_telemetry/_subprocess.py"
+                ],
+                "edges": [
+                  {
+                    "sourceFile": "tests/test_telemetry/_subprocess.py",
+                    "targetFile": "tests/test_telemetry/test_background.py",
+                    "sourceSymbol": "tests/test_telemetry/_subprocess.py::run_in_subprocess",
+                    "targetSymbol": "tests/test_telemetry/test_background.py::test_background_task_integrations",
+                    "kind": "decorates",
+                    "line": 208,
+                    "normalizedTypeOnlyImport": false
+                  },
+                  {
+                    "sourceFile": "tests/test_telemetry/test_background.py",
+                    "targetFile": "tests/test_telemetry/_subprocess.py",
+                    "sourceSymbol": "tests/test_telemetry/test_background.py::__file__",
+                    "targetSymbol": "tests/test_telemetry/_subprocess.py::run_in_subprocess",
+                    "kind": "imports",
+                    "line": 16,
+                    "normalizedTypeOnlyImport": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "overall": 69,
+        "grade": "D",
+        "dimensions": [
+          {
+            "name": "Coupling",
+            "score": 90,
+            "weight": 0.25,
+            "grade": "A",
+            "details": "Average 0.8 connections per file, max 147, 33% cross-directory",
+            "metrics": {
+              "avgConnections": 0.78,
+              "maxConnections": 147,
+              "crossDirCoupling": 33
+            }
+          },
+          {
+            "name": "Cohesion",
+            "score": 40,
+            "weight": 0.2,
+            "grade": "F",
+            "details": "Average 17% internal dependencies per directory",
+            "metrics": {
+              "avgInternalRatio": 16.9,
+              "directories": 102
+            }
+          },
+          {
+            "name": "Cyclic Dependency Groups",
+            "key": "cyclicGroups",
+            "score": 84,
+            "weight": 0.2,
+            "grade": "B",
+            "details": "2 cyclic groups; 22/974 files (2.26%); largest group 15 files",
+            "metrics": {
+              "groupCount": 2,
+              "cyclicFileCount": 22,
+              "cyclicFileRatio": 0.022587268993839837,
+              "largestGroupSize": 15,
+              "graphFileCount": 974,
+              "edgeView": "legacy-normalized-dependencies-v1"
+            }
+          },
+          {
+            "name": "God Files",
+            "score": 80,
+            "weight": 0.15,
+            "grade": "B",
+            "details": "28 god files (>10 connections)",
+            "metrics": {
+              "godFiles": 28,
+              "threshold": 10.1,
+              "godFilesPer100": 2.9
+            }
+          },
+          {
+            "name": "Orphans & Dead Code",
+            "score": 41,
+            "weight": 0.1,
+            "grade": "F",
+            "details": "274 orphan files (62%), 1628 dead symbols (20.3%)",
+            "metrics": {
+              "orphans": 274,
+              "orphanPercentage": 62.3,
+              "deadSymbols": 1628,
+              "deadCodePercentage": 20.3
+            }
+          },
+          {
+            "name": "Dependency Depth",
+            "score": 60,
+            "weight": 0.1,
+            "grade": "D",
+            "details": "Maximum dependency chain: 7 levels through the codebase's dependency clusters (cycles collapsed to one hop each)",
+            "metrics": {
+              "maxDepth": 7
+            }
+          }
+        ],
+        "summary": "Project health score is 69/100 (Grade: D). Architecture needs improvement. Multiple issues detected.",
+        "recommendations": [
+          "Low cohesion: Only 16.9% internal dependencies. Reorganize files by feature or domain.",
+          "274 orphan files detected. Verify they're needed or remove dead code.",
+          "Maximum dependency depth is 7 levels. Consider flattening the deepest chains."
+        ],
+        "projectStats": {
+          "files": 974,
+          "symbols": 7134,
+          "edges": 1708,
+          "languages": {
+            "JavaScript": 96,
+            "Other": 5,
+            "Python": 7033
+          }
+        },
+        "timestamp": "2026-09-30T19:46:56.257Z"
+      }
+    }
+  ],
+  "shuffledParses": {
+    "code-graph": [
+      {
+        "label": "code-graph",
+        "run": 1,
+        "readdirCalls": 209,
+        "errorFiles": [],
+        "groups": 0,
+        "files": 0,
+        "metricSHA256": "55a8eef3fa525f10ab5857ae86f996ceb08c8fffbc70b5dd7f9bd4e1d8d5acaa",
+        "graphSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a"
+      },
+      {
+        "label": "code-graph",
+        "run": 2,
+        "readdirCalls": 209,
+        "errorFiles": [],
+        "groups": 0,
+        "files": 0,
+        "metricSHA256": "55a8eef3fa525f10ab5857ae86f996ceb08c8fffbc70b5dd7f9bd4e1d8d5acaa",
+        "graphSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a"
+      },
+      {
+        "label": "code-graph",
+        "run": 3,
+        "readdirCalls": 209,
+        "errorFiles": [],
+        "groups": 0,
+        "files": 0,
+        "metricSHA256": "55a8eef3fa525f10ab5857ae86f996ceb08c8fffbc70b5dd7f9bd4e1d8d5acaa",
+        "graphSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a"
+      },
+      {
+        "label": "code-graph",
+        "run": 4,
+        "readdirCalls": 209,
+        "errorFiles": [],
+        "groups": 0,
+        "files": 0,
+        "metricSHA256": "55a8eef3fa525f10ab5857ae86f996ceb08c8fffbc70b5dd7f9bd4e1d8d5acaa",
+        "graphSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a"
+      },
+      {
+        "label": "code-graph",
+        "run": 5,
+        "readdirCalls": 209,
+        "errorFiles": [],
+        "groups": 0,
+        "files": 0,
+        "metricSHA256": "55a8eef3fa525f10ab5857ae86f996ceb08c8fffbc70b5dd7f9bd4e1d8d5acaa",
+        "graphSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a"
+      }
+    ],
+    "nest": [
+      {
+        "label": "nest",
+        "run": 1,
+        "readdirCalls": 698,
+        "errorFiles": [],
+        "groups": 17,
+        "files": 89,
+        "metricSHA256": "6fffb95c1e0447948426378c0a0991d498c88b57f37d9001c135a9ccf03c77ef",
+        "graphSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95"
+      },
+      {
+        "label": "nest",
+        "run": 2,
+        "readdirCalls": 698,
+        "errorFiles": [],
+        "groups": 17,
+        "files": 89,
+        "metricSHA256": "6fffb95c1e0447948426378c0a0991d498c88b57f37d9001c135a9ccf03c77ef",
+        "graphSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95"
+      },
+      {
+        "label": "nest",
+        "run": 3,
+        "readdirCalls": 698,
+        "errorFiles": [],
+        "groups": 17,
+        "files": 89,
+        "metricSHA256": "6fffb95c1e0447948426378c0a0991d498c88b57f37d9001c135a9ccf03c77ef",
+        "graphSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95"
+      },
+      {
+        "label": "nest",
+        "run": 4,
+        "readdirCalls": 698,
+        "errorFiles": [],
+        "groups": 17,
+        "files": 89,
+        "metricSHA256": "6fffb95c1e0447948426378c0a0991d498c88b57f37d9001c135a9ccf03c77ef",
+        "graphSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95"
+      },
+      {
+        "label": "nest",
+        "run": 5,
+        "readdirCalls": 698,
+        "errorFiles": [],
+        "groups": 17,
+        "files": 89,
+        "metricSHA256": "6fffb95c1e0447948426378c0a0991d498c88b57f37d9001c135a9ccf03c77ef",
+        "graphSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95"
+      }
+    ],
+    "drizzle": [
+      {
+        "label": "drizzle",
+        "run": 1,
+        "readdirCalls": 232,
+        "errorFiles": [],
+        "groups": 11,
+        "files": 272,
+        "metricSHA256": "b937b34b5de0f075a8bee1188e6d73c03a5bf94eb20935ee53b82f7b8bd0f7f5",
+        "graphSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463"
+      },
+      {
+        "label": "drizzle",
+        "run": 2,
+        "readdirCalls": 232,
+        "errorFiles": [],
+        "groups": 11,
+        "files": 272,
+        "metricSHA256": "b937b34b5de0f075a8bee1188e6d73c03a5bf94eb20935ee53b82f7b8bd0f7f5",
+        "graphSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463"
+      },
+      {
+        "label": "drizzle",
+        "run": 3,
+        "readdirCalls": 232,
+        "errorFiles": [],
+        "groups": 11,
+        "files": 272,
+        "metricSHA256": "b937b34b5de0f075a8bee1188e6d73c03a5bf94eb20935ee53b82f7b8bd0f7f5",
+        "graphSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463"
+      },
+      {
+        "label": "drizzle",
+        "run": 4,
+        "readdirCalls": 232,
+        "errorFiles": [],
+        "groups": 11,
+        "files": 272,
+        "metricSHA256": "b937b34b5de0f075a8bee1188e6d73c03a5bf94eb20935ee53b82f7b8bd0f7f5",
+        "graphSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463"
+      },
+      {
+        "label": "drizzle",
+        "run": 5,
+        "readdirCalls": 232,
+        "errorFiles": [],
+        "groups": 11,
+        "files": 272,
+        "metricSHA256": "b937b34b5de0f075a8bee1188e6d73c03a5bf94eb20935ee53b82f7b8bd0f7f5",
+        "graphSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463"
+      }
+    ]
+  },
+  "graphContents": [
+    {
+      "repo": "code-graph",
+      "nodes": 7353,
+      "edges": 3844,
+      "edgeKinds": {
+        "calls": 1910,
+        "imports": 818,
+        "inherits": 3,
+        "injects": 1,
+        "references": 1,
+        "references-type": 1105,
+        "rest-api": 6
+      },
+      "identical": true,
+      "mainSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a",
+      "branchSHA256": "1c1d1935c848b6928996728cbedf4d1619d0d3225d5298cea432a3bfb7f3f75a"
+    },
+    {
+      "repo": "nest",
+      "nodes": 18328,
+      "edges": 14961,
+      "edgeKinds": {
+        "calls": 2843,
+        "imports": 6361,
+        "inherits": 166,
+        "injects": 502,
+        "references-type": 5087,
+        "rest-api": 2
+      },
+      "identical": true,
+      "mainSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95",
+      "branchSHA256": "5ee0cb44edc10959c2c7b45840a7e3165ed975819e963b0c4db759a1a4707b95"
+    },
+    {
+      "repo": "drizzle",
+      "nodes": 31284,
+      "edges": 24181,
+      "edgeKinds": {
+        "calls": 4472,
+        "imports": 6122,
+        "inherits": 700,
+        "injects": 684,
+        "references-type": 12203
+      },
+      "identical": true,
+      "mainSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463",
+      "branchSHA256": "f7c3c26d2f32c488a1c44d95d703745f51b81c7c99e4825cc5b5d2b3eeaa2463"
+    }
+  ],
+  "crossRuntime": [
+    {
+      "repo": "code-graph",
+      "nodeGroups": 0,
+      "bunGroups": 0,
+      "identical": true
+    },
+    {
+      "repo": "nest",
+      "nodeGroups": 17,
+      "bunGroups": 17,
+      "identical": true
+    },
+    {
+      "repo": "drizzle",
+      "nodeGroups": 11,
+      "bunGroups": 11,
+      "identical": true
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { formatCyclicGroups } from './cyclic-groups.js';
 import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { header, timestamp, table, formatNumber, impactEmoji, codeBlock, unorderedList } from './templates.js';
@@ -45,8 +46,8 @@ export function generateDependencies(
   output += header('Longest Dependency Chains', 2);
   output += generateDependencyChains(graph);
   
-  // 6. Circular Dependencies
-  output += header('Circular Dependencies (Detailed)', 2);
+  // 6. Cyclic Dependency Groups
+  output += header('Cyclic Dependency Groups (Detailed)', 2);
   output += generateCircularDependenciesDetailed(graph);
   
   return output;
@@ -335,132 +336,5 @@ function generateDependencyChains(graph: DirectedGraph): string {
 }
 
 function generateCircularDependenciesDetailed(graph: DirectedGraph): string {
-  const cycles = detectCyclesDetailed(graph);
-  
-  if (cycles.length === 0) {
-    return '✅ No circular dependencies detected.\n\n';
-  }
-  
-  let output = `⚠️ Found ${cycles.length} circular ${cycles.length === 1 ? 'dependency' : 'dependencies'}:\n\n`;
-  
-  for (let i = 0; i < Math.min(cycles.length, 5); i++) {
-    const cycle = cycles[i];
-    output += `**Cycle ${i + 1}:**\n\n`;
-    output += codeBlock(cycle.files.join(' →\n') + ' → ' + cycle.files[0], '');
-    
-    if (cycle.symbols.length > 0) {
-      output += '**Symbols involved:**\n\n';
-      output += unorderedList(cycle.symbols.map(s => `\`${s.name}\` (${s.kind}) at \`${s.filePath}:${s.line}\``));
-    }
-    
-    output += `**Suggested fix:** ${cycle.suggestion}\n\n`;
-  }
-  
-  if (cycles.length > 5) {
-    output += `... and ${cycles.length - 5} more cycles.\n\n`;
-  }
-  
-  return output;
-}
-
-interface CycleDetail {
-  files: string[];
-  symbols: Array<{ name: string; kind: string; filePath: string; line: number }>;
-  suggestion: string;
-}
-
-function detectCyclesDetailed(graph: DirectedGraph): CycleDetail[] {
-  const cycles: CycleDetail[] = [];
-  const visited = new Set<string>();
-  const recStack = new Set<string>();
-  const pathStack: string[] = [];
-  
-  // Build file-level graph with symbol details
-  const fileGraph = new Map<string, Map<string, Array<{ symbolName: string; symbolKind: string; line: number }>>>();
-  
-  graph.forEachEdge((edge, attrs, source, target) => {
-    if (attrs.kind === 'references-type') return;
-    const sourceAttrs = graph.getNodeAttributes(source);
-    const targetAttrs = graph.getNodeAttributes(target);
-    const sourceFile = sourceAttrs.filePath;
-    const targetFile = targetAttrs.filePath;
-    
-    if (sourceFile !== targetFile) {
-      if (!fileGraph.has(sourceFile)) {
-        fileGraph.set(sourceFile, new Map());
-      }
-      
-      const targetMap = fileGraph.get(sourceFile)!;
-      if (!targetMap.has(targetFile)) {
-        targetMap.set(targetFile, []);
-      }
-      
-      targetMap.get(targetFile)!.push({
-        symbolName: targetAttrs.name,
-        symbolKind: targetAttrs.kind,
-        line: attrs.line || sourceAttrs.startLine,
-      });
-    }
-  });
-  
-  function dfs(file: string): boolean {
-    visited.add(file);
-    recStack.add(file);
-    pathStack.push(file);
-    
-    const neighbors = fileGraph.get(file);
-    if (neighbors) {
-      for (const [neighbor, symbols] of neighbors.entries()) {
-        if (!visited.has(neighbor)) {
-          if (dfs(neighbor)) {
-            return true;
-          }
-        } else if (recStack.has(neighbor)) {
-          // Found a cycle
-          const cycleStart = pathStack.indexOf(neighbor);
-          const cyclePath = pathStack.slice(cycleStart);
-          
-          // Collect symbols involved
-          const cycleSymbols: Array<{ name: string; kind: string; filePath: string; line: number }> = [];
-          for (let i = 0; i < cyclePath.length; i++) {
-            const currentFile = cyclePath[i];
-            const nextFile = cyclePath[(i + 1) % cyclePath.length];
-            const edgeSymbols = fileGraph.get(currentFile)?.get(nextFile) || [];
-            
-            for (const sym of edgeSymbols.slice(0, 3)) {
-              cycleSymbols.push({
-                name: sym.symbolName,
-                kind: sym.symbolKind,
-                filePath: currentFile,
-                line: sym.line,
-              });
-            }
-          }
-          
-          cycles.push({
-            files: cyclePath,
-            symbols: cycleSymbols,
-            suggestion: 'Extract shared types/interfaces to a common file',
-          });
-          return true;
-        }
-      }
-    }
-    
-    recStack.delete(file);
-    pathStack.pop();
-    return false;
-  }
-  
-  // Try DFS from each file
-  for (const file of fileGraph.keys()) {
-    if (!visited.has(file)) {
-      dfs(file);
-      // Reset for next search
-      recStack.clear();
-      pathStack.length = 0;
-    }
-  }
-  
-  return cycles;
+  return formatCyclicGroups(graph, 5);
 }

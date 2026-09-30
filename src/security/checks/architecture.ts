@@ -1,3 +1,4 @@
+import { analyzeCyclicGroups } from '../../graph/cyclic-groups.js';
 import type { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import type { ParsedFile } from '../../parser/types.js';
@@ -39,8 +40,8 @@ export async function checkArchitecture(
 
     // 5. Unauthenticated routes with high fan-in
     findings.push(...checkUnauthHighFanIn(graph));
-  } catch {
-    // Don't crash the entire scan
+  } catch (error) {
+    throw new Error(`Architecture analysis unavailable: ${error}`);
   }
 
   return findings;
@@ -95,70 +96,16 @@ function checkGodFilesWithAuthAndData(graph: DirectedGraph): SecurityFinding[] {
 }
 
 function checkCircularAuthDeps(graph: DirectedGraph): SecurityFinding[] {
-  const findings: SecurityFinding[] = [];
-
-  // Build file-level graph
-  const fileGraph = new Map<string, Set<string>>();
-  graph.forEachEdge((_edge, _attrs, source, target) => {
-    const sf = graph.getNodeAttributes(source).filePath;
-    const tf = graph.getNodeAttributes(target).filePath;
-    if (sf !== tf) {
-      if (!fileGraph.has(sf)) fileGraph.set(sf, new Set());
-      fileGraph.get(sf)!.add(tf);
-    }
-  });
-
-  // Find cycles using DFS
-  const visited = new Set<string>();
-  const recStack = new Set<string>();
-  const cycles: string[][] = [];
-
-  function dfs(node: string, path: string[]): void {
-    if (recStack.has(node)) {
-      const cycleStart = path.indexOf(node);
-      if (cycleStart >= 0) cycles.push(path.slice(cycleStart));
-      return;
-    }
-    if (visited.has(node)) return;
-    visited.add(node);
-    recStack.add(node);
-    path.push(node);
-    const neighbors = fileGraph.get(node);
-    if (neighbors) {
-      for (const neighbor of neighbors) {
-        dfs(neighbor, [...path]);
-      }
-    }
-    recStack.delete(node);
-  }
-
-  for (const node of fileGraph.keys()) {
-    if (!visited.has(node)) dfs(node, []);
-  }
-
-  // Deduplicate and check for auth/crypto involvement
-  const seen = new Set<string>();
-  for (const cycle of cycles) {
-    const key = [...cycle].sort().join(',');
-    if (seen.has(key)) continue;
-    seen.add(key);
-
-    const hasSecurityFile = cycle.some(f => isSecurityFile(f));
-    if (hasSecurityFile) {
-      findings.push({
-        id: '',
-        severity: 'high',
-        vulnerabilityClass: 'architecture',
-        file: cycle[0],
-        title: 'Circular dependency in auth/crypto module',
-        description: `Circular dependency detected involving security-critical files: ${cycle.join(' → ')}`,
-        attackScenario: 'Circular dependencies in auth modules can lead to initialization order bugs where auth checks are bypassed during startup.',
-        suggestedFix: 'Break the circular dependency by extracting shared types/interfaces into a separate module.',
-      });
-    }
-  }
-
-  return findings;
+  const result = analyzeCyclicGroups(graph, {witnessAnchor:isSecurityFile});
+  if (result.status !== 'analyzed') throw new Error(`Cyclic groups unavailable: ${result.reason}`);
+  return result.groups.filter(group => group.files.some(isSecurityFile)).map(group => ({
+    id:'',severity:'high',vulnerabilityClass:'architecture',file:group.witness.files[0],
+    cyclicGroup:group,cyclicEdgeView:result.edgeView,dimensions_v:result.dimensions_v,
+    title:'Cyclic dependency group involving auth/crypto',
+    description:`${group.size} mutually dependent files: ${group.files.join(', ')}. Witness: ${group.witness.files.join(' → ')}. Edge view: ${result.edgeView}.`,
+    attackScenario:'Mutual dependencies involving authentication deserve review for initialization-order assumptions; this structural finding does not prove a bypass.',
+    suggestedFix:'Separate mutually dependent responsibilities and inspect the witness dependencies.',
+  }));
 }
 
 function checkDirectDbFromRoutes(graph: DirectedGraph): SecurityFinding[] {

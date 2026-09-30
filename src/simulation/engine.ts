@@ -1,10 +1,11 @@
+import { compareCyclicGroups, DIMENSIONS_VERSION, type CyclicGroupChanges } from '../graph/cyclic-groups.js';
 import { canonicalPath as normalizePath } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { dirname, join } from 'path';
 import {
   calculateCouplingScore,
   calculateCohesionScore,
-  calculateCircularDepsScore,
+  calculateCyclicGroupsScore,
   calculateGodFilesScore,
   calculateOrphansScore,
   calculateDepthScore,
@@ -41,11 +42,11 @@ export interface GraphDiff {
   removedEdges: EdgeInfo[];
   affectedNodes: string[];
   brokenImports: BrokenImport[];
-  circularDepsIntroduced: string[][];
-  circularDepsResolved: string[][];
+  cyclicGroupChanges: CyclicGroupChanges;
 }
 
 export interface HealthDelta {
+  dimensions_v: string;
   before: number;
   after: number;
   delta: number;
@@ -140,7 +141,12 @@ export class SimulationEngine {
         break;
     }
 
-    const diff = this.computeDiff(this.original, clone, brokenImports);
+    const renames: Record<string,string> = {};
+    if (action.type === 'move' || action.type === 'rename') {
+      const destination = action.type === 'move' ? action.destination : normalizePath(join(dirname(action.target), action.newName));
+      this.original.forEachNode((_id, attrs) => {if (fileMatch(attrs.filePath, action.target)) renames[attrs.filePath] = destination;});
+    }
+    const diff = this.computeDiff(this.original, clone, brokenImports, renames);
     const beforeHealth = this.computeHealthScore(this.original);
     const afterHealth = this.computeHealthScore(clone);
 
@@ -156,6 +162,7 @@ export class SimulationEngine {
     });
 
     const healthDelta: HealthDelta = {
+      dimensions_v: DIMENSIONS_VERSION,
       before: beforeHealth.score,
       after: afterHealth.score,
       delta: afterHealth.score - beforeHealth.score,
@@ -413,7 +420,8 @@ export class SimulationEngine {
   private computeDiff(
     original: DirectedGraph,
     simulated: DirectedGraph,
-    brokenImports: BrokenImport[]
+    brokenImports: BrokenImport[],
+    renames: Record<string,string>
   ): GraphDiff {
     const originalEdges = this.collectEdges(original);
     const simulatedEdges = this.collectEdges(simulated);
@@ -430,26 +438,12 @@ export class SimulationEngine {
       affectedNodeSet.add(e.target);
     }
 
-    const originalCycles = this.detectCycles(original);
-    const simulatedCycles = this.detectCycles(simulated);
-
-    const originalCycleKeys = new Set(originalCycles.map((c) => [...c].sort().join(',')));
-    const simulatedCycleKeys = new Set(simulatedCycles.map((c) => [...c].sort().join(',')));
-
-    const circularDepsIntroduced = simulatedCycles.filter(
-      (c) => !originalCycleKeys.has([...c].sort().join(','))
-    );
-    const circularDepsResolved = originalCycles.filter(
-      (c) => !simulatedCycleKeys.has([...c].sort().join(','))
-    );
-
     return {
       addedEdges,
       removedEdges,
       affectedNodes: Array.from(affectedNodeSet),
       brokenImports,
-      circularDepsIntroduced,
-      circularDepsResolved,
+      cyclicGroupChanges: compareCyclicGroups(original, simulated, {renames}),
     };
   }
 
@@ -465,76 +459,13 @@ export class SimulationEngine {
     return `${e.source}|${e.target}|${e.kind || ''}`;
   }
 
-  // ── Cycle detection (adapted from src/health/metrics.ts) ───────
-
-  private detectCycles(graph: DirectedGraph): string[][] {
-    const fileGraph = new Map<string, Set<string>>();
-
-    graph.forEachEdge((_edge, _attrs, source, target) => {
-      const sourceFile = graph.getNodeAttributes(source).filePath;
-      const targetFile = graph.getNodeAttributes(target).filePath;
-
-      if (sourceFile !== targetFile) {
-        if (!fileGraph.has(sourceFile)) {
-          fileGraph.set(sourceFile, new Set());
-        }
-        fileGraph.get(sourceFile)!.add(targetFile);
-      }
-    });
-
-    const visited = new Set<string>();
-    const recStack = new Set<string>();
-    const cycles: string[][] = [];
-
-    const dfs = (node: string, path: string[]): void => {
-      if (recStack.has(node)) {
-        const cycleStart = path.indexOf(node);
-        if (cycleStart >= 0) {
-          cycles.push(path.slice(cycleStart));
-        }
-        return;
-      }
-      if (visited.has(node)) return;
-
-      visited.add(node);
-      recStack.add(node);
-      path.push(node);
-
-      const neighbors = fileGraph.get(node);
-      if (neighbors) {
-        for (const neighbor of neighbors) {
-          dfs(neighbor, [...path]);
-        }
-      }
-
-      recStack.delete(node);
-    };
-
-    for (const node of fileGraph.keys()) {
-      if (!visited.has(node)) {
-        dfs(node, []);
-      }
-    }
-
-    // Deduplicate
-    const unique = new Map<string, string[]>();
-    for (const cycle of cycles) {
-      const key = [...cycle].sort().join(',');
-      if (!unique.has(key)) {
-        unique.set(key, cycle);
-      }
-    }
-
-    return Array.from(unique.values());
-  }
-
   // ── Health score (side-effect free) ────────────────────────────
 
   private computeHealthScore(graph: DirectedGraph): { score: number; dimensions: HealthDimension[] } {
     const dimensions = [
       calculateCouplingScore(graph),
       calculateCohesionScore(graph),
-      calculateCircularDepsScore(graph),
+      calculateCyclicGroupsScore(graph),
       calculateGodFilesScore(graph),
       calculateOrphansScore(graph),
       calculateDepthScore(graph),

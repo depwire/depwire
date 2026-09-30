@@ -9,6 +9,10 @@ export function generateWhatIfHtml(
   target: string
 ): string {
   const { healthDelta, diff } = simulationResult;
+  const changes = diff.cyclicGroupChanges;
+  const groupChangesLabel = changes.status === 'compared'
+    ? `${changes.newlyCyclicFiles.length} newly cyclic; ${changes.freedFiles.length} freed; ${changes.addedCyclicFiles.length} added cyclic; ${changes.removedCyclicFiles.length} deleted cyclic; ${changes.groupsMerged.length} merges; ${changes.groupsSplit.length} splits; ${changes.internalEdgesChanged.length} internal edge changes`
+    : 'Cyclic-group comparison unavailable';
 
   const deltaSign = healthDelta.delta >= 0 ? '+' : '';
   const deltaLabel =
@@ -207,6 +211,7 @@ export function generateWhatIfHtml(
   </div>
 
   <div class="broken-section">
+    <p>${groupChangesLabel}</p>
     ${brokenImportsHtml}
   </div>
 

@@ -15,6 +15,9 @@ export type VulnerabilityClass =
   | 'frontend-xss';
 
 export interface SecurityFinding {
+  cyclicGroup?: import('../graph/cyclic-groups.js').CyclicGroup;
+  cyclicEdgeView?: import('../graph/cyclic-groups.js').CyclicEdgeView;
+  dimensions_v?: string;
   id: string;
   severity: Severity;
   vulnerabilityClass: VulnerabilityClass;

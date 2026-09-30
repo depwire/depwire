@@ -173,13 +173,7 @@ function printHumanReadable(result: VerifyChangeOutput, options: VerifyChangeOpt
     }
   }
 
-  // Circular dependencies
-  console.log(`${c.bold('New Circular Deps:')} ${result.new_circular_dependencies.length}`);
-  if (result.new_circular_dependencies.length > 0) {
-    for (const dep of result.new_circular_dependencies) {
-      console.log(`  ${c.red('•')} ${dep.cycle.join(' → ')}`);
-    }
-  }
+  console.log(`${c.bold('Cyclic Group Changes:')} ${JSON.stringify(result.cyclicGroupChanges)}`);
 
   // Security findings
   console.log(`${c.bold('Security Findings:')} ${result.security_findings.length}`);
