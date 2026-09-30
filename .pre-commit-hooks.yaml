@@ -1,0 +1,18 @@
+# Hook manifest for pre-commit (https://pre-commit.com/#creating-new-hooks)
+# and compatible runners such as prek (https://prek.j178.dev).
+#
+# Depwire analyzes the whole repository, so filenames are never passed to the
+# CLI (`pass_filenames: false`). Override `args` in your config to run any
+# other Depwire command or add CLI options, e.g. `args: [health, .]`.
+#
+# `files` limits the hook to the languages and build manifests Depwire parses.
+# When a commit touches none of them the hook is skipped instead of failing
+# with "No parseable files found" (exit 2).
+- id: depwire
+  name: depwire
+  description: Build the Depwire dependency graph for the repository and print summary statistics.
+  entry: depwire
+  language: node
+  args: [parse, ., --stats]
+  pass_filenames: false
+  files: '(?i:\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|c|h|cs|csx|csproj|java|cpp|cc|cxx|c\+\+|hpp|hh|hxx|h\+\+|inl|ipp|kt|kts|php|swift|mojo|🔥|rb|rake|gemspec|r|rmd|html|dart))$|(^|/)(pom\.xml|build\.gradle|settings\.gradle|CMakeLists\.txt|conanfile\.txt|vcpkg\.json|mojoproject\.toml|pubspec\.yaml|Gemfile)$'

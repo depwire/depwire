@@ -57,6 +57,7 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 - [Telemetry](#telemetry)
 - [Cloud dashboard](#cloud-dashboard)
 - [GitHub Action — PR Impact Analysis](#github-action--pr-impact-analysis)
+- [pre-commit / prek hook](#pre-commit--prek-hook)
 - [Depwire Action Token (DAT)](#depwire-action-token-dat)
 - [Roadmap](#roadmap)
 
@@ -631,6 +632,25 @@ Block PRs that hurt your architecture:
 ```
 
 [GitHub Marketplace](https://github.com/marketplace/actions/depwire-pr-impact) — [depwire-action repo](https://github.com/depwire/depwire-action)
+
+---
+
+## pre-commit / prek hook
+
+This repository ships a `.pre-commit-hooks.yaml`, so Depwire can be used as a remote hook with [pre-commit](https://pre-commit.com/) and compatible runners such as [prek](https://github.com/j178/prek) — no `repo: local` wrapper around `depwire-cli` needed. Add to `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/depwire/depwire
+    rev: vX.Y.Z
+    hooks:
+      - id: depwire
+        args: ["parse", ".", "--stats"]
+```
+
+`rev` is a release tag that includes `.pre-commit-hooks.yaml`. The hook runs repository-level analysis (`pass_filenames: false`); `parse . --stats` is the default, so `args` is only needed to pass other CLI options or run another command, e.g. `args: ["health", "."]`. The runner installs the CLI from the tag on first use (one-off build, about half a minute), after which a parse of a few hundred files takes ~1-2s cold and well under a second with the warm `.depwire/cache.db`.
+
+The hook only runs when a staged file is in a language or build manifest Depwire parses; commits that touch nothing parseable are reported as `Skipped` instead of failing with `No parseable files found`. Add `depwire-output.json` and `.depwire/` to your `.gitignore`.
 
 ---
 
