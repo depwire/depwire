@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.21.2
+
+### Added — pre-commit and prek hook
+
+- Use Depwire directly as a remote hook with `rev: v1.21.2` and `id: depwire`.
+- Defaults to `parse . --stats`; `pass_filenames: false` keeps analysis at repository scope. Override `args` to choose another command.
+- The hook's `files` pattern covers supported source languages and build manifests. Commits touching only unsupported files (including Markdown-only commits) are skipped; the CLI's empty-parse exit contract is unchanged.
+- Git/source installs build the CLI through `prepare`, so hook environments use their own installed binary. Verified registry and branch-tarball installs do not run Depwire prepare/build or install devDependencies.
+
+Thanks to @pygarap for the detailed request in #43, especially `pass_filenames: false`. Implemented in #44.
+
+Includes the v1.21.1 security fixes. No parser, graph-format, or resolution-version change.
+
 ## 1.21.1
 
 ### Security — command injection in git invocations (remote code execution). Upgrade immediately.
