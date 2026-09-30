@@ -4,7 +4,7 @@
  * Shared by CLI command (and potentially MCP tool in future).
  */
 
-import { execSync } from 'child_process';
+import { isValidGitRevision, runGit } from '../utils/git.js';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
 import { calculateHealthScore } from '../health/index.js';
@@ -82,27 +82,6 @@ export interface DiffResult {
   } | null;
 }
 
-function git(cmd: string, cwd: string): string {
-  return execSync(`git ${cmd}`, { cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-}
-
-function isGitRepo(cwd: string): boolean {
-  try {
-    git('rev-parse --git-dir', cwd);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function resolveRef(ref: string, cwd: string): string {
-  try {
-    return git(`rev-parse ${ref}`, cwd);
-  } catch {
-    throw new DiffError(`Invalid git ref: "${ref}"`, 2);
-  }
-}
-
 export class DiffError extends Error {
   exitCode: number;
   constructor(message: string, exitCode: number) {
@@ -110,6 +89,51 @@ export class DiffError extends Error {
     this.name = 'DiffError';
     this.exitCode = exitCode;
   }
+}
+
+const COMMIT_HASH = /^[0-9a-f]{40,64}$/;
+
+function git(args: readonly string[], cwd: string): string {
+  return runGit(args, { cwd }).trim();
+}
+
+function isGitRepo(cwd: string): boolean {
+  try {
+    git(['rev-parse', '--git-dir'], cwd);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Resolve a user-supplied revision to a single full commit hash, or fail with exit 2. */
+function resolveRef(ref: string, cwd: string): string {
+  if (!isValidGitRevision(ref)) {
+    throw new DiffError(`Invalid git ref: "${ref}"`, 2);
+  }
+  let resolved: string;
+  try {
+    resolved = git(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`], cwd);
+  } catch {
+    throw new DiffError(`Invalid git ref: "${ref}"`, 2);
+  }
+  if (!COMMIT_HASH.test(resolved)) {
+    throw new DiffError(`Invalid git ref: "${ref}"`, 2);
+  }
+  return resolved;
+}
+
+/** Ref to return to afterwards: the checked-out branch, or the commit hash when detached. */
+function currentRef(cwd: string): string {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd);
+  const ref = branch === 'HEAD' ? git(['rev-parse', 'HEAD'], cwd) : branch;
+  // Branch names come from the repository, not the user; they may legitimately
+  // contain shell metacharacters. They are passed as one argument, never through
+  // a shell, so only option injection has to be excluded.
+  if (ref.length === 0 || ref.startsWith('-') || /[\0\n]/.test(ref)) {
+    throw new DiffError(`Refusing to work with current ref "${ref}".`, 2);
+  }
+  return ref;
 }
 
 export async function computeDiff(
@@ -129,20 +153,17 @@ export async function computeDiff(
   // Step 2: Save current state
   let originalRef: string;
   try {
-    originalRef = git('rev-parse --abbrev-ref HEAD', projectRoot);
-    if (originalRef === 'HEAD') {
-      // Detached HEAD — save commit hash
-      originalRef = git('rev-parse HEAD', projectRoot);
-    }
-  } catch {
+    originalRef = currentRef(projectRoot);
+  } catch (err) {
+    if (err instanceof DiffError) throw err;
     throw new DiffError('Failed to determine current HEAD.', 2);
   }
 
   let stashed = false;
   try {
-    const status = git('status --porcelain', projectRoot);
+    const status = git(['status', '--porcelain'], projectRoot);
     if (status.length > 0) {
-      git('stash push -m "depwire-diff-temp-stash"', projectRoot);
+      git(['stash', 'push', '-m', 'depwire-diff-temp-stash'], projectRoot);
       stashed = true;
     }
   } catch {
@@ -165,7 +186,7 @@ export async function computeDiff(
   try {
     // Step 3: Build graph for commit-a
     console.error(`Checking out ${commitA} (${resolvedA.slice(0, 8)})...`);
-    git(`checkout ${resolvedA} --quiet`, projectRoot);
+    git(['checkout', '--quiet', resolvedA, '--'], projectRoot);
 
     const parsedA = await parseProject(projectRoot);
     const gA = buildGraph(parsedA, projectRoot);
@@ -223,7 +244,7 @@ export async function computeDiff(
 
     // Step 4: Build graph for commit-b
     console.error(`Checking out ${commitB} (${resolvedB.slice(0, 8)})...`);
-    git(`checkout ${resolvedB} --quiet`, projectRoot);
+    git(['checkout', '--quiet', resolvedB, '--'], projectRoot);
 
     const parsedB = await parseProject(projectRoot);
     const gB = buildGraph(parsedB, projectRoot);
@@ -281,11 +302,11 @@ export async function computeDiff(
     // Step 5: Restore original state (CRITICAL — always runs)
     try {
       console.error(`Restoring original state...`);
-      git(`checkout ${originalRef} --quiet`, projectRoot);
+      git(['checkout', '--quiet', originalRef, '--'], projectRoot);
     } catch {
       // If checkout fails, try harder
       try {
-        git(`checkout -f ${originalRef} --quiet`, projectRoot);
+        git(['checkout', '--quiet', '-f', originalRef, '--'], projectRoot);
       } catch {
         console.error(`WARNING: Failed to restore original ref "${originalRef}". Manual cleanup needed.`);
       }
@@ -293,7 +314,7 @@ export async function computeDiff(
 
     if (stashed) {
       try {
-        git('stash pop', projectRoot);
+        git(['stash', 'pop'], projectRoot);
       } catch {
         console.error('WARNING: Failed to restore stashed changes. Run "git stash pop" manually.');
       }

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-vi.mock('child_process', () => ({ execSync: vi.fn() }));
+vi.mock('child_process', () => ({ execFileSync: vi.fn() }));
 vi.mock('fs', async (importOriginal) => ({
   ...await importOriginal<typeof import('fs')>(),
   readSync: vi.fn(),
   readFileSync: vi.fn(),
   existsSync: vi.fn(),
 }));
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { readSync, readFileSync, existsSync } from 'fs';
 import { popStash } from '../src/temporal/git.js';
 import { verifyChangeCommand } from '../src/commands/verify-change.js';
@@ -16,7 +16,7 @@ afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
 
 describe('IO failures must reach callers', () => {
   it('rejects a failed stash restoration', async () => {
-    vi.mocked(execSync).mockReturnValueOnce('stash@{0}').mockImplementationOnce(() => { throw new Error('conflict'); });
+    vi.mocked(execFileSync).mockReturnValueOnce('stash@{0}').mockImplementationOnce(() => { throw new Error('conflict'); });
     await expect(popStash('/project')).rejects.toThrow('Failed to restore stashed changes');
   });
 

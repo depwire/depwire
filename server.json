@@ -13,6 +13,15 @@
       "registryType": "npm",
       "identifier": "depwire-cli",
       "version": "1.21.0",
+      "runtimeHint": "npx",
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp",
+          "valueHint": "command",
+          "description": "Start the MCP server (the depwire binary is a multi-command CLI; without this it prints usage and exits 1)."
+        }
+      ],
       "transport": {
         "type": "stdio"
       }

@@ -2,12 +2,26 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { handleToolCall, getToolsList } from "./tools.js";
 import type { DepwireState } from "./state.js";
+import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+/** Package version, so serverInfo matches what npm and the MCP registry publish. */
+function packageVersion(): string {
+  try {
+    // dist/ is flat, so package.json sits one level up from any bundle.
+    const pkg = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf-8"));
+    return typeof pkg.version === "string" ? pkg.version : "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
 
 export async function startMcpServer(state: DepwireState): Promise<void> {
   const server = new Server(
     {
       name: "depwire",
-      version: "0.1.0",
+      version: packageVersion(),
     },
     {
       capabilities: {

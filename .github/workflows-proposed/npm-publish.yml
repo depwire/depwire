@@ -1,0 +1,150 @@
+# ============================================================================
+# INACTIVE — RECON ONLY. Not wired into any trigger.
+#
+# This file is a design proposal for publishing depwire-cli to npm with
+# provenance attestations (npm publish --provenance) while keeping the
+# maintainer as the only person who can start a publish. It is stored under
+# .github/workflows-proposed/ so GitHub Actions ignores it; nothing here runs
+# until the maintainer moves it to .github/workflows/ and completes the
+# one-time setup listed at the bottom. See the PR description for the risk
+# analysis. The current release process (manual `npm publish`, CONTRIBUTING.md
+# "Release Process") remains in force until then.
+# ============================================================================
+
+name: Publish to npm (provenance)
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'   # release tags only; no pre-release tags, no workflow_dispatch, no schedule
+
+# Nothing else may write anything. `id-token: write` is what lets npm obtain
+# the Sigstore OIDC token that becomes the provenance attestation.
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    # Gate 1: the tag must have been pushed by the maintainer's own account.
+    # A merge, a schedule, a bot, or any other collaborator cannot satisfy this,
+    # and rulesets prevent tag rewriting (see setup step 3).
+    if: github.actor == 'atef-ataya' && github.repository == 'depwire/depwire'
+    # Gate 2: a protected deployment environment with a required reviewer.
+    # The job pauses until the maintainer approves it in the Actions UI, so a
+    # tag pushed by mistake is caught before anything reaches npm.
+    environment:
+      name: npm-publish
+      url: https://www.npmjs.com/package/depwire-cli/v/${{ steps.meta.outputs.version }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      # Gate 3: the tag must name the version that package.json, manifest.json
+      # and server.json already carry. A tag pointing at the wrong commit
+      # (e.g. tagged before the release PR merged) fails here, before the build.
+      - name: Verify tag matches release metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match package.json version $PKG"
+            exit 1
+          fi
+          node scripts/validate-release-metadata.mjs
+          echo "version=$PKG" >> "$GITHUB_OUTPUT"
+
+      # Gate 4: the tagged commit must be reachable from main, i.e. it went
+      # through the protected-branch PR + CI path. Tagging a stray branch fails.
+      - name: Verify the tagged commit is on main
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main --depth=200
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
+            || { echo "::error::$GITHUB_SHA is not on main"; exit 1; }
+
+      # Gate 5: refuse to republish. npm would reject it anyway, but failing
+      # here gives a readable reason and never touches the registry.
+      - name: Verify version is not already published
+        run: |
+          set -euo pipefail
+          if npm view "depwire-cli@${{ steps.meta.outputs.version }}" version >/dev/null 2>&1; then
+            echo "::error::depwire-cli@${{ steps.meta.outputs.version }} is already on npm"
+            exit 1
+          fi
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Smoke test the packed tarball
+        run: node scripts/smoke-packed.mjs
+
+      # `--provenance` makes npm request an OIDC token from GitHub, sign the
+      # tarball via Sigstore, and upload the attestation. It only works when
+      # `repository.url` in package.json matches this repo and the run is a
+      # public GitHub-hosted runner, both true here. Authentication is npm
+      # Trusted Publishing (OIDC), configured on npmjs.com for this repo and
+      # this workflow file name; there is no long-lived NPM_TOKEN anywhere.
+      - name: Publish with provenance
+        run: npm publish --provenance --access public
+
+      - name: Verify the published version
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6; do
+            if [ "$(npm view depwire-cli version)" = "${{ steps.meta.outputs.version }}" ]; then
+              npm view depwire-cli dist.attestations
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::npm view does not yet return ${{ steps.meta.outputs.version }}"
+          exit 1
+
+# ----------------------------------------------------------------------------
+# One-time setup the maintainer must do before activating (none of this is
+# done by this PR):
+#
+# 1. npmjs.com > depwire-cli > Settings > Publishing access: add a Trusted
+#    Publisher for GitHub Actions with repository `depwire/depwire` and
+#    workflow file `npm-publish.yml` (the file name matters), environment
+#    `npm-publish`. Optionally set "Require two-factor authentication or an
+#    automation/granular token" -> Trusted Publishing satisfies this without a
+#    token.
+# 2. GitHub > Settings > Environments > new environment `npm-publish`:
+#    required reviewer = atef-ataya; deployment branches/tags = tags matching
+#    `v*` only.
+# 3. GitHub > Settings > Rules > new tag ruleset for `refs/tags/v*`: restrict
+#    creation/update/deletion to the repository admin, block non-fast-forward.
+#    Without this, `github.actor` is still a real gate (only the pusher is the
+#    actor) but a compromised collaborator account with write access could
+#    push a tag; the ruleset removes that path entirely.
+# 4. Move this file to .github/workflows/npm-publish.yml and delete the
+#    INACTIVE banner.
+# ----------------------------------------------------------------------------

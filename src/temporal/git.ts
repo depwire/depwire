@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { runGit } from '../utils/git.js';
 import { CommitInfo } from './types.js';
 
 export async function getCommitLog(
@@ -9,11 +9,8 @@ export async function getCommitLog(
     if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
       throw new Error(`Invalid git log limit: ${limit}`);
     }
-    const limitArg = limit ? `-n ${limit}` : '';
-    const output = execSync(
-      `git log ${limitArg} --pretty=format:"%H|%aI|%s|%an"`,
-      { cwd: dir, encoding: 'utf-8' }
-    );
+    const args = ['log', ...(limit ? ['-n', String(limit)] : []), '--pretty=format:%H|%aI|%s|%an'];
+    const output = runGit(args, { cwd: dir });
 
     if (!output.trim()) {
       return [];
@@ -33,10 +30,7 @@ export async function getCommitLog(
 
 export async function getCurrentBranch(dir: string): Promise<string> {
   try {
-    return execSync('git rev-parse --abbrev-ref HEAD', {
-      cwd: dir,
-      encoding: 'utf-8',
-    }).trim();
+    return runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: dir }).trim();
   } catch (error) {
     throw new Error(`Failed to get current branch: ${error}`);
   }
@@ -50,7 +44,7 @@ export async function checkoutCommit(
     throw new Error(`Invalid commit hash: ${hash}`);
   }
   try {
-    execSync(`git checkout -q ${hash}`, { cwd: dir, stdio: 'ignore' }); // depwire-security-reviewed: hash validated above
+    runGit(['checkout', '-q', hash, '--'], { cwd: dir, stdio: 'ignore' });
   } catch (error) {
     throw new Error(`Failed to checkout commit ${hash}: ${error}`);
   }
@@ -64,10 +58,7 @@ export async function restoreOriginal(
     throw new Error(`Invalid branch name: ${originalBranch}`);
   }
   try {
-    execSync(`git checkout -q ${originalBranch}`, { // depwire-security-reviewed: branch validated above
-      cwd: dir,
-      stdio: 'ignore',
-    });
+    runGit(['checkout', '-q', originalBranch, '--'], { cwd: dir, stdio: 'ignore' });
   } catch (error) {
     throw new Error(`Failed to restore branch ${originalBranch}: ${error}`);
   }
@@ -75,16 +66,10 @@ export async function restoreOriginal(
 
 export async function stashChanges(dir: string): Promise<boolean> {
   try {
-    const status = execSync('git status --porcelain', {
-      cwd: dir,
-      encoding: 'utf-8',
-    }).trim();
+    const status = runGit(['status', '--porcelain'], { cwd: dir }).trim();
 
     if (status) {
-      execSync('git stash push -q -m "depwire temporal analysis"', {
-        cwd: dir,
-        stdio: 'ignore',
-      });
+      runGit(['stash', 'push', '-q', '-m', 'depwire temporal analysis'], { cwd: dir, stdio: 'ignore' });
       return true;
     }
     return false;
@@ -96,15 +81,11 @@ export async function stashChanges(dir: string): Promise<boolean> {
 export async function popStash(dir: string): Promise<void> {
   try {
     // Check if there's actually something in the stash
-    const stashList = execSync('git stash list', {
-      cwd: dir,
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'ignore'], // Suppress stderr
-    }).trim();
+    const stashList = runGit(['stash', 'list'], { cwd: dir, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
 
     // Only pop if stash is non-empty
     if (stashList) {
-      execSync('git stash pop -q', { cwd: dir, stdio: 'ignore' });
+      runGit(['stash', 'pop', '-q'], { cwd: dir, stdio: 'ignore' });
     }
   } catch (error) {
     throw new Error(`Failed to restore stashed changes in ${dir}; run git stash list and resolve manually: ${error}`);
@@ -113,7 +94,7 @@ export async function popStash(dir: string): Promise<void> {
 
 export function isGitRepo(dir: string): boolean {
   try {
-    execSync('git rev-parse --git-dir', { cwd: dir, stdio: 'ignore' });
+    runGit(['rev-parse', '--git-dir'], { cwd: dir, stdio: 'ignore' });
     return true;
   } catch {
     return false;
