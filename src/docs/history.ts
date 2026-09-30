@@ -1,6 +1,6 @@
 import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
-import { execSync } from 'child_process';
+import { runGit } from '../utils/git.js';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
 import { countGraphSymbols } from '../graph/counts.js';
 
@@ -77,33 +77,24 @@ function getFileCount(graph: DirectedGraph): number {
 
 function isGitAvailable(projectRoot: string): boolean {
   try {
-    execSync('git rev-parse --git-dir', {
-      cwd: projectRoot,
-      encoding: 'utf-8',
-      timeout: 5000,
-      stdio: 'pipe',
-    });
+    runGit(['rev-parse', '--git-dir'], { cwd: projectRoot, timeout: 5000 });
     return true;
   } catch {
     return false;
   }
 }
 
-function executeGitCommand(projectRoot: string, command: string): string {
+/** Run git with fixed arguments; repository-derived values (file paths) go after '--'. */
+function executeGitCommand(projectRoot: string, args: readonly string[]): string {
   try {
-    return execSync(command, {
-      cwd: projectRoot,
-      encoding: 'utf-8',
-      timeout: 10000,
-      stdio: 'pipe',
-    }).trim();
+    return runGit(args, { cwd: projectRoot, timeout: 10000, maxBuffer: 64 * 1024 * 1024 }).trim();
   } catch {
     return '';
   }
 }
 
 function generateDevelopmentTimeline(projectRoot: string): string {
-  const log = executeGitCommand(projectRoot, 'git log --format="%ai" --all --no-merges');
+  const log = executeGitCommand(projectRoot, ['log', '--format=%ai', '--all', '--no-merges']);
   
   if (!log) {
     return 'Unable to retrieve git log.\n\n';
@@ -137,36 +128,24 @@ function generateDevelopmentTimeline(projectRoot: string): string {
 }
 
 function generateFileChurn(projectRoot: string, graph: DirectedGraph): string {
-  const churnOutput = executeGitCommand(
-    projectRoot,
-    'git log --all --name-only --format="" | sort | uniq -c | sort -rn | head -20'
-  );
+  const churnOutput = executeGitCommand(projectRoot, ['log', '--all', '--name-only', '--format=']);
   
   if (!churnOutput) {
     return 'Unable to retrieve file churn data.\n\n';
   }
   
-  const lines = churnOutput.split('\n').filter(l => l.trim().length > 0);
-  
-  if (lines.length === 0) {
-    return 'No file churn data available.\n\n';
-  }
-  
-  // Parse churn data
-  const churnData: Array<{ file: string; changes: number }> = [];
-  
-  for (const line of lines) {
-    const match = line.trim().match(/^(\d+)\s+(.+)$/);
-    if (match) {
-      const changes = parseInt(match[1], 10);
-      const file = match[2].trim();
-      
-      // Skip empty or invalid files
-      if (file && file.length > 0 && !file.startsWith('.')) {
-        churnData.push({ file, changes });
-      }
+  // Count how often each path appears (formerly `sort | uniq -c | sort -rn | head -20`).
+  const changeCounts = new Map<string, number>();
+  for (const line of churnOutput.split('\n')) {
+    const file = line.trim();
+    if (file.length > 0 && !file.startsWith('.')) {
+      changeCounts.set(file, (changeCounts.get(file) || 0) + 1);
     }
   }
+  
+  const churnData = Array.from(changeCounts, ([file, changes]) => ({ file, changes }))
+    .sort((a, b) => b.changes - a.changes || a.file.localeCompare(b.file))
+    .slice(0, 20);
   
   if (churnData.length === 0) {
     return 'No valid file churn data.\n\n';
@@ -219,7 +198,7 @@ function generateFileChurn(projectRoot: string, graph: DirectedGraph): string {
 }
 
 function generateFeatureTimeline(projectRoot: string): string {
-  const log = executeGitCommand(projectRoot, 'git log --oneline --all --no-merges');
+  const log = executeGitCommand(projectRoot, ['log', '--oneline', '--all', '--no-merges']);
   
   if (!log) {
     return 'Unable to retrieve commit log.\n\n';
@@ -284,10 +263,11 @@ function generateFileAgeAnalysis(projectRoot: string, graph: DirectedGraph): str
   const sampleFiles = Array.from(files).slice(0, 20);
   
   for (const file of sampleFiles) {
-    const dateStr = executeGitCommand(
+    const added = executeGitCommand(
       projectRoot,
-      `git log --format="%ai" --diff-filter=A -- "${file}" | tail -1`
+      ['log', '--format=%ai', '--diff-filter=A', '--', file]
     );
+    const dateStr = added.split('\n').filter(l => l.trim().length > 0).pop();
     
     if (dateStr) {
       fileAges.push({
@@ -322,7 +302,7 @@ function generateFileAgeAnalysis(projectRoot: string, graph: DirectedGraph): str
 }
 
 function generateContributors(projectRoot: string): string {
-  const contributors = executeGitCommand(projectRoot, 'git shortlog -sn --all');
+  const contributors = executeGitCommand(projectRoot, ['shortlog', '-sn', '--all']);
   
   if (!contributors) {
     return 'Unable to retrieve contributor data.\n\n';

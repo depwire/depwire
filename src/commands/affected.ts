@@ -1,6 +1,6 @@
 import { canonicalPath } from '../graph/paths.js';
 import { resolve, relative } from 'path';
-import { execSync } from 'child_process';
+import { isValidGitRevision, runGit } from '../utils/git.js';
 import chalk from 'chalk';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
@@ -29,11 +29,12 @@ export async function affectedCommand(
 
   if (options.gitDiff) {
     const ref = options.gitDiff;
+    if (!isValidGitRevision(ref)) {
+      console.error(chalk.red(`Invalid git ref for --git-diff: ${JSON.stringify(ref)}`));
+      process.exit(1);
+    }
     try {
-      const raw = execSync(`git diff --name-only ${ref}`, {
-        cwd: projectRoot,
-        encoding: 'utf-8',
-      }).trim();
+      const raw = runGit(['diff', '--name-only', ref, '--'], { cwd: projectRoot }).trim();
       changedFiles = raw
         .split('\n')
         .map(f => f.trim())

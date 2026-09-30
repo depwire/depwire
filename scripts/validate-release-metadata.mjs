@@ -26,4 +26,20 @@ if (mismatches.length > 0) {
   process.exit(1);
 }
 
+// Registries parse the license as an SPDX identifier; "BUSL-1.1" is the only
+// valid spelling of the Business Source License (BSL-1.0 is Boost).
+const expectedLicense = 'BUSL-1.1';
+const licenses = [
+  ['package.json.license', packageJson.license],
+  ['manifest.json.license', manifestJson.license],
+];
+const badLicenses = licenses.filter(([, license]) => license !== expectedLicense);
+if (badLicenses.length > 0) {
+  console.error(`Release metadata mismatch: license must be the SPDX identifier ${expectedLicense}.`);
+  for (const [field, license] of badLicenses) {
+    console.error(`- ${field} is ${license ?? '<missing>'}`);
+  }
+  process.exit(1);
+}
+
 console.log(`Release metadata validated: ${expected}`);
