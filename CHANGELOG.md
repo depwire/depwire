@@ -6,6 +6,75 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.22.0 — Cyclic dependency groups replace the cycle count
+
+**Class F — health scores change.** The circular-dependency metric has been replaced. `dimensions_v` is now `2026-09-30-cyclic-groups-v1`; CLI/local-history trends crossing this boundary suppress deltas and explain the change. Graph format (`formatVersion` 2) and resolution (`RESOLUTION_VERSION` 5) are unchanged — graph node and edge contents are byte-identical to v1.21.2 on the same frozen code-graph, nest and drizzle corpora.
+
+### The old metric was wrong
+
+`cycles` reported an incomplete, traversal-dependent subset of simple cycles, not a count of them. Two demonstrations:
+
+- A bidirected triangle has exactly 5 simple cycles. Depwire reported 3.
+- On nest, the same graph produced 59 or 86 depending on directory enumeration order. The true simple-cycle count is 1,090, independently verified twice.
+
+Two faults combined: a depth-first search that marked nodes globally visited and returned early, finding only some cycles; and deduplication that sorted each cycle's vertices, conflating distinct directed cycles sharing the same files. The same mistake existed in five implementations — health, architecture docs, dependency docs, security findings and simulation.
+
+Exact simple-cycle counting is not the default metric we want. Counts can grow exponentially with graph size — drizzle-orm has a verified lower bound above 3,000,000 — and a number that large is neither interpretable nor actionable.
+
+### What replaces it
+
+**Cyclic dependency groups**: maximal strongly connected components of more than one file, computed exactly with an iterative Kosaraju traversal. Four values are reported separately:
+
+- group count
+- cyclic-file count
+- coverage (cyclic files as a proportion of graph-bearing files, including isolates)
+- largest-group size
+
+**Coverage drives the score; group count never does.** Two tangled groups merging into one larger group decreases group count without improving the architecture. Scoring uses a continuous coverage penalty up to 80 points plus a concentration penalty up to 20 for the largest group, then rounds the final score.
+
+Each group carries a shortest witness cycle through its lexicographically smallest member, with deterministic tie-breaking. Security findings explicitly anchor the witness at the smallest security-related member instead.
+
+The existing health edge policy is retained: ordinary type references are excluded, while legacy type-only import normalization is preserved. Dropping that normalization would remove 65 cyclic files from Drizzle's health view and improve its dimension score by 15 points — a separate behavior change that this release deliberately avoids.
+
+### Measured impact
+
+| Repository | Old count / per 100 | New groups / cyclic files / coverage / largest | Dimension | Overall |
+|---|---|---|---:|---:|
+| code-graph | 0 / 0 | 0 / 0 / 0% / 0 | 100 → 100 | 71 → 71 |
+| nest | 59 / 3.4 | 17 / 89 / 5.10% / 48 | 60 → 65 | 55 → 56 |
+| drizzle-orm | 622 / 70.3 | 11 / 272 / 30.73% / 188 | 20 → 20 | 34 → 34 |
+| hono | 86 / 24 | 6 / 80 / 22.28% / 60 | 20 → 35 | 47 → 50 |
+| express | 0 / 0 | 0 / 0 / 0% / 0 | 100 → 100 | 82 → 82 |
+| zod | 7 / 1.4 | 3 / 12 / 2.35% / 5 | 60 → 88 | 58 → 64 |
+| flask | 35 / 35.4 | 2 / 21 / 21.21% / 19 | 20 → 44 | 76 → 81 |
+| fastapi | 20 / 2.1 | 2 / 22 / 2.26% / 15 | 60 → 84 | 65 → 69 |
+
+These are pinned calibration corpora, not measurements of today's upstream heads. All five other health dimensions and their raw metrics are unchanged on all eight corpora. Most overall scores rise under the new methodology; that is not evidence that the source architecture improved.
+
+Drizzle's numbers deserve attention: 30.73% of its graph-bearing files participate in mutual dependency cycles, with one group containing 188 files. The old dimension had reached its floor of 20; the new formula also produces 20, though its floor is 0. The unchanged overall is a coincidence, not an engineered invariant.
+
+Zero remains correct on acyclic graphs. Old nonzero counts were incomplete subsets, not necessarily numerically wrong in every individual case.
+
+### Breaking API changes
+
+Removed: `cycles`, `cyclesPer100`, `circularDepsIntroduced`, `circularDepsResolved`, `new_circular_dependencies`. Consumers must migrate to `cyclicGroups` and `cyclicGroupChanges`; the old fields are not repurposed with different meanings.
+
+**`verify-change` no longer certifies export-only analysis as cyclic-dependency safety.** Edited-content and unified-diff requests never constructed a fully resolved after-graph, yet returned an empty cycle list — which callers reasonably read as “no cycles introduced.” These now return `cyclicGroupChanges.status: not_comparable` with an explanation, `safe: false`, and at least medium risk. Genuine deletion simulations build an after-graph and use the new comparison; deleting the last graph file is unscored/not comparable. Export and broken-import checks still run.
+
+**Change reporting is decomposed.** Adding one edge can merge two groups while freeing nobody; removing one can split a group while every file stays cyclic. Results distinguish newly cyclic files, freed files, added/deleted cyclic files, group merges/splits and internal edge changes. The merge fixture keeps four files cyclic while scoring 84→82, correctly reporting a merge rather than a resolution.
+
+### Determinism
+
+Cyclic-group metrics, memberships and witness output are now a function of the graph, independent of its insertion order. Five parses per corpus with shuffled directory enumeration produced byte-identical `cyclicGroups` output. Node and the investigation-only Bun binary agree on all three corpora, with 0, 17 and 11 groups respectively.
+
+Broader output ordering and resolver ambiguity remain separate work. This release does not claim all CLI output is deterministic and does not introduce a standalone-binary distribution.
+
+### Cloud follow-on
+
+This CLI release does not migrate Cloud data. Existing health history remains historical record with its existing methodology labels; unversioned legacy rows must not be treated as comparable to the new methodology. Cloud adoption requires the CLI pin and dimension mapping update, validation of stored latest graphs, fresh snapshots under the new boundary, and its separate bounded-detector correction. No historical rows are silently rewritten.
+
+Implemented in #49. Validation: 280 tests; Ubuntu/Windows × Node 20/22; packed CLI/MCP smoke tests.
+
 ## 1.21.2
 
 ### Added — pre-commit and prek hook
