@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.21.1
+
+### Security — command injection in git invocations (remote code execution). Upgrade immediately.
+
+Every git call in `depwire diff`, `depwire affected --git-diff`, `depwire temporal` and the `HISTORY.md` generator was assembled as a shell string and run through `execSync`. Values that an attacker can control reached those strings unescaped, so a crafted value ran arbitrary commands with the privileges of the user running Depwire. **All releases up to and including 1.21.0 are affected**, CLI and MCP server alike.
+
+Three sinks were exploitable; two required no argument from the victim at all:
+
+- **Branch name.** `depwire diff` restores the originally checked-out ref via `git checkout ${branch}` in a shell. Git permits `;`, `&`, `$`, `` ` `` and `>` in ref names, so cloning a repository whose checked-out branch is named `x&curl$IFS…|sh` and running `depwire diff A B` executes the payload. Confirmed by test: the payload created a file in the repository.
+- **File name.** `depwire docs` (HISTORY.md) ran `git log … -- "${file}"` for repository file paths. A file named `` `cmd`.ts `` in the repository executes `cmd`. Confirmed by test.
+- **Revision arguments.** `depwire diff <a> <b>` and `depwire affected --git-diff <ref>` passed the ref straight into the shell. On the CLI the victim types the argument, so this is lower risk; through the MCP server an AI client that has been prompt-injected can supply it.
+
+`depwire temporal` already validated its inputs and was not exploitable, but used the same shell-string pattern.
+
+**Fix.** All git invocations go through `execFileSync` with an argument array and `shell: false`. User-supplied revisions are validated against an allowlist and rejected (exit 2 for `diff`, exit 1 for `affected`) rather than sanitised; repository-derived branch names and paths are passed as single arguments after `--`. The `sort | uniq -c | sort | head` pipeline in the history generator is computed in-process. `test/command-injection.test.ts` holds a crafted-input test per sink; five fail against 1.21.0.
+
+**Who should act.** Anyone who runs `depwire diff`, `depwire docs`, `depwire temporal` or the MCP server against repositories they did not author, including CI jobs on pull requests from forks. Upgrade with `npm install -g depwire-cli@1.21.1`. The GitHub Action pins its own `depwire-version`; bump it to `1.21.1`.
+
+Reported indirectly via a third-party scanner finding ("untrusted input can reach command sinks"); triaged and fixed the same day.
+
+### Fixed
+
+- `server.json` now declares `packageArguments: ["mcp"]` and `runtimeHint: npx`. Registry-driven clients ran `npx depwire-cli` with no subcommand, got the usage text and exit 1, and reported the server as failing to start.
+- MCP `serverInfo.version` reports the package version instead of a hard-coded `0.1.0`.
+- `manifest.json` license identifier corrected from `BSL-1.1` (not an SPDX id) to `BUSL-1.1`; the release-metadata validator now enforces it. License terms are unchanged.
+
+Graph output, all health dimensions, `formatVersion 2` and `RESOLUTION_VERSION 5` are unchanged; verified identical on code-graph, nest `4c751c50` and drizzle `b7862528`.
+
 ## 1.21.0
 
 ### Changed — smaller installation, unchanged runtime
