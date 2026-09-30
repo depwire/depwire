@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && tsup src/graph.ts src/tools.ts --format esm --dts --no-splitting && npm run copy-static",
-    "prepublishOnly": "npm run build",
+    "prepare": "node -e \"require('fs').existsSync('scripts/prepare.mjs')&&require('child_process').execFileSync(process.execPath,['scripts/prepare.mjs'],{stdio:'inherit'})\"",
     "copy-static": "node scripts/copy-static.mjs",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
