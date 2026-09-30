@@ -66,7 +66,9 @@ describe('native-binding lifecycle allowlist', () => {
       }));
     }
 
-    const result = await scanSecurity(projectRoot, new DirectedGraph(), { graphAware: false });
+    const graph = new DirectedGraph();
+    graph.addNode('index.ts::value', {filePath:'index.ts',name:'value',kind:'variable'});
+    const result = await scanSecurity(projectRoot, graph, { graphAware: false });
 
     expect(result.suppressed).toEqual([
       expect.objectContaining({ file: 'node_modules/esbuild/package.json', severity: 'none' }),

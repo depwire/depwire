@@ -1,10 +1,11 @@
+import { analyzeCyclicGroups, DIMENSIONS_VERSION, HEALTH_METHODOLOGY_CHANGE } from '../graph/cyclic-groups.js';
 import { isWithinRoot } from '../graph/paths.js';
 import { DirectedGraph } from 'graphology';
 import { HealthReport, HealthDimension, HealthHistory } from './types.js';
 import {
   calculateCouplingScore,
   calculateCohesionScore,
-  calculateCircularDepsScore,
+  calculateCyclicGroupsScore,
   calculateGodFilesScore,
   calculateDepthScore,
   scoreToGrade
@@ -26,6 +27,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   if (graph.order === 0) {
     return {
       status: 'no_parseable_files',
+      dimensions_v: DIMENSIONS_VERSION, cyclicGroups: analyzeCyclicGroups(graph),
       overall: NaN,
       grade: 'N/A',
       dimensions: [],
@@ -68,7 +70,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   // Calculate all 6 dimensions
   const coupling = calculateCouplingScore(healthGraph);
   const cohesion = calculateCohesionScore(healthGraph);
-  const circular = calculateCircularDepsScore(healthGraph);
+  const circular = calculateCyclicGroupsScore(graph);
   const godFiles = calculateGodFilesScore(healthGraph);
   const orphans = calculateWorkspaceOrphansScore(healthGraph, projectRoot);
   const depth = calculateDepthScore(healthGraph);
@@ -132,10 +134,10 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
     recommendations.push(`Low cohesion: Only ${cohesion.metrics.avgInternalRatio}% internal dependencies. Reorganize files by feature or domain.`);
   }
   
-  if (circular.score < 80 && typeof circular.metrics.cycles === 'number' && circular.metrics.cycles > 0) {
-    recommendations.push(`${circular.metrics.cycles} circular dependency cycle${circular.metrics.cycles === 1 ? '' : 's'} detected (${Number(circular.metrics.cyclesPer100).toFixed(1)} per 100 files). Break cycles by introducing interfaces or extracting shared code.`);
+  if (circular.score < 80 && Number(circular.metrics.cyclicFileCount) > 0) {
+    recommendations.push(`${circular.details}. Separate mutually dependent responsibilities; use the group witnesses to investigate concrete dependencies.`);
   }
-  
+
   if (godFiles.score < 80 && typeof godFiles.metrics.godFiles === 'number' && godFiles.metrics.godFiles > 0) {
     recommendations.push(`${godFiles.metrics.godFiles} god file${godFiles.metrics.godFiles === 1 ? '' : 's'} detected with >${godFiles.metrics.threshold} connections (${Number(godFiles.metrics.godFilesPer100).toFixed(1)} per 100 files). Split into smaller, focused modules.`);
   }
@@ -154,6 +156,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   
   const report: HealthReport = {
     status: 'scored',
+    dimensions_v: DIMENSIONS_VERSION, cyclicGroups: analyzeCyclicGroups(graph),
     overall,
     grade,
     dimensions,
@@ -185,6 +188,7 @@ export function getHealthTrend(projectRoot: string, currentScore: number): strin
   }
   
   const previous = history[history.length - 2];
+  if (previous.dimensions_v !== DIMENSIONS_VERSION) return HEALTH_METHODOLOGY_CHANGE;
   const delta = currentScore - previous.score;
   
   if (delta > 0) {
@@ -208,6 +212,7 @@ function saveHealthHistory(projectRoot: string, report: HealthReport): void {
   }
   
   const entry: HealthHistory = {
+    dimensions_v: report.dimensions_v,
     timestamp: report.timestamp,
     score: report.overall,
     grade: report.grade,

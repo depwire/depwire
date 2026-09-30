@@ -239,7 +239,7 @@ Available as MCP tool `security_scan` and via `depwire-cli/sdk`.
 
 ## Pre-action verification
 
-Verify a proposed change is safe before applying it. Checks broken imports, new circular dependencies, health score regression, and security findings in one pass.
+Verify a proposed change is safe before applying it. Reports broken imports, cyclic-group changes when a resolved after-graph is available, health movement, and security findings. Export-only comparisons of edited content or unified diffs cannot establish cyclic-group safety: they return `cyclicGroupChanges.status: not_comparable` and do not certify the change as safe.
 
 ```bash
 depwire verify-change --file src/auth.ts --content-from new-auth.ts
@@ -258,7 +258,7 @@ Example output:
     Broken Imports: 2
       • src/index.ts — missing trackCommand
       • src/server.ts — missing handleAuth
-    New Circular Deps: 0
+    Cyclic Group Changes: unavailable without a resolved after-graph
     Security Findings: 1
       • [HIGH] Hardcoded secret detected (src/auth.ts:14)
     Blast Radius:    8 files affected
@@ -459,7 +459,7 @@ This gives every Claude Code session project-specific orientation without an MCP
 | `get_temporal_graph` | Architecture evolution over git history |
 | `simulate_change` | Simulate move/delete/rename/split/merge before touching code. Returns health delta, broken imports, affected nodes. Cross-language edges included. |
 | `security_scan` | Scan for vulnerabilities with graph-aware severity elevation. No API key required. |
-| `verify_change` | Safety report before applying code changes. Returns broken imports, circular deps, health delta, affected files. Also available as `depwire verify-change` CLI. |
+| `verify_change` | Safety report before applying code changes. Returns broken imports, cyclic-group changes (or an explicit unavailable reason), health delta, affected files. Also available as `depwire verify-change` CLI. |
 | `claim_files` | Multi-agent coordination: declare intent to modify files so other clients avoid conflicts. |
 | `release_files` | Release a previously made file claim. |
 | `get_active_claims` | Query who is currently working on what. |
@@ -494,6 +494,25 @@ These edges flow through every existing feature: What If simulation, impact anal
 
 ## Architecture health score
 
+The `cyclicGroups` dimension measures the proportion of graph-bearing files in
+mutually dependent groups, plus the size of the largest group. It reports group
+count, cyclic-file count, coverage, and largest-group size separately; group count
+does not affect the score. Groups use the existing health edge policy: ordinary
+type references are excluded, while legacy type-only import normalization is
+retained. Witness paths illustrate each group without enumerating all cycles.
+
+The previous cycle count was incomplete and depended on traversal order. It has
+been removed, not redefined. Health results carry
+`dimensions_v: 2026-09-30-cyclic-groups-v1`; trends across that methodology boundary
+suppress improvement/regression deltas and explain the change. Graph format 2 and
+resolution version 5 are unchanged. This correction does not imply every old
+figure was wrong: acyclic graphs correctly had zero, and some counts coincided.
+
+Simulation reports newly cyclic files, freed files, added/deleted cyclic files,
+group merges/splits and internal edge changes separately. Merging two existing
+groups is not a resolution; deleting a cyclic file is not freeing a surviving file.
+
+
 ```bash
 depwire health .
 ```
@@ -501,7 +520,7 @@ depwire health .
     Overall: 68/100 (Grade: D)
     Coupling              70   C
     Cohesion              80   B
-    Circular Dependencies 100  A
+    Cyclic Dependency Groups 100  A
     God Files             40   F
     Orphans & Dead Code   20   F
     Dependency Depth      60   D

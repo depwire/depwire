@@ -1,3 +1,4 @@
+import { compareCyclicGroups, DIMENSIONS_VERSION, type CyclicGroupChanges } from '../graph/cyclic-groups.js';
 import { canonicalPath } from '../graph/paths.js';
 /**
  * verify_change — Core logic for deterministic safety reports on proposed code changes.
@@ -33,10 +34,6 @@ export interface BrokenImportEntry {
   reason?: string;
 }
 
-export interface CircularDepEntry {
-  cycle: string[];
-}
-
 export interface SecurityFinding {
   severity: string;
   description: string;
@@ -60,7 +57,8 @@ export interface VerifyChangeOutput {
   safe: boolean;
   risk_level: 'low' | 'medium' | 'high';
   broken_imports: BrokenImportEntry[];
-  new_circular_dependencies: CircularDepEntry[];
+  dimensions_v: string;
+  cyclicGroupChanges: CyclicGroupChanges | {status:'not_comparable'; reason:string};
   health_score_delta: number;
   health_score_before: number;
   health_score_after: number;
@@ -125,7 +123,7 @@ function simulateFullDelete(
   graph: DirectedGraph,
   filePath: string,
   brokenImports: BrokenImportEntry[],
-  newCircularDeps: CircularDepEntry[],
+
   allAffectedFiles: Set<string>
 ): number | null {
   try {
@@ -137,9 +135,6 @@ function simulateFullDelete(
         missing_symbol: bi.importedSymbol,
         reason: bi.reason,
       });
-    }
-    for (const cycle of simResult.diff.circularDepsIntroduced) {
-      newCircularDeps.push({ cycle });
     }
     for (const node of simResult.diff.affectedNodes) {
       const attrs = graph.hasNode(node) ? graph.getNodeAttributes(node) : null;
@@ -212,7 +207,8 @@ export async function verifyChange(
       safe: false,
       risk_level: 'high',
       broken_imports: [],
-      new_circular_dependencies: [],
+      dimensions_v: DIMENSIONS_VERSION,
+      cyclicGroupChanges: {status:'not_comparable',reason:'Invalid input'},
       health_score_delta: 0,
       health_score_before: 0,
       health_score_after: 0,
@@ -231,7 +227,9 @@ export async function verifyChange(
 
   const engine = new SimulationEngine(graph);
   const brokenImports: BrokenImportEntry[] = [];
-  const newCircularDeps: CircularDepEntry[] = [];
+  let cyclicGroupChanges: VerifyChangeOutput['cyclicGroupChanges'] = {
+    status:'not_comparable',reason:'A fully resolved after-graph is unavailable for edited content or unified diffs. Export comparison does not establish cyclic-group safety.'
+  };
   let healthScoreAfter = healthScoreBefore;
   const allAffectedFiles = new Set<string>();
 
@@ -253,9 +251,12 @@ export async function verifyChange(
       const isDeletion = newContent.trim().length === 0;
 
       if (isDeletion) {
+        const afterGraph = graph.copy();
+        for (const node of fileNodes) afterGraph.dropNode(node);
+        cyclicGroupChanges = compareCyclicGroups(graph, afterGraph);
         // Genuine deletion — the conservative full-delete analysis is correct.
         const after = simulateFullDelete(
-          engine, graph, filePath, brokenImports, newCircularDeps, allAffectedFiles
+          engine, graph, filePath, brokenImports, allAffectedFiles
         );
         if (after !== null) healthScoreAfter = after;
         else warnings.push(`Could not simulate deletion of ${filePath}`);
@@ -284,7 +285,7 @@ export async function verifyChange(
           `Could not parse new content for ${filePath} — using conservative full-file analysis.`
         );
         const after = simulateFullDelete(
-          engine, graph, filePath, brokenImports, newCircularDeps, allAffectedFiles
+          engine, graph, filePath, brokenImports, allAffectedFiles
         );
         if (after !== null) healthScoreAfter = after;
       }
@@ -295,16 +296,13 @@ export async function verifyChange(
         `Conservative full-file analysis for ${filePath} (no new_content available for unified_diff).`
       );
       const after = simulateFullDelete(
-        engine, graph, filePath, brokenImports, newCircularDeps, allAffectedFiles
+        engine, graph, filePath, brokenImports, allAffectedFiles
       );
       if (after !== null) healthScoreAfter = after;
     }
   }
 
-  // Modifications that remove nothing leave the dependency topology intact.
-  if (brokenImports.length === 0 && newCircularDeps.length === 0) {
-    healthScoreAfter = healthScoreBefore;
-  }
+  if (cyclicGroupChanges.status === 'not_comparable') warnings.push(cyclicGroupChanges.reason);
 
   // De-duplicate broken imports by (file, missing_symbol) — a single importer
   // may reference a removed symbol through more than one edge.
@@ -359,12 +357,13 @@ export async function verifyChange(
   const healthDelta = healthScoreAfter - healthScoreBefore;
 
   // Safety verdict is driven ONLY by change-specific structural breakage:
-  // removed exports with external dependents, and newly introduced cycles.
+  // removed exports with external dependents, newly cyclic files, and group merges.
+  // An unavailable topology comparison cannot certify a change as safe.
   // Security findings and health movement are informational (unrelated_context).
   let riskLevel: 'low' | 'medium' | 'high';
-  if (brokenImports.length > 0 || newCircularDeps.length > 0) {
+  if (brokenImports.length > 0 || (cyclicGroupChanges.status === 'compared' && (cyclicGroupChanges.newlyCyclicFiles.length > 0 || cyclicGroupChanges.addedCyclicFiles.length > 0 || cyclicGroupChanges.groupsMerged.length > 0))) {
     riskLevel = 'high';
-  } else if (healthDelta < -3) {
+  } else if (cyclicGroupChanges.status === 'not_comparable' || healthDelta < -3) {
     riskLevel = 'medium';
   } else {
     riskLevel = 'low';
@@ -384,7 +383,8 @@ export async function verifyChange(
     safe,
     risk_level: riskLevel,
     broken_imports: brokenImports,
-    new_circular_dependencies: newCircularDeps,
+    dimensions_v: DIMENSIONS_VERSION,
+    cyclicGroupChanges,
     health_score_delta: healthDelta,
     health_score_before: healthScoreBefore,
     health_score_after: healthScoreAfter,

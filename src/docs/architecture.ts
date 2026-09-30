@@ -1,3 +1,4 @@
+import { formatCyclicGroups } from './cyclic-groups.js';
 import { DirectedGraph } from 'graphology';
 import { dirname } from 'path';
 import { SymbolKind } from '../parser/types.js';
@@ -18,11 +19,6 @@ interface DirectoryStats {
   functionCount: number;
   outboundEdges: number;
   inboundEdges: number;
-}
-
-interface CyclePath {
-  path: string[];
-  suggestion: string;
 }
 
 /**
@@ -64,8 +60,8 @@ export function generateArchitecture(
   output += header('Layer Analysis', 2);
   output += generateLayerAnalysis(graph);
   
-  // 6. Circular Dependencies
-  output += header('Circular Dependencies', 2);
+  // 6. Cyclic Dependency Groups
+  output += header('Cyclic Dependency Groups', 2);
   output += generateCircularDependencies(graph);
   
   return output;
@@ -402,90 +398,5 @@ function generateLayerAnalysis(graph: DirectedGraph): string {
 }
 
 function generateCircularDependencies(graph: DirectedGraph): string {
-  const cycles = detectCycles(graph);
-  
-  if (cycles.length === 0) {
-    return '✅ No circular dependencies detected.\n\n';
-  }
-  
-  let output = `⚠️ Found ${cycles.length} circular ${cycles.length === 1 ? 'dependency' : 'dependencies'}:\n\n`;
-  
-  for (let i = 0; i < Math.min(cycles.length, 10); i++) {
-    const cycle = cycles[i];
-    output += `**Cycle ${i + 1}:**\n\n`;
-    output += codeBlock(cycle.path.join(' →\n'), '');
-    output += `**Suggested fix:** ${cycle.suggestion}\n\n`;
-  }
-  
-  if (cycles.length > 10) {
-    output += `... and ${cycles.length - 10} more cycles.\n\n`;
-  }
-  
-  return output;
-}
-
-function detectCycles(graph: DirectedGraph): CyclePath[] {
-  const cycles: CyclePath[] = [];
-  const visited = new Set<string>();
-  const recStack = new Set<string>();
-  const pathStack: string[] = [];
-  
-  // Build file-level graph
-  const fileGraph = new Map<string, Set<string>>();
-  
-  graph.forEachEdge((edge, attrs, source, target) => {
-    const sourceFile = graph.getNodeAttributes(source).filePath;
-    const targetFile = graph.getNodeAttributes(target).filePath;
-    
-    if (sourceFile !== targetFile) {
-      if (!fileGraph.has(sourceFile)) {
-        fileGraph.set(sourceFile, new Set());
-      }
-      fileGraph.get(sourceFile)!.add(targetFile);
-    }
-  });
-  
-  function dfs(file: string): boolean {
-    visited.add(file);
-    recStack.add(file);
-    pathStack.push(file);
-    
-    const neighbors = fileGraph.get(file);
-    if (neighbors) {
-      for (const neighbor of neighbors) {
-        if (!visited.has(neighbor)) {
-          if (dfs(neighbor)) {
-            return true;
-          }
-        } else if (recStack.has(neighbor)) {
-          // Found a cycle
-          const cycleStart = pathStack.indexOf(neighbor);
-          const cyclePath = pathStack.slice(cycleStart);
-          cyclePath.push(neighbor); // Complete the cycle
-          
-          cycles.push({
-            path: cyclePath,
-            suggestion: 'Extract shared types/interfaces to a common file',
-          });
-          return true;
-        }
-      }
-    }
-    
-    recStack.delete(file);
-    pathStack.pop();
-    return false;
-  }
-  
-  // Try DFS from each file
-  for (const file of fileGraph.keys()) {
-    if (!visited.has(file)) {
-      dfs(file);
-      // Reset for next search
-      recStack.clear();
-      pathStack.length = 0;
-    }
-  }
-  
-  return cycles;
+  return formatCyclicGroups(graph, 10);
 }

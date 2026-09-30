@@ -1,3 +1,4 @@
+import { HEALTH_METHODOLOGY_CHANGE } from '../graph/cyclic-groups.js';
 import { DirectedGraph } from 'graphology';
 import { header, timestamp, formatNumber, unorderedList, code, table } from './templates.js';
 import { calculateHealthScore, loadHealthHistory } from '../health/index.js';
@@ -128,7 +129,7 @@ function generateHistoricalTrend(projectRoot: string, currentReport: HealthRepor
   
   const rows = recent.map((entry, idx) => {
     let trend = '—';
-    if (idx > 0) {
+    if (idx > 0 && entry.dimensions_v && entry.dimensions_v === recent[idx - 1].dimensions_v) {
       const prev = recent[idx - 1];
       const delta = entry.score - prev.score;
       if (delta > 0) {
@@ -153,6 +154,7 @@ function generateHistoricalTrend(projectRoot: string, currentReport: HealthRepor
   // Show trend summary
   const first = recent[0];
   const last = recent[recent.length - 1];
+  if (!first.dimensions_v || recent.some(entry => entry.dimensions_v !== first.dimensions_v)) return output + '\n' + HEALTH_METHODOLOGY_CHANGE + '\n\n';
   const totalDelta = last.score - first.score;
   
   output += `\n**Trend:** `;

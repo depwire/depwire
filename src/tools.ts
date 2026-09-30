@@ -624,8 +624,8 @@ function handleSimulateChange(args: Record<string, any>, graph: DepwireGraph): a
         importedSymbol: brokenImport.importedSymbol,
       })),
       removedEdges: removedEdgeCount,
-      circularDepsIntroduced: result.diff.circularDepsIntroduced.length,
-      circularDepsResolved: result.diff.circularDepsResolved.length,
+      dimensions_v: result.healthDelta.dimensions_v,
+      cyclicGroupChanges: result.diff.cyclicGroupChanges,
       summary: `${operation.charAt(0).toUpperCase() + operation.slice(1)}ing ${target} would ${result.healthDelta.delta >= 0 ? 'improve' : 'reduce'} health score from ${result.healthDelta.before} to ${result.healthDelta.after} (${result.healthDelta.delta >= 0 ? '+' : ''}${result.healthDelta.delta}), breaking ${brokenImportCount} import${brokenImportCount !== 1 ? 's' : ''} across ${affectedNodeCount} affected node${affectedNodeCount !== 1 ? 's' : ''}.`,
     };
   } catch (error: any) {

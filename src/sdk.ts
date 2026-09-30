@@ -115,3 +115,5 @@ export type {
  */
 export { detectCrossLanguageEdges } from './cross-language/index.js';
 export type { CrossLanguageEdge, CrossLanguageDetectionResult } from './cross-language/types.js';
+
+export * from './graph/cyclic-groups.js';

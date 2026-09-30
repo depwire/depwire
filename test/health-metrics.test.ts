@@ -3,7 +3,7 @@ import { DirectedGraph } from 'graphology';
 import {
   calculateCohesionScore,
   calculateCouplingScore,
-  calculateCircularDepsScore,
+  calculateCyclicGroupsScore,
   calculateGodFilesScore
 } from '../src/health/metrics.js';
 
@@ -41,8 +41,8 @@ function graphWithCycles(fileCount: number, cycleCount: number): DirectedGraph {
   for (let cycle = 0; cycle < cycleCount; cycle++) {
     const first = cycle * 2;
     const second = first + 1;
-    graph.addEdge(`file-${first}`, `file-${second}`);
-    graph.addEdge(`file-${second}`, `file-${first}`);
+    graph.addEdge(`file-${first}`, `file-${second}`, {kind:"imports"});
+    graph.addEdge(`file-${second}`, `file-${first}`, {kind:"imports"});
   }
 
   return graph;
@@ -57,14 +57,14 @@ describe('size-normalized health dimensions', () => {
 
     expect(calculateCouplingScore(withTypeCycle)).toEqual(calculateCouplingScore(baseline));
     expect(calculateCohesionScore(withTypeCycle)).toEqual(calculateCohesionScore(baseline));
-    expect(calculateCircularDepsScore(withTypeCycle)).toEqual(calculateCircularDepsScore(baseline));
+    expect(calculateCyclicGroupsScore(withTypeCycle)).toEqual(calculateCyclicGroupsScore(baseline));
   });
 
-  it('scores empty projects as healthy without dividing by zero', () => {
+  it('does not score absent cyclic-group evidence as healthy', () => {
     const graph = graphWithFiles(0);
 
     expect(calculateGodFilesScore(graph).score).toBe(100);
-    expect(calculateCircularDepsScore(graph).score).toBe(100);
+    expect(calculateCyclicGroupsScore(graph).score).toBeNaN();
   });
 
   it('scores the recorded god-file distribution by density', () => {
@@ -85,21 +85,12 @@ describe('size-normalized health dimensions', () => {
     }
   });
 
-  it('scores the recorded cycle distribution by density and preserves exact zero', () => {
-    const cases = [
-      { files: 42, cycles: 0, density: 0, score: 100 },
-      { files: 52, cycles: 11, density: 21.2, score: 20 },
-      { files: 178, cycles: 0, density: 0, score: 100 },
-      { files: 390, cycles: 1, density: 0.3, score: 80 },
-      { files: 874, cycles: 110, density: 12.6, score: 40 }
-    ];
-
-    for (const expected of cases) {
-      const result = calculateCircularDepsScore(graphWithCycles(expected.files, expected.cycles));
-
-      expect(result.metrics.cycles).toBe(expected.cycles);
-      expect(result.metrics.cyclesPer100).toBe(expected.density);
-      expect(result.score).toBe(expected.score);
-    }
+  it('scores cyclic file coverage and reports group count separately', () => {
+    const result = calculateCyclicGroupsScore(graphWithCycles(100, 2));
+    expect(result.metrics.groupCount).toBe(2);
+    expect(result.metrics.cyclicFileCount).toBe(4);
+    expect(result.metrics.cyclicFileRatio).toBe(0.04);
+    expect(result.metrics.largestGroupSize).toBe(2);
+    expect(result.score).toBe(84);
   });
 });

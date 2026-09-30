@@ -1,9 +1,14 @@
-# Cyclic dependency groups — proposed contract (phase 1)
+# Cyclic dependency groups — approved contract
 
-**Approval status: proposed, not approved. No implementation in this PR.**
-Phase 2 must not begin until Atef explicitly approves this contract in a later
-message. No source, package version, release process, deployment or stored data
-is changed. This is a Class F health-methodology proposal, not a shape change.
+**Approval status: approved with amendments on 2026-09-30; implemented on this branch.**
+Amendment 1 retains legacy type-only import normalization after the measured A/B/C
+comparison found material movement. The default is now
+`legacy-normalized-dependencies-v1` (policy A); the original B calibration below
+is retained as historical evidence, not silently relabeled. Full measurements and
+implementation gates: [CYCLIC-GROUPS-IMPLEMENTATION.md](CYCLIC-GROUPS-IMPLEMENTATION.md).
+Amendment 2 keeps production Cloud row verification and released-SLM dataset
+lineage as **release blockers**, not post-release follow-ups. No merge, publish,
+deploy or stored-data write is part of this implementation.
 
 Branch `feat/cyclic-groups-metric` starts directly from main `28ec599`
 (depwire-cli 1.21.2). The earlier investigation is carried forward unchanged as
@@ -55,13 +60,13 @@ New dimension name **`Cyclic Dependency Groups`**, stable dimension key
 **`cyclicGroups`**, replacing the old circular dimension at its existing 20%
 weight. Do not return `cycles` or `cyclesPer100` with a new interpretation.
 
-Proposed result shape (documentation, not executable implementation):
+Approved result shape (the shared TypeScript types are authoritative):
 
 ```ts
 type CyclicGroupsResult = {
   contractVersion: 'cyclic-groups-v1';
   dimensions_v: '2026-09-30-cyclic-groups-v1';
-  edgeView: 'value-dependencies-v1' | 'all-dependencies-v1';
+  edgeView: 'legacy-normalized-dependencies-v1' | 'value-dependencies-v1' | 'all-dependencies-v1';
   status: 'analyzed';
   sourceCoverage: 'complete' | 'partial' | 'unknown';
   // Complete analysis of the supplied graph, even if source parsing was partial.
@@ -84,13 +89,14 @@ type CyclicGroupsResult = {
         targetSymbol: string;
         kind: string;
         line: number | null;
+        normalizedTypeOnlyImport: boolean;
       }>;
     };
   }>;
 } | {
   contractVersion: 'cyclic-groups-v1';
   dimensions_v: '2026-09-30-cyclic-groups-v1';
-  edgeView: 'value-dependencies-v1' | 'all-dependencies-v1';
+  edgeView: 'legacy-normalized-dependencies-v1' | 'value-dependencies-v1' | 'all-dependencies-v1';
   status: 'no_graph_files' | 'unavailable';
   sourceCoverage: 'complete' | 'partial' | 'unknown';
   score: null;
@@ -130,7 +136,21 @@ not advertised as strictly linear.
 
 ## C2. One edge projection, explicitly versioned
 
-**Default `value-dependencies-v1`:** retain existing edge kinds `imports`,
+**Approved amendment supersedes the originally proposed default below:** policy A,
+`legacy-normalized-dependencies-v1`, retains the existing health projection.
+For a `references-type` edge, exclude it unless `typeOnlyImport === true` and
+`typeOnlyFallback !== true`. For qualifying imports, use the existing
+`originalImportTarget` node when present, otherwise the existing target; project
+as `imports`. Witness evidence marks `normalizedTypeOnlyImport: true`. This
+preserves a historical health relationship; it is not proof of runtime execution.
+Policies B (`value-dependencies-v1`) and C (`all-dependencies-v1`) remain explicit,
+unscored diagnostic views. Only A uses the approved score curve.
+The eight-repository comparison is in the implementation report. In particular,
+Drizzle changes from B's 207 cyclic files / score 35 to A's 272 / score 20, so
+omitting normalization is not a negligible simplification.
+
+
+**Policy B (explicit diagnostic view, not the approved default) `value-dependencies-v1`:** retain existing edge kinds `imports`,
 `calls`, `extends` (legacy alias), `implements`, `inherits`, `decorates`,
 `references`, `injects`, `uses`, `rest-api`, `subprocess`. Exclude every
 `references-type` edge. This defines a view of the graph's recorded labels;
@@ -145,12 +165,10 @@ for witnesses. Exclude intra-file edges. Parallel symbol edges affect neither
 SCC membership nor weight. Missing endpoints, missing file paths or unsupported
 edge kinds make analysis unavailable with a reason, not a clean empty graph.
 
-**Do not reconstruct an edge from `originalImportTarget`.** The current health
-projection turns selected `references-type` / `typeOnlyImport` edges back into
-imports to preserve an older score. That historical compatibility maneuver is
-not the new edge contract. Analyze the original graph for this dimension;
-other five dimensions retain their existing projection/behavior in this change.
-`typeOnlyFallback` does not change the exclusion of `references-type`.
+The new dimension analyzes the original graph and applies the approved A
+projection itself. Other five dimensions retain their existing health projection.
+Policy B intentionally omits normalization; it is retained only for explicit
+comparison, not silently substituted for A.
 
 Explicit alternative **`all-dependencies-v1`** adds `references-type` using its
 actual target, without legacy retargeting. This is useful to users investigating
@@ -160,17 +178,17 @@ different view or blend it into overall health. Alternate-view comparisons
 must use the same view on both sides. Default output always uses the default
 view; no consumer chooses a different filter invisibly.
 
-| Consumer | Proposed default and what changes |
+| Consumer | Approved default and what changes |
 |---|---|
-| Full health | Stops counting legacy-restored type-only imports; gets exact SCC membership and new score. Other dimensions untouched. |
+| Full health | Retains legacy-restored type-only imports; gets exact SCC membership and the new score. Other dimensions untouched. |
 | Docs architecture | Previously all edges, incomplete paths. Default now excludes type references; can explicitly show a separately labeled all-dependencies appendix. |
-| Docs dependencies | Existing type exclusion retained, but complete groups replace early-return DFS; symbol evidence remains attached to actual qualifying edges. |
+| Docs dependencies | Ordinary type references remain excluded; legacy import normalization is now shared with health. Complete groups replace early-return DFS. |
 | Security architecture | Default excludes type-only group membership previously included. One finding per cyclic group intersecting auth/crypto files, with explicit member list and anchored witness. Existing severity policy is retained for this proposal; explain structural risk, not proof of exploitability. An all-dependencies appendix is not silently another runtime-security finding. |
 | Simulation / verify-change | Uses this projection before and after; removes mismatch between cycle diff and health dimension. All-dependencies comparison only through explicit view selection. |
 
-**Measured policy sensitivity on identical graph artifacts**, not a graph change:
+**Historical phase-one B/C sensitivity on identical artifacts.** B is no longer the approved default; see the implementation report for the complete A/B/C table:
 
-| Repo | Default G / C / L | All-dependencies G / C / L |
+| Repo | Historical B: G / C / L | C: G / C / L |
 |---|---|---|
 | code-graph | 0 / 0 / 0 | 0 / 0 / 0 |
 | Nest | 16 / 86 / 48 | 17 / 89 / 48 |
@@ -206,7 +224,7 @@ cyclicGroupChanges: {
   status: 'compared';
   contractVersion: 'cyclic-groups-v1';
   dimensions_v: '2026-09-30-cyclic-groups-v1';
-  edgeView: 'value-dependencies-v1' | 'all-dependencies-v1';
+  edgeView: 'legacy-normalized-dependencies-v1' | 'value-dependencies-v1' | 'all-dependencies-v1';
   before: { graphFileCount: number; groupCount: number; cyclicFileCount: number;
             largestGroupSize: number; score: number | null };
   after:  { graphFileCount: number; groupCount: number; cyclicFileCount: number;
@@ -525,24 +543,14 @@ This does not claim all old numbers were wrong: acyclic zeroes are correct and
 some nonzero subset counts may coincide with complete counts. Update verified
 affected publications, do not erase history or claim an unverified SLM exemption.
 
-### Decisions requested and hard stop
+### Approval and remaining release gates
 
-Approve/revise together: C1 result/API names; C2 default edge policy (including
-removal of legacy type-only restoration); C3 transitions and regression signals;
-C4 provisional curve; C6 version/boundary text. I do not recommend overriding
-the primary-coverage direction. I specifically recommend the bounded concentration
-penalty and explicit alternative view, rather than scoring by group count or
-silently inheriting health's old compatibility projection.
+Atef approved C1, C3, C4 and C6 in a later message and authorized implementation.
+C2 is amended to policy A based on the eight-repository measurements. C5 remains
+blocked on production D1 read authorization and exact released-SLM dataset lineage.
+These must close **before shipping**, not after. The separate Cloud detector is
+tracked in [Cloud #15](https://github.com/depwire/depwire-cloud/issues/15).
 
-**C5 remains partially blocked** on production D1 read authorization and precise
-released-SLM dataset lineage; benchmark remote publication was also not accessible.
-The local/static findings and real corpus measurements are complete as stated,
-not substitutes for those missing checks. Contract approval must acknowledge
-these follow-up requirements; do not call the production impact audit closed.
-
-Only report/reference/evidence files are committed. No production implementation,
-tests weakened, merge, publication, deployment, Cloud rewrite or training change.
-Phase 2 requires a later explicit approval and will implement one shared module,
-test hand fixtures and merge/split semantics, N=5 shuffled determinism, graph
-content invariance and real health movement. This draft PR is not permission
-to start that work.
+Implementation, tests and evidence are on this branch. No merge, publication,
+deployment, Cloud data rewrite or training change is authorized or performed.
+See the implementation report for G1–G8 and the verify-change limitation.
