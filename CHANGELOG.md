@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## 1.23.0 — Dead-code confidence reflects available evidence
+
+The dead-code classifier previously classified almost every candidate as HIGH before constructor, type-only and other mitigating checks could run. Those checks now run before the general fallback.
+
+- Constructors classify as LOW (`constructor-via-class`): `new ClassName()` edges target the class, not the constructor, so zero constructor dependents is expected rather than evidence of disuse.
+- Exported symbols with no visible consumer classify as MEDIUM: consumers outside the parsed repository may use its public API.
+- Type-only symbols classify as LOW. Framework-style directory matches are explicitly labelled a **path-name heuristic**, not proof of invocation; they reduce confidence without adding edges or removing candidates.
+- Results include an optional `reasonCode`, and CLI, generated docs and MCP descriptions use less absolute confidence wording.
+
+### Measured impact
+
+| Repository | Before HIGH / MEDIUM / LOW | After HIGH / MEDIUM / LOW |
+|---|---:|---:|
+| code-graph | 87 / 0 / 0 | 48 / 36 / 3 |
+| nest | 3267 / 0 / 0 | 2690 / 132 / 445 |
+| drizzle-orm | 4722 / 14 / 0 | 3698 / 358 / 680 |
+| hono | 329 / 4 / 0 | 230 / 31 / 72 |
+| express | 27 / 0 / 0 | 27 / 0 / 0 |
+| zod | 1365 / 3 / 0 | 617 / 557 / 194 |
+| flask | 337 / 0 / 0 | 185 / 152 / 0 |
+| fastapi | 1628 / 0 / 0 | 191 / 1433 / 4 |
+| **Total** | **11762 / 21 / 0** | **7686 / 2699 / 1398** |
+
+Across these pinned corpora, candidate counts remain unchanged at 11,783; 4,076 candidates leave HIGH confidence. This demonstrates corrected confidence, not that every demoted symbol is proven live. These totals include LOW; the default MEDIUM threshold can now display fewer findings.
+
+### Known JavaScript graph limitation
+
+Confidence reflects the evidence in the graph. Where the graph is incomplete, confidence is overstated. A known case: CommonJS `module.exports` assignments and some JavaScript call edges are not currently captured, so symbols in such codebases can appear unused when they are not. Tracked separately as [issue #52](https://github.com/depwire/depwire/issues/52).
+
+The Express reproduction includes `createApplication` explicitly assigned to `module.exports`, plus directly called `tryRender`, `sendfile` and `tryStat`. Its unchanged 27/0/0 distribution is not evidence that all 27 symbols are dead. This release fixes the classifier; the parser defect remains open.
+
+Graph format 2, RESOLUTION_VERSION 5 and the cyclic-groups methodology are unchanged. No parser or resolution changes are included.
+
+---
+
 ## 1.22.0 — Cyclic dependency groups replace the cycle count
 
 **Class F — health scores change.** The circular-dependency metric has been replaced. `dimensions_v` is now `2026-09-30-cyclic-groups-v1`; CLI/local-history trends crossing this boundary suppress deltas and explain the change. Graph format (`formatVersion` 2) and resolution (`RESOLUTION_VERSION` 5) are unchanged — graph node and edge contents are byte-identical to v1.21.2 on the same frozen code-graph, nest and drizzle corpora.
