@@ -12,6 +12,8 @@ Calibration snapshots: nest `35142c3eca8edaaf6abc5984d915da2fbd458aa2`, drizzle 
 
 The syntax count excludes `typeof import("pkg")` type queries. Each runtime call and constructor expression has exactly one call edge or one unresolved entry, per file. This checks cardinality, not target correctness; the edge audit below checks target samples.
 
+The audited graph moves **2,206** TypeScript symbols from zero dependents to at least one: code-graph 46, nest 690, drizzle 455, hono 195, zod 820 (express, flask, fastapi 0). The first PR pass found 1,787; the namespace and static-member audit accounts for the additional 419.
+
 ## Reason totals and source mix
 
 | Repository | TypeScript unresolved | Test | Sample/bench | Source | No local target | Unresolvable receiver | Unresolved import callee | Other reasons |
