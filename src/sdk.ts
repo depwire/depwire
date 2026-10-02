@@ -30,11 +30,14 @@ export type { UnresolvedImport, UnresolvedImportReason } from './parser/types.js
 /**
  * Flattens the per-file `unresolvedCalls` instrument across a parse
  * result. Reasons: 'unresolvable-receiver' | 'receiver-not-local'.
- * Populated for member-expression calls (`obj.method()`) whose receiver
- * could not be resolved to a real declared symbol without guessing.
+ * Populated for calls whose target cannot be proven without guessing.
  */
 export { aggregateUnresolvedCalls } from './parser/types.js';
 export type { UnresolvedCall, UnresolvedCallReason } from './parser/types.js';
+
+/** Flatten JavaScript export expressions rejected for lack of proof. */
+export { aggregateUnresolvedExports } from './parser/types.js';
+export type { UnresolvedExport } from './parser/types.js';
 
 /** Type-position names dropped because no project symbol was provable. */
 export { aggregateUnresolvedTypeRefs } from './parser/types.js';

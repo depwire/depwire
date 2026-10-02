@@ -16,6 +16,7 @@ export function canonicalParsedFile(file: ParsedFile, root = ''): ParsedFile {
   return { ...file, filePath: canonicalPath(file.filePath, root),
     symbols: file.symbols.map(n => canonicalNode(n, root)), edges: file.edges.map(e => canonicalEdge(e, root)),
     unresolvedImports: diagnostics(file.unresolvedImports), unresolvedCalls: diagnostics(file.unresolvedCalls),
+    unresolvedExports: diagnostics(file.unresolvedExports),
     unresolvedTypeRefs: diagnostics(file.unresolvedTypeRefs),
     wildcardReExports: file.wildcardReExports?.map(p => canonicalPath(p, root)),
     pendingSuperCalls: file.pendingSuperCalls?.map(c => ({ ...c, source: canonicalSymbolId(c.source, root), declaringClass: canonicalSymbolId(c.declaringClass, root) })),

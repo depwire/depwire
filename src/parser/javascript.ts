@@ -1,6 +1,6 @@
 import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser, UnresolvedCall } from './types.js';
 import { resolveImportPath } from './resolver.js';
 import { existsSync } from 'fs';
 import { join, dirname, extname } from 'path';
@@ -14,9 +14,12 @@ interface Context {
   currentScope: string[];
   blockCounters: number[];
   declaredSymbolIds: Set<string>;
-  pendingReferences: Array<{ source: string; name: string; kind: 'calls' | 'references'; line: number; scopeChain: string[] }>;
+  pendingReferences: Array<{ source: string; name: string; kind: 'calls' | 'references'; line: number; scopeChain: string[]; receiverClass?: string }>;
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   isJSX: boolean;
+  unresolvedCalls: UnresolvedCall[];
+  unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
+  exportTargets: Array<{ name: string; line: number }>;
 }
 
 export function parseJavaScriptFile(
@@ -40,15 +43,25 @@ export function parseJavaScriptFile(
     pendingReferences: [],
     imports: new Map(),
     isJSX: filePath.endsWith('.jsx'),
+    unresolvedCalls: [],
+    unresolvedExports: [],
+    exportTargets: [],
   };
   
   walkNode(tree.rootNode, context);
+  for (const target of context.exportTargets) {
+    const symbol = context.symbols.find(s => s.id === `${context.filePath}::${target.name}`);
+    if (symbol) symbol.exported = true;
+    else context.unresolvedExports.push({ fromFile: context.filePath, line: target.line, expression: target.name, reason: 'no-local-target' });
+  }
   resolvePendingReferences(context);
   
   return {
     filePath,
     symbols: context.symbols,
     edges: context.edges,
+    unresolvedCalls: context.unresolvedCalls,
+    unresolvedExports: context.unresolvedExports,
   };
 }
 
@@ -112,8 +125,13 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
     case 'export_statement':
       processExportStatement(node, context);
       break;
+    case 'assignment_expression':
+      processCommonJSAssignment(node, context);
+      if (processAssignedFunction(node, context)) return true;
+      break;
     case 'call_expression':
       processCallExpression(node, context);
+      processCommonJSObjectAssign(node, context);
       break;
     case 'new_expression':
       processNewExpression(node, context);
@@ -284,6 +302,9 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       || valueNode?.type === 'function_expression'
       || valueNode?.type === 'generator_function';
     const symbolId = `${context.filePath}::${scope ? `${scope}.` : ''}${name}`;
+    const assignedToExports = valueNode?.type === 'assignment_expression'
+      && !hasConditionalAncestor(valueNode)
+      && containsModuleExportsWrite(valueNode, context);
 
     context.symbols.push({
       id: symbolId,
@@ -292,7 +313,7 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       filePath: context.filePath,
       startLine: declarator.startPosition.row + 1,
       endLine: declarator.endPosition.row + 1,
-      exported,
+      exported: exported || !!assignedToExports,
       ...(scope ? { scope } : {}),
     });
     context.declaredSymbolIds.add(symbolId);
@@ -471,17 +492,145 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
 }
 
 function processExportStatement(node: Parser.SyntaxNode, context: Context): void {
-  // Handle module.exports and exports.x patterns
-  // Also handle ES module exports
-  
-  const declaration = findChildByType(node, 'lexical_declaration') || 
-                     findChildByType(node, 'variable_declaration') ||
-                     findChildByType(node, 'function_declaration') ||
-                     findChildByType(node, 'class_declaration');
-  
-  // The generic walker visits this declaration exactly once. Earlier this
-  // handler processed it eagerly and then recursion processed it again.
-  void declaration;
+  // Declarations are visited by the walker; a local export list needs a
+  // separate flag because its declaration may precede the export statement.
+  if (node.childForFieldName('source')) return;
+  const clause = findChildByType(node, 'export_clause');
+  if (!clause) return;
+  for (const specifier of clause.namedChildren) {
+    if (specifier.type !== 'export_specifier') continue;
+    const name = specifier.childForFieldName('name');
+    if (name) context.exportTargets.push({ name: nodeText(name, context), line: specifier.startPosition.row + 1 });
+  }
+}
+
+function isModuleExports(node: Parser.SyntaxNode, context: Context): boolean {
+  if (node.type !== 'member_expression') return false;
+  const object = node.childForFieldName('object');
+  const property = node.childForFieldName('property');
+  return !!object && !!property && nodeText(object, context) === 'module' && nodeText(property, context) === 'exports';
+}
+
+function commonJSExportTarget(node: Parser.SyntaxNode, context: Context): { kind: 'direct' | 'property' | 'computed'; name?: string } | null {
+  if (isModuleExports(node, context)) return { kind: 'direct' };
+  if (node.type === 'member_expression') {
+    const object = node.childForFieldName('object');
+    const property = node.childForFieldName('property');
+    if (object && property && (isModuleExports(object, context) || nodeText(object, context) === 'exports')) {
+      return { kind: 'property', name: nodeText(property, context) };
+    }
+  }
+  if (node.type === 'subscript_expression') {
+    const object = node.childForFieldName('object');
+    if (object && (isModuleExports(object, context) || nodeText(object, context) === 'exports')) return { kind: 'computed' };
+  }
+  return null;
+}
+
+function containsModuleExportsWrite(node: Parser.SyntaxNode, context: Context): boolean {
+  if (node.type !== 'assignment_expression') return false;
+  const left = node.childForFieldName('left');
+  const right = node.childForFieldName('right');
+  return !!left && (isModuleExports(left, context) || (!!right && containsModuleExportsWrite(right, context)));
+}
+
+function hasConditionalAncestor(node: Parser.SyntaxNode): boolean {
+  let ancestor: Parser.SyntaxNode | null = node.parent;
+  while (ancestor && ancestor.type !== 'program' && ancestor.type !== 'function_declaration' && ancestor.type !== 'function_expression') {
+    if (ancestor.type === 'if_statement' || ancestor.type === 'ternary_expression') return true;
+    ancestor = ancestor.parent;
+  }
+  return false;
+}
+
+function exportValue(node: Parser.SyntaxNode, context: Context, line: number): void {
+  if (node.type === 'identifier') {
+    context.exportTargets.push({ name: nodeText(node, context), line });
+  } else if (node.type === 'object') {
+    for (const property of node.namedChildren) {
+      if (property.type === 'shorthand_property_identifier') {
+        context.exportTargets.push({ name: nodeText(property, context), line: property.startPosition.row + 1 });
+      } else if (property.type === 'pair') {
+        const key = property.childForFieldName('key');
+        const value = property.childForFieldName('value');
+        if (value && key && ['function_expression', 'arrow_function'].includes(value.type)) {
+          const name = nodeText(key, context).replace(/^['"]|['"]$/g, '');
+          if (/^[A-Za-z_$][\w$]*$/.test(name)) {
+            const id = `${context.filePath}::${name}`;
+            if (!context.declaredSymbolIds.has(id)) {
+              context.symbols.push({ id, name, kind: 'function', filePath: context.filePath,
+                startLine: value.startPosition.row + 1, endLine: value.endPosition.row + 1, exported: true });
+              context.declaredSymbolIds.add(id);
+            }
+          }
+        } else if (value) exportValue(value, context, property.startPosition.row + 1);
+      } else {
+        context.unresolvedExports.push({ fromFile: context.filePath, line: property.startPosition.row + 1, expression: nodeText(property, context), reason: 'unsupported-property' });
+      }
+    }
+  } else if (node.type === 'call_expression' && nodeText(node.childForFieldName('function')!, context) === 'require') {
+    const arg = node.childForFieldName('arguments')?.namedChildren[0];
+    if (arg?.type === 'string') {
+      const path = resolveJavaScriptImport(nodeText(arg, context).slice(1, -1), context.filePath, context.projectRoot);
+      if (path) context.edges.push({ source: `${context.filePath}::__file__`, target: `${path}::__file__`, kind: 'imports', filePath: context.filePath, line });
+      else context.unresolvedExports.push({ fromFile: context.filePath, line, expression: nodeText(node, context), reason: 'require-not-local' });
+    } else context.unresolvedExports.push({ fromFile: context.filePath, line, expression: nodeText(node, context), reason: 'computed-require' });
+  } else {
+    context.unresolvedExports.push({ fromFile: context.filePath, line, expression: nodeText(node, context), reason: 'no-provable-symbol' });
+  }
+}
+
+function processCommonJSAssignment(node: Parser.SyntaxNode, context: Context): void {
+  const left = node.childForFieldName('left');
+  const right = node.childForFieldName('right');
+  if (!left || !right) return;
+  const line = node.startPosition.row + 1;
+  const target = commonJSExportTarget(left, context);
+  if (!target) return;
+  const conditional = right.type === 'ternary_expression' || hasConditionalAncestor(node);
+  if (target.kind === 'computed' || conditional) {
+    context.unresolvedExports.push({ fromFile: context.filePath, line, expression: nodeText(node, context), reason: target.kind === 'computed' ? 'computed-property' : 'conditional-assignment' });
+    return;
+  }
+  if (right.type !== 'function_expression' && right.type !== 'arrow_function') exportValue(right, context, line);
+}
+
+function processAssignedFunction(node: Parser.SyntaxNode, context: Context): boolean {
+  const left = node.childForFieldName('left');
+  const right = node.childForFieldName('right');
+  if (!left || !right || !['function_expression', 'arrow_function'].includes(right.type)) return false;
+  const lhs = nodeText(left, context).replace('.prototype.', '.');
+  const named = right.childForFieldName('name');
+  const exportTarget = commonJSExportTarget(left, context);
+  const exported = exportTarget?.kind === 'direct' || exportTarget?.kind === 'property';
+  if (!exported || hasConditionalAncestor(node)) return false;
+  const name = exportTarget?.kind === 'direct' ? (named ? nodeText(named, context) : 'default')
+    : exportTarget?.name ?? lhs;
+  if (!/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/.test(name)) return false;
+  const id = `${context.filePath}::${name}`;
+  if (!context.declaredSymbolIds.has(id)) {
+    context.symbols.push({ id, name: name.split('.').at(-1)!, kind: 'function', filePath: context.filePath,
+      startLine: right.startPosition.row + 1, endLine: right.endPosition.row + 1,
+      exported, ...(name.includes('.') ? { scope: name.slice(0, name.lastIndexOf('.')) } : {}) });
+    context.declaredSymbolIds.add(id);
+  }
+  context.currentScope.push(name);
+  withNamedScopeBody(context, () => {
+    const body = right.childForFieldName('body') ?? right.lastNamedChild;
+    if (body) walkNode(body, context, body.type === 'statement_block');
+  });
+  context.currentScope.pop();
+  return true;
+}
+
+function processCommonJSObjectAssign(node: Parser.SyntaxNode, context: Context): void {
+  const fn = node.childForFieldName('function');
+  const object = fn?.childForFieldName('object');
+  const property = fn?.childForFieldName('property');
+  if (fn?.type !== 'member_expression' || !object || !property || nodeText(object, context) !== 'Object' || nodeText(property, context) !== 'assign') return;
+  const args = node.childForFieldName('arguments')?.namedChildren;
+  if (!args || args.length < 2 || !isModuleExports(args[0], context)) return;
+  for (const arg of args.slice(1)) exportValue(arg, context, node.startPosition.row + 1);
 }
 
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
@@ -489,24 +638,37 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   if (!functionNode) return;
   
   let calleeName: string | null = null;
+  let receiverClass: string | undefined;
   
   if (functionNode.type === 'identifier') {
     calleeName = nodeText(functionNode, context);
+    if (hasUnmodeledParameter(node, calleeName, context)) {
+      context.unresolvedCalls.push({ fromFile: context.filePath, callee: calleeName, reason: 'local-binding-not-modeled' });
+      return;
+    }
   } else if (functionNode.type === 'member_expression') {
     const property = functionNode.childForFieldName('property');
-    if (property) {
-      calleeName = nodeText(property, context);
+    const receiver = functionNode.childForFieldName('object');
+    const currentClass = context.currentScope.find(scope =>
+      context.symbols.some(s => s.id === `${context.filePath}::${scope}` && s.kind === 'class'));
+    if (!property || !receiver || nodeText(receiver, context) !== 'this' || !currentClass) {
+      context.unresolvedCalls.push({ fromFile: context.filePath, callee: nodeText(functionNode, context), reason: 'unresolvable-receiver' });
+      return;
     }
+    calleeName = nodeText(property, context);
+    receiverClass = currentClass;
   }
   
-  if (!calleeName) return;
+  if (!calleeName) {
+    context.unresolvedCalls.push({ fromFile: context.filePath, callee: nodeText(functionNode, context), reason: 'no-local-target' });
+    return;
+  }
   
   // Skip common builtins
   const builtins = ['console', 'require', 'setTimeout', 'setInterval', 'parseInt', 'parseFloat', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean'];
   if (builtins.includes(calleeName)) return;
   
-  const callerId = getCurrentSymbolId(context);
-  if (!callerId) return;
+  const callerId = getCurrentSymbolId(context) ?? `${context.filePath}::__file__`;
   
   context.pendingReferences.push({
     source: callerId,
@@ -514,7 +676,20 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     kind: 'calls',
     line: node.startPosition.row + 1,
     scopeChain: [...context.currentScope],
+    ...(receiverClass ? { receiverClass } : {}),
   });
+}
+
+function hasUnmodeledParameter(node: Parser.SyntaxNode, name: string, context: Context): boolean {
+  let parent = node.parent;
+  while (parent && parent.type !== 'program') {
+    if (['function_declaration', 'function_expression', 'arrow_function', 'method_definition'].includes(parent.type)) {
+      const params = parent.childForFieldName('parameters');
+      if (params && new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(nodeText(params, context))) return true;
+    }
+    parent = parent.parent;
+  }
+  return false;
 }
 
 function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
@@ -524,8 +699,7 @@ function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
   
   const className = nodeText(constructorNode, context);
   
-  const callerId = getCurrentSymbolId(context);
-  if (!callerId) return;
+  const callerId = getCurrentSymbolId(context) ?? `${context.filePath}::__file__`;
   
   context.pendingReferences.push({
     source: callerId,
@@ -634,8 +808,17 @@ function resolveSymbolAt(name: string, scopeChain: string[], context: Context): 
 
 function resolvePendingReferences(context: Context): void {
   for (const pending of context.pendingReferences) {
-    const target = resolveSymbolAt(pending.name, pending.scopeChain, context);
-    if (!target) continue;
+    const target = pending.receiverClass
+      ? `${context.filePath}::${pending.receiverClass}.${pending.name}`
+      : resolveSymbolAt(pending.name, pending.scopeChain, context);
+    if (!target || (pending.receiverClass && !context.declaredSymbolIds.has(target))) {
+      context.unresolvedCalls.push({ fromFile: context.filePath, callee: pending.name, reason: pending.receiverClass ? 'receiver-not-local' : 'no-local-target' });
+      continue;
+    }
+    // The graph stores one relationship per source/target pair. An import from
+    // the file node already proves this dependency; a later call from that
+    // same file node must not relabel the graph relationship as a call.
+    if (context.edges.some(edge => edge.source === pending.source && edge.target === target && edge.kind === 'imports')) continue;
     context.edges.push({
       source: pending.source,
       target,

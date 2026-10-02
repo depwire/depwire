@@ -10,7 +10,7 @@ export function scanDirectory(
   const files: string[] = [];
   
   try {
-    const entries = readdirSync(baseDir);
+    const entries = readdirSync(baseDir).sort();
     
     for (const entry of entries) {
       const fullPath = join(baseDir, entry);
