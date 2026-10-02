@@ -1,92 +1,84 @@
 import type { Graph } from "graphology";
 import path from "node:path";
-import type { DeadSymbol, ConfidenceLevel } from "./types.js";
+import type { DeadSymbol, ConfidenceLevel, ConfidenceReasonCode } from "./types.js";
 
 export function classifyDeadSymbols(
   symbols: DeadSymbol[],
-  graph: Graph
+  _graph: Graph
 ): DeadSymbol[] {
   return symbols.map((symbol) => {
-    const confidence = calculateConfidence(symbol, graph);
-    const reason = generateReason(symbol, confidence);
+    const { level, reasonCode } = calculateConfidence(symbol);
+    const reason = generateReason(reasonCode);
 
     return {
       ...symbol,
-      confidence,
+      confidence: level,
       reason,
+      reasonCode,
     };
   });
 }
 
 function calculateConfidence(
-  symbol: DeadSymbol,
-  graph: Graph
-): ConfidenceLevel {
-  if (!symbol.exported && symbol.dependents === 0) {
-    return "high";
-  }
-
-  if (symbol.exported && symbol.dependents === 0 && !isBarrelFile(symbol.file)) {
-    return "high";
-  }
-
-  if (symbol.exported && symbol.dependents === 0 && isBarrelFile(symbol.file)) {
-    return "medium";
-  }
-
-  const dependents = getSymbolDependents(symbol, graph);
-  if (dependents.length === 1 && isTestFile(dependents[0])) {
-    return "medium";
-  }
-
-  if (symbol.exported && isPackageEntryPoint(symbol.file)) {
-    return "low";
-  }
-
+  symbol: DeadSymbol
+): { level: ConfidenceLevel; reasonCode: ConfidenceReasonCode } {
+  // LOW: type-only symbols are consumed in type position; the graph may or
+  // may not capture that usage via references-type / import type edges.
   if (
-    (symbol.kind === "interface" || symbol.kind === "type") &&
-    symbol.dependents === 0
+    symbol.kind === "interface" ||
+    symbol.kind === "type" ||
+    symbol.kind === "type_alias"
   ) {
-    return "low";
+    return { level: "low", reasonCode: "type-only-symbol" };
   }
 
-  if (isLikelyDynamicUsage(symbol)) {
-    return "low";
+  // LOW: constructors are invoked via `new ClassName()`, which creates an
+  // edge to the class node rather than the constructor method node.
+  if (symbol.kind === "method" && symbol.name === "constructor") {
+    return { level: "low", reasonCode: "constructor-via-class" };
   }
 
-  return "medium";
+  // LOW: path-name heuristic, not evidence of framework invocation. A
+  // conventional directory name only reduces confidence; it does not prove
+  // usage, add a graph edge, or remove this symbol from the candidate set.
+  if (isLikelyDynamicUsage(symbol.file)) {
+    return { level: "low", reasonCode: "dynamic-dispatch" };
+  }
+
+  // MEDIUM: barrel files intentionally re-export symbols for external
+  // consumers; the graph cannot see imports that use the barrel.
+  if (symbol.exported && isBarrelFile(symbol.file)) {
+    return { level: "medium", reasonCode: "barrel-export" };
+  }
+
+  // MEDIUM: any other exported symbol with zero dependents may be imported
+  // by code outside the parsed set (tests omitted, downstream packages, etc.).
+  if (symbol.exported) {
+    return { level: "medium", reasonCode: "exported-no-dependents" };
+  }
+
+  // HIGH: internal-only symbol with zero dependents and none of the above
+  // plausible hidden invocation paths.
+  return { level: "high", reasonCode: "not-exported-zero-dependents" };
 }
 
-function generateReason(symbol: DeadSymbol, confidence: ConfidenceLevel): string {
-  if (!symbol.exported && symbol.dependents === 0) {
-    return "Not exported, zero references";
+function generateReason(reasonCode: ConfidenceReasonCode): string {
+  switch (reasonCode) {
+    case "not-exported-zero-dependents":
+      return "Not marked exported; zero dependents in the parsed graph";
+    case "exported-no-dependents":
+      return "Exported, zero dependents in the parsed graph (external consumers may exist)";
+    case "barrel-export":
+      return "Exported from barrel file, zero dependents (might be used externally)";
+    case "type-only-symbol":
+      return "Type-only symbol (might be used via import type)";
+    case "constructor-via-class":
+      return "Constructor (invoked via new ClassName, not this symbol)";
+    case "dynamic-dispatch":
+      return "Path-name heuristic: framework-style directory; invocation is unproven, so confidence is reduced";
+    default:
+      return "Potentially unused";
   }
-
-  if (symbol.exported && symbol.dependents === 0 && !isBarrelFile(symbol.file)) {
-    return "Exported, zero dependents";
-  }
-
-  if (symbol.exported && symbol.dependents === 0 && isBarrelFile(symbol.file)) {
-    return "Exported from barrel file, zero dependents (might be used externally)";
-  }
-
-  if (confidence === "medium") {
-    return "Low usage, might be dead";
-  }
-
-  if (confidence === "low") {
-    if (symbol.kind === "interface" || symbol.kind === "type") {
-      return "Type with zero dependents (might be used via import type)";
-    }
-    if (isPackageEntryPoint(symbol.file)) {
-      return "Exported from package entry point (might be public API)";
-    }
-    if (isLikelyDynamicUsage(symbol)) {
-      return "In dynamic-use pattern directory (might be auto-loaded)";
-    }
-  }
-
-  return "Potentially unused";
 }
 
 function isBarrelFile(filePath: string): boolean {
@@ -94,27 +86,7 @@ function isBarrelFile(filePath: string): boolean {
   return basename === "index.ts" || basename === "index.js";
 }
 
-function isTestFile(filePath: string): boolean {
-  return (
-    filePath.includes("__tests__/") ||
-    filePath.includes(".test.") ||
-    filePath.includes(".spec.") ||
-    filePath.includes("/test/") ||
-    filePath.includes("/tests/")
-  );
-}
-
-function isPackageEntryPoint(filePath: string): boolean {
-  return (
-    filePath.includes("/src/index.") ||
-    filePath.includes("/lib/index.") ||
-    filePath.endsWith("/index.ts") ||
-    filePath.endsWith("/index.js")
-  );
-}
-
-function isLikelyDynamicUsage(symbol: DeadSymbol): boolean {
-  const filePath = symbol.file;
+function isLikelyDynamicUsage(filePath: string): boolean {
   return (
     filePath.includes("/routes/") ||
     filePath.includes("/pages/") ||
@@ -123,24 +95,4 @@ function isLikelyDynamicUsage(symbol: DeadSymbol): boolean {
     filePath.includes("/handlers/") ||
     filePath.includes("/api/")
   );
-}
-
-function getSymbolDependents(symbol: DeadSymbol, graph: Graph): string[] {
-  const dependents: string[] = [];
-
-  for (const node of graph.nodes()) {
-    const attrs = graph.getNodeAttributes(node);
-    if (attrs.file === symbol.file && attrs.name === symbol.name) {
-      const inNeighbors = graph.inNeighbors(node);
-      for (const neighbor of inNeighbors) {
-        const neighborAttrs = graph.getNodeAttributes(neighbor);
-        if (neighborAttrs.file) {
-          dependents.push(neighborAttrs.file);
-        }
-      }
-      break;
-    }
-  }
-
-  return dependents;
 }

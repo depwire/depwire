@@ -271,7 +271,7 @@ export function getToolsList(): ToolDefinition[] {
     },
     {
       name: "find_dead_code",
-      description: "Find potentially dead code — symbols that are defined but never referenced anywhere in the codebase. Returns symbols categorized by confidence level (high, medium, low). High confidence means definitely unused. Use this to identify cleanup opportunities.",
+      description: "Find potentially dead code — symbols that are defined but never referenced anywhere in the codebase. Returns symbols categorized by confidence level (high, medium, low). High confidence means strong evidence the symbol is unused; low confidence means the symbol is in a category the graph models weakly (types, constructors, framework-invoked code). Use this to identify cleanup opportunities.",
       inputSchema: {
         type: "object",
         properties: {
@@ -1683,6 +1683,7 @@ function handleFindDeadCode(state: DepwireState, confidence: string): any {
         dependents: s.dependents,
         confidence: s.confidence,
         reason: s.reason,
+        reasonCode: s.reasonCode,
       })),
       summary: `Found ${report.deadSymbols} potentially dead symbols (${report.byConfidence.high} high, ${report.byConfidence.medium} medium, ${report.byConfidence.low} low confidence) out of ${report.totalSymbols} total symbols (${report.deadPercentage.toFixed(1)}% dead code).`,
     };

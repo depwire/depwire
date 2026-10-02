@@ -56,9 +56,9 @@ export function generateDeadCode(
   
   output += `Total symbols analyzed: **${formatNumber(report.totalSymbols ?? 0)}**\n\n`;
   output += `Potentially dead symbols: **${formatNumber(report.deadSymbols ?? 0)}** (${(report.deadPercentage ?? 0).toFixed(1)}%)\n\n`;
-  output += `- 🔴 High confidence (definitely dead): **${report.byConfidence?.high ?? 0}**\n`;
-  output += `- 🟡 Medium confidence (probably dead): **${report.byConfidence?.medium ?? 0}**\n`;
-  output += `- ⚪ Low confidence (might be dead): **${report.byConfidence?.low ?? 0}**\n\n`;
+  output += `- 🔴 High confidence: **${report.byConfidence?.high ?? 0}**\n`;
+  output += `- 🟡 Medium confidence: **${report.byConfidence?.medium ?? 0}**\n`;
+  output += `- ⚪ Low confidence: **${report.byConfidence?.low ?? 0}**\n\n`;
 
   const estimatedLines = (report.deadSymbols ?? 0) * 18;
   output += `Estimated dead code: **~${formatNumber(estimatedLines)} lines**\n\n`;
@@ -68,7 +68,7 @@ export function generateDeadCode(
   if (symbolsByConfidence.high.length > 0) {
     output += generateConfidenceSection(
       "High Confidence",
-      "definitely dead",
+      "high confidence",
       symbolsByConfidence.high,
       projectRoot
     );
@@ -77,7 +77,7 @@ export function generateDeadCode(
   if (symbolsByConfidence.medium.length > 0) {
     output += generateConfidenceSection(
       "Medium Confidence",
-      "probably dead",
+      "medium confidence",
       symbolsByConfidence.medium,
       projectRoot
     );
@@ -86,7 +86,7 @@ export function generateDeadCode(
   if (symbolsByConfidence.low.length > 0) {
     output += generateConfidenceSection(
       "Low Confidence",
-      "might be dead",
+      "low confidence",
       symbolsByConfidence.low,
       projectRoot
     );
