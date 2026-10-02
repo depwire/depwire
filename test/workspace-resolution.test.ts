@@ -70,4 +70,30 @@ describe('workspace package + barrel re-export resolution (#12/#14)', () => {
       target: 'packages/pkg-root/internal.ts::rootValue',
     }));
   });
+  it('resolves whole-file namespace calls through a unique exported barrel function', async () => {
+    const files = await parseProject(fixtureDir, { useCache: false });
+    const file = files.find(entry => entry.filePath === 'packages/pkg-a/src/namespace.ts')!;
+    expect(file.edges).toContainEqual(expect.objectContaining({
+      source: 'packages/pkg-a/src/namespace.ts::run',
+      target: 'packages/pkg-b/src/helper.ts::helperFn',
+      kind: 'calls',
+    }));
+    expect(file.unresolvedCalls?.some(call => call.callee === 'tools.helperFn')).toBe(false);
+    expect(file.edges).toContainEqual(expect.objectContaining({
+      source: 'packages/pkg-a/src/namespace.ts::runAlternate',
+      target: 'packages/pkg-b/src/alternate.ts::helperFn',
+      kind: 'calls',
+    }));
+    const barrel = files.find(entry => entry.filePath === 'packages/pkg-b/src/namespace-barrel.ts')!;
+    expect(barrel.wildcardReExports).toEqual(['packages/pkg-b/src/helper.ts']);
+    expect(file.edges.some(edge => edge.kind === 'calls' && edge.target.endsWith('::privateFn'))).toBe(false);
+    expect(file.unresolvedCalls).toContainEqual(expect.objectContaining({ callee: 'tools.privateFn', reason: 'unresolvable-receiver' }));
+    expect(file.unresolvedCalls).toContainEqual(expect.objectContaining({ callee: 'tools.alternate.privateFn', reason: 'unresolvable-receiver' }));
+  });
+  it('keeps ambiguous wildcard namespace calls unresolved', async () => {
+    const files = await parseProject(fixtureDir, { useCache: false });
+    const file = files.find(entry => entry.filePath === 'packages/pkg-a/src/ambiguous.ts')!;
+    expect(file.edges.some(edge => edge.kind === 'calls' && edge.source === 'packages/pkg-a/src/ambiguous.ts::run')).toBe(false);
+    expect(file.unresolvedCalls).toContainEqual(expect.objectContaining({ callee: 'ambiguous.helperFn', reason: 'unresolvable-receiver' }));
+  });
 });

@@ -20,7 +20,7 @@ interface Context {
   // whose target must match a real declared symbol at some scope level (this./super. member
   // calls) -- these get NO edge (recorded unresolved instead) if no level matches. Bare calls
   // and constructors are also buffered until a real value declaration supports the edge.
-  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
+  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super', staticClass?: string}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
@@ -103,6 +103,8 @@ const LEXICAL_SCOPE_TYPES = new Set([
 ]);
 
 function walkNode(node: any, context: Context, namedScopeBody = false): void {
+  // `typeof import('pkg')` is a type query, not a runtime import call.
+  if (node.type === 'type_query') return;
   if (!namedScopeBody && LEXICAL_SCOPE_TYPES.has(node.type)) {
     const counterIndex = context.blockCounters.length - 1;
     const blockIndex = context.blockCounters[counterIndex]++;
@@ -623,13 +625,17 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
       if (grammarExtendsClause && !extendsClause) {
         const value = grammarExtendsClause.childForFieldName('value') ?? grammarExtendsClause.lastNamedChild;
         if (value) {
-          context.edges.push({
-            source: symbolId,
-            target: resolveTypeTarget(value.text, context),
-            kind: 'inherits',
-            filePath: context.filePath,
-            line: value.startPosition.row + 1,
-          });
+          if (value.type === 'identifier' || value.type === 'member_expression') {
+            context.edges.push({
+              source: symbolId,
+              target: resolveTypeTarget(value.text, context),
+              kind: 'inherits',
+              filePath: context.filePath,
+              line: value.startPosition.row + 1,
+            });
+          } else {
+            recordUnresolvedTypeRef(context, value.text, 'unsupported-target-kind');
+          }
         }
       }
       
@@ -659,6 +665,12 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
       if (grammarImplementsClause && !implementsClause) {
         queueTypeReferences(grammarImplementsClause, symbolId, context, true);
       }
+      // An extends expression can execute a factory call (`extends mixin()`)
+      // or contain nested calls. The class handler owns this subtree, so the
+      // generic walker will not visit it unless we do so explicitly.
+      context.currentScope.push(name);
+      walkNode(child, context);
+      context.currentScope.pop();
     }
   }
   
@@ -722,19 +734,13 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     }
   }
   
-  // Class-level decorators (e.g. @Component({...})) may live as direct
-  // children of the class node, or as siblings under an export_statement
-  // wrapper — walk both so decorator argument call expressions are reached.
+  // Walk decorators owned by the class node. Sibling decorators are already
+  // visited by the generic walk of the parent; visiting them here too records
+  // each call twice (notably @Module() on exported Nest classes).
   const classLevelDecorators: Parser.SyntaxNode[] = [];
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child && child.type === 'decorator') classLevelDecorators.push(child);
-  }
-  if (node.parent) {
-    for (let i = 0; i < node.parent.childCount; i++) {
-      const sibling = node.parent.child(i);
-      if (sibling && sibling.type === 'decorator') classLevelDecorators.push(sibling);
-    }
   }
   for (const decorator of classLevelDecorators) {
     walkNode(decorator, context);
@@ -840,7 +846,10 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
     endLine,
     exported: false,
     scope: className,
-    ...ambientMetadata(context),
+    ...((hasDirectToken(node, 'static') || context.ambientDepth > 0) ? { metadata: {
+      ...(hasDirectToken(node, 'static') ? { static: true } : {}),
+      ...(context.ambientDepth > 0 ? { ambient: true } : {}),
+    } } : {}),
   });
 
   collectCallableTypeReferences(node, symbolId, context);
@@ -848,6 +857,10 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
   // Enter method scope
   context.currentScope.push(name);
   withNamedScopeBody(context, () => {
+    // Parameter decorators and default values execute calls too. The class
+    // walker owns method subtrees, so generic recursion never sees these.
+    const parameters = node.childForFieldName('parameters');
+    if (parameters) walkNode(parameters, context);
     const body = node.childForFieldName('body');
     if (body) walkNode(body, context, true);
   });
@@ -865,6 +878,9 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
   const endLine = node.endPosition.row + 1;
   
   const symbolId = `${context.filePath}::${className}.${name}`;
+  const value = node.childForFieldName('value');
+  const isStatic = hasDirectToken(node, 'static');
+  const isCallable = value?.type === 'arrow_function' || value?.type === 'function_expression';
   
   pushSymbol(context, {
     id: symbolId,
@@ -875,7 +891,11 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
     endLine,
     exported: false,
     scope: className,
-    ...ambientMetadata(context),
+    ...((isStatic || context.ambientDepth > 0) ? { metadata: {
+      ...(isStatic ? { static: true } : {}),
+      ...(isStatic && isCallable ? { callable: true } : {}),
+      ...(context.ambientDepth > 0 ? { ambient: true } : {}),
+    } } : {}),
   });
   queueTypeReferences(node.childForFieldName('type'), symbolId, context);
 }
@@ -928,6 +948,8 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
           collectCallableTypeReferences(value, symbolId, context);
           context.currentScope.push(name);
           withNamedScopeBody(context, () => {
+            const parameters = value.childForFieldName('parameters');
+            if (parameters) walkNode(parameters, context);
             const body = value.childForFieldName('body');
             if (body) {
               walkNode(body, context, body.type === 'statement_block');
@@ -1285,13 +1307,11 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     // Locate the clause by node type — `export type { ... } from` shifts the
     // export_clause by one slot, same issue as Bug 1 for imports.
     const exportClause = findChildByType(node, 'export_clause');
-    // `export * from './x'` has a bare `*` token child and no export_clause,
-    // no namespace_export. `export * as ns from './x'` has a namespace_export
-    // child instead. Both are wildcard re-exports for chain-following
-    // purposes -- `ns.something` still ultimately resolves through the same
-    // barrel, so both are recorded as wildcard candidates.
+    // `export * from './x'` forwards every exported name. `export * as ns`
+    // forwards only `ns`; treating it as a wildcard makes unrelated names
+    // from that module appear exported and creates ambiguous or wrong edges.
     const namespaceExport = findChildByType(node, 'namespace_export');
-    const isWildcard = !exportClause && (namespaceExport !== null || hasWildcardToken(node));
+    const isWildcard = !exportClause && !namespaceExport && hasWildcardToken(node);
 
     if (exportClause && resolvedPath) {
       const exportedNames: Array<{ localName: string; sourceName: string }> = [];
@@ -1348,6 +1368,19 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     } else if (exportClause && !resolvedPath) {
       const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
       context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
+    } else if (namespaceExport) {
+      if (resolvedPath) {
+        const name = findChildByType(namespaceExport, 'identifier')?.text;
+        if (name) {
+          const line = node.startPosition.row + 1;
+          const sourceId = `${context.filePath}::${name}`;
+          pushSymbol(context, { id: sourceId, name, kind: 'export', filePath: context.filePath, startLine: line, endLine: node.endPosition.row + 1, exported: true });
+          context.edges.push({ source: sourceId, target: `${resolvedPath}::__file__`, kind: 'imports', filePath: context.filePath, line });
+        }
+      } else {
+        const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
+        context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
+      }
     } else if (isWildcard) {
       if (resolvedPath) {
         context.wildcardReExports.push(resolvedPath);
@@ -1483,7 +1516,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     const importedTarget = resolveQualifiedImportTarget(qualifiedName, context);
     const localNamespace = context.declaredSymbols.get(`${context.filePath}::${rootName}`)
       ?.some((declaration) => declaration.kind === 'module' || declaration.metadata?.namespace === true);
-    if (importedTarget || localNamespace) {
+    const localClass = context.declaredSymbols.get(`${context.filePath}::${rootName}`)
+      ?.some((declaration) => declaration.kind === 'class');
+    if (importedTarget || localNamespace || localClass) {
       if (hasUnmodeledLexicalBinding(node, rootName)) {
         recordUnresolvedCall(context, qualifiedName, 'local-binding-not-modeled');
         return;
@@ -1505,7 +1540,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
           callee: qualifiedName,
           line,
         });
-      } else if (isSupportedLocalCallTarget(targetId, 'call', context)) {
+      } else if (targetId && (localClass
+        ? context.declaredSymbols.get(targetId)?.some(isStaticCallableDeclaration)
+        : isSupportedLocalCallTarget(targetId, 'call', context))) {
         context.edges.push({
           source: currentSymbolId,
           target: targetId,
@@ -1513,6 +1550,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
           filePath: context.filePath,
           line,
         });
+      } else if (localClass && targetId &&
+        context.declaredSymbols.get(targetId)?.some(symbol => (symbol.kind === 'method' || symbol.kind === 'property') && !isStaticCallableDeclaration(symbol))) {
+        recordUnresolvedCall(context, qualifiedName, 'receiver-not-local');
       } else {
         context.unresolvedCallEdges.push({
           source: currentSymbolId,
@@ -1520,6 +1560,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
           line,
           scopeChain: [...context.currentScope],
           callKind: 'call',
+          ...(localClass ? { staticClass: rootName } : {}),
         });
       }
       return;
@@ -1813,6 +1854,11 @@ function isSupportedLocalCallTarget(
   return declarations.some((declaration) => supportedKinds.has(declaration.kind));
 }
 
+function isStaticCallableDeclaration(symbol: SymbolNode): boolean {
+  return symbol.metadata?.static === true &&
+    (symbol.kind === 'method' || (symbol.kind === 'property' && symbol.metadata?.callable === true));
+}
+
 function unsupportedLocalCallReason(
   targetId: string,
   context: Context,
@@ -1868,6 +1914,17 @@ function resolveUnresolvedCallEdges(context: Context): void {
     // Temporarily set the scope chain to what it was when the call was made
     const savedScope = context.currentScope;
     context.currentScope = unresolved.scopeChain;
+
+    if (unresolved.staticClass) {
+      const targetId = resolveLocalCallTarget(unresolved.functionName, context);
+      context.currentScope = savedScope;
+      if (context.declaredSymbols.get(targetId)?.some(isStaticCallableDeclaration)) {
+        context.edges.push({ source: unresolved.source, target: targetId, kind: 'calls', filePath: context.filePath, line: unresolved.line });
+      } else {
+        context.unresolvedCalls.push({ fromFile: context.filePath, callee: unresolved.functionName, reason: unsupportedLocalCallReason(targetId, context) });
+      }
+      continue;
+    }
 
     if (unresolved.scopedOnly) {
       // this./super. member call, buffered because its target wasn't declared yet at

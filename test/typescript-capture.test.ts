@@ -57,4 +57,33 @@ describe('TypeScript export and call evidence', () => {
     const typeEdge = graph.edge('calls.ts::typed', 'calls.ts::TargetClass')!;
     expect(graph.getEdgeAttribute(typeEdge, 'kind')).toBe('references-type');
   });
+  it('records parameter decorator and default calls once, without duplicating class decorators', async () => {
+    const file = (await fixture())('decorators.ts');
+    const calls = file.edges.filter(e => e.kind === 'calls' && e.target === 'decorators.ts::target');
+    expect(calls.map(e => e.line).sort((a, b) => a - b)).toEqual([4, 6, 7, 7, 8, 16]);
+    expect(calls.filter(e => e.line === 7).every(e => e.source === 'decorators.ts::Decorated.method')).toBe(true);
+    expect(file.edges).toContainEqual(expect.objectContaining({ source: 'decorators.ts::Derived', target: 'decorators.ts::mixin', kind: 'calls', line: 13 }));
+    expect(file.edges.some(e => e.kind === 'inherits' && e.target === 'decorators.ts::mixin()')).toBe(false);
+    expect(file.unresolvedTypeRefs).toContainEqual(expect.objectContaining({ typeName: 'mixin()', reason: 'unsupported-target-kind' }));
+    expect(file.unresolvedCalls?.some(c => c.callee === 'import')).toBe(false);
+    expect(file.edges).toContainEqual(expect.objectContaining({ source: 'decorators.ts::withDefault', target: 'decorators.ts::target', kind: 'calls', line: 16 }));
+  });
+  it('resolves only proven static class member calls across a named re-export', async () => {
+    const file = (await fixture())('static.ts');
+    expect(file.edges).toContainEqual(expect.objectContaining({ source: 'static.ts::__file__', target: 'static-target.ts::Worker.run', kind: 'calls', line: 5 }));
+    expect(file.edges).toContainEqual(expect.objectContaining({ source: 'static.ts::__file__', target: 'static-target.ts::Worker.run', kind: 'calls', line: 6 }));
+    expect(file.edges).toContainEqual(expect.objectContaining({ source: 'static.ts::__file__', target: 'static.ts::Local.run', kind: 'calls', line: 15 }));
+    expect(file.edges.some(edge => edge.kind === 'calls' && edge.target.endsWith('.instance'))).toBe(false);
+    expect(file.unresolvedCalls).toContainEqual(expect.objectContaining({ callee: 'Worker.instance', reason: 'unresolvable-receiver' }));
+    expect(file.unresolvedCalls).toContainEqual(expect.objectContaining({ callee: 'Local.instance', reason: 'receiver-not-local' }));
+    expect(file.unresolvedCalls).toContainEqual(expect.objectContaining({ callee: 'Hidden.run', reason: 'unresolvable-receiver' }));
+  });
+  it('resolves forward static methods and arrow fields with a class receiver', async () => {
+    const file = (await fixture())('static-forward.ts');
+    for (const target of ['static-forward.ts::Local.later', 'static-forward.ts::Local.field']) {
+      expect(file.edges).toContainEqual(expect.objectContaining({ source: 'static-forward.ts::Local.first', target, kind: 'calls' }));
+    }
+    expect(file.edges).toContainEqual(expect.objectContaining({ source: 'static-forward.ts::__file__', target: 'static-target.ts::Worker.field', kind: 'calls' }));
+    expect(file.unresolvedCalls?.some(call => /Local\.(later|field)|Worker\.field/.test(call.callee))).toBe(false);
+  });
 });

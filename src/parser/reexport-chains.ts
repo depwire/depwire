@@ -204,7 +204,7 @@ export function finalizeTypeReferences(parsedFiles: ParsedFile[]): {
  * ambiguity rather than silently keeping whichever happened to be visited
  * first.
  */
-function searchWildcardChain(
+export function searchWildcardChain(
   startFile: string,
   targetName: string,
   byFile: Map<string, ParsedFile>,
