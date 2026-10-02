@@ -692,6 +692,19 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     for (let i = 0; i < body.childCount; i++) {
       const child = body.child(i);
       if (!child) continue;
+
+      if (child.type === 'decorator') {
+        // In the TypeScript grammar a member decorator is a sibling directly
+        // before its member, not a child of method_definition/field_definition.
+        let next = i + 1;
+        while (body.child(next)?.type === 'decorator') next++;
+        const member = body.child(next);
+        const name = member?.childForFieldName('name')?.text;
+        const source = name && `${context.filePath}::${context.currentScope.join('.')}.${name}`;
+        if (source && context.declaredSymbolIds.has(source)) context.currentScope.push(name!);
+        walkNode(child, context);
+        if (source && context.declaredSymbolIds.has(source)) context.currentScope.pop();
+      }
       
       if (child.type === 'public_field_definition' || child.type === 'field_definition') {
         const value = child.childForFieldName('value');

@@ -37,6 +37,7 @@ describe('TypeScript export and call evidence', () => {
     const incoming = file.edges.filter(e => e.kind === 'calls' && e.target === 'calls.ts::target');
     expect(incoming.map(e => e.source)).toEqual(expect.arrayContaining(['calls.ts::object', 'calls.ts::Box.field', 'calls.ts::Box.method', 'calls.ts::callback', 'calls.ts::__file__']));
     expect(incoming.length).toBeGreaterThanOrEqual(7);
+    expect(incoming).toContainEqual(expect.objectContaining({ source: 'calls.ts::Box.method', line: 7 }));
     expect(file.edges).toContainEqual(expect.objectContaining({ source: 'calls.ts::__file__', target: 'calls.ts::TargetClass', kind: 'calls' }));
   });
   it('records genuinely unresolved calls and constructors with reasons', async () => {
