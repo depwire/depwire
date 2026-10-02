@@ -115,6 +115,13 @@ export interface UnresolvedCall {
   reason: UnresolvedCallReason;
 }
 
+export interface UnresolvedExport {
+  fromFile: string;
+  line: number;
+  expression: string;
+  reason: string;
+}
+
 export type UnresolvedTypeRefReason =
   | 'external-type'
   | 'no-project-symbol'
@@ -140,14 +147,10 @@ export interface ParsedFile {
    * `symbols`/`edges` are unaffected.
    */
   unresolvedImports?: UnresolvedImport[];
-  /**
-   * Member-expression calls (`obj.method()`, `new a.b.Foo()`) whose receiver
-   * could not be resolved to a real declared symbol without guessing.
-   * Populated in place of the wrong same-file `calls` edge that earlier
-   * versions fabricated -- see UnresolvedCallReason for what was rejected
-   * and why.
-   */
+  /** Calls without a proven local target, including bare calls and member receivers. */
   unresolvedCalls?: UnresolvedCall[];
+  /** JavaScript export expressions without a proven local symbol or target file. */
+  unresolvedExports?: UnresolvedExport[];
   /** Internal parser hint used to resolve super.method() after all classes are known. */
   pendingSuperCalls?: PendingSuperCall[];
   /** Internal parser hint; project finalization proves imported namespace members. */
@@ -186,6 +189,14 @@ export function aggregateUnresolvedCalls(parsedFiles: ParsedFile[]): UnresolvedC
   const out: UnresolvedCall[] = [];
   for (const file of parsedFiles) {
     if (file.unresolvedCalls) out.push(...file.unresolvedCalls);
+  }
+  return out;
+}
+
+export function aggregateUnresolvedExports(parsedFiles: ParsedFile[]): UnresolvedExport[] {
+  const out: UnresolvedExport[] = [];
+  for (const file of parsedFiles) {
+    if (file.unresolvedExports) out.push(...file.unresolvedExports);
   }
   return out;
 }
