@@ -2,6 +2,26 @@
 
 **Verdict: FAIL / hard stop.** A new resolved `calls` edge points to a nonexistent symbol, while the source call has a unique real project declaration. This is a WRONG target, not an acceptable ambiguous resolution. The requested 40/40/40/15/15 seeded target sample was **not drawn**: the mandatory stop applied during the new-edge target-existence preflight. No accuracy rate or zero-WRONG claim can be inferred from this partial audit. Phase B has not started.
 
+## Follow-up F2: structural dangling-target finding (2026-10-03)
+
+The follow-up task explicitly required a stop if declaration-less targets were structural. They are. **No parser repair or new target sample was attempted in this follow-up.** The graph builder does not create a placeholder `packages/microservices/index.ts::Client` node: `src/graph/index.ts` adds declaration nodes in its first pass, adds only `::__file__` pseudo-nodes in its second pass, and silently skips edges lacking either endpoint in its third pass (`graph.hasNode(edge.source) && graph.hasNode(edge.target)`). Thus the `Client` relationship is present in `parseProject` output but absent from the built graph.
+
+The TypeScript parser constructs named-import target IDs as `${resolvedPath}::${importedName}` in `src/parser/typescript.ts` before proving that a declaration exists. It can then emit a `calls` edge to that ID. The wildcard re-export finalizer is one attempted proof step, but on ambiguity it records a reason without removing the edge. Other import/re-export shapes also leave unproven IDs in parsed edges. This is a **general parser-to-graph validation gap**, not a graph placeholder node and not confined to `@Client`.
+
+Cache-disabled parses of the five TypeScript calibration corpora at the same snapshots used for PR #55 show the following parsed edges whose target ID has no `SymbolNode` and is not a `::__file__` pseudo-node. These are a structural inventory, not a claim that every missing target has the same cause; external injection/type names may be expected unresolved evidence. The missing-target `calls` records are particularly relevant to Phase A.
+
+| Repository | All declaration-less targets | Calls | Imports | Inherits | Injects |
+|---|---:|---:|---:|---:|---:|
+| code-graph (frozen `fc070df`) | 4 | 0 | 0 | 3 | 1 |
+| nest | 190 | 12 | 14 | 47 | 117 |
+| drizzle | 490 | 188 | 105 | 12 | 185 |
+| hono | 364 | 242 | 80 | 24 | 18 |
+| zod | 187 | 31 | 140 | 7 | 9 |
+
+For example, Hono's `benchmarks/deno/hono.ts:4` has a parsed `calls` target `src/index.ts::Hono` without a matching symbol; Zod's `packages/bench/compile-matrix.ts:374` similarly targets undeclared `packages/zod/src/v4/core/index.ts::compile`. These examples show that the absence is not limited to the Nest `Client` wildcard collision. The mechanism and proper treatment of each non-Nest record require a separate audit before any global validation change.
+
+**Follow-up gate:** F2 triggered the instructed structural stop. F1, F3's exhaustive emit-and-record audit, F4, the seeded 150-edge sample, and the edge-count delta were not performed. The earlier one-edge WRONG verdict still stands. No fix commit was created; this section records why work stopped instead of representing the requested fix as complete.
+
 ## Reproduction boundary
 
 - Parser before TypeScript fix: `fc070df` (the JS-fixed baseline). Audited PR head: `a75cfcc`.
