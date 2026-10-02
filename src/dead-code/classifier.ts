@@ -38,8 +38,9 @@ function calculateConfidence(
     return { level: "low", reasonCode: "constructor-via-class" };
   }
 
-  // LOW: framework/dynamic dispatch directories are invoked by the runtime
-  // or framework, not by edges the graph can reliably see.
+  // LOW: path-name heuristic, not evidence of framework invocation. A
+  // conventional directory name only reduces confidence; it does not prove
+  // usage, add a graph edge, or remove this symbol from the candidate set.
   if (isLikelyDynamicUsage(symbol.file)) {
     return { level: "low", reasonCode: "dynamic-dispatch" };
   }
@@ -64,9 +65,9 @@ function calculateConfidence(
 function generateReason(reasonCode: ConfidenceReasonCode): string {
   switch (reasonCode) {
     case "not-exported-zero-dependents":
-      return "Not exported, zero references";
+      return "Not marked exported; zero dependents in the parsed graph";
     case "exported-no-dependents":
-      return "Exported, zero dependents";
+      return "Exported, zero dependents in the parsed graph (external consumers may exist)";
     case "barrel-export":
       return "Exported from barrel file, zero dependents (might be used externally)";
     case "type-only-symbol":
@@ -74,7 +75,7 @@ function generateReason(reasonCode: ConfidenceReasonCode): string {
     case "constructor-via-class":
       return "Constructor (invoked via new ClassName, not this symbol)";
     case "dynamic-dispatch":
-      return "In dynamic-use pattern directory (might be auto-loaded)";
+      return "Path-name heuristic: framework-style directory; invocation is unproven, so confidence is reduced";
     default:
       return "Potentially unused";
   }

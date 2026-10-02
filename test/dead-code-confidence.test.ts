@@ -34,14 +34,14 @@ describe('dead-code confidence classifier', () => {
     const symbol = classify(makeSymbol({ name: 'orphanFn', kind: 'function', file: 'src/utils.ts' }));
     expect(symbol.confidence).toBe('high');
     expect(symbol.reasonCode).toBe('not-exported-zero-dependents');
-    expect(symbol.reason).toBe('Not exported, zero references');
+    expect(symbol.reason).toBe('Not marked exported; zero dependents in the parsed graph');
   });
 
   it('classifies an exported non-barrel symbol as medium confidence', () => {
     const symbol = classify(makeSymbol({ name: 'publicFn', kind: 'function', file: 'src/utils.ts', exported: true }));
     expect(symbol.confidence).toBe('medium');
     expect(symbol.reasonCode).toBe('exported-no-dependents');
-    expect(symbol.reason).toBe('Exported, zero dependents');
+    expect(symbol.reason).toBe('Exported, zero dependents in the parsed graph (external consumers may exist)');
   });
 
   it('classifies an exported barrel-file symbol as medium confidence', () => {
@@ -81,7 +81,7 @@ describe('dead-code confidence classifier', () => {
     const symbol = classify(makeSymbol({ name: 'getUser', kind: 'function', file: 'src/routes/user.ts' }));
     expect(symbol.confidence).toBe('low');
     expect(symbol.reasonCode).toBe('dynamic-dispatch');
-    expect(symbol.reason).toBe('In dynamic-use pattern directory (might be auto-loaded)');
+    expect(symbol.reason).toBe('Path-name heuristic: framework-style directory; invocation is unproven, so confidence is reduced');
   });
 
   it('classifies a page component as low confidence (dynamic dispatch)', () => {

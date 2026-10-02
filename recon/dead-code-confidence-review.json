@@ -1,0 +1,358 @@
+{
+  "repository": "express",
+  "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+  "parse": "fresh parseProject with useCache:false; zero errorFiles",
+  "distribution": {
+    "high": 27,
+    "medium": 0,
+    "low": 0
+  },
+  "candidateCount": 27,
+  "allFunctionKind": true,
+  "allMarkedUnexported": true,
+  "allZeroGraphDependents": true,
+  "conclusion": "Classifier HIGH branch is reached as designed, but graph evidence is incomplete. These 27 cannot be described as verified dead/internal-only symbols.",
+  "confirmedCounterexamples": [
+    {
+      "symbol": "createApplication",
+      "definition": "lib/express.js:36",
+      "usage": "lib/express.js:27",
+      "evidence": "exports = module.exports = createApplication;"
+    },
+    {
+      "symbol": "tryRender",
+      "definition": "lib/application.js:625",
+      "usage": "lib/application.js:574",
+      "evidence": "tryRender(view, renderOptions, done);"
+    },
+    {
+      "symbol": "logerror",
+      "definition": "lib/application.js:615",
+      "usage": "lib/application.js:156",
+      "evidence": "onerror: logerror.bind(this)"
+    },
+    {
+      "symbol": "sendfile",
+      "definition": "lib/response.js:923",
+      "usage": "lib/response.js:408",
+      "evidence": "sendfile(res, file, opts, function (err) {"
+    },
+    {
+      "symbol": "createETagGenerator",
+      "definition": "lib/utils.js:249",
+      "usage": "lib/utils.js:40,51",
+      "evidence": "Assigned to exports.etag / exports.wetag via direct calls."
+    },
+    {
+      "symbol": "tryStat",
+      "definition": "lib/view.js:197",
+      "usage": "lib/view.js:174,182",
+      "evidence": "Direct calls in view lookup."
+    }
+  ],
+  "classifierHeuristic": {
+    "reasonCode": "dynamic-dispatch",
+    "reason": "Path-name heuristic: framework-style directory; invocation is unproven, so confidence is reduced",
+    "changesGraph": false,
+    "removesCandidate": false
+  },
+  "symbols": [
+    {
+      "name": "authenticate",
+      "kind": "function",
+      "file": "examples/auth/index.js",
+      "line": 60,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "restrict",
+      "kind": "function",
+      "file": "examples/auth/index.js",
+      "line": 75,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "list",
+      "kind": "function",
+      "file": "examples/online/index.js",
+      "line": 40,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "loadUser",
+      "kind": "function",
+      "file": "examples/route-middleware/index.js",
+      "line": 25,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "andRestrictToSelf",
+      "kind": "function",
+      "file": "examples/route-middleware/index.js",
+      "line": 36,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "andRestrictTo",
+      "kind": "function",
+      "file": "examples/route-middleware/index.js",
+      "line": 50,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "initializeRedis",
+      "kind": "function",
+      "file": "examples/search/index.js",
+      "line": 29,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "ferrets",
+      "kind": "function",
+      "file": "examples/view-locals/index.js",
+      "line": 17,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "users",
+      "kind": "function",
+      "file": "examples/view-locals/index.js",
+      "line": 56,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "count2",
+      "kind": "function",
+      "file": "examples/view-locals/index.js",
+      "line": 86,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "users2",
+      "kind": "function",
+      "file": "examples/view-locals/index.js",
+      "line": 94,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "error",
+      "kind": "function",
+      "file": "examples/web-service/index.js",
+      "line": 15,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "logerror",
+      "kind": "function",
+      "file": "lib/application.js",
+      "line": 615,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "tryRender",
+      "kind": "function",
+      "file": "lib/application.js",
+      "line": 625,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "createApplication",
+      "kind": "function",
+      "file": "lib/express.js",
+      "line": 36,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "app",
+      "kind": "function",
+      "file": "lib/express.js",
+      "line": 37,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "defineGetter",
+      "kind": "function",
+      "file": "lib/request.js",
+      "line": 521,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "sendfile",
+      "kind": "function",
+      "file": "lib/response.js",
+      "line": 923,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "ondirectory",
+      "kind": "function",
+      "file": "lib/response.js",
+      "line": 938,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "onend",
+      "kind": "function",
+      "file": "lib/response.js",
+      "line": 955,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "onfile",
+      "kind": "function",
+      "file": "lib/response.js",
+      "line": 962,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "onfinish",
+      "kind": "function",
+      "file": "lib/response.js",
+      "line": 967,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "onstream",
+      "kind": "function",
+      "file": "lib/response.js",
+      "line": 985,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "acceptParams",
+      "kind": "function",
+      "file": "lib/utils.js",
+      "line": 89,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "createETagGenerator",
+      "kind": "function",
+      "file": "lib/utils.js",
+      "line": 249,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "parseExtendedQueryString",
+      "kind": "function",
+      "file": "lib/utils.js",
+      "line": 267,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    },
+    {
+      "name": "tryStat",
+      "kind": "function",
+      "file": "lib/view.js",
+      "line": 197,
+      "exported": false,
+      "dependents": 0,
+      "confidence": "high",
+      "reason": "Not exported, zero references",
+      "reasonCode": "not-exported-zero-dependents"
+    }
+  ]
+}
