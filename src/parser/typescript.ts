@@ -1,6 +1,7 @@
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
+import { commonJSExportTarget, isModuleExports, hasConditionalAncestor } from './commonjs.js';
 
 interface Context {
   filePath: string;
@@ -22,6 +23,8 @@ interface Context {
   unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
+  unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
+  exportTargets: Array<{ name: string; line: number }>;
   unresolvedTypeRefs: UnresolvedTypeRef[];
   pendingTypeRefs: Array<{ source: string; typeName: string; qualifier?: string; line: number; heritage?: boolean; scopeChain: string[] }>;
   pendingSuperCalls: PendingSuperCall[];
@@ -56,6 +59,8 @@ export function parseTypeScriptFile(
     unresolvedCallEdges: [],
     unresolvedImports: [],
     unresolvedCalls: [],
+    unresolvedExports: [],
+    exportTargets: [],
     unresolvedTypeRefs: [],
     pendingTypeRefs: [],
     pendingSuperCalls: [],
@@ -65,6 +70,11 @@ export function parseTypeScriptFile(
   };
   
   walkNode(tree.rootNode, context);
+  for (const target of context.exportTargets) {
+    const symbol = context.symbols.find(s => s.id === `${context.filePath}::${target.name}`);
+    if (symbol) symbol.exported = true;
+    else context.unresolvedExports.push({ fromFile: context.filePath, line: target.line, expression: target.name, reason: 'no-local-target' });
+  }
   
   // Resolve all buffered call edges now that all symbols have been declared
   resolveUnresolvedCallEdges(context);
@@ -76,6 +86,7 @@ export function parseTypeScriptFile(
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
     unresolvedCalls: context.unresolvedCalls,
+    ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
     pendingSuperCalls: context.pendingSuperCalls,
     pendingNamespaceCalls: context.pendingNamespaceCalls,
     unresolvedTypeRefs: context.unresolvedTypeRefs,
@@ -182,8 +193,12 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
     case 'export_statement':
       processExportStatement(node, context);
       break;
+    case 'assignment_expression':
+      processCommonJSAssignment(node, context);
+      break;
     case 'call_expression':
       processCallExpression(node, context);
+      processCommonJSObjectAssign(node, context);
       break;
     case 'new_expression':
       processNewExpression(node, context);
@@ -1028,8 +1043,23 @@ interface ImportBinding {
 
 function processImportStatement(node: Parser.SyntaxNode, context: Context): void {
   // Get the import source
-  const source = node.childForFieldName('source');
+  const source = node.childForFieldName('source') ?? findChildByType(node, 'import_require_clause')?.childForFieldName('source');
   if (!source) return;
+  const requireClause = findChildByType(node, 'import_require_clause');
+  if (requireClause) {
+    const alias = findChildByType(requireClause, 'identifier');
+    if (!alias) return;
+    const specifier = source.text.slice(1, -1);
+    const target = resolveImportPath(specifier, context.filePath, context.projectRoot);
+    if (target) {
+      context.imports.set(alias.text, `${target}::__file__`);
+      context.edges.push({ source: getCurrentSymbolId(context) ?? `${context.filePath}::__file__`, target: `${target}::__file__`, kind: 'imports', filePath: context.filePath, line: node.startPosition.row + 1 });
+    } else {
+      context.externalImports.set(alias.text, specifier);
+      context.unresolvedImports.push({ fromFile: context.filePath, specifier, reason: classifyUnresolvedImport(specifier, context.filePath, context.projectRoot) });
+    }
+    return;
+  }
   
   const importPath = source.text.slice(1, -1); // Remove quotes
   const resolvedPath = resolveImportPath(importPath, context.filePath, context.projectRoot);
@@ -1157,7 +1187,82 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   }
 }
 
+function recordUnresolvedExport(context: Context, node: Parser.SyntaxNode, reason: string): void {
+  context.unresolvedExports.push({ fromFile: context.filePath, line: node.startPosition.row + 1, expression: node.text, reason });
+}
+
+function exportCommonJSValue(node: Parser.SyntaxNode, context: Context, line: number, exportName?: string): void {
+  if (node.type === 'identifier') {
+    context.exportTargets.push({ name: node.text, line });
+    return;
+  }
+  if (node.type === 'object') {
+    for (const member of node.namedChildren) {
+      if (member.type === 'shorthand_property_identifier') {
+        context.exportTargets.push({ name: member.text, line: member.startPosition.row + 1 });
+      } else if (member.type === 'pair') {
+        const key = member.childForFieldName('key');
+        const value = member.childForFieldName('value');
+        if (!key || !value) { recordUnresolvedExport(context, member, 'unsupported-property'); continue; }
+        const name = key.text.replace(/^['"]|['"]$/g, '');
+        if (!/^[A-Za-z_$][\w$]*$/.test(name)) { recordUnresolvedExport(context, member, 'computed-property'); continue; }
+        exportCommonJSValue(value, context, member.startPosition.row + 1, name);
+      } else {
+        recordUnresolvedExport(context, member, 'unsupported-property');
+      }
+    }
+    return;
+  }
+  if (node.type === 'function_expression' || node.type === 'arrow_function') {
+    const name = node.childForFieldName('name')?.text ?? exportName ?? 'default';
+    const id = `${context.filePath}::${name}`;
+    if (!context.declaredSymbolIds.has(id)) pushSymbol(context, { id, name, kind: 'function', filePath: context.filePath, startLine: node.startPosition.row + 1, endLine: node.endPosition.row + 1, exported: true });
+    else context.exportTargets.push({ name, line });
+    return;
+  }
+  if (node.type === 'call_expression' && node.childForFieldName('function')?.text === 'require') {
+    const arg = node.childForFieldName('arguments')?.namedChildren[0];
+    if (arg?.type !== 'string') { recordUnresolvedExport(context, node, 'computed-require'); return; }
+    const specifier = arg.text.slice(1, -1);
+    const target = resolveImportPath(specifier, context.filePath, context.projectRoot);
+    if (target) context.edges.push({ source: `${context.filePath}::__file__`, target: `${target}::__file__`, kind: 'imports', filePath: context.filePath, line });
+    else recordUnresolvedExport(context, node, 'require-not-local');
+    return;
+  }
+  recordUnresolvedExport(context, node, 'no-provable-symbol');
+}
+
+function processCommonJSAssignment(node: Parser.SyntaxNode, context: Context): void {
+  const left = node.childForFieldName('left');
+  const right = node.childForFieldName('right');
+  if (!left || !right) return;
+  const target = commonJSExportTarget(left, child => child.text);
+  if (!target) return;
+  if (target.kind === 'computed' || right.type === 'ternary_expression' || hasConditionalAncestor(node)) {
+    recordUnresolvedExport(context, node, target.kind === 'computed' ? 'computed-property' : 'conditional-assignment');
+    return;
+  }
+  exportCommonJSValue(right, context, node.startPosition.row + 1, target.name);
+}
+
+function processCommonJSObjectAssign(node: Parser.SyntaxNode, context: Context): void {
+  const fn = node.childForFieldName('function');
+  const object = fn?.childForFieldName('object');
+  const property = fn?.childForFieldName('property');
+  if (fn?.type !== 'member_expression' || object?.text !== 'Object' || property?.text !== 'assign') return;
+  const args = node.childForFieldName('arguments')?.namedChildren;
+  if (!args || args.length < 2 || !isModuleExports(args[0], child => child.text)) return;
+  if (hasConditionalAncestor(node)) { recordUnresolvedExport(context, node, 'conditional-assignment'); return; }
+  for (const value of args.slice(1)) exportCommonJSValue(value, context, node.startPosition.row + 1);
+}
+
 function processExportStatement(node: Parser.SyntaxNode, context: Context): void {
+  // `export = value` is TypeScript's CommonJS export assignment.
+  if (hasDirectToken(node, '=')) {
+    const value = node.namedChildren.at(-1);
+    if (value) exportCommonJSValue(value, context, node.startPosition.row + 1);
+    return;
+  }
   // Handle re-exports: export { X } from './module'
   const source = node.childForFieldName('source');
   if (source) {
@@ -1259,10 +1364,9 @@ function hasDirectToken(node: Parser.SyntaxNode, type: string): boolean {
 
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
   const functionNode = node.childForFieldName('function');
-  if (!functionNode) return;
+  if (!functionNode) { recordUnresolvedCall(context, node.text, 'no-local-target'); return; }
 
-  const currentSymbolId = getCurrentSymbolId(context);
-  if (!currentSymbolId) return;
+  const currentSymbolId = getCallSource(node, context);
 
   if (functionNode.type === 'identifier') {
     // Bare identifier call, e.g. `foo()`. A name match is not enough: parameters,
@@ -1324,7 +1428,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   if (functionNode.type === 'member_expression') {
     const object = functionNode.childForFieldName('object');
     const property = functionNode.childForFieldName('property');
-    if (!property) return;
+    if (!property) { recordUnresolvedCall(context, functionNode.text, 'unresolvable-receiver'); return; }
     const functionName = property.text;
     const line = node.startPosition.row + 1;
 
@@ -1414,6 +1518,27 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     recordUnresolvedCall(context, `${receiverText}.${functionName}`, 'unresolvable-receiver');
     return;
   }
+  recordUnresolvedCall(context, functionNode.text, 'unresolvable-receiver');
+}
+
+function getCallSource(node: Parser.SyntaxNode, context: Context): string {
+  const currentSymbolId = getCurrentSymbolId(context);
+  let ancestor = node.parent;
+  while (ancestor && ancestor.type !== 'program') {
+    if (ancestor.type === 'public_field_definition' || ancestor.type === 'field_definition') {
+      const name = ancestor.childForFieldName('name')?.text;
+      const id = name && `${context.filePath}::${context.currentScope.join('.')}.${name}`;
+      if (id && context.declaredSymbolIds.has(id)) return id;
+    }
+    if (ancestor.type === 'variable_declarator') {
+      if (currentSymbolId) return currentSymbolId;
+      const name = ancestor.childForFieldName('name')?.text;
+      const id = name && resolveLocalDeclarationTarget(name, context.currentScope, context);
+      if (id) return id;
+    }
+    ancestor = ancestor.parent;
+  }
+  return currentSymbolId ?? `${context.filePath}::__file__`;
 }
 
 function recordUnresolvedCall(context: Context, callee: string, reason: UnresolvedCallReason): void {
@@ -1422,10 +1547,10 @@ function recordUnresolvedCall(context: Context, callee: string, reason: Unresolv
 
 function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
   const classNode = node.childForFieldName('constructor');
-  if (!classNode || classNode.type !== 'identifier') return;
+  if (!classNode || classNode.type !== 'identifier') { recordUnresolvedCall(context, classNode?.text ?? node.text, 'unresolvable-receiver'); return; }
   
   const className = classNode.text;
-  const currentSymbolId = getCurrentSymbolId(context);
+  const currentSymbolId = getCallSource(node, context);
   
   if (currentSymbolId) {
     if (hasUnmodeledLexicalBinding(node, className)) {

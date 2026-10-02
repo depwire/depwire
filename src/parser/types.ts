@@ -149,7 +149,7 @@ export interface ParsedFile {
   unresolvedImports?: UnresolvedImport[];
   /** Calls without a proven local target, including bare calls and member receivers. */
   unresolvedCalls?: UnresolvedCall[];
-  /** JavaScript export expressions without a proven local symbol or target file. */
+  /** JavaScript or TypeScript export expressions without a proven local symbol or target file. */
   unresolvedExports?: UnresolvedExport[];
   /** Internal parser hint used to resolve super.method() after all classes are known. */
   pendingSuperCalls?: PendingSuperCall[];

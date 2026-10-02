@@ -35,7 +35,7 @@ export type { UnresolvedImport, UnresolvedImportReason } from './parser/types.js
 export { aggregateUnresolvedCalls } from './parser/types.js';
 export type { UnresolvedCall, UnresolvedCallReason } from './parser/types.js';
 
-/** Flatten JavaScript export expressions rejected for lack of proof. */
+/** Flatten JavaScript and TypeScript export expressions rejected for lack of proof. */
 export { aggregateUnresolvedExports } from './parser/types.js';
 export type { UnresolvedExport } from './parser/types.js';
 

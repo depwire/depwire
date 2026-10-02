@@ -71,10 +71,16 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
         if (existing) {
           const existingKind = graph.getEdgeAttribute(existing, 'kind');
           // The graph is intentionally simple (one relationship per symbol
-          // pair). Preserve a pre-existing runtime/import relationship when
-          // a new type reference connects the same pair, so the additive
-          // parser phase never relabels an older edge kind.
-          if (edge.kind === 'references-type' && existingKind !== 'references-type') {
+          // pair). Preserve imports and other non-call relationships when a
+          // newly captured call connects the same pair. A type reference
+          // also takes precedence over a call regardless of discovery order.
+          if (edge.kind === 'references-type' && existingKind !== 'references-type' && existingKind !== 'calls') {
+            continue;
+          }
+          // Newly captured calls can share endpoints with an existing import
+          // or type reference. Keep the first relationship in this simple
+          // graph; the parsed file still retains both pieces of evidence.
+          if (edge.kind === 'calls' && existingKind !== 'calls') {
             continue;
           }
           if (

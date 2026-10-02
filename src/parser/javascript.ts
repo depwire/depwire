@@ -2,6 +2,7 @@ import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser, UnresolvedCall } from './types.js';
 import { resolveImportPath } from './resolver.js';
+import { isModuleExports as sharedIsModuleExports, commonJSExportTarget as sharedCommonJSExportTarget, hasConditionalAncestor } from './commonjs.js';
 import { existsSync } from 'fs';
 import { join, dirname, extname } from 'path';
 
@@ -505,26 +506,11 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
 }
 
 function isModuleExports(node: Parser.SyntaxNode, context: Context): boolean {
-  if (node.type !== 'member_expression') return false;
-  const object = node.childForFieldName('object');
-  const property = node.childForFieldName('property');
-  return !!object && !!property && nodeText(object, context) === 'module' && nodeText(property, context) === 'exports';
+  return sharedIsModuleExports(node, child => nodeText(child, context));
 }
 
 function commonJSExportTarget(node: Parser.SyntaxNode, context: Context): { kind: 'direct' | 'property' | 'computed'; name?: string } | null {
-  if (isModuleExports(node, context)) return { kind: 'direct' };
-  if (node.type === 'member_expression') {
-    const object = node.childForFieldName('object');
-    const property = node.childForFieldName('property');
-    if (object && property && (isModuleExports(object, context) || nodeText(object, context) === 'exports')) {
-      return { kind: 'property', name: nodeText(property, context) };
-    }
-  }
-  if (node.type === 'subscript_expression') {
-    const object = node.childForFieldName('object');
-    if (object && (isModuleExports(object, context) || nodeText(object, context) === 'exports')) return { kind: 'computed' };
-  }
-  return null;
+  return sharedCommonJSExportTarget(node, child => nodeText(child, context));
 }
 
 function containsModuleExportsWrite(node: Parser.SyntaxNode, context: Context): boolean {
@@ -532,15 +518,6 @@ function containsModuleExportsWrite(node: Parser.SyntaxNode, context: Context): 
   const left = node.childForFieldName('left');
   const right = node.childForFieldName('right');
   return !!left && (isModuleExports(left, context) || (!!right && containsModuleExportsWrite(right, context)));
-}
-
-function hasConditionalAncestor(node: Parser.SyntaxNode): boolean {
-  let ancestor: Parser.SyntaxNode | null = node.parent;
-  while (ancestor && ancestor.type !== 'program' && ancestor.type !== 'function_declaration' && ancestor.type !== 'function_expression') {
-    if (ancestor.type === 'if_statement' || ancestor.type === 'ternary_expression') return true;
-    ancestor = ancestor.parent;
-  }
-  return false;
 }
 
 function exportValue(node: Parser.SyntaxNode, context: Context, line: number): void {
