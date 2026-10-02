@@ -1525,6 +1525,21 @@ function getCallSource(node: Parser.SyntaxNode, context: Context): string {
   const currentSymbolId = getCurrentSymbolId(context);
   let ancestor = node.parent;
   while (ancestor && ancestor.type !== 'program') {
+    if (ancestor.type === 'function_expression' || ancestor.type === 'arrow_function') {
+      const parent = ancestor.parent;
+      let exportName: string | undefined;
+      if (parent?.type === 'export_statement' && hasDirectToken(parent, '=')) {
+        exportName = ancestor.childForFieldName('name')?.text ?? 'default';
+      } else if (parent?.type === 'assignment_expression' && parent.childForFieldName('right')?.id === ancestor.id) {
+        const left = parent.childForFieldName('left');
+        const target = left && commonJSExportTarget(left, child => child.text);
+        if (target && target.kind !== 'computed' && !hasConditionalAncestor(parent)) {
+          exportName = ancestor.childForFieldName('name')?.text ?? target.name ?? 'default';
+        }
+      }
+      const id = exportName && `${context.filePath}::${exportName}`;
+      if (id && context.declaredSymbolIds.has(id)) return id;
+    }
     if (ancestor.type === 'public_field_definition' || ancestor.type === 'field_definition') {
       const name = ancestor.childForFieldName('name')?.text;
       const id = name && `${context.filePath}::${context.currentScope.join('.')}.${name}`;

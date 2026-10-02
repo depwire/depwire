@@ -1,2 +1,3 @@
-module.exports = function inline() {};
-exports.extra = () => {};
+function called() {}
+module.exports = function inline() { called(); };
+exports.extra = () => called();

@@ -27,6 +27,9 @@ describe('TypeScript export and call evidence', () => {
     const get = await fixture();
     const file = get('inline.ts');
     for (const name of ['inline', 'extra']) expect(file.symbols.find(s => s.name === name)?.exported).toBe(true);
+    for (const source of ['inline.ts::inline', 'inline.ts::extra']) {
+      expect(file.edges).toContainEqual(expect.objectContaining({ source, target: 'inline.ts::called', kind: 'calls' }));
+    }
     expect(get('reexport.ts').edges).toContainEqual(expect.objectContaining({ kind: 'imports', target: 'target.ts::__file__' }));
   });
   it('captures calls in object methods, class fields, callbacks, IIFEs and file scope', async () => {
