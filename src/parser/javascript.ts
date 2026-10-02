@@ -60,8 +60,8 @@ export function parseJavaScriptFile(
     filePath,
     symbols: context.symbols,
     edges: context.edges,
-    unresolvedCalls: context.unresolvedCalls,
-    unresolvedExports: context.unresolvedExports,
+    ...(context.unresolvedCalls.length ? { unresolvedCalls: context.unresolvedCalls } : {}),
+    ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
   };
 }
 
