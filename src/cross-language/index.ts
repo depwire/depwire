@@ -15,6 +15,7 @@ export function detectCrossLanguageEdges(
   const subprocessEdges = detectSubprocessEdges(files, projectRoot);
 
   const allEdges = [...restApiEdges, ...subprocessEdges];
+  const crossLanguageDrops: Array<{ sourceFile: string; targetFile: string; kind: string; reason: string }> = [];
 
   // Add edges to graph
   for (const edge of allEdges) {
@@ -27,7 +28,10 @@ export function detectCrossLanguageEdges(
       graph.forEachNode((_nodeId, attrs) => {
         if (attrs.filePath === edge.sourceFile) hasSourceFile = true;
       });
-      if (!hasSourceFile) continue;
+      if (!hasSourceFile) {
+        crossLanguageDrops.push({ sourceFile: edge.sourceFile, targetFile: edge.targetFile, kind: edge.edgeType, reason: 'missing-source-file' });
+        continue;
+      }
 
       graph.addNode(sourceNodeId, {
         name: '__file__',
@@ -44,7 +48,10 @@ export function detectCrossLanguageEdges(
       graph.forEachNode((_nodeId, attrs) => {
         if (attrs.filePath === edge.targetFile) hasTargetFile = true;
       });
-      if (!hasTargetFile) continue;
+      if (!hasTargetFile) {
+        crossLanguageDrops.push({ sourceFile: edge.sourceFile, targetFile: edge.targetFile, kind: edge.edgeType, reason: 'missing-target-file' });
+        continue;
+      }
 
       graph.addNode(targetNodeId, {
         name: '__file__',
@@ -56,6 +63,9 @@ export function detectCrossLanguageEdges(
       });
     }
 
+    if (graph.hasEdge(sourceNodeId, targetNodeId)) {
+      crossLanguageDrops.push({ sourceFile: edge.sourceFile, targetFile: edge.targetFile, kind: edge.edgeType, reason: 'pair-replaced' });
+    }
     graph.mergeEdge(sourceNodeId, targetNodeId, {
       kind: edge.edgeType,
       filePath: edge.sourceFile,
@@ -69,6 +79,9 @@ export function detectCrossLanguageEdges(
       calledFile: edge.metadata.calledFile,
     });
   }
+  graph.setAttribute('crossLanguageDrops', crossLanguageDrops);
+  const missingFileCount = crossLanguageDrops.filter(drop => drop.reason.startsWith('missing-')).length;
+  if (missingFileCount) console.error(`[Graph] ${missingFileCount} cross-language edges had missing files; details in graph.crossLanguageDrops`);
 
   const detectionTimeMs = Date.now() - startTime;
 

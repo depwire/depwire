@@ -83,6 +83,7 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   
   graph.setAttribute('projectRoot', json.projectRoot);
   graph.setAttribute('parsedFileCount', json.metadata.parsedFileCount);
+  const edgeDrops: Array<{ source: string; attemptedTarget: string; kind: string; filePath: string; line: number; reason: string }> = [];
   // Restore legacy separator spellings at the same graph ingress boundary.
   for (const raw of json.nodes) {
     const node = canonicalNode(raw, json.projectRoot);
@@ -102,6 +103,11 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   for (const raw of json.edges) {
     const edge = canonicalEdge(raw, json.projectRoot);
     if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
+      if (graph.hasEdge(edge.source, edge.target)) {
+        const previous = graph.getEdgeAttributes(graph.edge(edge.source, edge.target)!);
+        edgeDrops.push({ source: edge.source, attemptedTarget: edge.target, kind: previous.kind,
+          filePath: previous.filePath, line: previous.line, reason: 'pair-replaced' });
+      }
       graph.mergeEdge(edge.source, edge.target, {
         kind: edge.kind,
         filePath: edge.filePath,
@@ -110,8 +116,17 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
         typeOnlyFallback: edge.typeOnlyFallback,
         originalImportTarget: edge.originalImportTarget,
       });
+    } else {
+      const sourceMissing = !graph.hasNode(edge.source);
+      const targetMissing = !graph.hasNode(edge.target);
+      edgeDrops.push({ source: edge.source, attemptedTarget: edge.target, kind: edge.kind,
+        filePath: edge.filePath, line: edge.line,
+        reason: sourceMissing && targetMissing ? 'missing-both' : sourceMissing ? 'missing-source' : 'missing-target' });
     }
   }
+  graph.setAttribute('edgeDrops', edgeDrops);
+  const missingCount = edgeDrops.filter(drop => drop.reason.startsWith('missing-')).length;
+  if (missingCount) console.error(`[Graph] ${missingCount} stored edges had missing endpoints; details in graph.edgeDrops`);
   
   return graph;
 }

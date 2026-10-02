@@ -1,4 +1,27 @@
-# PR #55 TypeScript call-target audit — Phase A blocked
+# PR #55 TypeScript call-target audit — structural preflight and completed repair
+
+The material below preserves the original preflight and its hard-stop decision at the time. The follow-up repair, eight-repository conservation tables, health movement, and completed 150-edge sample are in [the edge-contract report](TYPESCRIPT-EDGE-CONTRACT.md) and [target-accuracy sample](TYPESCRIPT-CALL-TARGET-SAMPLE.md). The original `Client` edge was invalid in parsed output but **did not survive into the built graph**: no placeholder target node existed. The later repair removes that parsed edge and records the ambiguity.
+
+## Parser-to-graph contract, C1–C3 (measured before repair)
+
+**C1.** A TypeScript named import is assigned `${bindingPath}::${importedName}` at `src/parser/typescript.ts:1182` before its declaration is proved; a subsequent call can be emitted to that ID at `src/parser/typescript.ts:1435-1443`. `resolveReExportChains` tries to rewrite wildcard-barrel targets, but on zero or multiple candidates it records an unresolved import and retains the original edge (`src/parser/reexport-chains.ts:73-96`). `buildGraph` adds declaration nodes and `::__file__` pseudo-nodes, then accepts an edge only if both endpoints exist (`src/graph/index.ts:67-70`). It silently omits failed endpoints and coalesces multiple parsed relationships sharing one symbol pair. A parsed edge therefore has no current guarantee of a built edge or a proved target.
+
+**C2.** This optimistic named-symbol target construction is present in TypeScript (`src/parser/typescript.ts:1182,1359`), JavaScript CommonJS and ESM imports (`src/parser/javascript.ts:362,392,436,460`), and Python `from … import …` (`src/parser/python.ts:317`). Python's module sentinel (`:255`) and the twelve other parsers' resolved `::__file__` targets are a different file-pseudo-node mechanism. R constructs package-qualified `pkg::fn` call targets (`src/parser/r.ts:330`) without local declaration proof. The prior no-current-symbol return inventory answers a different question and does not identify this target construction pattern.
+
+**C3.** The mismatch predates PR #55. The table is a cache-disabled parse and build at the PR #54 baseline `fc070df` for the same eight calibration snapshots. `missing endpoint` counts parsed edges whose source or target is absent from the built graph. Parsed minus built is not solely missing endpoints: the graph is simple and coalesces same-pair relationships, while cross-language detection adds built edges. The figures below are separate parsed and built facts, not an additive reconciliation.
+
+| Repository | Parsed all | Built all | Parsed calls | Built calls | Missing endpoint |
+|---|---:|---:|---:|---:|---:|
+| code-graph (`fc070df` frozen) | 4,762 | 3,965 | 2,718 | 1,968 | 4 |
+| nest | 18,397 | 16,890 | 3,698 | 3,391 | 198 |
+| drizzle | 32,704 | 24,184 | 9,817 | 4,475 | 379 |
+| hono | 5,997 | 5,374 | 1,282 | 892 | 169 |
+| express | 591 | 409 | 449 | 98 | 127 |
+| zod | 9,503 | 7,658 | 1,950 | 1,276 | 165 |
+| flask | 685 | 515 | 421 | 269 | 66 |
+| fastapi | 4,753 | 1,711 | 2,831 | 1,065 | 2,759 |
+
+Thus earlier release notes and PR #55 tables that label parsed-edge counts as graph-edge counts need qualification. In particular, Drizzle's 9,817 baseline parsed calls represented 4,475 built `calls` relationships. Cross-language built edges are included in `Built all` (not in the `Built calls` column).
 
 **Verdict: FAIL / hard stop.** A new resolved `calls` edge points to a nonexistent symbol, while the source call has a unique real project declaration. This is a WRONG target, not an acceptable ambiguous resolution. The requested 40/40/40/15/15 seeded target sample was **not drawn**: the mandatory stop applied during the new-edge target-existence preflight. No accuracy rate or zero-WRONG claim can be inferred from this partial audit. Phase B has not started.
 

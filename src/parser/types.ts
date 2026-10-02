@@ -106,13 +106,18 @@ export type UnresolvedCallReason =
                                 // same-named graph symbol; the binding has no SymbolNode to target
   | 'unresolved-import-callee' // a bare callee comes from an import with no local source target
   | 'no-local-target'       // no declared local value supports a bare call/new-expression edge
-  | 'receiver-required';    // a bare call/new expression matched only a method or property, which
+  | 'receiver-required'     // a bare call/new expression matched only a method or property, which
                             // cannot be referenced without an explicit receiver
+  | 'ambiguous-reexport'
+  | 'chain-exceeded-depth'
+  | 'unproven-target';
 
 export interface UnresolvedCall {
   fromFile: string;
   callee: string; // e.g. "arr.push", "this.unknownMethod"
   reason: UnresolvedCallReason;
+  attemptedTarget?: string;
+  candidates?: string[];
 }
 
 export interface UnresolvedExport {
@@ -132,6 +137,16 @@ export interface UnresolvedTypeRef {
   fromFile: string;
   typeName: string;
   reason: UnresolvedTypeRefReason;
+}
+
+export interface UnresolvedEdge {
+  source: string;
+  attemptedTarget: string;
+  kind: EdgeKind;
+  filePath: string;
+  line: number;
+  reason: 'ambiguous-reexport' | 'chain-exceeded-depth' | 'unproven-target';
+  candidates?: string[];
 }
 
 export interface ParsedFile {
@@ -157,6 +172,8 @@ export interface ParsedFile {
   pendingNamespaceCalls?: PendingNamespaceCall[];
   /** Type-position names rejected because no project symbol could be proven. */
   unresolvedTypeRefs?: UnresolvedTypeRef[];
+  /** Edges rejected during project-wide target validation. */
+  unresolvedEdges?: UnresolvedEdge[];
   /**
    * Resolved target file paths (relative to project root) that this file
    * wildcard re-exports from, e.g. `export * from './expressions'`. Used by

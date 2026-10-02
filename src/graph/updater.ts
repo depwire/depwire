@@ -51,17 +51,30 @@ export function addFileToGraph(graph: DirectedGraph, parsedFile: ParsedFile): vo
   }
 
   // Add all edges
+  const edgeDrops = graph.getAttribute('edgeDrops') ?? [];
+  const previousDropCount = edgeDrops.length;
   for (const edge of parsedFile.edges) {
     try {
+      if (graph.hasNode(edge.source) && graph.hasNode(edge.target) && graph.hasEdge(edge.source, edge.target)) {
+        const previous = graph.getEdgeAttributes(graph.edge(edge.source, edge.target)!);
+        edgeDrops.push({ source: edge.source, attemptedTarget: edge.target, kind: previous.kind,
+          filePath: previous.filePath, line: previous.line, reason: 'pair-replaced' });
+      }
       graph.mergeEdge(edge.source, edge.target, {
         kind: edge.kind,
         filePath: edge.filePath,
         line: edge.line,
       });
     } catch (error) {
-      // Source or target node might not exist, skip
+      const sourceMissing = !graph.hasNode(edge.source);
+      const targetMissing = !graph.hasNode(edge.target);
+      edgeDrops.push({ source: edge.source, attemptedTarget: edge.target, kind: edge.kind,
+        filePath: edge.filePath, line: edge.line,
+        reason: sourceMissing && targetMissing ? 'missing-both' : sourceMissing ? 'missing-source' : targetMissing ? 'missing-target' : 'merge-failed' });
     }
   }
+  graph.setAttribute('edgeDrops', edgeDrops);
+  if (edgeDrops.length > previousDropCount) console.error(`[Graph] ${edgeDrops.length - previousDropCount} incremental edges could not be added; details in graph.edgeDrops`);
 }
 
 export async function updateFileInGraph(
