@@ -61,7 +61,7 @@ function displayConfidenceGroup(
 
   console.log(
     color.bold(`\n${emoji} ${level} CONFIDENCE `) +
-      chalk.gray(`(${level === "HIGH" ? "definitely" : level === "MEDIUM" ? "probably" : "might be"} dead)`)
+      chalk.gray(`(${level.toLowerCase()} confidence)`)
   );
 
   if (verbose) {

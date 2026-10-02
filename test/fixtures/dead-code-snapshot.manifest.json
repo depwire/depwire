@@ -25,12 +25,12 @@
   "edgeCount": 2279,
   "expected": {
     "totalSymbols": 6024,
-    "deadSymbols": 168,
-    "deadPercentage": 2.788844621513944,
+    "deadSymbols": 82,
+    "deadPercentage": 1.361221779217,
     "byConfidence": {
-      "high": 168,
-      "medium": 0,
-      "low": 0
+      "high": 57,
+      "medium": 25,
+      "low": 86
     },
     "healthOverall": 71,
     "healthGrade": "C",

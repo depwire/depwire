@@ -2,6 +2,14 @@ import type { DirectedGraph } from "graphology";
 
 export type ConfidenceLevel = "high" | "medium" | "low";
 
+export type ConfidenceReasonCode =
+  | "not-exported-zero-dependents"
+  | "exported-no-dependents"
+  | "barrel-export"
+  | "type-only-symbol"
+  | "constructor-via-class"
+  | "dynamic-dispatch";
+
 export interface DeadSymbol {
   name: string;
   kind: string;
@@ -11,6 +19,7 @@ export interface DeadSymbol {
   dependents: number;
   confidence: ConfidenceLevel;
   reason: string;
+  reasonCode?: ConfidenceReasonCode;
 }
 
 export interface DeadCodeReport {
