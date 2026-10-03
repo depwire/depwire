@@ -113,6 +113,22 @@ The three Express pairs now exist as built imports. Production distinct pairs mo
 | flask | 2.36/46/0 | 2.36/46/0 | none |
 | fastapi | 0.78/147/33 | 0.78/147/33 | none |
 
+Other built edge kinds (each count is identical before and after):
+
+| Repository | references-type | references | inherits | injects | decorates | rest-api |
+|---|---:|---:|---:|---:|---:|---:|
+| code-graph | 1164 | 1 | 3 | 1 | 0 | 6 |
+| nest | 5766 | 0 | 184 | 565 | 0 | 2 |
+| drizzle | 12664 | 0 | 700 | 687 | 0 | 0 |
+| hono | 3044 | 0 | 8 | 32 | 0 | 398 |
+| express | 0 | 0 | 0 | 0 | 0 | 285 |
+| zod | 5687 | 0 | 44 | 6 | 0 | 0 |
+| flask | 0 | 0 | 34 | 0 | 54 | 0 |
+| fastapi | 0 | 0 | 102 | 0 | 72 | 0 |
+| click | 0 | 0 | 31 | 0 | 27 | 0 |
+| ripgrep | 0 | 0 | 0 | 0 | 0 | 0 |
+| pinia | 300 | 0 | 0 | 0 | 0 | 0 |
+
 All individual edge kinds grouped as “other built edges” are unchanged in every repository: `references-type`, `references`, `inherits`, `implements`, `injects`, `decorates`, and cross-language `rest-api` where present. No built edge kind decreased. No symbol count changed. The corpus also confirms v1.25 TypeScript built call counts remain **nest 7,534** and **drizzle 16,027**.
 
 The health raw table lists every raw value that changed outside coupling; every unlisted raw value is unchanged. Coupling columns are average connections per file, maximum connections and cross-directory percentage. The reconciliation table counts built *parser* edges, excluding cross-language edges added by the builder. Every row satisfies parsed = built parser edges + the sum of itemized drops. Newly resolved JavaScript imports are built imports, not missing-endpoint drops. Existing Python missing-endpoint drops remain recorded and are outside this branch.
