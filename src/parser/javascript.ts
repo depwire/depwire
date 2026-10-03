@@ -1,10 +1,9 @@
-import { canonicalPath } from '../graph/paths.js';
+import { canonicalPath, isWithinRoot } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser, UnresolvedCall } from './types.js';
-import { resolveImportPath } from './resolver.js';
+import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser, UnresolvedCall, UnresolvedImport, NonCodeDependency } from './types.js';
 import { isModuleExports as sharedIsModuleExports, commonJSExportTarget as sharedCommonJSExportTarget, hasConditionalAncestor } from './commonjs.js';
-import { existsSync } from 'fs';
-import { join, dirname, extname } from 'path';
+import { existsSync, statSync } from 'fs';
+import { join, dirname, extname, resolve } from 'path';
 
 interface Context {
   filePath: string;
@@ -19,6 +18,8 @@ interface Context {
   imports: Map<string, string>; // Map<importedName, resolvedSymbolId>
   isJSX: boolean;
   unresolvedCalls: UnresolvedCall[];
+  unresolvedImports: UnresolvedImport[];
+  nonCodeDependencies: NonCodeDependency[];
   unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
   exportTargets: Array<{ name: string; line: number }>;
 }
@@ -45,6 +46,8 @@ export function parseJavaScriptFile(
     imports: new Map(),
     isJSX: filePath.endsWith('.jsx'),
     unresolvedCalls: [],
+    unresolvedImports: [],
+    nonCodeDependencies: [],
     unresolvedExports: [],
     exportTargets: [],
   };
@@ -62,6 +65,8 @@ export function parseJavaScriptFile(
     symbols: context.symbols,
     edges: context.edges,
     ...(context.unresolvedCalls.length ? { unresolvedCalls: context.unresolvedCalls } : {}),
+    ...(context.unresolvedImports.length ? { unresolvedImports: context.unresolvedImports } : {}),
+    ...(context.nonCodeDependencies.length ? { nonCodeDependencies: context.nonCodeDependencies } : {}),
     ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
   };
 }
@@ -291,6 +296,7 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
       if (functionNode && nodeText(functionNode, context) === 'require') {
         // This is a CommonJS require
         processRequireCall(declarator, valueNode, context);
+        walkNode(valueNode, context);
         continue;
       }
     }
@@ -352,7 +358,7 @@ function processRequireCall(declarator: Parser.SyntaxNode, callNode: Parser.Synt
   // Resolve the module path
   const resolvedPath = resolveJavaScriptImport(modulePath, context.filePath, context.projectRoot);
   
-  if (!resolvedPath) return; // External module, skip
+  if (!resolvedPath || !isCodeTarget(resolvedPath)) return;
   
   // Handle different patterns
   if (nameNode) {
@@ -370,6 +376,7 @@ function processRequireCall(declarator: Parser.SyntaxNode, callNode: Parser.Synt
         kind: 'imports',
         filePath: context.filePath,
         line: callNode.startPosition.row + 1,
+        importSpecifier: modulePath,
       });
     } else if (nameNode.type === 'object_pattern') {
       // const { validate, sanitize } = require('./utils');
@@ -400,6 +407,7 @@ function processRequireCall(declarator: Parser.SyntaxNode, callNode: Parser.Synt
           kind: 'imports',
           filePath: context.filePath,
           line: callNode.startPosition.row + 1,
+          importSpecifier: modulePath,
         });
       }
     }
@@ -412,16 +420,14 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   if (!source) return;
   
   const importPath = nodeText(source, context).slice(1, -1); // Remove quotes
+  recordModuleLoad(importPath, node.startPosition.row + 1, context);
   const resolvedPath = resolveJavaScriptImport(importPath, context.filePath, context.projectRoot);
   
-  if (!resolvedPath) return; // External module, skip
+  if (!resolvedPath || !isCodeTarget(resolvedPath)) return;
   
   // Get import clause
   const importClause = findChildByType(node, 'import_clause');
-  if (!importClause) {
-    // import './styles.css' - side effect only
-    return;
-  }
+  if (!importClause) return;
   
   // Handle named imports, default imports, namespace imports
   const namedImports = findChildByType(importClause, 'named_imports');
@@ -443,6 +449,7 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
       kind: 'imports',
       filePath: context.filePath,
       line: node.startPosition.row + 1,
+      importSpecifier: importPath,
     });
   }
   
@@ -467,6 +474,7 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
           kind: 'imports',
           filePath: context.filePath,
           line: node.startPosition.row + 1,
+          importSpecifier: importPath,
         });
       }
     }
@@ -487,6 +495,7 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
         kind: 'imports',
         filePath: context.filePath,
         line: node.startPosition.row + 1,
+        importSpecifier: importPath,
       });
     }
   }
@@ -495,7 +504,11 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
 function processExportStatement(node: Parser.SyntaxNode, context: Context): void {
   // Declarations are visited by the walker; a local export list needs a
   // separate flag because its declaration may precede the export statement.
-  if (node.childForFieldName('source')) return;
+  const source = node.childForFieldName('source');
+  if (source?.type === 'string') {
+    recordModuleLoad(nodeText(source, context).slice(1, -1), node.startPosition.row + 1, context);
+    return;
+  }
   const clause = findChildByType(node, 'export_clause');
   if (!clause) return;
   for (const specifier of clause.namedChildren) {
@@ -549,7 +562,7 @@ function exportValue(node: Parser.SyntaxNode, context: Context, line: number): v
     const arg = node.childForFieldName('arguments')?.namedChildren[0];
     if (arg?.type === 'string') {
       const path = resolveJavaScriptImport(nodeText(arg, context).slice(1, -1), context.filePath, context.projectRoot);
-      if (path) context.edges.push({ source: `${context.filePath}::__file__`, target: `${path}::__file__`, kind: 'imports', filePath: context.filePath, line });
+      if (path && isCodeTarget(path)) context.edges.push({ source: `${context.filePath}::__file__`, target: `${path}::__file__`, kind: 'imports', filePath: context.filePath, line, importSpecifier: nodeText(arg, context).slice(1, -1) });
       else context.unresolvedExports.push({ fromFile: context.filePath, line, expression: nodeText(node, context), reason: 'require-not-local' });
     } else context.unresolvedExports.push({ fromFile: context.filePath, line, expression: nodeText(node, context), reason: 'computed-require' });
   } else {
@@ -613,6 +626,14 @@ function processCommonJSObjectAssign(node: Parser.SyntaxNode, context: Context):
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
   const functionNode = node.childForFieldName('function');
   if (!functionNode) return;
+  const functionText = nodeText(functionNode, context);
+  if (functionText === 'require' || functionText === 'import') {
+    const arg = node.childForFieldName('arguments')?.namedChildren[0];
+    if (arg?.type === 'string') recordModuleLoad(nodeText(arg, context).slice(1, -1), node.startPosition.row + 1, context);
+    else context.unresolvedImports.push({ fromFile: context.filePath,
+      specifier: arg ? nodeText(arg, context) : '<missing>', reason: 'computed-specifier' });
+    return;
+  }
   
   let calleeName: string | null = null;
   let receiverClass: string | undefined;
@@ -727,29 +748,58 @@ function processJSXElement(node: Parser.SyntaxNode, context: Context): void {
 
 // Helper functions
 
+function isCodeTarget(path: string): boolean {
+  return /\.(?:js|jsx|mjs|cjs|ts|tsx)$/.test(path);
+}
+
+function recordModuleLoad(specifier: string, line: number, context: Context): void {
+  if (!specifier.startsWith('.')) {
+    context.unresolvedImports.push({ fromFile: context.filePath, specifier, reason: 'external' });
+    return;
+  }
+  const target = resolveJavaScriptImport(specifier, context.filePath, context.projectRoot);
+  if (!target) {
+    context.unresolvedImports.push({ fromFile: context.filePath, specifier, reason: 'relative-not-found' });
+    return;
+  }
+  if (!isCodeTarget(target)) {
+    const ext = extname(target);
+    context.nonCodeDependencies.push({ fromFile: context.filePath, specifier, resolvedPath: target, line,
+      kind: ext === '.json' ? 'json' : ext === '.node' ? 'native' : 'asset' });
+    return;
+  }
+  const source = `${context.filePath}::__file__`;
+  const targetId = `${target}::__file__`;
+  if (!context.edges.some(edge => edge.kind === 'imports' && edge.source === source && edge.target === targetId && edge.line === line)) {
+    context.edges.push({ source, target: targetId, kind: 'imports', filePath: context.filePath, line, importSpecifier: specifier });
+  }
+}
+
 function resolveJavaScriptImport(importPath: string, currentFile: string, projectRoot: string): string | null {
   // Handle relative imports
   if (importPath.startsWith('.')) {
     const currentDir = dirname(join(projectRoot, currentFile));
-    const targetPath = join(currentDir, importPath);
+    const targetPath = resolve(currentDir, importPath);
+    if (!isWithinRoot(targetPath, resolve(projectRoot))) return null;
     
     // Try multiple extensions in order
-    const extensions = ['.js', '.jsx', '.mjs', '.cjs'];
-    const indexFiles = ['index.js', 'index.jsx', 'index.mjs'];
+    const extensions = ['.js', '.json', '.node', '.jsx', '.mjs', '.cjs'];
+    const indexFiles = ['index.js', 'index.json', 'index.node', 'index.jsx', 'index.mjs', 'index.cjs'];
     
     // If import has extension, use it directly
     if (extname(importPath)) {
       const fullPath = targetPath;
-      if (existsSync(fullPath)) {
+      if (existsSync(fullPath) && statSync(fullPath).isFile()) {
         return canonicalPath(fullPath, projectRoot);
       }
       return null;
     }
     
-    // Try with extensions
+    // Node CommonJS resolution: exact file, then .js/.json/.node, then index.
+    if (existsSync(targetPath) && statSync(targetPath).isFile()) return canonicalPath(targetPath, projectRoot);
     for (const ext of extensions) {
       const candidate = `${targetPath}${ext}`;
-      if (existsSync(candidate)) {
+      if (existsSync(candidate) && statSync(candidate).isFile()) {
         return canonicalPath(candidate, projectRoot);
       }
     }
@@ -757,7 +807,7 @@ function resolveJavaScriptImport(importPath: string, currentFile: string, projec
     // Try index files
     for (const indexFile of indexFiles) {
       const candidate = join(targetPath, indexFile);
-      if (existsSync(candidate)) {
+      if (existsSync(candidate) && statSync(candidate).isFile()) {
         return canonicalPath(candidate, projectRoot);
       }
     }

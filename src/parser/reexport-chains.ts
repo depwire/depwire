@@ -17,8 +17,8 @@ export function rejectUnprovenEdge(
     (file.unresolvedCalls ??= []).push({ fromFile: file.filePath, callee: name, reason,
       attemptedTarget: edge.target, ...(candidates.length ? { candidates: drop.candidates } : {}) });
   } else if (edge.kind === 'imports') {
-    (file.unresolvedImports ??= []).push({ fromFile: file.filePath, specifier: edge.target,
-      reason: reason === 'unproven-target' ? 'other' : reason });
+    (file.unresolvedImports ??= []).push({ fromFile: file.filePath, specifier: edge.importSpecifier ?? edge.target,
+      reason: reason === 'unproven-target' ? (edge.importSpecifier ? 'unproven-symbol' : 'other') : reason });
   } else if (edge.kind === 'inherits' || edge.kind === 'implements' || edge.kind === 'injects' || edge.kind === 'references-type') {
     (file.unresolvedTypeRefs ??= []).push({ fromFile: file.filePath, typeName: name,
       reason: reason === 'ambiguous-reexport' ? 'ambiguous-reexport' : 'no-project-symbol' });

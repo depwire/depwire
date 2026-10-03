@@ -4,6 +4,7 @@ import { rejectUnprovenEdge } from './reexport-chains.js';
 /** Final project-wide proof step: parseProject never returns a dangling edge. */
 export function validateParsedEdgeTargets(files: ParsedFile[]): { dropped: number; retargeted: number } {
   const symbols = new Map<string, SymbolNode>();
+  const parsedPaths = new Set(files.map(file => file.filePath));
   const exportTargets = new Map<string, string[]>();
   for (const file of files) for (const symbol of file.symbols) symbols.set(symbol.id, symbol);
   for (const file of files) for (const edge of file.edges) {
@@ -29,10 +30,12 @@ export function validateParsedEdgeTargets(files: ParsedFile[]): { dropped: numbe
   let dropped = 0;
   let retargeted = 0;
   for (const file of files) {
-    if (!/\.tsx?$/.test(file.filePath)) continue;
+    const isTypeScript = /\.tsx?$/.test(file.filePath);
+    const isJavaScript = /\.[cm]?jsx?$/.test(file.filePath);
+    if (!isTypeScript && !isJavaScript) continue;
     const kept: SymbolEdge[] = [];
     for (const edge of file.edges) {
-      if (edge.kind === 'calls' && symbols.get(edge.target)?.kind === 'export') {
+      if (isTypeScript && edge.kind === 'calls' && symbols.get(edge.target)?.kind === 'export') {
         const proof = resolveCallableExport(edge.target);
         if (!proof.target) {
           rejectUnprovenEdge(file, edge, proof.candidates?.length ? 'ambiguous-reexport' : 'unproven-target', proof.candidates);
@@ -42,10 +45,16 @@ export function validateParsedEdgeTargets(files: ParsedFile[]): { dropped: numbe
         edge.target = proof.target;
         retargeted++;
       }
-      const validSource = symbols.has(edge.source) || edge.source.endsWith('::__file__');
-      const validTarget = symbols.has(edge.target) || edge.target.endsWith('::__file__');
+      const validSource = symbols.has(edge.source) || (edge.source.endsWith('::__file__')
+        && (!isJavaScript || parsedPaths.has(edge.source.slice(0, -'::__file__'.length))));
+      const validTarget = symbols.has(edge.target) || (edge.target.endsWith('::__file__')
+        && (!isJavaScript || parsedPaths.has(edge.target.slice(0, -'::__file__'.length))));
       if (!validSource || !validTarget) {
         rejectUnprovenEdge(file, edge, 'unproven-target');
+        if (isJavaScript && edge.kind === 'imports' && edge.target.endsWith('::__file__')) {
+          const last = file.unresolvedImports?.at(-1);
+          if (last) last.reason = 'target-not-parsed';
+        }
         dropped++;
       } else {
         kept.push(edge);
