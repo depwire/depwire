@@ -67,6 +67,12 @@ In a follow-up measurement, tests and benchmarks account for **5,419 of 6,248 ad
 
 ---
 
+## 1.24.0 — not released
+
+The JavaScript export and call-capture work planned as 1.24.0 shipped as part of 1.25.0; the version number was skipped.
+
+---
+
 ## 1.23.0 — Dead-code confidence reflects available evidence
 
 The dead-code classifier previously classified almost every candidate as HIGH before constructor, type-only and other mitigating checks could run. Those checks now run before the general fallback.
