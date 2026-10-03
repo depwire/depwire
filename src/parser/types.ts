@@ -75,6 +75,8 @@ export interface SymbolEdge {
   typeOnlyImport?: boolean;
   typeOnlyFallback?: boolean;
   originalImportTarget?: string;
+  /** Original module specifier for an optimistic JavaScript import target. */
+  importSpecifier?: string;
 }
 
 export type UnresolvedImportReason =
@@ -87,12 +89,24 @@ export type UnresolvedImportReason =
   | 'ambiguous-reexport'    // resolved to a barrel file, and the re-export chain reached MORE
                             // THAN ONE file declaring the same name -- picking one would be a
                             // guess, so the import is recorded unresolved instead of guessing
-  | 'other';
+  | 'other'
+  | 'computed-specifier'
+  | 'target-not-parsed'
+  | 'unproven-symbol';
 
 export interface UnresolvedImport {
   fromFile: string;
   specifier: string;
   reason: UnresolvedImportReason;
+}
+
+/** A proven local dependency on a file Depwire does not parse as source code. */
+export interface NonCodeDependency {
+  fromFile: string;
+  specifier: string;
+  resolvedPath: string;
+  line: number;
+  kind: 'json' | 'native' | 'asset';
 }
 
 export type UnresolvedCallReason =
@@ -162,6 +176,8 @@ export interface ParsedFile {
    * `symbols`/`edges` are unaffected.
    */
   unresolvedImports?: UnresolvedImport[];
+  /** Local JSON/native/assets: dependencies, but not symbol graph edges. */
+  nonCodeDependencies?: NonCodeDependency[];
   /** Calls without a proven local target, including bare calls and member receivers. */
   unresolvedCalls?: UnresolvedCall[];
   /** JavaScript or TypeScript export expressions without a proven local symbol or target file. */
