@@ -14,11 +14,11 @@ The parser now emits a file-level edge for a proven **relative** Python module: 
 
 Absolute `from package import Name` resolution and named symbol capture remain at their v1.26 boundary. In particular, this branch does not treat every such import as proof of a local target and does not expand symbol capture from parenthesized lists; that would require its own target-accuracy audit. The parser's known no-current-symbol silent call path is also untouched. The four recovered FastAPI plain-import edges expose a broader plain-import coverage limit, which the separate coverage audit records.
 
-`RESOLUTION_VERSION` moves **9→10** because parsed edges, edge kinds and diagnostics change, invalidating parse caches. `formatVersion` remains **2**; stored graphs load but must be reparsed to gain the corrected relationships and type-only classification.
+`RESOLUTION_VERSION` moves **9→10** because parsed edges, edge kinds and diagnostics change, invalidating parse caches. `formatVersion` remains **2**; stored graphs load but must be reparsed to gain the corrected relationships and type-only classification. The health methodology marker moves from `2026-09-30-cyclic-groups-v1` to `2026-10-04-python-typechecking-v1`: the previous legacy health projection reclassified every type-only import as runtime, which would have undone the new Python distinction. Python `TYPE_CHECKING` imports are now excluded from the runtime health view and the legacy cyclic-groups view. Trends across this boundary receive a methodology-change message instead of a delta.
 
 ## Eleven-repository graph and health movement
 
-Runtime production pairs exclude `references-type` edges. A decrease can therefore be correct when a former runtime relationship is proven type-only: Flask **89→77** and Click **57→56**. FastAPI gains **112→123** runtime production pairs. The current coupling score still uses edge volume from tests and examples, so Flask coupling falls **90→70** even as its *runtime production pair count declines*; this reinforces the pending coupling-contract problem and is reported without suppressing it.
+Runtime production pairs exclude `references-type` edges. A decrease can therefore be correct when a former runtime relationship is proven type-only: Flask **89→77** and Click **57→56**. FastAPI gains **112→123** runtime production pairs. The current coupling formula still uses edge volume from tests and examples; the separate coupling contract remains necessary. With the Python type-only health correction, Flask's released coupling stays **90→90**, rather than the false **90→70** produced when the legacy health projection restored its type-only imports as runtime.
 
 | Repository | Symbols | Built imports | Built type references | Built calls | Other built edges | Runtime production pairs | Overall |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -28,9 +28,9 @@ Runtime production pairs exclude `references-type` edges. A decrease can therefo
 | hono | 9,616→9,616 | 1,009→1,009 | 3,044→3,044 | 2,587→2,587 | 438→438 | 297→297 | 48→48 |
 | express | 1,658→1,658 | 178→178 | 0→0 | 98→98 | 285→285 | 7→7 | 65→65 |
 | zod | 13,449→13,449 | 827→827 | 5,687→5,687 | 8,199→8,199 | 50→50 | 255→255 | 49→49 |
-| flask | 1,778→1,778 | 158→210 | 0→51 | 269→269 | 88→88 | 89→77 | 81→77 |
-| fastapi | 7,356→7,356 | 472→633 | 0→2 | 1,065→1,065 | 174→174 | 112→123 | 69→66 |
-| click | 2,213→2,213 | 190→230 | 0→19 | 554→554 | 58→58 | 57→56 | 77→77 |
+| flask | 1,778→1,778 | 158→210 | 0→51 | 269→269 | 88→88 | 89→77 | 81→79 |
+| fastapi | 7,356→7,356 | 472→633 | 0→2 | 1,065→1,065 | 174→174 | 112→123 | 69→69 |
+| click | 2,213→2,213 | 190→230 | 0→19 | 554→554 | 58→58 | 57→56 | 77→79 |
 | ripgrep | 3,659→3,659 | 87→87 | 0→0 | 2,513→2,513 | 0→0 | 73→73 | 82→82 |
 | pinia | 1,555→1,555 | 314→314 | 300→300 | 713→713 | 0→0 | 93→93 | 62→62 |
 
@@ -42,9 +42,9 @@ Runtime production pairs exclude `references-type` edges. A decrease can therefo
 | hono | 30→30 | 60→60 | 35→35 | 60→60 | 82→82 | 40→40 |
 | express | 70→70 | 40→40 | 87→87 | 60→60 | 88→88 | 40→40 |
 | zod | 30→30 | 40→40 | 88→88 | 60→60 | 50→50 | 20→20 |
-| flask | 90→70 | 100→100 | 44→42 | 100→100 | 48→56 | 100→100 |
-| fastapi | 90→90 | 40→40 | 84→82 | 80→60 | 41→41 | 60→60 |
-| click | 70→70 | 100→100 | 54→54 | 100→100 | 38→38 | 100→100 |
+| flask | 90→90 | 100→100 | 44→45 | 100→80 | 48→56 | 100→100 |
+| fastapi | 90→90 | 40→40 | 84→82 | 80→80 | 41→41 | 60→60 |
+| click | 70→70 | 100→100 | 54→61 | 100→100 | 38→38 | 100→100 |
 | ripgrep | 90→90 | 100→100 | 100→100 | 40→40 | 32→32 | 100→100 |
 | pinia | 50→50 | 60→60 | 92→92 | 60→60 | 57→57 | 40→40 |
 
@@ -70,9 +70,9 @@ Runtime production pairs exclude `references-type` edges. A decrease can therefo
 | hono | none |
 | express | none |
 | zod | none |
-| flask | Coupling avgConnections 2.36→3.4; Coupling maxConnections 46→61; Cohesion avgInternalRatio 84.5→83.7; Cohesion directories 5→6; Cyclic Dependency Groups cyclicFileCount 21→22; Cyclic Dependency Groups cyclicFileRatio 0.21212121212121213→0.2222222222222222; Cyclic Dependency Groups largestGroupSize 19→20; God Files threshold 48.4→61.3; Orphans & Dead Code orphans 6→2; Orphans & Dead Code orphanPercentage 17.1→5.7; Orphans & Dead Code deadSymbols 337→338 |
-| fastapi | Coupling avgConnections 0.78→0.95; Coupling maxConnections 147→232; Coupling crossDirCoupling 33→27.5; Cohesion avgInternalRatio 16.9→18.9; Cohesion directories 102→105; Cyclic Dependency Groups groupCount 2→3; cyclicFileCount 22→25; cyclicFileRatio 0.022587268993839837→0.02556237218813906; largestGroupSize 15→15; graphFileCount 974→978; God Files godFiles 28→30; threshold 10.1→12; godFilesPer100 2.9→3.1; Orphans & Dead Code orphans 274→270; orphanPercentage 62.3→60.8; Dependency Depth maxDepth 7→7 |
-| click | Coupling avgConnections 3.54→4.24; Coupling maxConnections 98→116; God Files threshold 106.2→127.1; Orphans & Dead Code deadSymbols 453→455; Orphans & Dead Code deadCodePercentage 25→25.1 |
+| flask | Coupling avgConnections 2.36→2.89; Coupling maxConnections 46→56; Cohesion avgInternalRatio 84.5→88.3; Cohesion directories 5→6; Cyclic Dependency Groups cyclicFileCount 21→20; cyclicFileRatio 0.21212121212121213→0.20202020202020202; largestGroupSize 19→18; God Files godFiles 0→1; threshold 48.4→52; godFilesPer100 0→1; Orphans & Dead Code orphans 6→2; orphanPercentage 17.1→5.7; deadSymbols 337→338 |
+| fastapi | Coupling avgConnections 0.78→0.95; Coupling maxConnections 147→232; crossDirCoupling 33→27.6; Cohesion avgInternalRatio 16.9→18.8; directories 102→105; Cyclic Dependency Groups groupCount 2→3; cyclicFileCount 22→25; cyclicFileRatio 0.022587268993839837→0.02556237218813906; graphFileCount 974→978; God Files godFiles 28→29; threshold 10.1→11.9; godFilesPer100 2.9→3; Orphans & Dead Code orphans 274→270; orphanPercentage 62.3→60.8 |
+| click | Coupling avgConnections 3.54→4.01; Coupling maxConnections 98→99; Cyclic Dependency Groups groupCount 2→3; cyclicFileCount 13→11; cyclicFileRatio 0.15294117647058825→0.12941176470588237; largestGroupSize 11→7; God Files threshold 106.2→120.4; Orphans & Dead Code deadSymbols 453→455; deadCodePercentage 25→25.1; Dependency Depth maxDepth 3→4 |
 | ripgrep | none |
 | pinia | none |
 

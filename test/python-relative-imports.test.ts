@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resolve } from 'node:path';
 import { parseProject } from '../src/parser/index.js';
 import { buildGraph } from '../src/graph/index.js';
+import { calculateHealthScore } from '../src/health/index.js';
 
 const root = resolve(import.meta.dirname, 'fixtures/python-relative-imports');
 
@@ -42,6 +43,21 @@ describe('Python relative imports', () => {
     }));
     expect(plainImport.edges.some(edge => edge.kind === 'imports')).toBe(false);
     expect(hasEdge(graph, 'type_only_plain', 'a', 'references-type')).toBe(true);
+    const withoutTypeChecking = graph.copy();
+    const excludedEdges: string[] = [];
+    withoutTypeChecking.forEachEdge((edge, attrs) => {
+      if (attrs.kind === 'references-type' && attrs.typeOnlyImport === true
+        && attrs.filePath.endsWith('.py')) excludedEdges.push(edge);
+    });
+    for (const edge of excludedEdges) withoutTypeChecking.dropEdge(edge);
+    const actual = calculateHealthScore(graph, root);
+    const expected = calculateHealthScore(withoutTypeChecking, root);
+    expect(actual.dimensions.find(d => d.name === 'Coupling')?.metrics).toEqual(
+      expected.dimensions.find(d => d.name === 'Coupling')?.metrics,
+    );
+    expect(actual.dimensions.find(d => d.name === 'Cyclic Dependency Groups')?.metrics).toEqual(
+      expected.dimensions.find(d => d.name === 'Cyclic Dependency Groups')?.metrics,
+    );
   });
 
   it('records missing relative modules without an edge', async () => {
