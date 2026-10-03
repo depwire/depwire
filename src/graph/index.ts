@@ -2,6 +2,7 @@ import { canonicalParsedFile } from './path-boundary.js';
 import { DirectedGraph } from 'graphology';
 import { ParsedFile, SymbolNode } from '../parser/types.js';
 import { detectCrossLanguageEdges } from '../cross-language/index.js';
+import { assertEdgeReconciliation } from './edge-reconciliation.js';
 
 export interface GraphEdgeDrop {
   source: string;
@@ -131,16 +132,21 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
   graph.setAttribute('parserEdgeCount', parsedEdgeCount);
   graph.setAttribute('edgeDrops', edgeDrops);
   graph.setAttribute('parserBuiltEdgeCount', graph.size);
+  graph.setAttribute('crossLanguageAttemptedEdgeCount', 0);
+  graph.setAttribute('crossLanguageDrops', []);
   const missingCount = edgeDrops.filter(drop => drop.reason.startsWith('missing-')).length;
   if (missingCount) console.error(`[Graph] ${missingCount} parsed edges had missing endpoints; details in graph.edgeDrops`);
   
   // Cross-language edge detection
   if (projectRoot) {
     const result = detectCrossLanguageEdges(parsedFiles, projectRoot, graph);
+    graph.setAttribute('crossLanguageAttemptedEdgeCount', result.edges.length);
     if (result.stats.restApiEdges > 0 || result.stats.subprocessEdges > 0) {
       console.error(`Cross-language edges: ${result.stats.restApiEdges} rest-api, ${result.stats.subprocessEdges} subprocess detected`);
     }
   }
+
+  assertEdgeReconciliation(graph);
 
   return graph;
 }

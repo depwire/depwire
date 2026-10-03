@@ -134,3 +134,40 @@ JavaScript, Python, and R still construct some target IDs optimistically through
 Drizzle's 13 remaining builder `missing-target` drops are outside TypeScript: 11 `.cjs` imports from `integration-tests/js-tests/driver-init/commonjs/schema.cjs` and two JavaScript imports of a `.sql` and `.json` file from `integration-tests/tests/sqlite/durable-objects/drizzle/migrations.js`. Express's 127 remaining drops are likewise JavaScript paths. The parser-to-builder contract is now accounted for, while proving those language-specific target IDs remains follow-up work.
 
 `RESOLUTION_VERSION` moves **7→8** because parsed graph contents change and cached parse results must invalidate. `formatVersion` remains **2** because serialized graph schema is unchanged. `package.json` version remains unchanged.
+
+## Pre-merge follow-up: permanent reconciliation gate
+
+`buildGraph` now calls `assertEdgeReconciliation` on every build. It fails if either identity is broken: `parsed edges = parser-built edges + recorded builder drops`; and `cross-language attempted edges = added built edges + recorded cross-language drops`. The latter accounts separately for cross-language edges added after the parser pass. The assertion uses the current graph size, so a future unrecorded skip cannot pass by merely incrementing a counter. A fixture deliberately removes drop records and changes the cross-language attempted count to prove both failure branches. The external-corpus stress harness is `recon/check-edge-reconciliation.mjs`: after building, pass a JSON map of the eight repository names to checkout roots. It disables the parser cache and exits nonzero on a mismatch.
+
+The harness passed on all eight pinned calibration checkouts:
+
+| Repository | Parsed | Parser-built | Builder drops by reason | Cross-language attempted | Added to built | Cross-language drops by reason | Final built |
+|---|---:|---:|---|---:|---:|---|---:|
+| code-graph | 5,283 | 4,343 | pair-preserved 109; pair-replaced 831 | 8 | 6 | pair-replaced 2 | 4,349 |
+| nest | 25,045 | 21,070 | pair-preserved 2,187; pair-replaced 1,788 | 2 | 2 | none | 21,072 |
+| drizzle | 53,808 | 36,200 | missing-target 13; pair-preserved 5,601; pair-replaced 11,994 | 0 | 0 | none | 36,200 |
+| hono | 9,245 | 6,680 | pair-preserved 932; pair-replaced 1,633 | 3,999 | 398 | pair-replaced 3,601 | 7,078 |
+| express | 591 | 124 | missing-target 127; pair-replaced 340 | 2,031 | 285 | pair-replaced 1,746 | 409 |
+| zod | 21,434 | 14,763 | pair-preserved 435; pair-replaced 6,236 | 0 | 0 | none | 14,763 |
+| flask | 685 | 515 | missing-source 50; missing-target 16; pair-replaced 104 | 0 | 0 | none | 515 |
+| fastapi | 4,753 | 1,711 | missing-both 52; missing-source 95; missing-target 2,612; pair-replaced 283 | 0 | 0 | none | 1,711 |
+
+This adds runtime diagnostics and a test/harness gate; it does not change graph topology, `RESOLUTION_VERSION` (still 8), or `formatVersion` (still 2).
+
+## Pre-merge follow-up: why Zod health falls 64→49
+
+The score movement is mechanically attributable to coupling. Zod's coupling dimension falls **90→30**, and its weight is **25%** of overall health. That 60-point dimension change contributes **−15 weighted points** before final rounding. The only other dimension score change is orphans/dead code **45→50** (weight 10%, contributing +0.5); cohesion, cycles, god files, and depth retain their scores. The overall rounds from 64 to 49. In the current formula (`src/health/metrics.ts`), `avgConnections` counts cross-file runtime **edges**, with repeated calls along a file pair counted separately. Zod's raw average rises **2.33→14.8**, crossing the base-score bands from 100 to 40; the same 10-point high-max penalty applies in both passes. Cross-directory share stays **0.5%→0.6%** and does not cause the drop.
+
+A second cache-disabled comparison used `main` at `099b3f5` and this branch against the same Zod checkout. We classified source files with `/src/`, excluding `test`/`spec` filenames and `test`, `bench`, or `benchmark` path segments. This is a diagnostic filter, **not** a proposed scoring rule. Counts below are built cross-file `calls` relationships, and a pair is an ordered source-file/target-file pair:
+
+| Population | Main calls | Branch calls | Change |
+|---|---:|---:|---:|
+| Production source → production source | 212 | 958 | +746 |
+| Test source → any target | 6 | 5,012 | +5,006 |
+| Benchmark source → any target | 9 | 422 | +413 |
+| Other source → any target | 0 | 83 | +83 |
+| **All cross-file calls** | **227** | **6,475** | **+6,248** |
+
+Tests and benchmarks account for **5,419 of the 6,248 added cross-file calls (86.7%)**. On the production-source-only graph, distinct connected file pairs across **all runtime edge kinds** rise only **200→218 (+9%)**, while cross-file runtime edge volume rises **574→1,337 (+133%)**. Production-source call pairs rise 25→120; many new call edges land on pairs already connected by imports. Filtering the graph to production source and recalculating the existing coupling formula still moves its score **70→30**. Thus tests amplify the full score drop, but do not explain it all: the current metric is also sensitive to call volume inside production source.
+
+This establishes **why the score changes**, not whether Zod's architecture became worse. The extra call evidence is real, but the current score primarily responds to repeated edges and to test volume. A distinct-file-relationship or composite coupling metric still requires Atef's separate contract decision; this follow-up makes no metric change and does not suppress the reported health movement.
