@@ -28,7 +28,11 @@ describe('JavaScript local module-load completeness', () => {
     const built = graph.findEdge((_, attrs, from, to) => attrs.kind === 'imports'
       && from === `${source}::__file__`
       && to === `${target}::__file__`);
-    expect(built).toBeDefined();
+    expect(built, JSON.stringify({ source, target,
+      parsedTarget: files.find(file => file.filePath === target)?.filePath,
+      sourceEdges: files.find(file => file.filePath === source)?.edges.filter(edge => edge.kind === 'imports'),
+      sourceUnresolved: files.find(file => file.filePath === source)?.unresolvedImports,
+    })).toBeDefined();
   });
 
   it('records missing and computed imports without guessed edges', async () => {
