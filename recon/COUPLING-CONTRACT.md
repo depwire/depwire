@@ -151,3 +151,79 @@ This section is a prediction record. The three repositories below were freshly s
 | `vuejs/pinia` `98587ca465b2c45e4053548261e769cad380ba5a` | TypeScript packages for core state management and integrations. Some central files should have several dependencies, while many package and playground files are isolated or lightly connected. The provisional classifier may count `playground` as production. | `M≈2.5`, `T95≈8` | **69** |
 
 Uncertainty is material: parser resolution and the provisional scope classifier may move these scores even if the architecture expectation is reasonable. That is part of what this blind check is intended to reveal. The next commit will append measured values and leave this record intact.
+
+## Validation after the prediction commit (V1–V4)
+
+The following inspection used the same cache-disabled graph and provisional scope rule as C3. The V4 measurements below were made **after** the separate prediction commit `1df4044e882b51b30f56bbff97dfcaee3be9f0e1`. This is a review of a proposed method, not a change to the product.
+
+### V1. Inspect the three large reorderings
+
+The `T95` boundary is the nearest-rank 95th-percentile file when production files are sorted by unique outward file count, including zeros. A tie at the boundary is listed so that the percentile is inspectable. Paths are relative to the named repository.
+
+| Repository | `M`, `T95`; boundary file(s) | Five highest outward file counts | Architectural reading and verdict |
+|---|---|---|---|
+| **Zod**, 30 → 80 | `342/210=1.63`, `5`; `packages/zod/src/v4/core/errors.ts`, tied at 5 with `v4/classic/from-json-schema.ts` and `v4/core/json-schema-processors.ts` | `v4/classic/external.ts` **16**; `v4/mini/external.ts` **15**; `v4/classic/schemas.ts` **13**; `packages/resolution/src/index.ts` **9**; `v3/types.ts` **9** | The two `external.ts` files aggregate and re-export classic/mini APIs; `schemas.ts` spans its own checks/parse plus core schema helpers; `resolution/index.ts` selects entry points; `v3/types.ts` uses v3 helpers. These are mostly deliberate entry/facade and schema-core relationships, concentrated in a few files. **80 describes the observed production file topology better than 30:** 82/210 production files have zero outward pair and 342 pairs across 210 files is sparse. It does **not** certify Zod's full architecture or call resolution. |
+| **Flask**, 90 → 59 | `89/25=3.56`, `10`; `src/flask/__init__.py` at the boundary | `src/flask/app.py` **11**; `src/flask/__init__.py` **10**; `src/flask/sansio/app.py` **9**; `src/flask/templating.py` **7**; `src/flask/blueprints.py` **6** | `app.py` depends on context, sessions, signals, templating, wrappers and the sans-I/O app; `sansio/app.py` reaches config, context, JSON provider, logging and scaffolding; `templating.py` and `blueprints.py` cross those same internals. This is a compact, intertwined 25-file core: 89/94 all-scope pairs are production. **59 is a better description of file dependency breadth than 90**, though `__init__.py` is an intentional public facade and its ten outward links should be annotated, not automatically treated as a refactoring defect. |
+| **code-graph**, 70 → 54 | `462/150=3.08`, `14`; `src/docs/index.ts` at the boundary | `src/mcp/tools.ts` **28**; `src/index.ts` **27**; `src/parser/detect.ts` **18**; `src/docs/generator.ts` **15**; `src/parser/index.ts` **15** (tied with `src/sdk.ts` and `src/security/scanner.ts`) | `mcp/tools.ts` spans graph, health, docs, simulation and tool handlers; `index.ts` dispatches CLI commands; `parser/detect.ts` imports 17 language parsers; `docs/generator.ts` imports generated-document modules. Their fan-out is **real**, but much of it is intended composition/dispatch. **54 is explainable as outward dependency breadth, yet is not proven a better *quality judgment* than 70.** The contract must present the named hubs and role before calling this an architecture regression. |
+
+The Zod/Flask ordering is supported by observed file relationships: Zod has a broad source tree with comparatively few outward pairs per file, while Flask's small core repeatedly crosses its own modules. Code-graph exposes a limitation of any fan-out score: a composition root can look heavily coupled while serving its intended role. This weakens confidence in the exact coefficient and grade, even though the raw breadth is valid.
+
+### V2. Express: the filter is sound; graph coverage is limited
+
+All seven framework source files survive: `index.js`, `lib/application.js`, `lib/express.js`, `lib/request.js`, `lib/response.js`, `lib/utils.js`, `lib/view.js`. The four **built** production pairs are all import relationships:
+
+1. `index.js → lib/express.js` (`index.js:11`)
+2. `lib/application.js → lib/view.js` (`lib/application.js:18`)
+3. `lib/express.js → lib/request.js` (`lib/express.js:20`)
+4. `lib/express.js → lib/response.js` (`lib/express.js:21`)
+
+| Exclusion reason | Files removed | All-scope pairs removed, by endpoint category |
+|---|---:|---:|
+| `examples/` | 46 | `example→example` 64; `example→test` 60 |
+| `test/` | 90 | `test→example` 98; `test→test` 85 |
+| `test/fixtures/` (fixture takes precedence over test) | 4 | 0 distinct pairs |
+| Benchmarks / generated | 0 | 0 |
+
+These 140 excluded files and 307 pairs account exactly for the all/prod difference, 147→7 files and 311→4 pairs. None of the seven core files is wrongly excluded. The filter is behaving correctly **on Express**; therefore there is no Express-derived scope correction to apply to the other seven repositories' C3 figures.
+
+The four-pair result is nevertheless **not a trustworthy complete map of Express's core**. `lib/express.js:18` requires `./application` and the parser emits an import to constructed ID `lib/application.js::proto`, but the built graph lacks that declaration, so the builder records an absent-endpoint drop. `lib/application.js:20–23` and `lib/response.js:27–29` require members of `./utils`, yet no built production pairs to `lib/utils.js` appear. These source relationships imply **at least seven** distinct production file pairs, versus four measured; with just those three restored, `M=1`, `T95=3` and the proposed score would be **88**, rather than 93. This is an illustrative lower-bound correction, not a parser fix or a verified complete pair inventory. Existing graph incompleteness can make a topology score over-generous even with a correct scope filter. Express must be removed as a trustworthy numerical anchor until import coverage is reconciled.
+
+The blind Pinia check also exposes a **different scope risk**: the provisional classifier does not recognize `playground/` as non-production. Exactly 24 of its 72 graph-bearing “production” files are under that path. Reclassifying them as examples in a diagnostic rerun changes Pinia from 72 files / 98 pairs / score **82** to 48 files / 55 pairs / score **83**. This does **not** explain the 13-point prediction miss, nor change the eight C3 rows directly, but it requires a classifier review and explicit scope overrides before applying the contract generally. No classifier implementation is authorized here.
+
+### V3. Coefficients and sensitivity
+
+The constants **6 and 2 were chosen after viewing the seven calibration anchors** to produce a plausible spread and to make repeated call volume irrelevant. That is *fitting by judgment*, not an independently validated calibration. FastAPI was not blind, as C5 already discloses. The balance is interpretable as 6 points per additional mean distinct dependency and 2 points per additional dependency at the 95th-percentile file; the choice to weight mean three times as strongly as the tail is normative, not an empirically proven risk ratio.
+
+Possible semantic anchors, stated **after** the chosen formula and therefore not independent evidence: a sparse core with `M=1,T95=2` scores 90; a moderately broad core with `M=3,T95=6` scores 70; a broadly interdependent core with `M=5,T95=10` scores 50. These three lie on `T95=2M` and **cannot uniquely determine both coefficients**. A distinguishing tail anchor would be `M=2,T95=9` scoring 70; together with `(1,2)→90`, it yields 6 and 2. Whether users actually consider that tail-heavy shape a 70 remains unvalidated. The anchors explain what the curve *says*; they do not establish that it says the right thing.
+
+Sensitivity on the same eight graphs and production scope; columns follow code-graph, nest, drizzle, hono, express, zod, flask, FastAPI:
+
+| Mean / tail coefficients | code-graph | nest | drizzle | hono | express | zod | flask | fastapi |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `4 / 1` | 74 | 77 | 54 | 82 | 96 | 88 | 76 | 98 |
+| `5 / 2` | 57 | 64 | 28 | 72 | 93 | 82 | 62 | 97 |
+| **`6 / 2` proposal** | **54** | **60** | **21** | **69** | **93** | **80** | **59** | **96** |
+| `7 / 2` | 50 | 57 | 15 | 67 | 92 | 79 | 55 | 96 |
+| `8 / 3` | 33 | 44 | 0 | 56 | 89 | 72 | 42 | 95 |
+
+The broad ordering is stable across these pairs: Zod stays above Hono, and both above Flask and code-graph; drizzle stays worst. Nest/Flask are close, with Nest remaining just above Flask for positive mean coefficients because they share `T95=10`. **Score magnitude and grade are sensitive**, particularly drizzle (0–54) and code-graph (33–74). The shape of the metric is better supported than these numeric constants. Do not approve the 6/2 coefficients merely because the eight-repo table looks plausible.
+
+### V4. Prospective blind results; predictions preserved above
+
+The exact prediction commit precedes the first Depwire parse of these clones. Measurements used the same provisional classifier and health-edge projection as C3; no coefficient or prediction changed.
+
+| Repository (pinned SHA above) | Predicted `M`, `T95`, score | Measured production files, pairs, `M`, `T95` | Measured score | Miss |
+|---|---:|---:|---:|---:|
+| Click | `≈4`, `≈10`, **56** | 18, 57, **3.17**, **9** | **63** | +7 |
+| ripgrep | `≈3`, `≈7`, **68** | 87, 73, **0.84**, **7** | **81** | +13 |
+| Pinia | `≈2.5`, `≈8`, **69** | 72, 98, **1.36**, **5** | **82** | +13 |
+
+All three measured scores exceed the pre-registered predictions. The Rust workspace has fewer observed cross-file relationships than expected; this may reflect genuinely local crate organization or unmodeled Rust relationships, and has **not** been proven either way. Pinia's `playground/` classification is a concrete scope concern, although excluding it moves the measured score only 82→83. A 13-point miss in two of three repositories is material: this blind check does not validate the curve's ability to predict an intelligible architecture score. It argues for checking parser coverage, revising scope classification, and anchoring the coefficients to reviewed examples before approving the numeric curve. The predictions remain in the earlier commit as recorded.
+
+### Generosity and overall-score movement
+
+Across the eight C5 repositories, old coupling scores have **mean 57.5, median 60**; proposed scores have **mean 66.5, median 64.5**. The curve is nine points more generous on average, despite two substantial downward moves. Overall mean moves **60.25→62.375** (+2.125) and median **60.5→64** (+3.5); six overall scores rise and two fall. The overall range barely compresses, **31–82 → 33–83** (width 51→50), so “compression” is less important than the upward shift and reordering. Nothing in the repositories improved: these are methodological changes. Any eventual release note must say so explicitly and must not describe the increases as architectural gains.
+
+## Updated approval recommendation after validation
+
+Approve the **structural contract** only if desired: distinct production relationships as the scored evidence, all-scope volume and exclusions as separately labeled diagnostics, and a methodology boundary. **Do not yet approve the 6/2 numeric curve or its grades.** Express demonstrates that graph coverage can make even correct filtering look sparse; Pinia shows the provisional classifier can include playground code; code-graph's composition roots and the two 13-point blind misses leave the 54/59/80 ordering insufficiently validated as a quality judgment. The 25% weight remains the right isolated first-implementation assumption *once a score curve is approved*. This is still document-only work; there is no implementation authorization in this PR.
