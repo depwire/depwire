@@ -139,3 +139,15 @@ The C5 last column holds all five other dimension scores and weights exactly as 
 ## Approval boundary and implementation gates
 
 Approval should cover the production-only default and path overrides, the ordered-pair projection, `100−6M−2T95` curve, reporting shape, trend wording, and retention of 25% weight. A later implementation must add exact fixture tests, scope audits, eight-repo and held-out projections, deterministic output, Cloud/Action/docs/MCP consumer updates, and version-boundary tests. This document authorizes none of those changes. **Stop here for Atef's contract approval.**
+
+## V4 pre-registration — committed before parsing
+
+This section is a prediction record. The three repositories below were freshly shallow-cloned and pinned, but **not parsed or measured with Depwire before this section's separate commit**. Selection checks found no mention of these repositories in Depwire's `recon/`, `docs/`, README or canonical calibration notes. This is a deliberately diverse Python command-line library, Rust search-tool workspace, and TypeScript state-management monorepo. Predictions use only the top-level source layout and the already frozen `100−6M−2T95` rule. The point predictions and expected components will not be revised after measurement.
+
+| Repository and pinned SHA | Pre-parse architectural expectation | Predicted production `M`, `T95` | Predicted score |
+|---|---|---:|---:|
+| `pallets/click` `06b2a678741131fd577ce170e23e5ca0aeba0309` | Compact Python `src/click` package of roughly 17 code files; central `core`, `types`, `utils`, `termui` and parser likely connect much of the package. | `M≈4`, `T95≈10` | **56** |
+| `BurntSushi/ripgrep` `3fce3b5bb0236da2df6d99672afb8a719642eca7` | Rust workspace split into small crates; each crate has concentrated local relationships, while cross-crate use may be external at file level. Expect moderate outward breadth. | `M≈3`, `T95≈7` | **68** |
+| `vuejs/pinia` `98587ca465b2c45e4053548261e769cad380ba5a` | TypeScript packages for core state management and integrations. Some central files should have several dependencies, while many package and playground files are isolated or lightly connected. The provisional classifier may count `playground` as production. | `M≈2.5`, `T95≈8` | **69** |
+
+Uncertainty is material: parser resolution and the provisional scope classifier may move these scores even if the architecture expectation is reasonable. That is part of what this blind check is intended to reveal. The next commit will append measured values and leave this record intact.
