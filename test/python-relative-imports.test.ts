@@ -28,7 +28,7 @@ describe('Python relative imports', () => {
   });
 
   it('keeps both TYPE_CHECKING forms out of runtime coupling', async () => {
-    const { graph } = await snapshot();
+    const { files, graph } = await snapshot();
     expect(hasEdge(graph, 'type_only', 'a', 'references-type')).toBe(true);
     expect(hasEdge(graph, 'type_only_direct', 'a', 'references-type')).toBe(true);
     expect(hasEdge(graph, 'type_only_alias', 'a', 'references-type')).toBe(true);
@@ -36,6 +36,12 @@ describe('Python relative imports', () => {
     expect(hasEdge(graph, 'type_only_direct', 'a', 'imports')).toBe(false);
     expect(hasEdge(graph, 'type_only_alias', 'a', 'imports')).toBe(false);
     expect(hasEdge(graph, 'runtime_guard', 'a', 'imports')).toBe(true);
+    const plainImport = files.find(file => file.filePath === 'pkg/type_only_plain.py')!;
+    expect(plainImport.edges).toContainEqual(expect.objectContaining({
+      target: 'pkg/a.py::__file__', kind: 'references-type', typeOnlyImport: true,
+    }));
+    expect(plainImport.edges.some(edge => edge.kind === 'imports')).toBe(false);
+    expect(hasEdge(graph, 'type_only_plain', 'a', 'references-type')).toBe(true);
   });
 
   it('records missing relative modules without an edge', async () => {

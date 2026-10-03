@@ -262,8 +262,9 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   const resolvedPath = resolveImportPath(moduleName, context.filePath, context.projectRoot);
   
   if (resolvedPath) {
+    const typeOnly = isTypeCheckingImport(node, context);
     // Local import - create symbol and edge
-    const targetId = `${resolvedPath}::__module__`;
+    const targetId = `${resolvedPath}::__file__`;
     const sourceId = `${context.filePath}::__file__`;
     
     context.imports.set(importedName, targetId);
@@ -271,9 +272,11 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
     context.edges.push({
       source: sourceId,
       target: targetId,
-      kind: 'imports',
+      kind: typeOnly ? 'references-type' : 'imports',
       filePath: context.filePath,
       line: node.startPosition.row + 1,
+      ...(typeOnly ? { typeOnlyImport: true } : {}),
+      importSpecifier: moduleName,
     });
   }
   // Else: external import, skip
