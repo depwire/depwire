@@ -6,6 +6,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## v1.26.0 — JavaScript import completeness
+
+**Express's current health score falls 82 → 65 even though its source architecture did not change.** The parser now captures import relationships it previously missed, including relationships in tests and examples. The current coupling metric counts those files and call/import volume; its definition is under review. This score movement is disclosed, not suppressed. A separate, **unapproved draft** production-only coupling formula moves 93 → 88 on Express after its production file pairs rise 4 → 7. That draft figure is not a replacement score.
+
+`RESOLUTION_VERSION` moves **8 → 9**, invalidating parse caches because parsed graph contents change. `formatVersion` remains **2**: stored graphs still load, but their contents are stale until reparsed. Regenerated downstream data, including SLM pairs, will reflect the new edges.
+
+### Source-visible JavaScript imports now reach the built graph
+
+The Express audit found three missing production relationships:
+
+- `lib/express.js → lib/application.js`: a direct `require('./application')` previously targeted a constructed `::proto` symbol with no declaration. The builder recorded a `missing-target` drop.
+- `lib/application.js → lib/utils.js` and `lib/response.js → lib/utils.js`: nested `require('./utils').member` calls were never emitted as imports.
+
+The first failure was caught by v1.25.0's parser-to-builder accounting contract. The other two happened before an edge existed, showing its limit: edge reconciliation cannot prove that every source-visible import was captured.
+
+The parser now records proven local file dependencies for direct, destructured and nested `require`, relative and directory-index paths, imports inside functions, conditions and try/catch, dynamic `import()`, and ESM imports and re-exports in JavaScript files. Computed or missing targets produce no guessed edge and have a recorded reason. Known local JSON, native and asset files are recorded separately as non-code dependencies.
+
+Built import edges on pinned repositories:
+
+| Repository | Before → after |
+|---|---:|
+| code-graph | 876 → 884 |
+| nest | 7,021 → 7,027 |
+| drizzle-orm | 6,122 → 6,144 |
+| express | **26 → 178** |
+| pinia | 313 → 314 |
+| hono, zod, flask, fastapi, click, ripgrep | unchanged |
+
+No symbol count or other built edge kind decreased. TypeScript built call counts remain 7,534 on Nest and 16,027 on Drizzle.
+
+### Health movement
+
+| Repository | Overall | Coupling |
+|---|---:|---:|
+| express | **82 → 65** | **90 → 70** |
+| drizzle-orm | 31 → 35 | 10 → 10 |
+| code-graph, nest, hono, zod, flask, fastapi | unchanged | unchanged |
+
+On Express, the current metric includes newly restored imports in tests and examples. Its cohesion, cycles, orphan and depth dimensions also move as those edges enter the graph; [the full audit](https://github.com/depwire/depwire/blob/main/recon/JAVASCRIPT-IMPORT-COMPLETENESS.md) reports all six dimensions and raw values. This is another graph-completeness movement, not evidence that Express was edited or its architecture worsened. The coupling contract is being revised separately to score distinct production file relationships and report excluded relationships explicitly.
+
+### Validation and known boundary
+
+All 17 language-construct fixture assertions failed against the pre-fix parser and pass with the fix. The parser-to-builder reconciliation assertion still holds across all eight calibration repositories. Three shuffled-discovery runs each on code-graph, Nest and Express produced byte-identical parsed output and serialized graphs. Build, tests and smoke checks pass on Ubuntu and Windows with Node 20 and 22.
+
+A conservative audit also identified 19 missing explicit-relative Python import sites across Flask, FastAPI and Click. Python remains out of scope for this release. Imports under `TYPE_CHECKING` must be kept distinct from runtime relationships when that parser is fixed. These fixes cover named JavaScript and TypeScript constructs, **not a proof of complete relationship capture across all supported languages**. Coupling calibration remains blocked on a stated coverage boundary and fresh, preregistered holdouts; Click, ripgrep and Pinia have already been measured.
+
+---
+
 ## v1.25.0 — Parser-to-graph edge contract; TypeScript call capture
 
 **Health scores fall on several repositories.** The graph now contains call edges it was always missing. Scores move because the evidence changed, not because the pinned codebases changed. `RESOLUTION_VERSION` moves from 6 after the JavaScript fix to 8, invalidating parse caches. `formatVersion` remains 2: stored graphs still load, but their contents are stale until reparsed. Regenerated SLM pairs will also reflect the new graph.
