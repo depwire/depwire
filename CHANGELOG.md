@@ -6,6 +6,67 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## v1.25.0 — Parser-to-graph edge contract; TypeScript call capture
+
+**Health scores fall on several repositories.** The graph now contains call edges it was always missing. Scores move because the evidence changed, not because the pinned codebases changed. `RESOLUTION_VERSION` moves from 6 after the JavaScript fix to 8, invalidating parse caches. `formatVersion` remains 2: stored graphs still load, but their contents are stale until reparsed. Regenerated SLM pairs will also reflect the new graph.
+
+### TypeScript call edges were silently dropped
+
+A call whose source symbol could not be determined — a bare call inside an object-literal method, a class-property arrow, a callback, an IIFE, a decorator, a parameter default, or a heritage clause — produced no edge **and no record**. That contradicted the v1.14.0/v1.16.1 policy: an unresolvable call produces no edge, with a recorded reason.
+
+Built call edges on the pinned calibration repositories, PR #54 baseline → final branch:
+
+| Repository | Built calls | Change |
+|---|---:|---:|
+| nest | 3,391 → 7,534 | 2.22× |
+| drizzle-orm | 4,475 → 16,027 | 3.58× |
+| zod | 1,276 → 8,199 | 6.43× |
+| hono | 892 → 2,587 | 2.90× |
+| code-graph | 1,968 → 2,351 | 1.19× |
+
+**2,223 TypeScript symbols** across the calibration corpus gain a dependent they previously lacked. Dead-code candidates fall accordingly: Nest **3,263 → 3,112** and Zod **1,368 → 794**. These final counts supersede figures measured at earlier PR heads.
+
+The TypeScript parser also captures `export =`, `import x = require(...)`, and CommonJS assignment forms that it previously ignored.
+
+### The parser and builder disagreed about what an edge means
+
+Found while validating target accuracy: the parser constructed import target IDs before proving declarations existed; the graph builder silently omitted edges with absent endpoints. Parsed and built counts diverged without an accounting trail. This **predates this release**. At the PR #54 baseline, Nest had 18,397 parsed versus 16,890 built edges, and Drizzle had 32,704 versus 24,184. Parsed counts should not have been presented as built-graph counts.
+
+The TypeScript finalizer now proves targets before emitting edges and records attempted IDs when proof fails. Ambiguous wildcard re-exports emit **no** edge and record `ambiguous-reexport` with the full candidate list. Previously the parser recorded ambiguity while retaining the invalid parsed edge. In the Nest `@Client(...)` case, that invalid edge **did not reach the built graph**: the builder had already omitted it because its target node did not exist.
+
+The builder now records absent endpoints and same-pair coalescing instead of silently discarding them. It remains a defensive backstop for other parser paths. Stored-graph import, incremental updates, and cross-language insertion also record omitted relationships.
+
+**A permanent reconciliation assertion runs in every graph build:** parsed edges = parser-built edges + recorded builder drops; cross-language attempted edges = added built edges + recorded cross-language drops. Drops are itemized by reason. A cache-disabled stress harness verified both identities on all eight calibration repositories, and a fixture proves the assertion fails if a drop is hidden.
+
+### Validation
+
+A seeded, stratified sample of 150 newly resolved call edges — 40 each from Nest, Drizzle and Zod; 15 each from code-graph and Hono — verified every target against its declaration: **150 CORRECT, 0 WRONG, 0 AMBIGUOUS**, with no declaration-less target. It covers object-literal methods, class-property arrows, callbacks, IIFEs, constructors, decorators, parameter defaults, heritage clauses, namespace and static-member targets, same-name symbols across files, shared method names, and overloads. Seed `pr55-target-accuracy-2026-10-03-v2` redraws the same 150 edges in order.
+
+Three shuffled-discovery runs per corpus produced byte-identical parsed output and serialized graphs on code-graph, Nest and Drizzle. The final build and 326 tests passed locally; Node 20 and 22 build, test, and smoke jobs passed on Ubuntu and Windows.
+
+### Health movement
+
+| Repository | Overall |
+|---|---:|
+| code-graph | 71 → 66 |
+| nest | 57 → 52 |
+| drizzle-orm | 34 → 31 |
+| hono | 50 → 48 |
+| zod | 64 → 49 |
+| express, flask, fastapi | unchanged |
+
+The movement is driven mainly by coupling. **The coupling metric's definition is under review.** It counts call volume along file relationships, as well as test and benchmark files. Zod's coupling score falls **90 → 30** at 25% weight, accounting for approximately 15 points of its overall drop. Its average counted cross-file connections per file rises **2.33 → 14.8**; cross-directory share barely moves (**0.5% → 0.6%**).
+
+In a follow-up measurement, tests and benchmarks account for **5,419 of 6,248 added built cross-file calls (86.7%)**. On a diagnostic production-source-only graph, distinct connected file pairs across runtime edge kinds rise **200 → 218 (+9%)**, while cross-file runtime edge volume rises **574 → 1,337 (+133%)**. Production-source cross-file calls rise **212 → 958**, and the existing coupling score still falls **70 → 30** when tests and benchmarks are filtered out. This explains the score movement; it does **not** establish that Zod's architecture worsened by 15 points. A separate contract will decide what coupling should measure. No metric was changed or score suppressed in this release.
+
+### Known and recorded, not fixed
+
+- Some real project calls remain unresolved when source alone cannot prove a target: typed receivers such as `db.query.usersTable.findMany`, callable aliases such as `z.string`, and dynamic dispatch. They are recorded with reasons rather than guessed.
+- Eleven Drizzle `.cjs` imports and two `.sql`/`.json` imports remain recorded missing targets.
+- JavaScript, Python and R have separate optimistic target-construction paths. Twelve other parsers share the no-current-symbol silent-return mechanism corrected here for TypeScript. These remain a separate parser programme.
+
+---
+
 ## 1.23.0 — Dead-code confidence reflects available evidence
 
 The dead-code classifier previously classified almost every candidate as HIGH before constructor, type-only and other mitigating checks could run. Those checks now run before the general fallback.
