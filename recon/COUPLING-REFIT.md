@@ -42,3 +42,17 @@ These are predictions for the exact pinned SHAs in `COUPLING-REFIT-PREREGISTRATI
 | TanStack Query | 300 | 600 | 2.00 | 9 | 80 | TypeScript packages expected to have many local helpers and bounded outward links. Monorepo aliases are a coverage risk. |
 
 Next step: clone only these exact SHAs, parse once with cache disabled, inspect scope classification, then report predicted versus measured `N`, `P`, mean, p95 and score. No coefficient change after seeing results. A material miss is a reason to reject or revise the **next** candidate in a separately preregistered run, not a reason to rewrite this candidate.
+
+## Prospective results (later commit)
+
+The predictions and candidate above were committed as `71f3035` before any of the three holdouts was cloned. The registration of names and SHAs was committed even earlier as `cb3d5f5`. Shallow clones were verified at the exact SHAs, parsed once with cache disabled, and measured by the frozen script. Raw output is `COUPLING-REFIT-HOLDOUTS.jsonl`; no coefficient, classifier or prediction was revised after seeing it.
+
+| Holdout | Production files predicted → measured | Pairs predicted → measured | Mean predicted → measured | p95 predicted → measured | Score predicted → measured | Miss |
+|---|---:|---:|---:|---:|---:|---:|
+| Fastify | 65 → 34 | 150 → 108 | 2.31 → 3.18 | 10 → 12 | 77 → 68 | −9 |
+| Werkzeug | 35 → 55 | 100 → 207 | 2.86 → 3.76 | 10 → 12 | 71 → 62 | −9 |
+| TanStack Query | 300 → 383 | 600 → 782 | 2.00 → 2.04 | 9 → 6 | 80 → 80 | 0 |
+
+The score errors are driven mainly by source topology predictions: Fastify has a smaller production core than predicted, while Werkzeug has a larger and more connected one. TanStack Query's 383 graph-bearing production files and 782 pairs produce nearly the predicted mean despite both raw counts being higher. The frozen classifier excludes 1,664 cross-scope/runtime-volume edges in Fastify, 203 in Werkzeug and 11,897 in TanStack Query; these are volume counts, not distinct pairs. `playground/` is excluded as preregistered. A TS syntax check found nine side-effect CSS imports in TanStack Query examples and no code-target side-effect site of the known Drizzle/Hono shape. CSS must remain a non-code dependency, not a coupling pair. Werkzeug's Python absolute import coverage remains unverified; its score is a lower-bound graph observation.
+
+**Verdict: no numeric approval.** Two same-direction nine-point misses are smaller than the previous 13-point misses but still material for a dimension worth 25% of overall health. More importantly, the candidate raises mean coupling **55 → 78.375** and illustrative overall **58.375 → 64.25** across the eight anchors with no architecture change. The simple scale is easier to explain than 6/2, but these blind results and the known capture gaps do not establish that its grade or ordering is right. Do not implement this curve, map it to letter grades, or reuse these three repositories as blind holdouts in a later attempt. The settled contract remains the relationship-based measurement and separate diagnostics; numerical calibration requires another proposed curve with reviewed architectural anchors and a fresh blind set after the known production relationship gaps are addressed or explicitly bounded.
