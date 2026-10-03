@@ -24,7 +24,7 @@ import { ParsedFile } from './types.js';
 
 /** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
 // JavaScript CommonJS exports, local calls, and unresolved diagnostics change cached graph contents.
-export const RESOLUTION_VERSION = 9;
+export const RESOLUTION_VERSION = 10;
 
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms

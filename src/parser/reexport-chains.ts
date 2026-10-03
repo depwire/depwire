@@ -16,7 +16,7 @@ export function rejectUnprovenEdge(
   if (edge.kind === 'calls') {
     (file.unresolvedCalls ??= []).push({ fromFile: file.filePath, callee: name, reason,
       attemptedTarget: edge.target, ...(candidates.length ? { candidates: drop.candidates } : {}) });
-  } else if (edge.kind === 'imports') {
+  } else if (edge.kind === 'imports' || (edge.kind === 'references-type' && edge.importSpecifier)) {
     (file.unresolvedImports ??= []).push({ fromFile: file.filePath, specifier: edge.importSpecifier ?? edge.target,
       reason: reason === 'unproven-target' ? (edge.importSpecifier ? 'unproven-symbol' : 'other') : reason });
   } else if (edge.kind === 'inherits' || edge.kind === 'implements' || edge.kind === 'injects' || edge.kind === 'references-type') {
@@ -172,6 +172,15 @@ export function finalizeTypeReferences(parsedFiles: ParsedFile[]): {
   for (const file of parsedFiles) {
     const retained = [];
     for (const edge of file.edges) {
+      // Python TYPE_CHECKING imports can prove a module relationship without
+      // naming a declared type. The project-wide endpoint pass proves the
+      // file; symbol-type resolution must not discard that file relationship.
+      if (edge.kind === 'references-type' && edge.typeOnlyImport
+        && edge.importSpecifier && edge.target.endsWith('::__file__')) {
+        retained.push(edge);
+        kept++;
+        continue;
+      }
       if (edge.kind !== 'references-type') {
         retained.push(edge);
         continue;
