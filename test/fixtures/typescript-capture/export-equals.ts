@@ -1,0 +1,2 @@
+function equalTarget() {}
+export = equalTarget;

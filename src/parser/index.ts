@@ -22,6 +22,7 @@ import { discoverJvmModuleRoots } from './jvm-modules.js';
 import { finalizeTypeReferences, resolveReExportChains } from './reexport-chains.js';
 import { resolveSuperCalls } from './super-calls.js';
 import { resolveNamespaceCalls } from './namespace-calls.js';
+import { validateParsedEdgeTargets } from './edge-validation.js';
 import { assertSupportedGraphFormat, GRAPH_FORMAT_VERSION } from '../graph/serializer.js';
 import {
   setModuleSourceRoots as setJavaModuleRoots,
@@ -226,6 +227,10 @@ export async function parseProject(
     }
   }
   const typeRefResult = finalizeTypeReferences(parsedFiles);
+  const edgeValidation = validateParsedEdgeTargets(parsedFiles);
+  if (options?.verbose && (edgeValidation.dropped || edgeValidation.retargeted)) {
+    console.error(`[Parser] Edge targets: ${edgeValidation.retargeted} named exports resolved, ${edgeValidation.dropped} unproven edges recorded`);
+  }
   if (options?.verbose && (chainResult.rewritten > 0 || chainResult.droppedAsUnresolved > 0)) {
     console.error(
       `[Parser] Re-export chains: ${chainResult.rewritten} resolved, ${chainResult.droppedAsUnresolved} exceeded depth/cycle`
@@ -267,7 +272,7 @@ export async function parseProject(
  *   2. template -> each referenced symbol (component selector / directive /
  *      pipe). References whose selector matches a project @Component decorator
  *      resolve to that component class node; everything else points at an
- *      `external::<name>` marker that buildGraph drops (both-endpoints rule).
+ *      `external::<name>` marker that buildGraph records as a missing target.
  *
  * Edges are appended to the template's ParsedFile so they flow through the
  * normal buildGraph pipeline. Recomputed every parse — independent of cache.

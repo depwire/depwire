@@ -1,4 +1,29 @@
-import type { ParsedFile, SymbolKind, UnresolvedTypeRefReason } from './types.js';
+import type { ParsedFile, SymbolEdge, SymbolKind, UnresolvedEdge, UnresolvedTypeRefReason } from './types.js';
+
+export function rejectUnprovenEdge(
+  file: ParsedFile,
+  edge: SymbolEdge,
+  reason: UnresolvedEdge['reason'],
+  candidates: string[] = [],
+): void {
+  const drop: UnresolvedEdge = {
+    source: edge.source, attemptedTarget: edge.target, kind: edge.kind,
+    filePath: edge.filePath, line: edge.line, reason,
+    ...(candidates.length ? { candidates: [...candidates].sort() } : {}),
+  };
+  (file.unresolvedEdges ??= []).push(drop);
+  const name = edge.target.slice(edge.target.lastIndexOf('::') + 2);
+  if (edge.kind === 'calls') {
+    (file.unresolvedCalls ??= []).push({ fromFile: file.filePath, callee: name, reason,
+      attemptedTarget: edge.target, ...(candidates.length ? { candidates: drop.candidates } : {}) });
+  } else if (edge.kind === 'imports') {
+    (file.unresolvedImports ??= []).push({ fromFile: file.filePath, specifier: edge.target,
+      reason: reason === 'unproven-target' ? 'other' : reason });
+  } else if (edge.kind === 'inherits' || edge.kind === 'implements' || edge.kind === 'injects' || edge.kind === 'references-type') {
+    (file.unresolvedTypeRefs ??= []).push({ fromFile: file.filePath, typeName: name,
+      reason: reason === 'ambiguous-reexport' ? 'ambiguous-reexport' : 'no-project-symbol' });
+  }
+}
 
 // Barrel/re-export chains rarely exceed 3-4 levels in real code (an entry
 // index.ts re-exporting a submodule's index.ts re-exporting individual
@@ -27,10 +52,8 @@ const MAX_CHAIN_DEPTH = 8;
  * re-exported through a barrel) that point at an undeclared name in a
  * barrel file to the real declaring file, and (for barrels that exhaust the
  * depth cap, hit a cycle, or reach more than one candidate declaring file
- * without a way to choose between them) records the miss into that file's
- * `unresolvedImports` with reason `chain-exceeded-depth` or
- * `ambiguous-reexport` rather than leaving it as a silent dangling edge or
- * guessing between candidates.
+ * without a way to choose between them) removes the edge and records the
+ * attempted target in `unresolvedEdges` and the kind-specific unresolved list.
  */
 export function resolveReExportChains(parsedFiles: ParsedFile[]): {
   rewritten: number;
@@ -50,6 +73,7 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
   let droppedAsUnresolved = 0;
 
   for (const file of parsedFiles) {
+    const retained: SymbolEdge[] = [];
     for (const edge of file.edges) {
       // No kind filter: `edge.kind !== 'imports'` was the bug -- calls,
       // extends, injects and every other edge kind can point at a name
@@ -59,41 +83,33 @@ export function resolveReExportChains(parsedFiles: ParsedFile[]): {
       // file that itself re-exports things, not what kind of relationship
       // the edge represents.
       const sep = edge.target.lastIndexOf('::');
-      if (sep === -1) continue;
+      if (sep === -1) { retained.push(edge); continue; }
       const targetFile = edge.target.slice(0, sep);
       const targetName = edge.target.slice(sep + 2);
-      if (targetName === '__file__') continue;
-      if (declaredNames.get(targetFile)?.has(targetName)) continue; // already resolves fine
+      if (targetName === '__file__') { retained.push(edge); continue; }
+      if (declaredNames.get(targetFile)?.has(targetName)) { retained.push(edge); continue; } // already resolves fine
 
       const targetParsed = byFile.get(targetFile);
-      if (!targetParsed?.wildcardReExports?.length) continue; // not a barrel -- nothing to chase
+      if (!targetParsed?.wildcardReExports?.length) { retained.push(edge); continue; } // later validation handles it
 
       const found = searchWildcardChain(targetFile, targetName, byFile, declaredNames);
       if (found.length === 1) {
         edge.target = `${found[0]}::${targetName}`;
+        retained.push(edge);
         rewritten++;
       } else if (found.length === 0) {
         droppedAsUnresolved++;
-        if (!file.unresolvedImports) file.unresolvedImports = [];
-        file.unresolvedImports.push({
-          fromFile: file.filePath,
-          specifier: `${targetFile}::${targetName}`,
-          reason: 'chain-exceeded-depth',
-        });
+        rejectUnprovenEdge(file, edge, 'unproven-target');
       } else {
         // More than one file in the chain declares the same name. Picking
         // one (by BFS order, alphabetically, or any other rule) would be a
         // guess dressed up as a resolved edge -- a wrong edge is worse than
         // a missing one, so this is recorded unresolved instead.
         droppedAsUnresolved++;
-        if (!file.unresolvedImports) file.unresolvedImports = [];
-        file.unresolvedImports.push({
-          fromFile: file.filePath,
-          specifier: `${targetFile}::${targetName}`,
-          reason: 'ambiguous-reexport',
-        });
+        rejectUnprovenEdge(file, edge, 'ambiguous-reexport', found.map(path => `${path}::${targetName}`));
       }
     }
+    file.edges = retained;
   }
 
   return { rewritten, droppedAsUnresolved };
@@ -204,7 +220,7 @@ export function finalizeTypeReferences(parsedFiles: ParsedFile[]): {
  * ambiguity rather than silently keeping whichever happened to be visited
  * first.
  */
-function searchWildcardChain(
+export function searchWildcardChain(
   startFile: string,
   targetName: string,
   byFile: Map<string, ParsedFile>,

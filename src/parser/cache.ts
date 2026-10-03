@@ -23,8 +23,8 @@ import { join } from 'path';
 import { ParsedFile } from './types.js';
 
 /** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
-// Canonical paths now join native Windows resolver targets to graph symbols.
-export const RESOLUTION_VERSION = 5;
+// JavaScript CommonJS exports, local calls, and unresolved diagnostics change cached graph contents.
+export const RESOLUTION_VERSION = 8;
 
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms

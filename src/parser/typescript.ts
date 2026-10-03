@@ -1,6 +1,7 @@
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
+import { commonJSExportTarget, isModuleExports, hasConditionalAncestor } from './commonjs.js';
 
 interface Context {
   filePath: string;
@@ -19,9 +20,11 @@ interface Context {
   // whose target must match a real declared symbol at some scope level (this./super. member
   // calls) -- these get NO edge (recorded unresolved instead) if no level matches. Bare calls
   // and constructors are also buffered until a real value declaration supports the edge.
-  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super'}>;
+  unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super', staticClass?: string}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
+  unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
+  exportTargets: Array<{ name: string; line: number }>;
   unresolvedTypeRefs: UnresolvedTypeRef[];
   pendingTypeRefs: Array<{ source: string; typeName: string; qualifier?: string; line: number; heritage?: boolean; scopeChain: string[] }>;
   pendingSuperCalls: PendingSuperCall[];
@@ -56,6 +59,8 @@ export function parseTypeScriptFile(
     unresolvedCallEdges: [],
     unresolvedImports: [],
     unresolvedCalls: [],
+    unresolvedExports: [],
+    exportTargets: [],
     unresolvedTypeRefs: [],
     pendingTypeRefs: [],
     pendingSuperCalls: [],
@@ -65,6 +70,11 @@ export function parseTypeScriptFile(
   };
   
   walkNode(tree.rootNode, context);
+  for (const target of context.exportTargets) {
+    const symbol = context.symbols.find(s => s.id === `${context.filePath}::${target.name}`);
+    if (symbol) symbol.exported = true;
+    else context.unresolvedExports.push({ fromFile: context.filePath, line: target.line, expression: target.name, reason: 'no-local-target' });
+  }
   
   // Resolve all buffered call edges now that all symbols have been declared
   resolveUnresolvedCallEdges(context);
@@ -76,6 +86,7 @@ export function parseTypeScriptFile(
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
     unresolvedCalls: context.unresolvedCalls,
+    ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
     pendingSuperCalls: context.pendingSuperCalls,
     pendingNamespaceCalls: context.pendingNamespaceCalls,
     unresolvedTypeRefs: context.unresolvedTypeRefs,
@@ -92,6 +103,8 @@ const LEXICAL_SCOPE_TYPES = new Set([
 ]);
 
 function walkNode(node: any, context: Context, namedScopeBody = false): void {
+  // `typeof import('pkg')` is a type query, not a runtime import call.
+  if (node.type === 'type_query') return;
   if (!namedScopeBody && LEXICAL_SCOPE_TYPES.has(node.type)) {
     const counterIndex = context.blockCounters.length - 1;
     const blockIndex = context.blockCounters[counterIndex]++;
@@ -182,8 +195,12 @@ function processNode(node: Parser.SyntaxNode, context: Context): boolean {
     case 'export_statement':
       processExportStatement(node, context);
       break;
+    case 'assignment_expression':
+      processCommonJSAssignment(node, context);
+      break;
     case 'call_expression':
       processCallExpression(node, context);
+      processCommonJSObjectAssign(node, context);
       break;
     case 'new_expression':
       processNewExpression(node, context);
@@ -608,13 +625,17 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
       if (grammarExtendsClause && !extendsClause) {
         const value = grammarExtendsClause.childForFieldName('value') ?? grammarExtendsClause.lastNamedChild;
         if (value) {
-          context.edges.push({
-            source: symbolId,
-            target: resolveTypeTarget(value.text, context),
-            kind: 'inherits',
-            filePath: context.filePath,
-            line: value.startPosition.row + 1,
-          });
+          if (value.type === 'identifier' || value.type === 'member_expression') {
+            context.edges.push({
+              source: symbolId,
+              target: resolveTypeTarget(value.text, context),
+              kind: 'inherits',
+              filePath: context.filePath,
+              line: value.startPosition.row + 1,
+            });
+          } else {
+            recordUnresolvedTypeRef(context, value.text, 'unsupported-target-kind');
+          }
         }
       }
       
@@ -644,6 +665,12 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
       if (grammarImplementsClause && !implementsClause) {
         queueTypeReferences(grammarImplementsClause, symbolId, context, true);
       }
+      // An extends expression can execute a factory call (`extends mixin()`)
+      // or contain nested calls. The class handler owns this subtree, so the
+      // generic walker will not visit it unless we do so explicitly.
+      context.currentScope.push(name);
+      walkNode(child, context);
+      context.currentScope.pop();
     }
   }
   
@@ -677,6 +704,19 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     for (let i = 0; i < body.childCount; i++) {
       const child = body.child(i);
       if (!child) continue;
+
+      if (child.type === 'decorator') {
+        // In the TypeScript grammar a member decorator is a sibling directly
+        // before its member, not a child of method_definition/field_definition.
+        let next = i + 1;
+        while (body.child(next)?.type === 'decorator') next++;
+        const member = body.child(next);
+        const name = member?.childForFieldName('name')?.text;
+        const source = name && `${context.filePath}::${context.currentScope.join('.')}.${name}`;
+        if (source && context.declaredSymbolIds.has(source)) context.currentScope.push(name!);
+        walkNode(child, context);
+        if (source && context.declaredSymbolIds.has(source)) context.currentScope.pop();
+      }
       
       if (child.type === 'public_field_definition' || child.type === 'field_definition') {
         const value = child.childForFieldName('value');
@@ -694,19 +734,13 @@ function processClassDeclaration(node: Parser.SyntaxNode, context: Context): voi
     }
   }
   
-  // Class-level decorators (e.g. @Component({...})) may live as direct
-  // children of the class node, or as siblings under an export_statement
-  // wrapper — walk both so decorator argument call expressions are reached.
+  // Walk decorators owned by the class node. Sibling decorators are already
+  // visited by the generic walk of the parent; visiting them here too records
+  // each call twice (notably @Module() on exported Nest classes).
   const classLevelDecorators: Parser.SyntaxNode[] = [];
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
     if (child && child.type === 'decorator') classLevelDecorators.push(child);
-  }
-  if (node.parent) {
-    for (let i = 0; i < node.parent.childCount; i++) {
-      const sibling = node.parent.child(i);
-      if (sibling && sibling.type === 'decorator') classLevelDecorators.push(sibling);
-    }
   }
   for (const decorator of classLevelDecorators) {
     walkNode(decorator, context);
@@ -812,7 +846,10 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
     endLine,
     exported: false,
     scope: className,
-    ...ambientMetadata(context),
+    ...((hasDirectToken(node, 'static') || context.ambientDepth > 0) ? { metadata: {
+      ...(hasDirectToken(node, 'static') ? { static: true } : {}),
+      ...(context.ambientDepth > 0 ? { ambient: true } : {}),
+    } } : {}),
   });
 
   collectCallableTypeReferences(node, symbolId, context);
@@ -820,6 +857,10 @@ function processMethodDefinition(node: Parser.SyntaxNode, context: Context): voi
   // Enter method scope
   context.currentScope.push(name);
   withNamedScopeBody(context, () => {
+    // Parameter decorators and default values execute calls too. The class
+    // walker owns method subtrees, so generic recursion never sees these.
+    const parameters = node.childForFieldName('parameters');
+    if (parameters) walkNode(parameters, context);
     const body = node.childForFieldName('body');
     if (body) walkNode(body, context, true);
   });
@@ -837,6 +878,9 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
   const endLine = node.endPosition.row + 1;
   
   const symbolId = `${context.filePath}::${className}.${name}`;
+  const value = node.childForFieldName('value');
+  const isStatic = hasDirectToken(node, 'static');
+  const isCallable = value?.type === 'arrow_function' || value?.type === 'function_expression';
   
   pushSymbol(context, {
     id: symbolId,
@@ -847,7 +891,11 @@ function processPropertyDefinition(node: Parser.SyntaxNode, context: Context): v
     endLine,
     exported: false,
     scope: className,
-    ...ambientMetadata(context),
+    ...((isStatic || context.ambientDepth > 0) ? { metadata: {
+      ...(isStatic ? { static: true } : {}),
+      ...(isStatic && isCallable ? { callable: true } : {}),
+      ...(context.ambientDepth > 0 ? { ambient: true } : {}),
+    } } : {}),
   });
   queueTypeReferences(node.childForFieldName('type'), symbolId, context);
 }
@@ -900,6 +948,8 @@ function processVariableDeclaration(node: Parser.SyntaxNode, context: Context): 
           collectCallableTypeReferences(value, symbolId, context);
           context.currentScope.push(name);
           withNamedScopeBody(context, () => {
+            const parameters = value.childForFieldName('parameters');
+            if (parameters) walkNode(parameters, context);
             const body = value.childForFieldName('body');
             if (body) {
               walkNode(body, context, body.type === 'statement_block');
@@ -1028,8 +1078,23 @@ interface ImportBinding {
 
 function processImportStatement(node: Parser.SyntaxNode, context: Context): void {
   // Get the import source
-  const source = node.childForFieldName('source');
+  const source = node.childForFieldName('source') ?? findChildByType(node, 'import_require_clause')?.childForFieldName('source');
   if (!source) return;
+  const requireClause = findChildByType(node, 'import_require_clause');
+  if (requireClause) {
+    const alias = findChildByType(requireClause, 'identifier');
+    if (!alias) return;
+    const specifier = source.text.slice(1, -1);
+    const target = resolveImportPath(specifier, context.filePath, context.projectRoot);
+    if (target) {
+      context.imports.set(alias.text, `${target}::__file__`);
+      context.edges.push({ source: getCurrentSymbolId(context) ?? `${context.filePath}::__file__`, target: `${target}::__file__`, kind: 'imports', filePath: context.filePath, line: node.startPosition.row + 1 });
+    } else {
+      context.externalImports.set(alias.text, specifier);
+      context.unresolvedImports.push({ fromFile: context.filePath, specifier, reason: classifyUnresolvedImport(specifier, context.filePath, context.projectRoot) });
+    }
+    return;
+  }
   
   const importPath = source.text.slice(1, -1); // Remove quotes
   const resolvedPath = resolveImportPath(importPath, context.filePath, context.projectRoot);
@@ -1157,7 +1222,82 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   }
 }
 
+function recordUnresolvedExport(context: Context, node: Parser.SyntaxNode, reason: string): void {
+  context.unresolvedExports.push({ fromFile: context.filePath, line: node.startPosition.row + 1, expression: node.text, reason });
+}
+
+function exportCommonJSValue(node: Parser.SyntaxNode, context: Context, line: number, exportName?: string): void {
+  if (node.type === 'identifier') {
+    context.exportTargets.push({ name: node.text, line });
+    return;
+  }
+  if (node.type === 'object') {
+    for (const member of node.namedChildren) {
+      if (member.type === 'shorthand_property_identifier') {
+        context.exportTargets.push({ name: member.text, line: member.startPosition.row + 1 });
+      } else if (member.type === 'pair') {
+        const key = member.childForFieldName('key');
+        const value = member.childForFieldName('value');
+        if (!key || !value) { recordUnresolvedExport(context, member, 'unsupported-property'); continue; }
+        const name = key.text.replace(/^['"]|['"]$/g, '');
+        if (!/^[A-Za-z_$][\w$]*$/.test(name)) { recordUnresolvedExport(context, member, 'computed-property'); continue; }
+        exportCommonJSValue(value, context, member.startPosition.row + 1, name);
+      } else {
+        recordUnresolvedExport(context, member, 'unsupported-property');
+      }
+    }
+    return;
+  }
+  if (node.type === 'function_expression' || node.type === 'arrow_function') {
+    const name = node.childForFieldName('name')?.text ?? exportName ?? 'default';
+    const id = `${context.filePath}::${name}`;
+    if (!context.declaredSymbolIds.has(id)) pushSymbol(context, { id, name, kind: 'function', filePath: context.filePath, startLine: node.startPosition.row + 1, endLine: node.endPosition.row + 1, exported: true });
+    else context.exportTargets.push({ name, line });
+    return;
+  }
+  if (node.type === 'call_expression' && node.childForFieldName('function')?.text === 'require') {
+    const arg = node.childForFieldName('arguments')?.namedChildren[0];
+    if (arg?.type !== 'string') { recordUnresolvedExport(context, node, 'computed-require'); return; }
+    const specifier = arg.text.slice(1, -1);
+    const target = resolveImportPath(specifier, context.filePath, context.projectRoot);
+    if (target) context.edges.push({ source: `${context.filePath}::__file__`, target: `${target}::__file__`, kind: 'imports', filePath: context.filePath, line });
+    else recordUnresolvedExport(context, node, 'require-not-local');
+    return;
+  }
+  recordUnresolvedExport(context, node, 'no-provable-symbol');
+}
+
+function processCommonJSAssignment(node: Parser.SyntaxNode, context: Context): void {
+  const left = node.childForFieldName('left');
+  const right = node.childForFieldName('right');
+  if (!left || !right) return;
+  const target = commonJSExportTarget(left, child => child.text);
+  if (!target) return;
+  if (target.kind === 'computed' || right.type === 'ternary_expression' || hasConditionalAncestor(node)) {
+    recordUnresolvedExport(context, node, target.kind === 'computed' ? 'computed-property' : 'conditional-assignment');
+    return;
+  }
+  exportCommonJSValue(right, context, node.startPosition.row + 1, target.name);
+}
+
+function processCommonJSObjectAssign(node: Parser.SyntaxNode, context: Context): void {
+  const fn = node.childForFieldName('function');
+  const object = fn?.childForFieldName('object');
+  const property = fn?.childForFieldName('property');
+  if (fn?.type !== 'member_expression' || object?.text !== 'Object' || property?.text !== 'assign') return;
+  const args = node.childForFieldName('arguments')?.namedChildren;
+  if (!args || args.length < 2 || !isModuleExports(args[0], child => child.text)) return;
+  if (hasConditionalAncestor(node)) { recordUnresolvedExport(context, node, 'conditional-assignment'); return; }
+  for (const value of args.slice(1)) exportCommonJSValue(value, context, node.startPosition.row + 1);
+}
+
 function processExportStatement(node: Parser.SyntaxNode, context: Context): void {
+  // `export = value` is TypeScript's CommonJS export assignment.
+  if (hasDirectToken(node, '=')) {
+    const value = node.namedChildren.at(-1);
+    if (value) exportCommonJSValue(value, context, node.startPosition.row + 1);
+    return;
+  }
   // Handle re-exports: export { X } from './module'
   const source = node.childForFieldName('source');
   if (source) {
@@ -1167,13 +1307,11 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     // Locate the clause by node type — `export type { ... } from` shifts the
     // export_clause by one slot, same issue as Bug 1 for imports.
     const exportClause = findChildByType(node, 'export_clause');
-    // `export * from './x'` has a bare `*` token child and no export_clause,
-    // no namespace_export. `export * as ns from './x'` has a namespace_export
-    // child instead. Both are wildcard re-exports for chain-following
-    // purposes -- `ns.something` still ultimately resolves through the same
-    // barrel, so both are recorded as wildcard candidates.
+    // `export * from './x'` forwards every exported name. `export * as ns`
+    // forwards only `ns`; treating it as a wildcard makes unrelated names
+    // from that module appear exported and creates ambiguous or wrong edges.
     const namespaceExport = findChildByType(node, 'namespace_export');
-    const isWildcard = !exportClause && (namespaceExport !== null || hasWildcardToken(node));
+    const isWildcard = !exportClause && !namespaceExport && hasWildcardToken(node);
 
     if (exportClause && resolvedPath) {
       const exportedNames: Array<{ localName: string; sourceName: string }> = [];
@@ -1230,6 +1368,19 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     } else if (exportClause && !resolvedPath) {
       const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
       context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
+    } else if (namespaceExport) {
+      if (resolvedPath) {
+        const name = findChildByType(namespaceExport, 'identifier')?.text;
+        if (name) {
+          const line = node.startPosition.row + 1;
+          const sourceId = `${context.filePath}::${name}`;
+          pushSymbol(context, { id: sourceId, name, kind: 'export', filePath: context.filePath, startLine: line, endLine: node.endPosition.row + 1, exported: true });
+          context.edges.push({ source: sourceId, target: `${resolvedPath}::__file__`, kind: 'imports', filePath: context.filePath, line });
+        }
+      } else {
+        const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
+        context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath, reason });
+      }
     } else if (isWildcard) {
       if (resolvedPath) {
         context.wildcardReExports.push(resolvedPath);
@@ -1259,10 +1410,9 @@ function hasDirectToken(node: Parser.SyntaxNode, type: string): boolean {
 
 function processCallExpression(node: Parser.SyntaxNode, context: Context): void {
   const functionNode = node.childForFieldName('function');
-  if (!functionNode) return;
+  if (!functionNode) { recordUnresolvedCall(context, node.text, 'no-local-target'); return; }
 
-  const currentSymbolId = getCurrentSymbolId(context);
-  if (!currentSymbolId) return;
+  const currentSymbolId = getCallSource(node, context);
 
   if (functionNode.type === 'identifier') {
     // Bare identifier call, e.g. `foo()`. A name match is not enough: parameters,
@@ -1324,7 +1474,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
   if (functionNode.type === 'member_expression') {
     const object = functionNode.childForFieldName('object');
     const property = functionNode.childForFieldName('property');
-    if (!property) return;
+    if (!property) { recordUnresolvedCall(context, functionNode.text, 'unresolvable-receiver'); return; }
     const functionName = property.text;
     const line = node.startPosition.row + 1;
 
@@ -1366,7 +1516,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     const importedTarget = resolveQualifiedImportTarget(qualifiedName, context);
     const localNamespace = context.declaredSymbols.get(`${context.filePath}::${rootName}`)
       ?.some((declaration) => declaration.kind === 'module' || declaration.metadata?.namespace === true);
-    if (importedTarget || localNamespace) {
+    const localClass = context.declaredSymbols.get(`${context.filePath}::${rootName}`)
+      ?.some((declaration) => declaration.kind === 'class');
+    if (importedTarget || localNamespace || localClass) {
       if (hasUnmodeledLexicalBinding(node, rootName)) {
         recordUnresolvedCall(context, qualifiedName, 'local-binding-not-modeled');
         return;
@@ -1388,7 +1540,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
           callee: qualifiedName,
           line,
         });
-      } else if (isSupportedLocalCallTarget(targetId, 'call', context)) {
+      } else if (targetId && (localClass
+        ? context.declaredSymbols.get(targetId)?.some(isStaticCallableDeclaration)
+        : isSupportedLocalCallTarget(targetId, 'call', context))) {
         context.edges.push({
           source: currentSymbolId,
           target: targetId,
@@ -1396,6 +1550,9 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
           filePath: context.filePath,
           line,
         });
+      } else if (localClass && targetId &&
+        context.declaredSymbols.get(targetId)?.some(symbol => (symbol.kind === 'method' || symbol.kind === 'property') && !isStaticCallableDeclaration(symbol))) {
+        recordUnresolvedCall(context, qualifiedName, 'receiver-not-local');
       } else {
         context.unresolvedCallEdges.push({
           source: currentSymbolId,
@@ -1403,6 +1560,7 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
           line,
           scopeChain: [...context.currentScope],
           callKind: 'call',
+          ...(localClass ? { staticClass: rootName } : {}),
         });
       }
       return;
@@ -1414,6 +1572,42 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
     recordUnresolvedCall(context, `${receiverText}.${functionName}`, 'unresolvable-receiver');
     return;
   }
+  recordUnresolvedCall(context, functionNode.text, 'unresolvable-receiver');
+}
+
+function getCallSource(node: Parser.SyntaxNode, context: Context): string {
+  const currentSymbolId = getCurrentSymbolId(context);
+  let ancestor = node.parent;
+  while (ancestor && ancestor.type !== 'program') {
+    if (ancestor.type === 'function_expression' || ancestor.type === 'arrow_function') {
+      const parent = ancestor.parent;
+      let exportName: string | undefined;
+      if (parent?.type === 'export_statement' && hasDirectToken(parent, '=')) {
+        exportName = ancestor.childForFieldName('name')?.text ?? 'default';
+      } else if (parent?.type === 'assignment_expression' && parent.childForFieldName('right')?.id === ancestor.id) {
+        const left = parent.childForFieldName('left');
+        const target = left && commonJSExportTarget(left, child => child.text);
+        if (target && target.kind !== 'computed' && !hasConditionalAncestor(parent)) {
+          exportName = ancestor.childForFieldName('name')?.text ?? target.name ?? 'default';
+        }
+      }
+      const id = exportName && `${context.filePath}::${exportName}`;
+      if (id && context.declaredSymbolIds.has(id)) return id;
+    }
+    if (ancestor.type === 'public_field_definition' || ancestor.type === 'field_definition') {
+      const name = ancestor.childForFieldName('name')?.text;
+      const id = name && `${context.filePath}::${context.currentScope.join('.')}.${name}`;
+      if (id && context.declaredSymbolIds.has(id)) return id;
+    }
+    if (ancestor.type === 'variable_declarator') {
+      if (currentSymbolId) return currentSymbolId;
+      const name = ancestor.childForFieldName('name')?.text;
+      const id = name && resolveLocalDeclarationTarget(name, context.currentScope, context);
+      if (id) return id;
+    }
+    ancestor = ancestor.parent;
+  }
+  return currentSymbolId ?? `${context.filePath}::__file__`;
 }
 
 function recordUnresolvedCall(context: Context, callee: string, reason: UnresolvedCallReason): void {
@@ -1422,10 +1616,10 @@ function recordUnresolvedCall(context: Context, callee: string, reason: Unresolv
 
 function processNewExpression(node: Parser.SyntaxNode, context: Context): void {
   const classNode = node.childForFieldName('constructor');
-  if (!classNode || classNode.type !== 'identifier') return;
+  if (!classNode || classNode.type !== 'identifier') { recordUnresolvedCall(context, classNode?.text ?? node.text, 'unresolvable-receiver'); return; }
   
   const className = classNode.text;
-  const currentSymbolId = getCurrentSymbolId(context);
+  const currentSymbolId = getCallSource(node, context);
   
   if (currentSymbolId) {
     if (hasUnmodeledLexicalBinding(node, className)) {
@@ -1660,6 +1854,11 @@ function isSupportedLocalCallTarget(
   return declarations.some((declaration) => supportedKinds.has(declaration.kind));
 }
 
+function isStaticCallableDeclaration(symbol: SymbolNode): boolean {
+  return symbol.metadata?.static === true &&
+    (symbol.kind === 'method' || (symbol.kind === 'property' && symbol.metadata?.callable === true));
+}
+
 function unsupportedLocalCallReason(
   targetId: string,
   context: Context,
@@ -1715,6 +1914,17 @@ function resolveUnresolvedCallEdges(context: Context): void {
     // Temporarily set the scope chain to what it was when the call was made
     const savedScope = context.currentScope;
     context.currentScope = unresolved.scopeChain;
+
+    if (unresolved.staticClass) {
+      const targetId = resolveLocalCallTarget(unresolved.functionName, context);
+      context.currentScope = savedScope;
+      if (context.declaredSymbols.get(targetId)?.some(isStaticCallableDeclaration)) {
+        context.edges.push({ source: unresolved.source, target: targetId, kind: 'calls', filePath: context.filePath, line: unresolved.line });
+      } else {
+        context.unresolvedCalls.push({ fromFile: context.filePath, callee: unresolved.functionName, reason: unsupportedLocalCallReason(targetId, context) });
+      }
+      continue;
+    }
 
     if (unresolved.scopedOnly) {
       // this./super. member call, buffered because its target wasn't declared yet at

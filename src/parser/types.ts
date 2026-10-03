@@ -106,13 +106,25 @@ export type UnresolvedCallReason =
                                 // same-named graph symbol; the binding has no SymbolNode to target
   | 'unresolved-import-callee' // a bare callee comes from an import with no local source target
   | 'no-local-target'       // no declared local value supports a bare call/new-expression edge
-  | 'receiver-required';    // a bare call/new expression matched only a method or property, which
+  | 'receiver-required'     // a bare call/new expression matched only a method or property, which
                             // cannot be referenced without an explicit receiver
+  | 'ambiguous-reexport'
+  | 'chain-exceeded-depth'
+  | 'unproven-target';
 
 export interface UnresolvedCall {
   fromFile: string;
   callee: string; // e.g. "arr.push", "this.unknownMethod"
   reason: UnresolvedCallReason;
+  attemptedTarget?: string;
+  candidates?: string[];
+}
+
+export interface UnresolvedExport {
+  fromFile: string;
+  line: number;
+  expression: string;
+  reason: string;
 }
 
 export type UnresolvedTypeRefReason =
@@ -125,6 +137,16 @@ export interface UnresolvedTypeRef {
   fromFile: string;
   typeName: string;
   reason: UnresolvedTypeRefReason;
+}
+
+export interface UnresolvedEdge {
+  source: string;
+  attemptedTarget: string;
+  kind: EdgeKind;
+  filePath: string;
+  line: number;
+  reason: 'ambiguous-reexport' | 'chain-exceeded-depth' | 'unproven-target';
+  candidates?: string[];
 }
 
 export interface ParsedFile {
@@ -140,20 +162,18 @@ export interface ParsedFile {
    * `symbols`/`edges` are unaffected.
    */
   unresolvedImports?: UnresolvedImport[];
-  /**
-   * Member-expression calls (`obj.method()`, `new a.b.Foo()`) whose receiver
-   * could not be resolved to a real declared symbol without guessing.
-   * Populated in place of the wrong same-file `calls` edge that earlier
-   * versions fabricated -- see UnresolvedCallReason for what was rejected
-   * and why.
-   */
+  /** Calls without a proven local target, including bare calls and member receivers. */
   unresolvedCalls?: UnresolvedCall[];
+  /** JavaScript or TypeScript export expressions without a proven local symbol or target file. */
+  unresolvedExports?: UnresolvedExport[];
   /** Internal parser hint used to resolve super.method() after all classes are known. */
   pendingSuperCalls?: PendingSuperCall[];
   /** Internal parser hint; project finalization proves imported namespace members. */
   pendingNamespaceCalls?: PendingNamespaceCall[];
   /** Type-position names rejected because no project symbol could be proven. */
   unresolvedTypeRefs?: UnresolvedTypeRef[];
+  /** Edges rejected during project-wide target validation. */
+  unresolvedEdges?: UnresolvedEdge[];
   /**
    * Resolved target file paths (relative to project root) that this file
    * wildcard re-exports from, e.g. `export * from './expressions'`. Used by
@@ -186,6 +206,14 @@ export function aggregateUnresolvedCalls(parsedFiles: ParsedFile[]): UnresolvedC
   const out: UnresolvedCall[] = [];
   for (const file of parsedFiles) {
     if (file.unresolvedCalls) out.push(...file.unresolvedCalls);
+  }
+  return out;
+}
+
+export function aggregateUnresolvedExports(parsedFiles: ParsedFile[]): UnresolvedExport[] {
+  const out: UnresolvedExport[] = [];
+  for (const file of parsedFiles) {
+    if (file.unresolvedExports) out.push(...file.unresolvedExports);
   }
   return out;
 }
