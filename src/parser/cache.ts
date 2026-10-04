@@ -23,8 +23,8 @@ import { join } from 'path';
 import { ParsedFile } from './types.js';
 
 /** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
-// JavaScript CommonJS exports, local calls, and unresolved diagnostics change cached graph contents.
-export const RESOLUTION_VERSION = 11;
+// Re-export module relationships change parsed graph contents on this branch.
+export const RESOLUTION_VERSION = 12;
 
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms
