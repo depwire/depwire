@@ -112,6 +112,18 @@ export interface NonCodeDependency {
   kind: 'json' | 'native' | 'asset';
 }
 
+/** Source evidence for a TypeScript `export ... from` statement. */
+export interface ReExportSite {
+  fromFile: string;
+  line: number;
+  statement: string;
+  specifier: string;
+  resolvedPath?: string;
+  /** Runtime means the emitted module is loaded in every checked TS mode. */
+  classification: 'runtime' | 'type-only' | 'emit-dependent' | 'unresolved';
+  reason: 'definite-load' | 'erased' | 'emit-configuration-dependent' | 'target-unresolved';
+}
+
 export type UnresolvedCallReason =
   | 'unresolvable-receiver' // member call (`obj.method()`) whose receiver is not `this`/`super` --
                              // resolving it would require a type checker, so no edge is guessed
@@ -181,6 +193,8 @@ export interface ParsedFile {
   unresolvedImports?: UnresolvedImport[];
   /** Local JSON/native/assets: dependencies, but not symbol graph edges. */
   nonCodeDependencies?: NonCodeDependency[];
+  /** Every TypeScript re-export source site, including erased and emit-dependent sites. */
+  reExportSites?: ReExportSite[];
   /** Calls without a proven local target, including bare calls and member receivers. */
   unresolvedCalls?: UnresolvedCall[];
   /** JavaScript or TypeScript export expressions without a proven local symbol or target file. */
@@ -252,6 +266,8 @@ export interface ProjectGraph {
   files: string[];
   nodes: SymbolNode[];
   edges: SymbolEdge[];
+  /** Additive source-site evidence; absent on graphs written before this feature. */
+  reExportSites?: ReExportSite[];
   metadata: {
     parsedAt: string;
     /** Files represented by graph nodes (not all successfully parsed files). */

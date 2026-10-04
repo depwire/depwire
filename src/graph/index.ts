@@ -20,6 +20,8 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
   const graph = new DirectedGraph();
   graph.setAttribute('projectRoot', projectRoot ?? '');
   graph.setAttribute('parsedFileCount', parsedFileCount);
+  graph.setAttribute('reExportSites', parsedFiles.flatMap(file => file.reExportSites ?? [])
+    .sort((a, b) => a.fromFile.localeCompare(b.fromFile) || a.line - b.line || a.specifier.localeCompare(b.specifier)));
   
   // First pass: Add all nodes
   for (const file of parsedFiles) {

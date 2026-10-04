@@ -1,6 +1,6 @@
-# TypeScript re-export module-load contract — decision requested
+# TypeScript re-export module-load contract — approved implementation
 
-Status: **draft, no emit-policy implementation**. This branch is stacked on split PR #63 and restores only the re-export file-relationship addition from the earlier combined PR. The broad population sample is deferred until Atef approves an emit rule. The source-AST census (`TYPESCRIPT-REEXPORT-CENSUS.jsonl`) found 1,172 added built file-level relationships in Nest, Zod, Drizzle, TanStack Query and code-graph relative to PR #62; only eight explicit mixed and one inline-only type statement occur in those corpora. Construct fixtures are therefore required independently of corpus sampling.
+Status: **approved emit policy implemented on draft PR #64**. This branch restores the re-export file-relationship addition from the earlier combined PR. The source-AST census (`TYPESCRIPT-REEXPORT-CENSUS.jsonl`) found 1,172 added built file-level relationships in Nest, Zod, Drizzle, TanStack Query and code-graph relative to PR #62; only eight explicit mixed and one inline-only type statement occur in those corpora. Construct fixtures therefore cover forms the corpus cannot supply.
 
 ## Compiler oracle (TypeScript 5.9.3)
 
@@ -23,13 +23,17 @@ Eight real fixture modules under `test/fixtures/reexport-emit/` were compiled as
 
 At `src/parser/typescript.ts`, the new file edge is excluded when a statement begins `export type` or all named specifiers carry an inline `type` modifier; all other resolved `export … from` statements get `imports` file edges. This matches the checked default emits for these fixtures. It does **not** match configuration C for inline-only `export { type A }`, which retains a module load as `export {} from './x'`. No project-specific emit choice is read by this addition.
 
-## Options and recommendation for Atef
+## Decision and consumer contract
 
 1. **Follow the project's emit configuration.** Accurate for one proven compilation, including `verbatimModuleSyntax`. Cost: identify the governing `tsconfig` for each file, resolve `extends` and references, and account for builds that use a different Babel/esbuild/tsdown configuration or emit both ESM and CJS. A monorepo can have multiple legitimate outputs, so there may be no single answer. Nested-tsconfig handling already exists for paths, but it is not a complete build-emission model.
 2. **Choose and name one default.** The current syntax rule matches the three checked default outputs except the verbatim inline-only case. It is deterministic and cheap, but knowingly misses a real module load in projects using verbatim emit. A trend crossing the assumption boundary would need a caveat.
 3. **Count every syntactic re-export.** Captures all possible module loads, but `export type { A }` has no load in any checked output; counting it would fabricate relationships. This option is not recommended.
 
-**Recommendation:** use a two-level contract. Record source-visible re-export syntax at the site level; score a runtime file relationship only when emit is *definite* across supported modes or when a uniquely identifiable project configuration proves it. Mark `export { type A }` **emit-dependent** when the build configuration is unavailable or multiple outputs disagree, and report it separately rather than guessing a runtime coupling pair. This is more work than a default and requires a design for the site/edge representation; it is not implemented here. If Atef prefers a simpler first release, choose option 2 explicitly and disclose its known verbatim miss. The choice determines fixture expectations and the 130-site sample's verdicts; no sample has been drawn on this branch.
+**Approved:** record every `export … from` source site in `ParsedFile.reExportSites`, carry those sites on the graph as `reExportSites`, and serialize them in `ProjectGraph.reExportSites`. Each record contains source location and statement, specifier, resolved target where proven, classification and reason. A definite module load gets a runtime file-level `imports` edge. Explicit `export type` is erased and gets no runtime edge. Inline-only `export { type A }` is `emit-dependent` and gets no runtime edge unless the actual build emit can be proved uniquely. Unresolved targets remain recorded with an import reason. `formatVersion` stays 2 because the new serialized site array is optional and older graphs remain readable; graphs without it have **unknown site coverage**, not zero sites. `RESOLUTION_VERSION` moves 12 → 13 so cached parsed files are regenerated with the site ledger.
+
+The parser does not infer a unique build emit from a nearby `tsconfig.json`: project references, test builds and non-`tsc` emitters can produce another legitimate output. Until an explicit, uniquely proven emit is available, inline-only sites stay emit-dependent. This is a deliberate conservative boundary, not an assertion that they are erased in the user's build.
+
+**Consumer defaults:** coupling and health count only the built runtime edge, never an emit-dependent site. Dead-code and affected-files likewise use built edges; the site ledger supplies a visible qualification, not a guessed dependency. SDK graph JSON exposes all sites for downstream consumers. Documentation may show emit-dependent sites in a separate section with their source and target, but must not label them runtime dependencies. A graph loaded from an older format-2 file without `reExportSites` cannot make a site-level coverage claim.
 
 ## Draft-branch graph movement (relative to split PR #63)
 

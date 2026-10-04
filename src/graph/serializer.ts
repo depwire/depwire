@@ -1,6 +1,6 @@
 import { canonicalNode, canonicalEdge } from './path-boundary.js';
 import { DirectedGraph } from 'graphology';
-import { ProjectGraph, SymbolNode, SymbolEdge } from '../parser/types.js';
+import { ProjectGraph, SymbolNode, SymbolEdge, ReExportSite } from '../parser/types.js';
 
 export const GRAPH_FORMAT_VERSION = 2;
 
@@ -68,6 +68,7 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
     files: Array.from(fileSet).sort(),
     nodes,
     edges,
+    reExportSites: graph.getAttribute('reExportSites') as ReExportSite[] | undefined,
     metadata: {
       parsedAt: new Date().toISOString(),
       fileCount: fileSet.size,
@@ -84,6 +85,7 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   
   graph.setAttribute('projectRoot', json.projectRoot);
   graph.setAttribute('parsedFileCount', json.metadata.parsedFileCount);
+  graph.setAttribute('reExportSites', json.reExportSites ?? []);
   const edgeDrops: Array<{ source: string; attemptedTarget: string; kind: string; filePath: string; line: number; reason: string }> = [];
   // Restore legacy separator spellings at the same graph ingress boundary.
   for (const raw of json.nodes) {

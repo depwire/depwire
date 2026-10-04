@@ -1,5 +1,5 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall, NonCodeDependency } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall, NonCodeDependency, ReExportSite } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 import { commonJSExportTarget, isModuleExports, hasConditionalAncestor } from './commonjs.js';
 
@@ -23,6 +23,7 @@ interface Context {
   unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super', staticClass?: string}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   nonCodeDependencies: NonCodeDependency[];
+  reExportSites: ReExportSite[];
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
   exportTargets: Array<{ name: string; line: number }>;
@@ -60,6 +61,7 @@ export function parseTypeScriptFile(
     unresolvedCallEdges: [],
     unresolvedImports: [],
     nonCodeDependencies: [],
+    reExportSites: [],
     unresolvedCalls: [],
     unresolvedExports: [],
     exportTargets: [],
@@ -88,6 +90,7 @@ export function parseTypeScriptFile(
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
     ...(context.nonCodeDependencies.length ? { nonCodeDependencies: context.nonCodeDependencies } : {}),
+    ...(context.reExportSites.length ? { reExportSites: context.reExportSites } : {}),
     unresolvedCalls: context.unresolvedCalls,
     ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
     pendingSuperCalls: context.pendingSuperCalls,
@@ -1329,10 +1332,17 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     // from that module appear exported and creates ambiguous or wrong edges.
     const namespaceExport = findChildByType(node, 'namespace_export');
     const isWildcard = !exportClause && !namespaceExport && hasWildcardToken(node);
-    const allTypeOnly = node.text.trimStart().startsWith('export type')
-      || (!!exportClause && exportClause.namedChildren.length > 0
-        && exportClause.namedChildren.every(child => child.type === 'export_specifier' && hasDirectToken(child, 'type')));
-    if (resolvedPath && !allTypeOnly && /\.(?:[cm]?js|jsx|ts|tsx)$/.test(resolvedPath)) {
+    const explicitTypeOnly = node.text.trimStart().startsWith('export type');
+    const inlineTypeOnly = !explicitTypeOnly && !!exportClause && exportClause.namedChildren.length > 0
+        && exportClause.namedChildren.every(child => child.type === 'export_specifier' && hasDirectToken(child, 'type'));
+    const classification: ReExportSite['classification'] = !resolvedPath ? 'unresolved'
+      : explicitTypeOnly ? 'type-only' : inlineTypeOnly ? 'emit-dependent' : 'runtime';
+    context.reExportSites.push({ fromFile: context.filePath, line: node.startPosition.row + 1,
+      statement: node.text, specifier: importPath, ...(resolvedPath ? { resolvedPath } : {}),
+      classification, reason: classification === 'runtime' ? 'definite-load'
+        : classification === 'type-only' ? 'erased'
+        : classification === 'emit-dependent' ? 'emit-configuration-dependent' : 'target-unresolved' });
+    if (resolvedPath && classification === 'runtime' && /\.(?:[cm]?js|jsx|ts|tsx)$/.test(resolvedPath)) {
       context.edges.push({ source: `${context.filePath}::__file__`, target: `${resolvedPath}::__file__`,
         kind: 'imports', filePath: context.filePath, line: node.startPosition.row + 1,
         importSpecifier: importPath });

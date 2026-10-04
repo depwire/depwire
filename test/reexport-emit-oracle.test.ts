@@ -34,7 +34,7 @@ const expected = {
 function compile(mode: keyof typeof expected): Record<string, string> {
   const out = mkdtempSync(join(tmpdir(), `depwire-reexport-${mode}-`));
   try {
-    const inputs = readdirSync(fixture).filter(file => file.endsWith('.ts')).map(file => join(fixture, file));
+    const inputs = readdirSync(fixture).filter(file => file.endsWith('.ts') && file !== 'unresolved.ts').map(file => join(fixture, file));
     execFileSync(process.execPath, [tsc, '--module', mode === 'commonjs' ? 'commonjs' : 'esnext',
       '--target', 'es2022', '--skipLibCheck', '--outDir', out,
       ...(mode === 'verbatim' ? ['--verbatimModuleSyntax', 'true'] : []), ...inputs],

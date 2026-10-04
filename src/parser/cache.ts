@@ -24,7 +24,7 @@ import { ParsedFile } from './types.js';
 
 /** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
 // Re-export module relationships change parsed graph contents on this branch.
-export const RESOLUTION_VERSION = 12;
+export const RESOLUTION_VERSION = 13;
 
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms
