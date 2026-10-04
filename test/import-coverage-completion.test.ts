@@ -44,11 +44,8 @@ describe('TypeScript module loads without bindings', () => {
     }
   });
 
-  it('retains re-export relationships and marks JavaScript side-effect imports', async () => {
+  it('marks JavaScript side-effect imports', async () => {
     const { graph } = await snapshot(tsRoot);
-    expect(graph.findEdge((_id, attrs, from, to) => attrs.kind === 'imports'
-      && from.startsWith('reexport.ts::') && to.startsWith('target.ts::'))).toBeDefined();
-    expect(edge(graph, 'type-reexport.ts', 'target.ts', 'imports')).toBeUndefined();
     const id = edge(graph, 'js-side-effect.js', 'js-target.js', 'imports');
     expect(id).toBeDefined();
     expect(graph.getEdgeAttribute(id!, 'sideEffectImport')).toBe(true);

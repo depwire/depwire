@@ -1329,14 +1329,6 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     // from that module appear exported and creates ambiguous or wrong edges.
     const namespaceExport = findChildByType(node, 'namespace_export');
     const isWildcard = !exportClause && !namespaceExport && hasWildcardToken(node);
-    const allTypeOnly = node.text.trimStart().startsWith('export type')
-      || (!!exportClause && exportClause.namedChildren.length > 0
-        && exportClause.namedChildren.every(child => child.type === 'export_specifier' && hasDirectToken(child, 'type')));
-    if (resolvedPath && !allTypeOnly && /\.(?:[cm]?js|jsx|ts|tsx)$/.test(resolvedPath)) {
-      context.edges.push({ source: `${context.filePath}::__file__`, target: `${resolvedPath}::__file__`,
-        kind: 'imports', filePath: context.filePath, line: node.startPosition.row + 1,
-        importSpecifier: importPath });
-    }
 
     if (exportClause && resolvedPath) {
       const exportedNames: Array<{ localName: string; sourceName: string }> = [];
