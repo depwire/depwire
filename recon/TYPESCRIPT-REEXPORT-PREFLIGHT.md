@@ -1,27 +1,31 @@
-# PR #63 TypeScript re-export target-accuracy preflight — STOP
+# PR #63 TypeScript re-export preflight: semantic correction and pending sample
 
-Status: **BLOCKED, do not merge PR #63 as-is.** This is the required G1 stop after finding a WRONG relationship. No parser code was changed, and no replacement sample was drawn in this pass.
+**Correction to commit `d29e05e`: the two relationships called WRONG there are not disproved.** That verdict used the false premise that `export * from './types'` loads its target only when the target exports a runtime value. TypeScript 5.9.3 preserves `export *` in ESNext output and emits `__exportStar(require('./types'), exports)` in CommonJS output even when the target declares only interfaces/types. The target module is evaluated in either output. Both Drizzle and Zod edges are therefore valid **module-load relationships** under those emits. This document supersedes the earlier blocker claim; the 130-site target audit is still incomplete, so it does not certify PR #63 for merge.
 
-Baseline: PR #62 head `e5e1adb`; candidate: PR #63 head before this report `c1897ea`. Both SDKs were built in separate checkouts and parsed with caches disabled. The five pinned corpus roots and SHAs are in `IMPORT-COVERAGE-BEFORE.jsonl`. `TYPESCRIPT-REEXPORT-PREFLIGHT.jsonl` records the source-AST census of `export … from` sites, their source text, resolved file target, current parsed/built file edge, whether that file-level edge was absent at the baseline, and a SHA-256 ordering key. Seed: `pr63-reexport-2026-10-04-v1`. The seed was reserved for the planned draw; the 130 selections were **not** made because G1 required a stop on the first WRONG class.
+## Evidence and contract distinction
 
-## Classifier rule (G4)
+A two-file `tsc` check used `index.ts` containing `export * from './types'` and `types.ts` containing only an exported interface plus `console.log('types module evaluated')`. CommonJS output included `__exportStar(require("./types"), exports)`, proving target evaluation; ESNext output preserved `export * from './types'`. `ts.transpileModule` independently preserved the star statement with `verbatimModuleSyntax` both false and true. TypeScript's [verbatimModuleSyntax documentation](https://www.typescriptlang.org/tsconfig/verbatimModuleSyntax.html) says imports and exports without a `type` modifier are retained under that mode.
 
-At `src/parser/typescript.ts:1332–1338`, the classifier excludes a re-export if its statement starts `export type` **or** every named `export_specifier` has a direct `type` token; every other resolved `export … from` statement gets a file-level runtime `imports` edge. Thus it does inspect inline modifiers, but a wildcard `export *` is treated as runtime without checking whether the target exports a runtime value.
+The checked branch pairs are:
 
-## Blocking evidence (G1)
-
-| Repo | Source and statement | Resolved target and declarations | PR #62 built relationship | PR #63 built relationship | Verdict |
+| Repo | Source | Target | PR #62 built pair | PR #63 built pair | Corrected interpretation |
 |---|---|---|---|---|---|
-| Drizzle | `drizzle-arktype/src/index.ts:4` — `export * from './schema.types.internal.ts';` | `drizzle-arktype/src/schema.types.internal.ts`: exported `Conditions` interface at line 6 and `BuildRefine`, `BuildSchema`, `NoUnknownKeys` type aliases at lines 16, 43, 65; no runtime export | absent | `imports` from source file to target file | **WRONG** |
-| Zod | `packages/zod/src/v3/external.ts:3` — `export * from "./helpers/typeAliases.js";` | `packages/zod/src/v3/helpers/typeAliases.ts`: only `Primitive` and `Scalars` type aliases at lines 1–2; no runtime export | absent | `imports` from source file to target file | **WRONG** |
+| Drizzle | `drizzle-arktype/src/index.ts:4`, `export * from './schema.types.internal.ts'` | `schema.types.internal.ts` exports only interfaces/types | absent | file-level `imports` | Valid source-visible module load; no value export required |
+| Zod | `packages/zod/src/v3/external.ts:3`, `export * from "./helpers/typeAliases.js"` | `typeAliases.ts` exports only type aliases | absent | file-level `imports` | Valid source-visible module load; no value export required |
 
-For both pairs, the built graph itself was checked before and after, not merely the parser's emitted record. The target file exists, so endpoint proof and parsed/built reconciliation pass while the **runtime classification is false**. The mechanism is general: a wildcard forwards a type-only module, but the syntax-only rule emits a runtime relationship. The same risk may exist for named exports of type declarations lacking an explicit `type` modifier. That possibility has not been measured in this stopped pass. These two examples do not establish a total wrong-edge count.
+The earlier claim that these were fabricated runtime relationships is **retracted**. Whether a coupling score should count re-export module loads is a separate metric-contract question. The graph's `imports` edge currently represents a source-visible module dependency, not a guarantee that a runtime value is forwarded.
 
-## Corpus availability and requested strata
+## Classifier rule and an actual configuration boundary
 
-The AST census covers all 1,294 resolved-source re-export statements in the five requested pinned roots. An `added` file-level relationship means a current built file-level `imports` edge whose file-level pair did not exist at the PR #62 baseline; the two WRONG examples were also verified to have **no built relationship of any kind** at baseline.
+At `src/parser/typescript.ts:1332–1338`, a re-export is excluded when the statement starts `export type` or every named specifier has a direct inline `type` token. Other resolved re-exports get a file-level `imports` edge. This is a syntax rule using both keyword and per-binding modifiers; it does **not** inspect the target's declarations. Target-value inspection would incorrectly remove valid `export *` module loads.
 
-| Repo | Re-export sites | Added built file-level relationships | Explicit mixed | Inline-only type | `export type` | Requested draw |
+TypeScript emit also shows a configuration-sensitive edge case: `export { type A } from './types'` emits no target load under the default ESNext transpile settings, but with `verbatimModuleSyntax: true` emits `export {} from './types'`, which can evaluate the target. `export type { A }` is erased under both settings. The parser currently excludes inline-only statements without reading build configuration. This was not evaluated against the five pinned corpus builds and is **not** labelled a confirmed wrong edge in this preflight.
+
+## Census and unmet sample gate
+
+Baseline: PR #62 head `e5e1adb`; candidate: PR #63 before this report `c1897ea`. Both SDKs were built separately and parsed without cache. `TYPESCRIPT-REEXPORT-PREFLIGHT.jsonl` is the source-AST census of 1,294 `export … from` sites in the five pinned roots (SHAs in `IMPORT-COVERAGE-BEFORE.jsonl`). It records source text, resolved target, current parsed/built file edge and whether that file-level edge was absent at baseline. The reserved seed was `pr63-reexport-2026-10-04-v1`; it was used for stable site hashes, **not** for a completed 130-selection draw.
+
+| Repo | Sites | Added built file-level relationships | Explicit mixed | Inline-only type | `export type` | Requested sample |
 |---|---:|---:|---:|---:|---:|---:|
 | Nest | 488 | 473 | 1 | 0 | 15 | 40 |
 | Zod | 138 | 122 | 2 | 0 | 7 | 40 |
@@ -30,14 +34,14 @@ The AST census covers all 1,294 resolved-source re-export statements in the five
 | code-graph | 62 | 50 | 2 | 1 | 11 | 10 |
 | **Total** | **1,294** | **1,172** | **8** | **1** | **107** | **130** |
 
-The requested minimum of 15 explicit mixed and 15 inline-only cases cannot be drawn from these corpora: only eight and one exist, respectively. The inline-only case, `src/dead-code/index.ts:76`, correctly has no file-level runtime edge. All 107 `export type` statements likewise have no file-level runtime edge. This is a census observation, **not** a completed G2 sample or a substitute for the unavailable 15/15 strata.
+All 107 explicit `export type` statements and the one inline-only statement have no file-level edge in the current parsed output. The requested minimum of 15 mixed and 15 inline-only corpus examples is impossible in these five roots: only eight and one exist. Construct fixtures are needed to exercise the absent forms; they cannot be counted as corpus samples.
 
-## Gate disposition
+## Gate status
 
-- **G1: FAIL.** Two verified WRONG relationships, same mechanism; stop invoked before the 130-edge sample.
-- **G2: not completed as a sampled gate.** The preflight census found 108 explicit type-only sites with no file-level runtime edge, including the sole inline-only site. The sample was stopped.
-- **G3: not run.** Seed recorded, but no 130 selections or redraw can honestly be claimed.
-- **G4: answered** above: keyword **and binding-modifier** checks, with no semantic check for wildcard targets.
-- **G5: not run.** No chain was sampled after the blocker.
+- **G1:** no confirmed WRONG in this preflight after correcting the module-load semantics; the required 130-site accuracy audit has not been run.
+- **G2:** 108 explicitly type-marked statements have no file-level edge in the census. The single inline-only statement is configuration-sensitive; this is not a completed sampled gate.
+- **G3:** seed recorded, but no 130 selections or redraw exist.
+- **G4:** answered above: keyword and binding-modifier syntax rule.
+- **G5:** re-export chains were not sampled.
 
-**Recommendation:** separate the re-export file-relationship addition from PR #63's side-effect-import and Python work, or repair its value proof in a new pass and then draw a fresh seeded sample. Per the requested stop, this pass does neither. PR #63 is not ready for merge with the current re-export change.
+**Disposition:** the previous WRONG-edge stop was based on an invalid criterion and is withdrawn. PR #63 still lacks the requested generality audit. The next audit must define whether it validates source-visible module loads or a particular emitted build, then draw the sample and supplement the missing rare strata with construct fixtures. Do not implement a rule that suppresses `export *` merely because its target exports only types.

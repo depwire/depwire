@@ -1,6 +1,6 @@
 # Import coverage completion: measurement and gates
 
-**Merge gate update:** the later [TypeScript re-export preflight](TYPESCRIPT-REEXPORT-PREFLIGHT.md) found two WRONG runtime file relationships in this branch. PR #63 is **not ready to merge as-is**. The measurements below remain accurate descriptions of this branch, but the re-export contribution is not validated.
+**Re-export audit correction:** the later [preflight](TYPESCRIPT-REEXPORT-PREFLIGHT.md) retracts its initial WRONG-edge verdict: `export *` still loads a target module that exports only types under checked TypeScript emits. The requested 130-site re-export audit remains incomplete, so this report does not certify that population or PR #63 for merge.
 
 Baseline: head of draft PR #62 (`e5e1adb`), which includes draft PR #61. Both were open when this branch started; this branch contains their changes without merging either PR. All roots were parsed with cache disabled. Full machine-readable before/after rows, including pinned SHA, are in `IMPORT-COVERAGE-BEFORE.jsonl` and `IMPORT-COVERAGE-AFTER.jsonl`. This document reports observed graph and health movement; the coupling formula and grade bands were not changed.
 
