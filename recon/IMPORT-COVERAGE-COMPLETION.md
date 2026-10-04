@@ -112,7 +112,7 @@ The new language-construct fixtures assert local and aliased TypeScript side-eff
 
 **Determinism:** seeds 11, 29 and 47 each shuffled filesystem discovery. Each repository produced one parsed-output SHA-256 and one serialized-graph SHA-256 across all three runs: code-graph `04b97ddc8ec9f04b38a055862eab7ddbeed96fd25e03c0c8c7f44ecac7e4bd23` / `01975bbfc8621ca5f9d6cdccac815bb65dbc65c8fea645769201979110dc339b`; Nest `367c0fcc52197f3d7bcf7c3c15bbf632bf7affb90905b83830ccdb13e1e70b42` / `80906a03f76fc32b90bd2d172cc63c4e061544c9f223dc46e090194891b9887b`; Drizzle `f04056cb93e24440d1d2b3499d254de428ee88945caf8ef13e5b221e61a8b9e4` / `66d069a187494bcb045b9d73ab46011603673ec968d6669a98437b87a313e40a`.
 
-**Local build and test:** `npm run build` passed, then `npm test` passed sequentially (47 files, 362 tests). Ubuntu and Windows CI results are pending PR execution and are not represented as locally verified.
+**Local build and test:** `npm run build` passed, then `npm test` passed sequentially (47 files, 362 tests). PR #63 CI passed on Ubuntu and Windows for Node 20 and 22, including build, test, release-metadata validation and packed CLI/MCP smoke tests; the separate CLAssistant check passed too.
 
 ## Named boundary and next capture gate
 
