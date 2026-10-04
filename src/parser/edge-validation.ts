@@ -32,9 +32,16 @@ export function validateParsedEdgeTargets(files: ParsedFile[]): { dropped: numbe
   for (const file of files) {
     const isTypeScript = /\.tsx?$/.test(file.filePath);
     const isJavaScript = /\.[cm]?jsx?$/.test(file.filePath);
-    if (!isTypeScript && !isJavaScript) continue;
+    const isPython = file.filePath.endsWith('.py');
+    if (!isTypeScript && !isJavaScript && !isPython) continue;
     const kept: SymbolEdge[] = [];
     for (const edge of file.edges) {
+      // Existing Python symbol targets retain the v1.26 builder accounting
+      // path. This pass proves only the new file relationships in this fix.
+      if (isPython && !edge.importSpecifier) {
+        kept.push(edge);
+        continue;
+      }
       if (isTypeScript && edge.kind === 'calls' && symbols.get(edge.target)?.kind === 'export') {
         const proof = resolveCallableExport(edge.target);
         if (!proof.target) {
@@ -45,13 +52,14 @@ export function validateParsedEdgeTargets(files: ParsedFile[]): { dropped: numbe
         edge.target = proof.target;
         retargeted++;
       }
+      const proveFile = isJavaScript || (isPython && !!edge.importSpecifier);
       const validSource = symbols.has(edge.source) || (edge.source.endsWith('::__file__')
-        && (!isJavaScript || parsedPaths.has(edge.source.slice(0, -'::__file__'.length))));
+        && (!proveFile || parsedPaths.has(edge.source.slice(0, -'::__file__'.length))));
       const validTarget = symbols.has(edge.target) || (edge.target.endsWith('::__file__')
-        && (!isJavaScript || parsedPaths.has(edge.target.slice(0, -'::__file__'.length))));
+        && (!proveFile || parsedPaths.has(edge.target.slice(0, -'::__file__'.length))));
       if (!validSource || !validTarget) {
         rejectUnprovenEdge(file, edge, 'unproven-target');
-        if (isJavaScript && edge.kind === 'imports' && edge.target.endsWith('::__file__')) {
+        if (proveFile && edge.target.endsWith('::__file__')) {
           const last = file.unresolvedImports?.at(-1);
           if (last) last.reason = 'target-not-parsed';
         }

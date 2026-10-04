@@ -53,7 +53,10 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   const typeEdges = healthGraph.filterEdges((_edge, attrs) => attrs.kind === 'references-type');
   for (const edge of typeEdges) {
     const attrs = healthGraph.getEdgeAttributes(edge);
-    if (attrs.typeOnlyImport !== true || attrs.typeOnlyFallback === true) {
+    // Python TYPE_CHECKING imports were previously mistaken for runtime
+    // relationships. The legacy TypeScript normalization must not restore them.
+    if (attrs.typeOnlyImport !== true || attrs.typeOnlyFallback === true
+      || (typeof attrs.filePath === 'string' && attrs.filePath.endsWith('.py'))) {
       healthGraph.dropEdge(edge);
       continue;
     }

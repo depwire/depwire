@@ -1,7 +1,7 @@
 import type { DirectedGraph } from 'graphology';
 
-export const DIMENSIONS_VERSION = '2026-09-30-cyclic-groups-v1' as const;
-export const HEALTH_METHODOLOGY_CHANGE = 'Health methodology changed: Cyclic Dependency Groups now measures the share of files in mutually dependent groups and the size of the largest group. The previous cycle count was incomplete and order-dependent. Scores across this boundary are not directly comparable; no improvement or regression delta is shown.';
+export const DIMENSIONS_VERSION = '2026-10-04-python-typechecking-v1' as const;
+export const HEALTH_METHODOLOGY_CHANGE = 'Health methodology changed: Python TYPE_CHECKING imports no longer count as runtime dependencies. Older history may also use the prior cycle methodology. Scores across this boundary are not directly comparable; no improvement or regression delta is shown.';
 export type CyclicEdgeView = 'legacy-normalized-dependencies-v1' | 'value-dependencies-v1' | 'all-dependencies-v1';
 export interface CyclicEvidence {
   sourceFile: string; targetFile: string; sourceSymbol: string; targetSymbol: string;
@@ -74,7 +74,9 @@ function project(graph: DirectedGraph, view: CyclicEdgeView) {
     if (!KINDS.has(attrs.kind)) throw new Error(`Unknown dependency kind: ${String(attrs.kind)}`);
     let target = originalTarget; let kind = attrs.kind; let normalized = false;
     if (kind === 'references-type' && view !== 'all-dependencies-v1') {
-      if (view !== 'legacy-normalized-dependencies-v1' || attrs.typeOnlyImport !== true || attrs.typeOnlyFallback === true) return;
+      if (view !== 'legacy-normalized-dependencies-v1' || attrs.typeOnlyImport !== true
+        || attrs.typeOnlyFallback === true
+        || (typeof attrs.filePath === 'string' && attrs.filePath.endsWith('.py'))) return;
       if (typeof attrs.originalImportTarget === 'string' && graph.hasNode(attrs.originalImportTarget)) target = attrs.originalImportTarget;
       kind = 'imports'; normalized = true;
     }

@@ -26,7 +26,7 @@ function payload(formatVersion?: number): ProjectGraph {
 
 describe('graph format v2 compatibility', () => {
   it('bumps the parser resolution cache version', () => {
-    expect(RESOLUTION_VERSION).toBe(9);
+    expect(RESOLUTION_VERSION).toBe(10);
   });
 
   it.each([undefined, 1])('rejects a %s graph with an actionable reparse error', (version) => {
