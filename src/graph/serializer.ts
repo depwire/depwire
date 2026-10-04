@@ -56,6 +56,7 @@ export function exportToJSON(graph: DirectedGraph, projectRoot: string): Project
       filePath: attrs.filePath,
       line: attrs.line,
       typeOnlyImport: attrs.typeOnlyImport,
+      sideEffectImport: attrs.sideEffectImport,
       typeOnlyFallback: attrs.typeOnlyFallback,
       originalImportTarget: attrs.originalImportTarget,
     });
@@ -113,6 +114,7 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
         filePath: edge.filePath,
         line: edge.line,
         typeOnlyImport: edge.typeOnlyImport,
+        sideEffectImport: edge.sideEffectImport,
         typeOnlyFallback: edge.typeOnlyFallback,
         originalImportTarget: edge.originalImportTarget,
       });

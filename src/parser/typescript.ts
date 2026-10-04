@@ -1,5 +1,5 @@
 import { getParser } from './wasm-init.js';
-import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall } from './types.js';
+import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall, NonCodeDependency } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
 import { commonJSExportTarget, isModuleExports, hasConditionalAncestor } from './commonjs.js';
 
@@ -22,6 +22,7 @@ interface Context {
   // and constructors are also buffered until a real value declaration supports the edge.
   unresolvedCallEdges: Array<{source: string, functionName: string, line: number, scopeChain: string[], callKind: 'call' | 'new', scopedOnly?: boolean, receiverKind?: 'this' | 'super', staticClass?: string}>;
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
+  nonCodeDependencies: NonCodeDependency[];
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
   exportTargets: Array<{ name: string; line: number }>;
@@ -58,6 +59,7 @@ export function parseTypeScriptFile(
     declaredSymbols: new Map(),
     unresolvedCallEdges: [],
     unresolvedImports: [],
+    nonCodeDependencies: [],
     unresolvedCalls: [],
     unresolvedExports: [],
     exportTargets: [],
@@ -85,6 +87,7 @@ export function parseTypeScriptFile(
     symbols: context.symbols,
     edges: context.edges,
     unresolvedImports: context.unresolvedImports,
+    ...(context.nonCodeDependencies.length ? { nonCodeDependencies: context.nonCodeDependencies } : {}),
     unresolvedCalls: context.unresolvedCalls,
     ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
     pendingSuperCalls: context.pendingSuperCalls,
@@ -1110,7 +1113,21 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   // occupies index 1, so `node.child(1)` would grab the `type` keyword
   // instead of the `import_clause`.
   const importClause = findChildByType(node, 'import_clause');
-  if (!importClause) return;
+  if (!importClause) {
+    const line = node.startPosition.row + 1;
+    if (!resolvedPath) {
+      context.unresolvedImports.push({ fromFile: context.filePath, specifier: importPath,
+        reason: classifyUnresolvedImport(importPath, context.filePath, context.projectRoot) });
+    } else if (!/\.(?:[cm]?js|jsx|ts|tsx)$/.test(resolvedPath)) {
+      context.nonCodeDependencies.push({ fromFile: context.filePath, specifier: importPath,
+        resolvedPath, line, kind: resolvedPath.endsWith('.json') ? 'json'
+          : resolvedPath.endsWith('.node') ? 'native' : 'asset' });
+    } else {
+      context.edges.push({ source: `${context.filePath}::__file__`, target: `${resolvedPath}::__file__`,
+        kind: 'imports', filePath: context.filePath, line, importSpecifier: importPath, sideEffectImport: true });
+    }
+    return;
+  }
   
   const importBindings: ImportBinding[] = [];
   const statementTypeOnly = node.text.trimStart().startsWith('import type');

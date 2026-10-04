@@ -235,51 +235,31 @@ function processExpressionStatement(node: Parser.SyntaxNode, context: Context): 
 }
 
 function processImportStatement(node: Parser.SyntaxNode, context: Context): void {
-  // import os
-  // import json as j
-  
-  const aliasedImport = findChildByType(node, 'aliased_import');
-  const dottedName = findChildByType(node, 'dotted_name') ?? aliasedImport?.childForFieldName('name');
-  const identifier = findChildByType(node, 'identifier');
-  
-  const moduleName = dottedName ? nodeText(dottedName, context) : (identifier ? nodeText(identifier, context) : null);
-  if (!moduleName) return;
-  
-  // Check for alias: import json as j
-  let importedName = moduleName;
-  if (aliasedImport) {
-    const asNode = aliasedImport.childForFieldName('alias');
-    if (asNode) {
-      importedName = nodeText(asNode, context);
+  for (const item of node.namedChildren) {
+    const nameNode = item.type === 'aliased_import' ? item.childForFieldName('name') : item;
+    if (!nameNode || !['dotted_name', 'identifier'].includes(nameNode.type)) continue;
+    const moduleName = nodeText(nameNode, context);
+    const importedName = item.type === 'aliased_import'
+      ? nodeText(item.childForFieldName('alias') ?? nameNode, context) : moduleName;
+    if (moduleName === 'typing' || moduleName === 'typing_extensions') {
+      context.typingAliases.add(importedName);
+      continue;
     }
-  }
-  if (moduleName === 'typing' || moduleName === 'typing_extensions') {
-    context.typingAliases.add(importedName);
-    return;
-  }
-  
-  // Check if this is a local module (in project) or external (stdlib/third-party)
-  const resolvedPath = resolveImportPath(moduleName, context.filePath, context.projectRoot);
-  
-  if (resolvedPath) {
+    const resolvedPath = resolveFirstPartyAbsolutePath(moduleName, context.projectRoot);
+    if (!resolvedPath) {
+      if (isFirstPartyAbsolute(moduleName, context.projectRoot)) context.unresolvedImports.push({
+        fromFile: context.filePath, specifier: moduleName, reason: 'first-party-not-found',
+      });
+      continue; // stdlib/third-party: no project edge
+    }
     const typeOnly = isTypeCheckingImport(node, context);
-    // Local import - create symbol and edge
     const targetId = `${resolvedPath}::__file__`;
-    const sourceId = `${context.filePath}::__file__`;
-    
     context.imports.set(importedName, targetId);
-    
-    context.edges.push({
-      source: sourceId,
-      target: targetId,
-      kind: typeOnly ? 'references-type' : 'imports',
-      filePath: context.filePath,
-      line: node.startPosition.row + 1,
-      ...(typeOnly ? { typeOnlyImport: true } : {}),
-      importSpecifier: moduleName,
-    });
+    context.edges.push({ source: `${context.filePath}::__file__`, target: targetId,
+      kind: typeOnly ? 'references-type' : 'imports', filePath: context.filePath,
+      line: node.startPosition.row + 1, ...(typeOnly ? { typeOnlyImport: true } : {}),
+      importSpecifier: moduleName });
   }
-  // Else: external import, skip
 }
 
 function processImportFromStatement(node: Parser.SyntaxNode, context: Context): void {
@@ -298,22 +278,24 @@ function processImportFromStatement(node: Parser.SyntaxNode, context: Context): 
   const importedNames: Array<{ name: string; alias: string }> = [];
   const symbolNames = new Set<string>();
   
-  // All named children after the module are import names. This also covers
-  // parenthesized lists, where only examining the token after `import` loses
-  // every name after the first.
-  for (const child of node.namedChildren.slice(1)) {
+  // File relationships need every name, including nested parenthesized lists.
+  // Keep the older symbol-binding pass below unchanged.
+  const collectImportedName = (child: Parser.SyntaxNode): void => {
     if (child.type === 'dotted_name' || child.type === 'identifier') {
       const name = nodeText(child, context);
       importedNames.push({ name, alias: name });
-    }
-    if (child.type === 'aliased_import') {
+      return;
+    } else if (child.type === 'aliased_import') {
       const nameNode = child.childForFieldName('name');
       if (nameNode) {
         importedNames.push({ name: nodeText(nameNode, context),
           alias: nodeText(child.childForFieldName('alias') ?? nameNode, context) });
       }
+      return;
     }
-  }
+    for (const nested of child.namedChildren) collectImportedName(nested);
+  };
+  for (const child of node.namedChildren.slice(1)) collectImportedName(child);
   // Keep the existing symbol-level capture boundary in this file-relationship
   // fix. Expanding named symbol capture needs a separate target-accuracy audit.
   for (let i = 0; i < node.childCount; i++) {
@@ -336,6 +318,26 @@ function processImportFromStatement(node: Parser.SyntaxNode, context: Context): 
   
   // Resolve the module path
   const resolvedPath = resolveImportPath(moduleName, context.filePath, context.projectRoot);
+  if (!moduleName.startsWith('.')) {
+    const firstPartyPath = resolveFirstPartyAbsolutePath(moduleName, context.projectRoot);
+    const targetPaths = new Set<string>();
+    for (const imported of importedNames) {
+      const childPath = imported.name === '*' ? null
+        : resolveFirstPartyAbsolutePath(`${moduleName}.${imported.name}`, context.projectRoot);
+      if (childPath || firstPartyPath) targetPaths.add(childPath ?? firstPartyPath!);
+    }
+    if (!importedNames.length && firstPartyPath) targetPaths.add(firstPartyPath);
+    const edgeKind = typeOnly ? 'references-type' : 'imports';
+    for (const targetPath of targetPaths) context.edges.push({
+      source: `${context.filePath}::__file__`, target: `${targetPath}::__file__`, kind: edgeKind,
+      filePath: context.filePath, line: node.startPosition.row + 1,
+      ...(typeOnly ? { typeOnlyImport: true } : {}), importSpecifier: moduleName,
+    });
+    if (!targetPaths.size && isFirstPartyAbsolute(moduleName, context.projectRoot)) {
+      context.unresolvedImports.push({ fromFile: context.filePath, specifier: moduleName,
+        reason: 'first-party-not-found' });
+    }
+  }
   const submodulePaths = moduleName.endsWith('.')
     ? importedNames.map(imported => resolveImportPath(moduleName + imported.name, context.filePath, context.projectRoot))
     : [];
@@ -498,6 +500,24 @@ function processCallExpression(node: Parser.SyntaxNode, context: Context): void 
 }
 
 // Helper functions
+
+function resolveFirstPartyAbsolutePath(moduleName: string, projectRoot: string): string | null {
+  if (!/^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*$/.test(moduleName)) return null;
+  const modulePath = moduleName.replace(/\./g, '/');
+  for (const sourceRoot of [projectRoot, join(projectRoot, 'src')]) {
+    for (const candidate of [join(sourceRoot, `${modulePath}.py`), join(sourceRoot, modulePath, '__init__.py')]) {
+      if (isWithinRoot(resolve(candidate), resolve(projectRoot))
+        && existsSync(candidate) && statSync(candidate).isFile()) {
+        return canonicalPath(candidate, projectRoot);
+      }
+    }
+  }
+  return null;
+}
+
+function isFirstPartyAbsolute(moduleName: string, projectRoot: string): boolean {
+  return !!resolveFirstPartyAbsolutePath(moduleName.split('.')[0], projectRoot);
+}
 
 function resolveImportPath(moduleName: string, currentFile: string, projectRoot: string): string | null {
   // Handle relative imports

@@ -52,7 +52,8 @@ export function validateParsedEdgeTargets(files: ParsedFile[]): { dropped: numbe
         edge.target = proof.target;
         retargeted++;
       }
-      const proveFile = isJavaScript || (isPython && !!edge.importSpecifier);
+      const proveFile = isJavaScript || (isPython && !!edge.importSpecifier)
+        || (isTypeScript && !!edge.importSpecifier && edge.target.endsWith('::__file__'));
       const validSource = symbols.has(edge.source) || (edge.source.endsWith('::__file__')
         && (!proveFile || parsedPaths.has(edge.source.slice(0, -'::__file__'.length))));
       const validTarget = symbols.has(edge.target) || (edge.target.endsWith('::__file__')

@@ -73,6 +73,8 @@ export interface SymbolEdge {
   typeContext?: 'heritage';
   /** Marks the non-additive import-type retarget for health normalization. */
   typeOnlyImport?: boolean;
+  /** File-level module load without an imported binding. */
+  sideEffectImport?: boolean;
   typeOnlyFallback?: boolean;
   originalImportTarget?: string;
   /** Original module specifier for an optimistic JavaScript import target. */
@@ -92,7 +94,8 @@ export type UnresolvedImportReason =
   | 'other'
   | 'computed-specifier'
   | 'target-not-parsed'
-  | 'unproven-symbol';
+  | 'unproven-symbol'
+  | 'first-party-not-found';
 
 export interface UnresolvedImport {
   fromFile: string;
