@@ -117,6 +117,7 @@ export function buildGraph(parsedFiles: ParsedFile[], projectRoot?: string): Dir
           filePath: edge.filePath,
           line: edge.line,
           typeOnlyImport: edge.typeOnlyImport,
+          sideEffectImport: edge.sideEffectImport,
           typeOnlyFallback: edge.typeOnlyFallback,
           originalImportTarget: edge.originalImportTarget,
         });

@@ -10,7 +10,7 @@ The contract's `100 − 6×mean − 2×p95` coefficients were fitted after seein
 
 `score = round(clamp(100 − 10 × P/N, 0, 100))`, where `P` is distinct ordered production file pairs and `N` is graph-bearing production files. `N=0` is unscored. The coefficient is a stated scale, not chosen to match the old scores: an average of **one** outward dependency per production file means 90, **three** means 70, **five** means 50, and **ten** means zero. A reader can inspect those anchors directly. `p95` and maximum outward fan-out are reported but not scored in this candidate: the V1 inspection showed that high-fan-out composition roots in code-graph are intentional, and a single tail penalty would turn that role into a quality judgment. Concentration remains visible for review. This choice needs Atef's approval if it survives blind validation.
 
-The formula is monotone for a fixed file partition: adding a distinct outward pair cannot improve the score; adding ten calls on an existing pair changes only volume. File splits/merges can change `P/N`, so trend output must still identify partition changes. This is not an all-language quality score: `RELATIONSHIP-COVERAGE-BOUNDARY.md` records known capture gaps and applicability limits.
+The formula is monotone for a fixed file partition: adding a distinct outward pair cannot improve the score; adding ten calls on an existing pair changes only volume. File splits/merges can change `P/N`, so trend output must still identify partition changes. This is not an all-language quality score: `COVERAGE-BOUNDARY.md` records known capture gaps and applicability limits.
 
 ## Eight-repo prefit distribution
 

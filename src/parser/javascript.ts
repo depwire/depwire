@@ -420,13 +420,13 @@ function processImportStatement(node: Parser.SyntaxNode, context: Context): void
   if (!source) return;
   
   const importPath = nodeText(source, context).slice(1, -1); // Remove quotes
-  recordModuleLoad(importPath, node.startPosition.row + 1, context);
+  const importClause = findChildByType(node, 'import_clause');
+  recordModuleLoad(importPath, node.startPosition.row + 1, context, !importClause);
   const resolvedPath = resolveJavaScriptImport(importPath, context.filePath, context.projectRoot);
   
   if (!resolvedPath || !isCodeTarget(resolvedPath)) return;
   
   // Get import clause
-  const importClause = findChildByType(node, 'import_clause');
   if (!importClause) return;
   
   // Handle named imports, default imports, namespace imports
@@ -752,7 +752,7 @@ function isCodeTarget(path: string): boolean {
   return /\.(?:js|jsx|mjs|cjs|ts|tsx)$/.test(path);
 }
 
-function recordModuleLoad(specifier: string, line: number, context: Context): void {
+function recordModuleLoad(specifier: string, line: number, context: Context, sideEffectImport = false): void {
   if (!specifier.startsWith('.')) {
     context.unresolvedImports.push({ fromFile: context.filePath, specifier, reason: 'external' });
     return;
@@ -771,7 +771,8 @@ function recordModuleLoad(specifier: string, line: number, context: Context): vo
   const source = `${context.filePath}::__file__`;
   const targetId = `${target}::__file__`;
   if (!context.edges.some(edge => edge.kind === 'imports' && edge.source === source && edge.target === targetId && edge.line === line)) {
-    context.edges.push({ source, target: targetId, kind: 'imports', filePath: context.filePath, line, importSpecifier: specifier });
+    context.edges.push({ source, target: targetId, kind: 'imports', filePath: context.filePath, line, importSpecifier: specifier,
+      ...(sideEffectImport ? { sideEffectImport: true } : {}) });
   }
 }
 
