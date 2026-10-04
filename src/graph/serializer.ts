@@ -85,7 +85,8 @@ export function importFromJSON(json: ProjectGraph): DirectedGraph {
   
   graph.setAttribute('projectRoot', json.projectRoot);
   graph.setAttribute('parsedFileCount', json.metadata.parsedFileCount);
-  graph.setAttribute('reExportSites', json.reExportSites ?? []);
+  // Absence on an older v2 graph means site coverage was never recorded.
+  graph.setAttribute('reExportSites', json.reExportSites);
   const edgeDrops: Array<{ source: string; attemptedTarget: string; kind: string; filePath: string; line: number; reason: string }> = [];
   // Restore legacy separator spellings at the same graph ingress boundary.
   for (const raw of json.nodes) {

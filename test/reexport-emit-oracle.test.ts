@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
@@ -9,24 +9,27 @@ const require = createRequire(import.meta.url);
 const tsc = require.resolve('typescript/bin/tsc');
 const fixture = resolve(import.meta.dirname, 'fixtures/reexport-emit');
 const forms = ['star', 'namespace', 'named', 'inline_type_only', 'mixed',
-  'keyword_type_only', 'default', 'side_effect'] as const;
+  'keyword_type_only', 'keyword_type_star', 'keyword_type_namespace', 'default', 'side_effect'] as const;
 const expected = {
   esnext: {
     star: "export * from './x';", namespace: "export * as ns from './x';",
     named: "export { a } from './x';", inline_type_only: 'export {};',
     mixed: "export { a } from './x';", keyword_type_only: 'export {};',
+    keyword_type_star: 'export {};', keyword_type_namespace: 'export {};',
     default: "export { default } from './x';", side_effect: "import './x';",
   },
   commonjs: {
     star: '__exportStar(require("./x"), exports);', namespace: 'exports.ns = require("./x");',
     named: 'require("./x")', inline_type_only: 'no-target-load',
     mixed: 'require("./x")', keyword_type_only: 'no-target-load',
+    keyword_type_star: 'no-target-load', keyword_type_namespace: 'no-target-load',
     default: 'require("./x")', side_effect: 'require("./x");',
   },
   verbatim: {
     star: "export * from './x';", namespace: "export * as ns from './x';",
     named: "export { a } from './x';", inline_type_only: "export {} from './x';",
     mixed: "export { a } from './x';", keyword_type_only: 'export {};',
+    keyword_type_star: 'export {};', keyword_type_namespace: 'export {};',
     default: "export { default } from './x';", side_effect: "import './x';",
   },
 };
@@ -34,7 +37,7 @@ const expected = {
 function compile(mode: keyof typeof expected): Record<string, string> {
   const out = mkdtempSync(join(tmpdir(), `depwire-reexport-${mode}-`));
   try {
-    const inputs = readdirSync(fixture).filter(file => file.endsWith('.ts') && file !== 'unresolved.ts').map(file => join(fixture, file));
+    const inputs = [...forms, 'x'].map(file => join(fixture, `${file}.ts`));
     execFileSync(process.execPath, [tsc, '--module', mode === 'commonjs' ? 'commonjs' : 'esnext',
       '--target', 'es2022', '--skipLibCheck', '--outDir', out,
       ...(mode === 'verbatim' ? ['--verbatimModuleSyntax', 'true'] : []), ...inputs],

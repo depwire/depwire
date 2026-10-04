@@ -26,7 +26,9 @@
       "mixed": "export { a } from './x';\n",
       "keyword_type_only": "export {};\n",
       "default": "export { default } from './x';\n",
-      "side_effect": "import './x';\n"
+      "side_effect": "import './x';\n",
+      "keyword_type_star": "export {};\n",
+      "keyword_type_namespace": "export {};\n"
     },
     "commonjs": {
       "star": "\"use strict\";\nvar __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {\n    if (k2 === undefined) k2 = k;\n    var desc = Object.getOwnPropertyDescriptor(m, k);\n    if (!desc || (\"get\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {\n      desc = { enumerable: true, get: function() { return m[k]; } };\n    }\n    Object.defineProperty(o, k2, desc);\n}) : (function(o, m, k, k2) {\n    if (k2 === undefined) k2 = k;\n    o[k2] = m[k];\n}));\nvar __exportStar = (this && this.__exportStar) || function(m, exports) {\n    for (var p in m) if (p !== \"default\" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);\n};\nObject.defineProperty(exports, \"__esModule\", { value: true });\n__exportStar(require(\"./x\"), exports);\n",
@@ -36,7 +38,9 @@
       "mixed": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.a = void 0;\nvar x_1 = require(\"./x\");\nObject.defineProperty(exports, \"a\", { enumerable: true, get: function () { return x_1.a; } });\n",
       "keyword_type_only": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\n",
       "default": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.default = void 0;\nvar x_1 = require(\"./x\");\nObject.defineProperty(exports, \"default\", { enumerable: true, get: function () { return x_1.default; } });\n",
-      "side_effect": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nrequire(\"./x\");\n"
+      "side_effect": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nrequire(\"./x\");\n",
+      "keyword_type_star": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\n",
+      "keyword_type_namespace": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\n"
     },
     "verbatim": {
       "star": "export * from './x';\n",
@@ -46,7 +50,9 @@
       "mixed": "export { a } from './x';\n",
       "keyword_type_only": "export {};\n",
       "default": "export { default } from './x';\n",
-      "side_effect": "import './x';\n"
+      "side_effect": "import './x';\n",
+      "keyword_type_star": "export {};\n",
+      "keyword_type_namespace": "export {};\n"
     }
   }
 }

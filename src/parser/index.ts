@@ -23,6 +23,7 @@ import { finalizeTypeReferences, resolveReExportChains } from './reexport-chains
 import { resolveSuperCalls } from './super-calls.js';
 import { resolveNamespaceCalls } from './namespace-calls.js';
 import { validateParsedEdgeTargets } from './edge-validation.js';
+import { finalizeReExportLoads } from './reexport-emit.js';
 import { assertSupportedGraphFormat, GRAPH_FORMAT_VERSION } from '../graph/serializer.js';
 import {
   setModuleSourceRoots as setJavaModuleRoots,
@@ -213,6 +214,7 @@ export async function parseProject(
   // symbol that's only re-exported (not declared) in the directly-resolved
   // file still land on a real declaring node.
   const chainResult = resolveReExportChains(parsedFiles);
+  finalizeReExportLoads(parsedFiles);
   const superResult = resolveSuperCalls(parsedFiles);
   const namespaceCallResult = resolveNamespaceCalls(parsedFiles);
   // Capture the exact target main would retain after wildcard re-export

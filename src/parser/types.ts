@@ -119,9 +119,13 @@ export interface ReExportSite {
   statement: string;
   specifier: string;
   resolvedPath?: string;
+  /** `type` token directly on the export statement, regardless of whitespace. */
+  typeOnlyKeyword?: boolean;
+  /** Names read from a named clause; inline `type` bindings cannot prove a load. */
+  bindings?: Array<{ name: string; typeOnly: boolean }>;
   /** Runtime means the emitted module is loaded in every checked TS mode. */
   classification: 'runtime' | 'type-only' | 'emit-dependent' | 'unresolved';
-  reason: 'definite-load' | 'erased' | 'emit-configuration-dependent' | 'target-unresolved';
+  reason: 'definite-load' | 'erased' | 'emit-configuration-dependent' | 'target-unresolved' | 'value-unproven';
 }
 
 export type UnresolvedCallReason =
@@ -195,6 +199,8 @@ export interface ParsedFile {
   nonCodeDependencies?: NonCodeDependency[];
   /** Every TypeScript re-export source site, including erased and emit-dependent sites. */
   reExportSites?: ReExportSite[];
+  /** Internal proof for `export { default } from` module-load classification. */
+  defaultExportRuntime?: boolean;
   /** Calls without a proven local target, including bare calls and member receivers. */
   unresolvedCalls?: UnresolvedCall[];
   /** JavaScript or TypeScript export expressions without a proven local symbol or target file. */

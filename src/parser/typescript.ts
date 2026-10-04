@@ -24,6 +24,7 @@ interface Context {
   unresolvedImports: UnresolvedImport[]; // imports/re-exports that did not resolve, classified by reason
   nonCodeDependencies: NonCodeDependency[];
   reExportSites: ReExportSite[];
+  defaultExportRuntime?: boolean;
   unresolvedCalls: UnresolvedCall[]; // member-expression calls whose receiver could not be resolved without guessing
   unresolvedExports: Array<{ fromFile: string; line: number; expression: string; reason: string }>;
   exportTargets: Array<{ name: string; line: number }>;
@@ -74,6 +75,7 @@ export function parseTypeScriptFile(
   };
   
   walkNode(tree.rootNode, context);
+  recoverLineBreakTypeReExports(tree.rootNode, parser, context);
   for (const target of context.exportTargets) {
     const symbol = context.symbols.find(s => s.id === `${context.filePath}::${target.name}`);
     if (symbol) symbol.exported = true;
@@ -91,6 +93,7 @@ export function parseTypeScriptFile(
     unresolvedImports: context.unresolvedImports,
     ...(context.nonCodeDependencies.length ? { nonCodeDependencies: context.nonCodeDependencies } : {}),
     ...(context.reExportSites.length ? { reExportSites: context.reExportSites } : {}),
+    ...(context.defaultExportRuntime ? { defaultExportRuntime: true } : {}),
     unresolvedCalls: context.unresolvedCalls,
     ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
     pendingSuperCalls: context.pendingSuperCalls,
@@ -98,6 +101,43 @@ export function parseTypeScriptFile(
     unresolvedTypeRefs: context.unresolvedTypeRefs,
     wildcardReExports: context.wildcardReExports,
   };
+}
+
+/**
+ * tree-sitter-typescript tokenizes `export\n type { A } from './x'` as five
+ * expressions, although tsc accepts it. Reparse only this verified token
+ * sequence with the line break normalized, then restore original locations.
+ * This keeps the source-site ledger from silently missing a valid type export.
+ */
+function recoverLineBreakTypeReExports(root: Parser.SyntaxNode, parser: Parser, context: Context): void {
+  const nodes = root.namedChildren;
+  for (let i = 0; i + 4 < nodes.length; i++) {
+    const [first, second, block, from, literal] = nodes.slice(i, i + 5);
+    if (first?.type !== 'expression_statement' || first.text.trim() !== 'export'
+      || second?.type !== 'expression_statement' || second.text.trim() !== 'type'
+      || block?.type !== 'statement_block' || from?.text.trim() !== 'from'
+      || literal?.type !== 'expression_statement' || !literal.namedChildren.some(child => child.type === 'string')) continue;
+    const original = context.sourceCode.slice(first.startIndex, literal.endIndex);
+    if (!/^export[ \t]*\r?\n[ \t]*type\b/.test(original)) continue;
+    const normalized = original.replace(/^export[ \t]*\r?\n[ \t]*type\b/, 'export type');
+    const recovered = parser.parse(normalized).rootNode.namedChildren.find(child => child.type === 'export_statement');
+    if (!recovered || !recovered.childForFieldName('source')) continue;
+    const symbolStart = context.symbols.length;
+    const edgeStart = context.edges.length;
+    const siteStart = context.reExportSites.length;
+    processExportStatement(recovered, context);
+    const offset = first.startPosition.row;
+    for (const symbol of context.symbols.slice(symbolStart)) {
+      symbol.startLine += offset;
+      symbol.endLine += offset + 1;
+    }
+    for (const edge of context.edges.slice(edgeStart)) edge.line += offset;
+    for (const site of context.reExportSites.slice(siteStart)) {
+      site.line += offset;
+      site.statement = original;
+    }
+    i += 4;
+  }
 }
 
 const LEXICAL_SCOPE_TYPES = new Set([
@@ -1312,6 +1352,14 @@ function processCommonJSObjectAssign(node: Parser.SyntaxNode, context: Context):
 }
 
 function processExportStatement(node: Parser.SyntaxNode, context: Context): void {
+  if (hasDirectToken(node, 'default')) {
+    const declaration = node.namedChildren.find(child => child.type !== 'comment');
+    if (declaration && new Set(['function_declaration', 'generator_function_declaration',
+      'class_declaration', 'arrow_function', 'function_expression', 'call_expression',
+      'new_expression', 'object', 'array', 'number', 'string']).has(declaration.type)) {
+      context.defaultExportRuntime = true;
+    }
+  }
   // `export = value` is TypeScript's CommonJS export assignment.
   if (hasDirectToken(node, '=')) {
     const value = node.namedChildren.at(-1);
@@ -1320,6 +1368,14 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
   }
   // Handle re-exports: export { X } from './module'
   const source = node.childForFieldName('source');
+  if (!source) {
+    const localClause = findChildByType(node, 'export_clause');
+    for (const specifier of localClause?.namedChildren ?? []) {
+      if (specifier.type !== 'export_specifier') continue;
+      const localName = specifier.childForFieldName('name')?.text;
+      if (localName) context.exportTargets.push({ name: localName, line: node.startPosition.row + 1 });
+    }
+  }
   if (source) {
     const importPath = source.text.slice(1, -1);
     const resolvedPath = resolveImportPath(importPath, context.filePath, context.projectRoot);
@@ -1332,16 +1388,22 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
     // from that module appear exported and creates ambiguous or wrong edges.
     const namespaceExport = findChildByType(node, 'namespace_export');
     const isWildcard = !exportClause && !namespaceExport && hasWildcardToken(node);
-    const explicitTypeOnly = node.text.trimStart().startsWith('export type');
-    const inlineTypeOnly = !explicitTypeOnly && !!exportClause && exportClause.namedChildren.length > 0
-        && exportClause.namedChildren.every(child => child.type === 'export_specifier' && hasDirectToken(child, 'type'));
+    // The grammar represents `type` differently for `export type *` and
+    // `export type { ... }`; recognize both, while excluding inline modifiers.
+    const explicitTypeOnly = hasDirectToken(node, 'type') || /^export\s+type\b/.test(node.text.trimStart());
+    const bindings = exportClause?.namedChildren.filter(child => child.type === 'export_specifier')
+      .map(child => ({ name: child.childForFieldName('name')?.text ?? '', typeOnly: hasDirectToken(child, 'type') }))
+      .filter(binding => binding.name) ?? [];
+    const inlineTypeOnly = !explicitTypeOnly && bindings.length > 0 && bindings.every(binding => binding.typeOnly);
     const classification: ReExportSite['classification'] = !resolvedPath ? 'unresolved'
-      : explicitTypeOnly ? 'type-only' : inlineTypeOnly ? 'emit-dependent' : 'runtime';
+      : explicitTypeOnly ? 'type-only' : exportClause ? 'emit-dependent' : 'runtime';
     context.reExportSites.push({ fromFile: context.filePath, line: node.startPosition.row + 1,
       statement: node.text, specifier: importPath, ...(resolvedPath ? { resolvedPath } : {}),
+      ...(explicitTypeOnly ? { typeOnlyKeyword: true } : {}),
+      ...(exportClause ? { bindings } : {}),
       classification, reason: classification === 'runtime' ? 'definite-load'
         : classification === 'type-only' ? 'erased'
-        : classification === 'emit-dependent' ? 'emit-configuration-dependent' : 'target-unresolved' });
+        : classification === 'emit-dependent' ? (inlineTypeOnly ? 'emit-configuration-dependent' : 'value-unproven') : 'target-unresolved' });
     if (resolvedPath && classification === 'runtime' && /\.(?:[cm]?js|jsx|ts|tsx)$/.test(resolvedPath)) {
       context.edges.push({ source: `${context.filePath}::__file__`, target: `${resolvedPath}::__file__`,
         kind: 'imports', filePath: context.filePath, line: node.startPosition.row + 1,
@@ -1410,7 +1472,7 @@ function processExportStatement(node: Parser.SyntaxNode, context: Context): void
           const line = node.startPosition.row + 1;
           const sourceId = `${context.filePath}::${name}`;
           pushSymbol(context, { id: sourceId, name, kind: 'export', filePath: context.filePath, startLine: line, endLine: node.endPosition.row + 1, exported: true });
-          context.edges.push({ source: sourceId, target: `${resolvedPath}::__file__`, kind: 'imports', filePath: context.filePath, line });
+          if (!explicitTypeOnly) context.edges.push({ source: sourceId, target: `${resolvedPath}::__file__`, kind: 'imports', filePath: context.filePath, line });
         }
       } else {
         const reason = classifyUnresolvedImport(importPath, context.filePath, context.projectRoot);
