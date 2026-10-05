@@ -26,7 +26,7 @@ function runParse(projectRoot: string, cwd: string, output?: string) {
   return spawnSync(process.execPath, args, {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1', DEPWIRE_TEST_UNREADABLE: unreadable },
+    env: { ...process.env, DEPWIRE_TEST_UNREADABLE: unreadable },
   });
 }
 
@@ -103,7 +103,7 @@ describe('parse exit codes and monorepo paths', () => {
     writeFileSync(join(repo, 'package.json'), '{}');
     writeFileSync(join(cwd, 'index.ts'), 'export const backend = 1;');
     const result = spawnSync(process.execPath, [cliPath, 'parse'], {
-      cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1', DEPWIRE_TEST_UNREADABLE: unreadable },
+      cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_TEST_UNREADABLE: unreadable },
     });
     expect(result.status).toBe(0);
     expect(existsSync(join(cwd, 'depwire-output.json'))).toBe(true);
@@ -122,7 +122,7 @@ describe('parse exit codes and monorepo paths', () => {
       if (scenario === 'all-failed') unreadable = join(root, 'index.ts');
       const result = spawnSync(process.execPath, ['--require', resolve(import.meta.dirname, 'helpers/fail-read.cjs'), cliPath, 'parse', root,
         ...(scenario === 'excluded' ? ['--exclude', '**/*.ts'] : [])], {
-        cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1', DEPWIRE_TEST_UNREADABLE: unreadable },
+        cwd, encoding: 'utf8', env: { ...process.env, DEPWIRE_TEST_UNREADABLE: unreadable },
       });
       expect(result.status).toBe(2);
       expect(result.stderr).toContain('No parseable files found');
@@ -161,7 +161,7 @@ it('exits 2 when installed grammar assets are missing', () => {
   const root = tempDir('depwire-grammar-project-');
   writeFileSync(join(root, 'index.ts'), 'export const value = 1;');
   const result = spawnSync(process.execPath, [join(install, 'dist/index.js'), 'parse', root], {
-    encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+    encoding: 'utf8', env: { ...process.env },
   });
   expect(result.status).toBe(2);
   expect(result.stderr).toContain('Grammar initialization failed');

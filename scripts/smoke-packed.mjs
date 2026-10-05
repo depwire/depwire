@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { smokeLanguages } from './language-smoke.mjs';
 const root = process.cwd();
 const temp = mkdtempSync(join(tmpdir(), 'depwire-packed-'));
-const env = { ...process.env, DEPWIRE_NO_TELEMETRY: '1' };
+const env = { ...process.env };
 function npm(args, cwd) {
   // npm.cmd needs cmd.exe on Windows; every argument here is controlled locally.
   const result = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, {

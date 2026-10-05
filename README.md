@@ -58,7 +58,6 @@ Depwire builds a deterministic dependency graph from source parsing, without emb
 - [Architecture health score](#architecture-health-score)
 - [Language support](#language-support)
 - [SDK](#sdk)
-- [Telemetry](#telemetry)
 - [Cloud dashboard](#cloud-dashboard)
 - [VSCode Extension](#vscode-extension)
 - [GitHub Action — PR Impact Analysis](#github-action--pr-impact-analysis)
@@ -117,7 +116,7 @@ Depwire builds a dependency graph from supported source constructs using tree-si
 
 How it works:
 
-- **Local parsing** — the CLI parses source on your machine. Cloud is a separate service; optional CLI usage telemetry is described below.
+- **Local parsing** — the CLI parses source on your machine. Cloud is a separate service.
 - **Security scanner** — scans locally and requires no API key.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
 - **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
@@ -637,19 +636,6 @@ The hook only runs when a staged file is in a language or build manifest Depwire
 
 ---
 
-## Telemetry
-
-The CLI sends fail-silent usage events containing the command name, Depwire
-version, operating system, and Node.js version. Source code, file names, graph
-data, and command arguments are never included.
-
-Set `DO_NOT_TRACK=1` to disable telemetry entirely. The legacy Depwire-specific
-forms `DEPWIRE_NO_TELEMETRY=1` and `DEPWIRE_NO_TELEMETRY=true` are also
-supported. When any of these is set, the CLI does not attempt the network
-request.
-
----
-
 ## Cloud dashboard
 
 [app.depwire.dev](https://app.depwire.dev) — full dependency graph, health score, dead code report, and AI codebase chat in the browser. No local setup required.
@@ -728,7 +714,7 @@ The parser reads source files without modifying or executing them. CLI commands 
 
 - Parses supported grammars with tree-sitter; some languages and Angular templates use pattern-based parsers
 - Visualization server binds to localhost only
-- CLI parsing is local; optional usage telemetry is described above, and Cloud is a separate service
+- CLI parsing is local; the CLI does not collect usage telemetry, and Cloud is a separate service
 - Blocks access to sensitive system directories
 
 See [SECURITY.md](SECURITY.md) for full details.

@@ -14,7 +14,7 @@ it('labels 58 parsed files separately from 55 graph files across CLI, architectu
   try {
     for (let i = 0; i < 58; i++) writeFileSync(join(root, `${i}.ts`), i < 55 ? `export const value${i} = ${i};` : '// No graph nodes\n');
     const result = spawnSync(process.execPath, [resolve('dist/index.js'), 'parse', root, '--stats'], {
-      encoding: 'utf8', env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+      encoding: 'utf8', env: { ...process.env },
     });
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('Parsed files: 58');

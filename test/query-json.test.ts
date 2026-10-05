@@ -19,7 +19,6 @@ function runQuery(args: string[], cwd: string): QueryResult {
     encoding: 'utf-8',
     env: {
       ...process.env,
-      DEPWIRE_NO_TELEMETRY: '1',
     },
   });
 

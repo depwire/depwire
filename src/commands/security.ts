@@ -8,7 +8,6 @@ import { findProjectRoot } from '../utils/files.js';
 import { scanSecurity } from '../security/scanner.js';
 import { formatTable, formatJSON, formatSARIF } from '../security/reporter.js';
 import type { Severity, VulnerabilityClass } from '../security/types.js';
-import { trackCloudCta } from '../telemetry.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -86,7 +85,6 @@ export async function securityCommand(
     console.error(
       '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
     );
-    trackCloudCta('security');
   }
 
   // Fail on severity threshold
