@@ -13,6 +13,11 @@ this change, the CLI does not collect usage data or send telemetry events.
 Older installed CLI versions may continue to send events to the existing Cloud
 ingest endpoint until users upgrade.
 
+Dependency audits remain on by default and may contact package registries or
+public advisory databases when a security scan is requested. Use
+`depwire security --no-dependency-audit` (or `dependencyAudit: false` through
+MCP or SDK) to skip those checks in a network-restricted environment.
+
 ---
 
 ## v1.27.0 — Import capture and re-export emit evidence

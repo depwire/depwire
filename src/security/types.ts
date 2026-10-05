@@ -60,12 +60,14 @@ export interface SecurityScanResult {
     ran: boolean;
     packageManager: string | null;
     rawOutput: string;
+    skippedReason?: 'disabled' | 'targeted-scan' | 'class-filter';
   };
 }
 
 export interface SecurityScanOptions {
   target?: string;
   classes?: VulnerabilityClass[];
+  dependencyAudit?: boolean;
   format?: 'table' | 'json' | 'sarif';
   failOn?: Severity;
   graphAware?: boolean;

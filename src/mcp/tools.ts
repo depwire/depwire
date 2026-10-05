@@ -357,6 +357,10 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
             type: "boolean",
             description: "Enable graph-aware severity elevation (recommended). Default: true.",
           },
+          dependencyAudit: {
+            type: "boolean",
+            description: "Run dependency CVE and supply-chain checks. Default: true; set false to skip audit requests.",
+          },
         },
       },
     },
@@ -660,6 +664,7 @@ export async function handleToolCall(
           target: normalizePath(args.target),
           classes: args.classes as VulnerabilityClass[] | undefined,
           graphAware: args.graphAware !== false,
+          dependencyAudit: args.dependencyAudit !== false,
         });
       }
     } else if (name === "verify_change") {

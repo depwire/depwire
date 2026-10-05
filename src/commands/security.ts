@@ -31,6 +31,7 @@ function getVersion(): string {
 export interface SecurityCommandOptions {
   target?: string;
   class?: string[];
+  dependencyAudit?: boolean;
   format?: string;
   failOn?: string;
 }
@@ -63,6 +64,7 @@ export async function securityCommand(
   const result = await scanSecurity(projectRoot, graph, {
     target: options.target,
     classes: options.class as VulnerabilityClass[] | undefined,
+    dependencyAudit: options.dependencyAudit,
     format: (options.format as 'table' | 'json' | 'sarif') || 'table',
     graphAware: true,
   });

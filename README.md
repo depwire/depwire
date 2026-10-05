@@ -116,7 +116,7 @@ Depwire builds a dependency graph from supported source constructs using tree-si
 
 How it works:
 
-- **Local parsing** — the CLI parses source on your machine. Cloud is a separate service.
+- **Local** — your source code, file names, graph data and analysis never leave your machine. Depwire collects no usage data. The only outbound CLI requests are ones you ask for: `security` queries public advisory databases for dependency CVEs (the same lookup `npm audit` performs), and `connect_repo` clones a GitHub URL when you give it one. Cloud is a separate service.
 - **Security scanner** — scans locally and requires no API key.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
 - **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
@@ -230,9 +230,12 @@ depwire security . --target src/auth.ts   # single file
 depwire security . --format sarif         # GitHub Security tab integration
 depwire security . --fail-on high         # CI gate — exit 1 if HIGH or above
 depwire security . --class secrets         # specific check only
+depwire security . --no-dependency-audit   # skip dependency checks and their network requests
 ```
 
 10 check categories — dependency CVEs, process safety, credential management, path safety, authentication safety, input validation, information disclosure, cryptography weaknesses, output encoding safety, and architecture-level risks.
+
+Dependency audits run by default and may contact package registries and public advisory databases. For an offline scan, `--no-dependency-audit` skips dependency CVE and supply-chain checks while leaving the other checks enabled. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior. Selecting classes that exclude dependency checks, such as `--class secrets`, also skips the audit request.
 
 Graph-aware severity uses recorded reachability from MCP tools and HTTP routes when classifying findings.
 
@@ -714,7 +717,7 @@ The parser reads source files without modifying or executing them. CLI commands 
 
 - Parses supported grammars with tree-sitter; some languages and Angular templates use pattern-based parsers
 - Visualization server binds to localhost only
-- CLI parsing is local; the CLI does not collect usage telemetry, and Cloud is a separate service
+- Source code, file names, graph data and analysis stay on your machine; the CLI collects no usage data. User-requested dependency audits query public advisory databases, and `connect_repo` clones an explicitly supplied GitHub URL. Cloud is a separate service
 - Blocks access to sensitive system directories
 
 See [SECURITY.md](SECURITY.md) for full details.

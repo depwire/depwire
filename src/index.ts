@@ -863,6 +863,7 @@ program
   .argument('[directory]', 'Project directory to scan (defaults to current directory or auto-detected project root)')
   .option('--target <file>', 'Scan a single file instead of the whole repo')
   .option('--class <classes...>', 'Only run specific vulnerability class checks')
+  .option('--no-dependency-audit', 'Skip dependency CVE and supply-chain checks (no audit requests)')
   .option('--format <format>', 'Output format: table (default), json, sarif', 'table')
   .option('--fail-on <level>', 'Exit with code 1 if findings at this severity or above')
   .action(async (directory: string | undefined, options: any) => {
