@@ -26,7 +26,7 @@ function payload(formatVersion?: number): ProjectGraph {
 
 describe('graph format v2 compatibility', () => {
   it('bumps the parser resolution cache version', () => {
-    expect(RESOLUTION_VERSION).toBe(11);
+    expect(RESOLUTION_VERSION).toBe(13);
   });
 
   it.each([undefined, 1])('rejects a %s graph with an actionable reparse error', (version) => {
@@ -38,6 +38,7 @@ describe('graph format v2 compatibility', () => {
     const graph = importFromJSON(payload(GRAPH_FORMAT_VERSION));
     const exported = exportToJSON(graph, '/repo');
     expect(exported.formatVersion).toBe(2);
+    expect(exported.reExportSites).toBeUndefined();
     expect(exported.edges).toContainEqual(expect.objectContaining({ kind: 'references-type' }));
   });
 

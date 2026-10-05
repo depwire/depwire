@@ -138,7 +138,7 @@ export function finalizeTypeReferences(parsedFiles: ParsedFile[]): {
       symbols.set(symbol.id, kinds);
     }
     for (const edge of file.edges) {
-      if (edge.kind !== 'imports') continue;
+      if (edge.kind !== 'imports' && edge.kind !== 'references-type') continue;
       const sourceKinds = symbols.get(edge.source) ?? file.symbols
         .filter((symbol) => symbol.id === edge.source)
         .map((symbol) => symbol.kind);
