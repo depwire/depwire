@@ -76,4 +76,6 @@ The eight original forms and both `export type *` forms are checked against real
 
 ## Validation on the draft branch
 
+Before coupling calibration, PR #64 also adds the three-named-barrel type/value assertion and an independent source-AST import-site CI gate. The type path resolves to the original declaration and reaches the consumer in `affected_files`; the value path keeps runtime file relationships. The 71-site TypeScript/JavaScript/Python pinned corpus, deliberate capture-miss failure and limitations are recorded in `IMPORT-SITE-LEDGER-GATE.md`. These checks do not change graph contents.
+
 `npm run build` then `npm test` passed sequentially: 50 files, 393 tests. The 23 Depwire construct assertions fail against the earlier draft (which had no site ledger) and pass here. The compiler-oracle fixtures test `tsc` independently, so they correctly pass with or without the parser change; they are not claimed as pre-fix failures. Seeds 11, 29 and 47 gave one byte-identical parsed digest and one graph digest per root for code-graph, Nest and Drizzle; all nine full digests are in `REEXPORT-DETERMINISM.jsonl`. Ubuntu and Windows CI run on the pushed draft head.

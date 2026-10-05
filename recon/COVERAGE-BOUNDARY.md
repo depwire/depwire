@@ -28,6 +28,8 @@ The approved contract records every TypeScript `export … from` source site as 
 
 The `buildGraph` assertion proves **parsed edges = built edges + recorded drops**, with cross-language edges accounted separately. It does **not** prove the parser attempted every edge implied by source. The TypeScript side-effect sites and most Python absolute sites in this audit were missed before emission. The invariant could not flag those omissions. It also does not prove an emitted edge points to the semantically correct target.
 
+Draft PR #64 now runs an independent source-AST import-site ledger on 71 pinned TypeScript, JavaScript and Python fixture sites in every CI job. It fails if one of those sites has no edge, non-code record, unresolved outcome or emit-dependent/type-only site record. The design, deliberate-miss proof and limitations are in `IMPORT-SITE-LEDGER-GATE.md`. This enforces the **listed construct boundary** on each run; it is not an assertion that all imports in an arbitrary repository have been attempted. Python external imports and repeated unresolved specifiers without line-bearing diagnostics remain outside that stronger claim.
+
 A permanent capture gate should independently enumerate source import syntax with tree-sitter/Python `ast`, assign each site a stable source location and kind, then require exactly one classified outcome: built runtime pair, built type-only pair, external, non-code, unresolved with reason, or explicitly unsupported. Reconcile at **site level** as well as parsed/built edge level, because multiple sites can share one simple-graph pair. Run that gate on pinned diverse corpora, including test and production scopes. This is a proposal, not implemented in this branch.
 
 ## Eligibility and next evidence gate
