@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## v1.27.0 — Import capture and re-export emit evidence
+
+**Health scores change on repositories whose imports were previously missing or classified as runtime when they were type-only.** The measured codebases did not change. The current coupling score still counts tests, benchmarks and repeated edges; its replacement curve remains unapproved. Do not interpret a score movement here as an architectural change.
+
+`RESOLUTION_VERSION` moves **9 → 13**, invalidating parse caches for the Python, TypeScript side-effect and re-export changes. `formatVersion` stays **2**. Stored graphs still load, but their contents and stored health rows are stale until reparsed. The Python `TYPE_CHECKING` correction also crosses a health-methodology boundary. Regenerated SLM pairs will reflect the new graph.
+
+### Python first-party imports
+
+The parser now captures proven relative imports and first-party absolute imports, including packages under `src/`. An independent Python AST census found that Flask had **123/123** first-party absolute import sites with no built relationship before this fix; Click had **129/135** missing, and FastAPI **2,016/2,246**. After the fix, the site-level built counts are Flask **123/123**, Click **135/135**, and FastAPI **2,245/2,246**. FastAPI's one absent source target is recorded with `first-party-not-found`, without a guessed edge. FastAPI built imports rise **633 → 2,156** and production file pairs **123 → 577** on the pinned corpus.
+
+Imports guarded by recognized `TYPE_CHECKING` are type relationships, not runtime imports. They remain visible to type-aware consumers but do not inflate runtime coupling. The released-methodology overall score moves **81 → 56** on Flask across the Python changes, **69 → 63** on FastAPI, and **67 → 52** on Werkzeug. Those movements reflect graph evidence and the type-only classification, not edits to those repositories.
+
+### TypeScript module relationships
+
+`import './x'` without bindings now records a proven file-level import, including six missing Drizzle and three Hono production pairs. A resolved source-only CSS, JSON, native or other asset target is recorded as a non-code dependency rather than a code edge; an unprovable target gets a reason and no guessed edge.
+
+Re-exports now follow an explicit emit contract. `export * from './x'` is a module load even if the target exports only types. Explicit `export type` forms are erased. Inline-only `export { type A } from './x'`, and plain named re-exports whose runtime value cannot be proved, are recorded as **emit-dependent** without a guessed runtime edge. Definite loads get file-level imports; proven type-only symbol links use `references-type`. A three-named-barrel fixture confirms type impact reaches the original declaration while the value chain remains runtime.
+
+Relative to the side-effect/Python split baseline, built imports move Nest **7,031 → 7,398**, Drizzle **6,151 → 6,509**, Zod **829 → 931**, Hono **1,014 → 1,008**, and TanStack Query **3,031 → 3,011**. The decreases remove type-only symbol edges previously counted as runtime imports. On that same comparison, Hono overall moves **48 → 46** and TanStack Query **45 → 50**. The coupling formula and grades have **not** been changed to offset these movements.
+
+### Validation and coverage boundary
+
+A seeded, source-verified sample of **130 newly resolved re-export relationships** found **130 correct, 0 wrong, 0 ambiguous**. Construct fixtures were checked against real TypeScript 5.9.3 output under ESNext, CommonJS and verbatim emit. Three shuffled-discovery runs on code-graph, Nest and Drizzle produced byte-identical parsed output and graphs.
+
+The parser-to-builder invariant still checks **parsed edges = built edges + recorded drops**. A new independent source-AST CI ledger checks an earlier boundary: **71 pinned TypeScript, JavaScript and Python import/re-export sites** must each have an edge, non-code record, unresolved reason, or explicit type-only/emit-dependent outcome. A deliberate capture miss failed that gate at its source line. This is a construct boundary, **not** a claim of exhaustive capture in arbitrary repositories, other languages, or non-import relationships. Python external imports and repeated unresolved specifiers need further site-level instrumentation.
+
+The [coverage boundary](recon/COVERAGE-BOUNDARY.md), [re-export contract](recon/REEXPORT-EMIT-CONTRACT.md), and [capture-gate report](recon/IMPORT-SITE-LEDGER-GATE.md) contain the pinned measurements and remaining limits. The draft coupling curve was rejected after blind validation and is not in this release. A new coupling contract and calibration will use freshly parsed graphs and new preregistered holdouts.
+
+---
+
 ## v1.26.0 — JavaScript import completeness
 
 **Express's current health score falls 82 → 65 even though its source architecture did not change.** The parser now captures import relationships it previously missed, including relationships in tests and examples. The current coupling metric counts those files and call/import volume; its definition is under review. This score movement is disclosed, not suppressed. A separate, **unapproved draft** production-only coupling formula moves 93 → 88 on Express after its production file pairs rise 4 → 7. That draft figure is not a replacement score.
