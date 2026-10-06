@@ -311,11 +311,17 @@ agents must not publish packages, registry entries, or deployments.
 1. Open a release PR that bumps the version. The package `version` script
    synchronizes `manifest.json` and `server.json`; validate all three files.
 2. Merge the release PR only after the protected-branch CI checks pass.
-3. Create and push the matching `vX.Y.Z` git tag.
-4. The maintainer authenticates through npm's browser flow and runs
-   `npm publish`, then verifies the published version.
+3. In the normal checkout, switch to `main` and run `git pull --ff-only`.
+   Create and push the matching `vX.Y.Z` git tag at that commit. Then run
+   `git describe --tags --exact-match HEAD` and confirm it prints that tag.
+   This check fails if the checkout is not at the release commit.
+4. Run `npm run build` and then `npm test` from that checkout. The maintainer
+   authenticates through npm's browser flow, runs `npm publish`, and verifies
+   the package version and `latest` dist-tag with `npm view`.
 5. In a fresh session, the maintainer runs `mcp-publisher login github` and
    completes the GitHub device-flow login before `mcp-publisher publish`.
+   Publish npm first: the MCP registry entry points at the npm package, which
+   must already be installable when the registry entry becomes visible.
 
 There is no automated npm-publish workflow or `NPM_TOKEN`-driven tag trigger.
 The MCP publisher credential expires between sessions, so a fresh GitHub login

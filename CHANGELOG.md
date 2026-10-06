@@ -6,17 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## Unreleased — CLI telemetry removal
+## v1.28.0 — CLI telemetry removal and security scan controls
 
-CLI usage telemetry has been removed. Starting with the release that includes
-this change, the CLI does not collect usage data or send telemetry events.
-Older installed CLI versions may continue to send events to the existing Cloud
-ingest endpoint until users upgrade.
+The CLI no longer collects usage data or sends telemetry events. The telemetry
+client and the `DO_NOT_TRACK` and `DEPWIRE_NO_TELEMETRY` controls were removed;
+there is no CLI usage collection left to disable. Older installed versions may
+continue sending events to the existing Cloud endpoint until users upgrade.
 
-Dependency audits remain on by default and may contact package registries or
-public advisory databases when a security scan is requested. Use
-`depwire security --no-dependency-audit` (or `dependencyAudit: false` through
-MCP or SDK) to skip those checks in a network-restricted environment.
+Source-code analysis runs locally. Applicable security scans still perform
+dependency vulnerability and supply-chain checks by default; these may contact
+package registries and public advisory databases. Use
+`depwire security --no-dependency-audit` to skip those checks and their network
+requests while retaining the other security checks. `--class secrets` also
+skips dependency checks. SDK and MCP callers can pass `dependencyAudit: false`.
+Scan results identify when dependency checks were skipped.
+
+The README and SECURITY.md now narrow unsupported claims about npm provenance,
+read-only operation, exact dependency pinning, language coverage, and response
+times. They distinguish local source-code analysis from dependency audit and
+explicit GitHub requests. The What If browser page still loads D3 from a CDN;
+offline rendering is tracked separately in issue #69.
+
+This release does not change parsed graph contents: `RESOLUTION_VERSION` stays
+13 and `formatVersion` stays 2. No parse-cache invalidation is required for
+this release. The published npm and MCP versions must both be 1.28.0.
 
 ---
 
