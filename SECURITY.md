@@ -9,9 +9,9 @@ Depwire analyzes supported source files and project manifests locally. It:
 - Binds the visualization server to localhost (127.0.0.1)
 - Clones a GitHub repository to a temporary directory when given its URL to `connect_repo`
 
-Local commands can write derived artifacts, including graph output, parse caches, generated documentation, health history, and coordination state. Source code, file names, graph data and analysis stay on your machine; the CLI collects no usage data. The only outbound CLI requests are ones you ask for: `security` runs dependency audits against package registries and public advisory databases, and `connect_repo` clones or pulls a GitHub URL when you give it one. Cloud is a separate service.
+Local commands can write derived artifacts, including graph output, parse caches, generated documentation, health history, and coordination state. The CLI does not upload source code, file names, graph data or analysis, and collects no usage telemetry. Applicable `security` scans run dependency vulnerability and supply-chain checks by default; these may contact package registries and public advisory databases. `connect_repo` clones or pulls when given a GitHub URL. The What If browser page loads D3 from a CDN. Cloud is a separate service.
 
-For an offline security scan, use `depwire security --no-dependency-audit` to skip dependency CVE and supply-chain checks while keeping the other checks. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior.
+To skip dependency checks and their network requests, use `depwire security --no-dependency-audit`; the other security checks still run. `--class secrets` also skips dependency checks. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior.
 
 Depwire does not expose its visualization server to other machines.
 
