@@ -116,8 +116,8 @@ Depwire builds a dependency graph from supported source constructs using tree-si
 
 How it works:
 
-- **Local** — your source code, file names, graph data and analysis never leave your machine. Depwire collects no usage data. The only outbound CLI requests are ones you ask for: `security` queries public advisory databases for dependency CVEs (the same lookup `npm audit` performs), and `connect_repo` clones a GitHub URL when you give it one. Cloud is a separate service.
-- **Security scanner** — scans locally and requires no API key.
+- **Local** — the CLI analyzes source code on your machine and collects no usage telemetry. It does not upload source code, file names, graph data or analysis. Applicable `security` scans run dependency vulnerability and supply-chain checks by default; these may contact package registries and public advisory databases. `connect_repo` accesses GitHub when given a GitHub URL. The What If browser page loads D3 from a CDN. Cloud is a separate service.
+- **Security scanner** — runs local code checks and applicable dependency audits by default; no Depwire API key is required.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
 - **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
 
@@ -235,7 +235,7 @@ depwire security . --no-dependency-audit   # skip dependency checks and their ne
 
 10 check categories — dependency CVEs, process safety, credential management, path safety, authentication safety, input validation, information disclosure, cryptography weaknesses, output encoding safety, and architecture-level risks.
 
-Dependency audits run by default and may contact package registries and public advisory databases. For an offline scan, `--no-dependency-audit` skips dependency CVE and supply-chain checks while leaving the other checks enabled. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior. Selecting classes that exclude dependency checks, such as `--class secrets`, also skips the audit request.
+Applicable security scans run dependency vulnerability and supply-chain checks by default; these may contact package registries and public advisory databases. To skip those checks and their network requests, use `--no-dependency-audit`; the other checks still run. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior. Selecting classes that exclude dependency checks, such as `--class secrets`, also skips the audit request.
 
 Graph-aware severity uses recorded reachability from MCP tools and HTTP routes when classifying findings.
 
@@ -717,7 +717,7 @@ The parser reads source files without modifying or executing them. CLI commands 
 
 - Parses supported grammars with tree-sitter; some languages and Angular templates use pattern-based parsers
 - Visualization server binds to localhost only
-- Source code, file names, graph data and analysis stay on your machine; the CLI collects no usage data. User-requested dependency audits query public advisory databases, and `connect_repo` clones an explicitly supplied GitHub URL. Cloud is a separate service
+- The CLI does not upload source code, file names, graph data or analysis, and collects no usage telemetry. Applicable security scans perform dependency checks by default and may contact external vulnerability services. `connect_repo` accesses GitHub when given its URL; the What If browser page loads D3 from a CDN. Cloud is a separate service
 - Blocks access to sensitive system directories
 
 See [SECURITY.md](SECURITY.md) for full details.
