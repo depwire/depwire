@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-BUSL--1.1-00d4aa)](https://github.com/depwire/depwire/blob/main/LICENSE)
 [![MCP Compatible](https://img.shields.io/badge/MCP-24%20tools-00d4aa)](https://github.com/depwire/depwire)
 
-[![Languages](https://img.shields.io/badge/languages-17-0a1a14?style=flat)](https://github.com/depwire/depwire)
+[![16 languages + Angular templates](https://img.shields.io/badge/languages-16%20%2B%20Angular%20templates-0a1a14?style=flat)](https://github.com/depwire/depwire)
 [![TypeScript](https://img.shields.io/badge/TypeScript-✓-3178c6?style=flat)](https://github.com/depwire/depwire)
 [![Python](https://img.shields.io/badge/Python-✓-3776ab?style=flat)](https://github.com/depwire/depwire)
 [![Go](https://img.shields.io/badge/Go-✓-00add8?style=flat)](https://github.com/depwire/depwire)
@@ -24,7 +24,7 @@
 [![YouTube CLI Tutorial](https://img.shields.io/badge/YouTube-CLI%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=ujBg0H3eqpE)
 [![YouTube Cloud Tutorial](https://img.shields.io/badge/YouTube-Cloud%20Tutorial-ff0000?logo=youtube)](https://www.youtube.com/watch?v=wdTJfSRTQu8)
 [![Cloud](https://img.shields.io/badge/cloud-app.depwire.dev-00d4aa)](https://app.depwire.dev)
-[![VS Code](https://img.shields.io/visual-studio-marketplace/v/depwire.depwire-vscode?label=VSCode&logo=visualstudiocode&color=00d4aa)](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-00d4aa?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
 
 </div>
 
@@ -32,23 +32,27 @@
 
 ## What makes Depwire different
 
-<p align="center">
-  <img src="./assets/deterministic_vs_rag_diagram.svg" alt="Depwire deterministic graph vs RAG probabilistic approach" width="680" />
-</p>
+**16 programming languages, plus Angular templates. Depwire parses symbols and builds dependency relationships across the constructs it supports. It records relationships it cannot resolve instead of inventing an edge.**
 
-Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your codebase. This is not RAG. There are no embeddings, no similarity scores, no vector databases, no guesses. Depwire uses tree-sitter — the same parser powering GitHub's code intelligence — to extract exact symbol-level facts from every file: every function, every class, every interface, every import and export relationship, across 17 programming languages. When you ask "what breaks if I delete `encodeToken` in `auth/token.ts`?", Depwire does not search for similar-looking code and estimate an answer. It traverses the exact dependency graph and returns the precise list of 14 files that import that symbol, which import chains break, and what your health score drops by. This is compiler-level precision applied to AI-assisted development — not a language model's best guess about your code.
+Depwire builds a deterministic dependency graph from source parsing, without embeddings or similarity search. For a proposed change, it traverses the relationships present in that graph to show known dependents, import chains, and health movement. Results depend on the language constructs and files the parser can analyze.
 
-**Not a build graph either.** Tools like Nx, Turborepo, and Grapher track package-level dependencies for build caching. Depwire tracks symbol-level dependencies — every function, class, and import relationship — which is what makes What If simulation, graph-aware security scanning, and exact blast radius analysis possible.
+**Not a build graph either.** Depwire tracks symbol-level relationships for What If simulation, graph-aware security scanning, and blast radius analysis.
 
 ## Contents
 
 - [What makes Depwire different](#what-makes-depwire-different)
+- [Performance evidence](#performance-evidence)
+- [The problem](#the-problem)
 - [Start here](#start-here)
 - [The infrastructure layer](#the-infrastructure-layer)
+- [Tested on real-world projects](#tested-on-real-world-projects)
 - [What If simulation](#what-if-simulation)
 - [Security scanner](#security-scanner)
 - [Pre-action verification](#pre-action-verification)
 - [Structural diff between commits](#structural-diff-between-commits)
+- [Visualization](#visualization)
+- [Temporal graph](#temporal-graph)
+- [All commands](#all-commands)
 - [MCP server — AI integration](#mcp-server--ai-integration)
 - [Cross-language edge detection](#cross-language-edge-detection)
 - [Architecture health score](#architecture-health-score)
@@ -56,14 +60,17 @@ Depwire builds a **DETERMINISTIC, NOT PROBABILISTIC** dependency graph of your c
 - [SDK](#sdk)
 - [Telemetry](#telemetry)
 - [Cloud dashboard](#cloud-dashboard)
+- [VSCode Extension](#vscode-extension)
 - [GitHub Action — PR Impact Analysis](#github-action--pr-impact-analysis)
 - [pre-commit / prek hook](#pre-commit--prek-hook)
 - [Depwire Action Token (DAT)](#depwire-action-token-dat)
 - [Roadmap](#roadmap)
+- [Security posture](#security-posture)
+- [Paths and file counts](#paths-and-file-counts)
 
 ---
 
-Depwire is the infrastructure layer between your AI coding assistant and your codebase. Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.
+Depwire provides graph context to AI coding assistants. Parse a project to inspect recorded relationships, assess health, and simulate a proposed change.
 
 ![Depwire CLI demo on honojs/hono](./assets/depwire-demo-cli.gif)
 
@@ -76,8 +83,9 @@ Depwire is the infrastructure layer between your AI coding assistant and your co
 The previously published agent benchmark has been withdrawn after an audit found
 that the task prompt exposed its answer key, the scored file set was narrower
 than the change required by the monorepo, and one arm started in a different
-working directory. A corrected three-arm experiment is being prepared. No
-performance or correctness conclusion from the earlier runs should be cited.
+working directory. Three corrected exploratory sessions have since been run;
+they do not establish a performance or correctness advantage. No conclusion
+from the withdrawn runs should be cited.
 
 [Audit and corrected harness →](https://github.com/depwire/depwire-benchmark)
 
@@ -87,11 +95,11 @@ performance or correctness conclusion from the earlier runs should be cited.
 
 AI coding tools are getting smarter. But they still have a fundamental blind spot: they don't know your architecture before they touch it.
 
-You ask Claude to delete a utility file. It deletes it cleanly. Confident. No warnings.
+For example, you ask an AI assistant to delete a utility file. It deletes it without warnings.
 
-Then you run the build. 30 files broken.
+Then the build reveals downstream consumers that still import it.
 
-Claude had no idea. It saw one file. It didn't see the 30 downstream consumers.
+The assistant saw one file without inspecting those consumers.
 
 This isn't a model problem. It's a context problem. The AI is flying blind.
 
@@ -105,12 +113,12 @@ This isn't a model problem. It's a context problem. The AI is flying blind.
 
 Depwire is the context and safety layer for AI-generated code.
 
-Depwire sits between your AI and your codebase. It builds a complete dependency graph using tree-sitter — deterministic, not probabilistic — and serves it to your AI through 24 MCP tools.
+Depwire builds a dependency graph from supported source constructs using tree-sitter and serves it to AI assistants through 24 MCP tools.
 
-Four guarantees:
+How it works:
 
-- **Local** — everything runs on your machine. No cloud parsing. No data sent anywhere.
-- **Secure** — your code never leaves your machine. The security scanner requires no API key.
+- **Local parsing** — the CLI parses source on your machine. Cloud is a separate service; optional CLI usage telemetry is described below.
+- **Security scanner** — scans locally and requires no API key.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
 - **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
 
@@ -122,12 +130,12 @@ Four guarantees:
 npm install -g depwire-cli
 ```
 
-Three commands to understand any codebase:
+Three commands for a supported codebase:
 
 ```bash
-depwire whatif     # know what breaks before you change anything
-depwire security   # catch vulnerabilities before AI ships them
-depwire viz        # see your entire architecture instantly
+depwire whatif     # simulate a proposed change
+depwire security   # scan for supported finding patterns
+depwire viz        # view the recorded dependency graph
 ```
 
 ---
@@ -144,9 +152,9 @@ depwire viz        # see your entire architecture instantly
 | [rstudio/plumber](https://github.com/rstudio/plumber) | R | 197 | 1,194 | 219 | — |
 | [payloadcms/payload](https://github.com/payloadcms/payload) | TypeScript | 645 | 9,292 | 3,511 | — |
 
-> Numbers from real `depwire parse` runs on public repositories. Last validated: v1.8.2 (June 2026).
+> Historical `depwire parse` runs on public repositories, last validated with v1.8.2 (June 2026).
 >
-> **Pre-1.9.0 measurement.** v1.9.0 fixed parser bugs (double-emitted symbols in the TypeScript/Python/C#/C++/Java parsers, dropped type-only-import edges, false orphans) that directly affect symbol counts, edge counts, and health scores. These numbers were captured before that fix and have not been re-measured — they are directionally useful but not exact under v1.9.0+.
+> **Pre-1.9.0 measurement.** v1.9.0 fixed parser bugs (double-emitted symbols in the TypeScript/Python/C#/C++/Java parsers, dropped type-only-import edges, false orphans) that directly affect symbol counts, edge counts, and health scores. Later releases changed graph contents and health methodology again. These numbers have not been re-measured and are not current results.
 
 ---
 
@@ -171,7 +179,7 @@ Real output on [honojs/hono](https://github.com/honojs/hono) — 352 files, 6,24
 
 > Pre-1.9.0 measurement — captured before the v1.9.0 parser fixes; not re-measured.
 
-Before touching a single file. Zero file I/O. Pure in-memory simulation.
+The simulation operates on a loaded graph without changing source files; loading or parsing the graph requires file I/O.
 
 Five operations:
 
@@ -203,7 +211,7 @@ Broken Imports:  124  (cross-module: 106 across 10 extension modules)
 
 > Pre-1.9.0 measurement — google/guice is a Java project; the Java parser's double-emission bug (fixed in v1.9.0) affects this figure. Not re-measured.
 
-Without this, your AI agent has no visibility into cross-module blast radius. With it, dangerous changes are caught before they happen.
+Cross-module resolution lets impact analysis report supported relationships across module boundaries.
 
 Supported build systems:
 - Maven (`pom.xml` with `<modules>` declarations, recursive nested modules)
@@ -215,7 +223,7 @@ Both standard (`src/main/java`) and non-standard (`src/`) source layouts are sup
 
 ## Security scanner
 
-AI will confidently ship vulnerable code. Depwire stops it before production.
+Depwire's security scanner reports findings locally and can fail a configured CI gate.
 
 ```bash
 depwire security .                        # full repo scan
@@ -225,13 +233,9 @@ depwire security . --fail-on high         # CI gate — exit 1 if HIGH or above
 depwire security . --class secrets         # specific check only
 ```
 
-Real output on honojs/hono:
-
-    6 Critical  19 High  14 Medium  1 Low
-
 10 check categories — dependency CVEs, process safety, credential management, path safety, authentication safety, input validation, information disclosure, cryptography weaknesses, output encoding safety, and architecture-level risks.
 
-Graph-aware severity: a medium-severity finding reachable from an MCP tool or HTTP route is automatically elevated to critical. This is what no generic SAST tool can replicate — Depwire knows your architecture, so it knows what's actually reachable.
+Graph-aware severity uses recorded reachability from MCP tools and HTTP routes when classifying findings.
 
 Available as MCP tool `security_scan` and via `depwire-cli/sdk`.
 
@@ -239,7 +243,7 @@ Available as MCP tool `security_scan` and via `depwire-cli/sdk`.
 
 ## Pre-action verification
 
-Verify a proposed change is safe before applying it. Reports broken imports, cyclic-group changes when a resolved after-graph is available, health movement, and security findings. Export-only comparisons of edited content or unified diffs cannot establish cyclic-group safety: they return `cyclicGroupChanges.status: not_comparable` and do not certify the change as safe.
+Analyze a proposed change before applying it. Reports broken imports, cyclic-group changes when a resolved after-graph is available, health movement, and security findings. Export-only comparisons of edited content or unified diffs cannot establish cyclic-group safety: they return `cyclicGroupChanges.status: not_comparable` and do not certify the change as safe.
 
 ```bash
 depwire verify-change --file src/auth.ts --content-from new-auth.ts
@@ -247,22 +251,6 @@ depwire verify-change --diff changes.patch
 depwire verify-change --file src/auth.ts --content-from new-auth.ts --json
 cat new-auth.ts | depwire verify-change --file src/auth.ts
 ```
-
-Example output:
-
-    Verify Change Report
-    ──────────────────────────────────────────────────
-    ✗ UNSAFE — risk: high
-    ──────────────────────────────────────────────────
-    Health Score:  62 → 59  (-3)
-    Broken Imports: 2
-      • src/index.ts — missing trackCommand
-      • src/server.ts — missing handleAuth
-    Cyclic Group Changes: unavailable without a resolved after-graph
-    Security Findings: 1
-      • [HIGH] Hardcoded secret detected (src/auth.ts:14)
-    Blast Radius:    8 files affected
-    ──────────────────────────────────────────────────
 
 CI integration:
 
@@ -285,25 +273,7 @@ depwire diff HEAD~5 HEAD --verbose
 depwire diff v1.5.0 v1.6.0 --json | jq
 ```
 
-Example output:
-
-    Depwire diff: v1.5.0..v1.6.0
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Symbols
-      + 114 added      VerifyChangeOptions, verifyChangeCommand, input ...
-      - 66 removed    VerifyChangeInput, BrokenImportEntry, CircularDepEntry ...
-      ~ 47 modified   __filename, __dirname, packageJsonPath ...
-    Edges
-      + 31 added
-      - 9 removed
-    Files
-      152 → 154  (+2 / -0)
-    Blast radius:    4 files affected
-    Health score:    67 → 67  (+0)  [D → D]
-    Security:        1 new / 1 fixed
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Deterministic. No LLM. Safe — uncommitted changes are stashed and restored even if the command errors.
+The diff uses graph comparisons without an LLM. It temporarily stashes uncommitted changes and attempts to restore them after analysis; a failed restore is reported for manual recovery.
 
 Options: `--json` (machine-readable), `--verbose` (every symbol/edge by name), `--no-security` / `--no-health` (faster runs).
 
@@ -317,7 +287,7 @@ Options: `--json` (machine-readable), `--verbose` (every symbol/edge by name), `
 depwire viz
 ```
 
-Interactive arc diagram of your entire codebase. Every file, every connection, every dependency visible at once. Hover to inspect. Click to filter. Export as PNG or SVG.
+Interactive arc diagram of files and relationships present in the graph. Hover to inspect, click to filter, and export as PNG or SVG.
 
 ---
 
@@ -329,7 +299,7 @@ Interactive arc diagram of your entire codebase. Every file, every connection, e
 depwire temporal
 ```
 
-Watch your architecture evolve over git history. Timeline slider scrubs through commits — the arc diagram morphs as your codebase grew, coupled, and refactored. Nobody else does this.
+Watch recorded architecture change over git history. A timeline slider moves through commits and updates the arc diagram.
 
 ---
 
@@ -339,10 +309,10 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 |---------|-------------|
 | `depwire viz` | Interactive arc diagram in browser |
 | `depwire whatif` | Simulate changes before touching code |
-| `depwire verify-change` | Verify a proposed change is safe — broken imports, health delta, security |
+| `depwire verify-change` | Analyze a proposed change — broken imports, health delta, security, and comparison limits |
 | `depwire security` | Scan for vulnerabilities — graph-aware severity |
 | `depwire health` | 0-100 architecture health score across 6 dimensions |
-| `depwire dead-code` | Find unused symbols with confidence scoring |
+| `depwire dead-code` | Find dead-code candidates with confidence; JSON output includes `reasonCode` |
 | `depwire docs` | Generate 13 architecture documents |
 | `depwire temporal` | Visualize architecture evolution over git history |
 | `depwire parse` | Parse and export dependency graph as JSON |
@@ -350,7 +320,7 @@ Watch your architecture evolve over git history. Timeline slider scrubs through 
 | `depwire diff` | Structural diff between two git commits — symbols, edges, health, security |
 | `depwire mcp` | Start MCP server for AI coding assistants |
 
-All commands auto-detect your project root. No path configuration needed.
+Commands accept a project path; `depwire parse` uses the supplied directory or the current directory when omitted.
 
 ### `depwire prompt` — graph-first workflow for AI agents
 
@@ -383,7 +353,7 @@ Connect Depwire to any MCP-compatible AI tool. Your AI gets 24 tools it can call
 }
 ```
 
-**For large projects — instant MCP startup:**
+**Using a saved graph for MCP startup:**
 
 ```bash
 # Parse once (writes depwire-output.json)
@@ -392,7 +362,7 @@ depwire parse .
 # Output defaults to the parsed project directory; --output takes precedence
 depwire parse ./services/api --output ./artifacts
 
-# MCP starts instantly from cached graph (<100ms)
+# MCP starts from the saved graph
 depwire mcp .
 
 # Flags:
@@ -426,7 +396,7 @@ code before consuming that file.
 
 After running `depwire parse .`, Depwire generates `.depwire/AGENTS.md` — a project-specific context file containing module structure, key files, health summary, and MCP quick-start commands.
 
-Claude Code reads `AGENTS.md` automatically when present. Add it to your `CLAUDE.md`:
+To direct Claude Code to the generated context, reference it from your `CLAUDE.md`:
 
 ```bash
 # In your project root CLAUDE.md:
@@ -434,7 +404,7 @@ echo "## Depwire Context" >> CLAUDE.md
 echo "Read .depwire/AGENTS.md for codebase architecture." >> CLAUDE.md
 ```
 
-This gives every Claude Code session project-specific orientation without an MCP tool call.
+The reference makes the generated project context available without an MCP tool call.
 
 ![Claude Desktop with Depwire MCP](./assets/claude.gif)
 
@@ -453,7 +423,7 @@ This gives every Claude Code session project-specific orientation without an MCP
 | `impact_analysis` | What breaks if you change a symbol? Cross-language edges included. |
 | `visualize_graph` | Generate interactive arc diagram |
 | `get_health_score` | 0-100 health score with recommendations |
-| `find_dead_code` | Symbols defined but never referenced |
+| `find_dead_code` | Dead-code candidates with confidence and `reasonCode` evidence |
 | `get_project_docs` | Retrieve auto-generated codebase documentation |
 | `update_project_docs` | Regenerate documentation on demand |
 | `get_temporal_graph` | Architecture evolution over git history |
@@ -482,13 +452,13 @@ The coordination tools (`claim_files`, `release_files`, `get_active_claims`, `re
 
 Depwire detects connections between files written in different languages.
 
-A TypeScript `fetch('/api/users')` call matched to a Python `@app.get('/api/users')` route definition — that's a cross-language edge. Delete the Python route and Depwire shows the TypeScript callers as broken.
+For example, a supported TypeScript `fetch('/api/users')` call can match a Python `@app.get('/api/users')` route definition by path. That recorded edge can inform impact analysis if the route changes.
 
 Supported patterns:
 - REST API edges — fetch/axios calls matched to Express, FastAPI, Flask, Gin route definitions
 - Subprocess edges — execSync/subprocess.run calls matched to target files in the graph
 
-These edges flow through every existing feature: What If simulation, impact analysis, security scanner, and arc diagram visualization.
+Recorded cross-language edges are used by What If simulation, impact analysis, security scanning, and visualization.
 
 ---
 
@@ -503,9 +473,9 @@ retained. Witness paths illustrate each group without enumerating all cycles.
 
 The previous cycle count was incomplete and depended on traversal order. It has
 been removed, not redefined. Health results carry
-`dimensions_v: 2026-09-30-cyclic-groups-v1`; trends across that methodology boundary
-suppress improvement/regression deltas and explain the change. Graph format 2 and
-resolution version 5 are unchanged. This correction does not imply every old
+`dimensions_v` methodology marker; trends across methodology boundaries
+suppress improvement/regression deltas and explain the
+change. Graph format remains 2. This correction does not imply every old
 figure was wrong: acyclic graphs correctly had zero, and some counts coincided.
 
 Simulation reports newly cyclic files, freed files, added/deleted cyclic files,
@@ -517,15 +487,9 @@ groups is not a resolution; deleting a cyclic file is not freeing a surviving fi
 depwire health .
 ```
 
-    Overall: 68/100 (Grade: D)
-    Coupling              70   C
-    Cohesion              80   B
-    Cyclic Dependency Groups 100  A
-    God Files             40   F
-    Orphans & Dead Code   20   F
-    Dependency Depth      60   D
-
-6 dimensions. Letter grades. Actionable recommendations. Trend tracking across runs.
+The report scores six dimensions: coupling, cohesion, cyclic dependency groups,
+god files, orphans and dead code, and dependency depth. It includes letter grades,
+recommendations, and trends across comparable runs.
 
 > **Note on v1.6.1 scoring change:** The dead code scoring methodology was
 > corrected in v1.6.1 to only count exported symbols with zero dependents
@@ -582,7 +546,7 @@ The SDK is the stable public API surface. All integrations should import from `d
 
 ## Language support
 
-TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R — with cross-language edge detection between all supported languages.
+TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R — 16 programming languages, plus Angular templates. Cross-language detection covers supported REST API and subprocess patterns. The parser descriptions below name supported constructs; they are not a guarantee that every relationship in an arbitrary repository is captured. The [coverage boundary](recon/COVERAGE-BOUNDARY.md) records checked and unchecked import forms for TypeScript, JavaScript, and Python. An independent [source-AST CI ledger](recon/IMPORT-SITE-LEDGER-GATE.md) checks pinned import and re-export constructs in those three languages; it does not certify capture in arbitrary repositories or other languages.
 
 **Java / JVM** — classes, interfaces, enums, records, annotations, inner classes, anonymous classes, lambda expressions, Maven pom.xml and Gradle build file dependency edges, Spring Boot cross-language edges (@GetMapping, @PostMapping, @RequestMapping), JAX-RS / Jakarta EE route detection, Spring WebFlux RouterFunction support.
 
@@ -596,7 +560,7 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, 
 
 **Swift / Apple** — functions, methods, initializers (init), deinitializers (deinit), classes, structs, enums, protocols, extensions, actors (Swift concurrency), properties (var, let), computed properties, type aliases, associated types. Package.swift (SPM) dependency parsing. Vapor, Hummingbird, and Perfect cross-language route detection. URLSession and Alamofire HTTP client edge detection. Dead code detection with AppDelegate/SceneDelegate lifecycle, SwiftUI View body, @IBAction/@IBOutlet, @objc, protocol conformance, Codable synthesis, XCTestCase, and @main entry point exclusions. Security scanner: query string safety via string interpolation, Process() execution safety, memory pointer safety patterns, UserDefaults storing sensitive data, CC_MD5/CC_SHA1 weak hashing, Insecure.MD5/SHA1 from CryptoKit, arc4random in crypto contexts, App Transport Security patterns, credential management patterns, hardcoded HTTP URLs.
 
-**Mojo / AI-native** *(strategic support)* — fn (typed functions), def (Python-compatible functions), structs (value types), classes, traits (interfaces), alias (type aliases and compile-time constants), var/let declarations, import and from...import statements. Pattern-based parser (no tree-sitter-mojo available). Supports @value, @register_passable, @staticmethod decorators, inout/owned/borrowed parameter modifiers, SIMD/Tensor/DType type references. mojoproject.toml dependency parsing. Python interop detection (from python import). Cross-language route detection via Python framework interop (FastAPI/Starlette). Dead code detection with __init__/__copyinit__/__moveinit__ lifecycle, trait implementations, MLIR dialect operations, and @export exclusions. Security scanner: Pointer[T] and DTypePointer memory safety, Python interop evaluation safety, uninitialized memory patterns, SIMD bounds safety, weak random via Python random module, hardcoded keys in alias declarations, hashlib via Python interop in crypto contexts. *Mojo is the first AI-native language supported by Depwire.*
+**Mojo / AI-native** *(strategic support)* — fn (typed functions), def (Python-compatible functions), structs (value types), classes, traits (interfaces), alias (type aliases and compile-time constants), var/let declarations, import and from...import statements. Pattern-based parser (no tree-sitter-mojo available). Supports @value, @register_passable, @staticmethod decorators, inout/owned/borrowed parameter modifiers, SIMD/Tensor/DType type references. mojoproject.toml dependency parsing. Python interop detection (from python import). Cross-language route detection via Python framework interop (FastAPI/Starlette). Dead code detection with __init__/__copyinit__/__moveinit__ lifecycle, trait implementations, MLIR dialect operations, and @export exclusions. Security scanner: Pointer[T] and DTypePointer memory safety, Python interop evaluation safety, uninitialized memory patterns, SIMD bounds safety, weak random via Python random module, hardcoded keys in alias declarations, hashlib via Python interop in crypto contexts.
 
 **Ruby / Web** — method definitions (def, def self.), classes, modules, instance variables (@var), class variables (@@var), constants, attr_accessor/attr_reader/attr_writer, require/require_relative dependency edges, include/extend/prepend mixin edges, blocks, procs, lambdas, Struct and OpenStruct definitions, ActiveSupport::Concern support. Gemfile dependency parsing. Rails (get/post/put/patch/delete/resources/namespace in routes.rb), Sinatra (route + do blocks), Rack (map/run/use in config.ru), and Grape API cross-language route detection. Faraday, Net::HTTP, and HTTParty HTTP client edge detection. Dead code detection with Rails controller callbacks, ActiveRecord lifecycle callbacks, rake tasks, RSpec/Minitest methods, concerns (included/class_methods blocks), initialize, method_missing/respond_to_missing?, Pundit policy methods, and Devise strategy exclusions. Security scanner: string interpolation in database query methods, command execution safety patterns, runtime evaluation safety patterns, dynamic dispatch safety patterns, file operation safety patterns, YAML deserialization safety, Marshal deserialization safety, template rendering safety patterns, weak hash algorithms (Digest::MD5/SHA1), weak random (rand vs SecureRandom), credential management patterns, SSL verification patterns, weak cipher algorithms.
 
@@ -612,7 +576,7 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, 
 
 Depwire integrates into your CI/CD pipeline via the [depwire-action](https://github.com/depwire/depwire-action) GitHub Action.
 
-On every pull request it automatically posts a dependency impact report — which symbols changed, what breaks, health score before and after. Code reviewers see the architectural blast radius before merging.
+When configured for pull requests, the Action posts a dependency impact report with recorded changes and health scores. It uses its configured CLI version, which may differ from the latest release.
 
 Add to `.github/workflows/depwire.yml`:
 
@@ -667,7 +631,7 @@ repos:
         args: ["parse", ".", "--stats"]
 ```
 
-`rev` is a release tag that includes `.pre-commit-hooks.yaml`. The hook runs repository-level analysis (`pass_filenames: false`); `parse . --stats` is the default, so `args` is only needed to pass other CLI options or run another command, e.g. `args: ["health", "."]`. The runner installs the CLI from the tag on first use (one-off build, about half a minute), after which a parse of a few hundred files takes ~1-2s cold and well under a second with the warm `.depwire/cache.db`.
+`rev` is a release tag that includes `.pre-commit-hooks.yaml`. The hook runs repository-level analysis (`pass_filenames: false`); `parse . --stats` is the default, so `args` is only needed to pass other CLI options or run another command, e.g. `args: ["health", "."]`. The runner installs the CLI from the tag on first use; subsequent parses can reuse `.depwire/cache.db`.
 
 The hook only runs when a staged file is in a language or build manifest Depwire parses; commits that touch nothing parseable are reported as `Skipped` instead of failing with `No parseable files found`. Add `depwire-output.json` and `.depwire/` to your `.gitignore`.
 
@@ -724,8 +688,6 @@ Working on Mac and Windows. Free to install.
 
 Subscribe at [app.depwire.dev/subscribe](https://app.depwire.dev/subscribe).
 
-Your license key works in both the VSCode extension and the Cloud app — one subscription, both surfaces.
-
 ---
 
 ## Roadmap
@@ -744,11 +706,11 @@ Your license key works in both the VSCode extension and the Cloud app — one su
 - Public SDK — `depwire-cli/sdk`
 - Cloud dashboard — app.depwire.dev
 - PR Impact GitHub Action
-- VSCode extension — v1.0.13, Mac + Windows, [marketplace](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
+- VSCode extension — Mac + Windows, [marketplace](https://marketplace.visualstudio.com/items?itemName=depwire.depwire-vscode)
 - HTML/Angular template parsing
 - Constructor/field dependency injection parsing (Angular services, `injects` edge kind)
 - Windows path normalization for all MCP tools
-- `verify_change` diff-based (no more false positives)
+- `verify_change` with explicit comparison limits for edited content and diffs
 - SQLite graph cache for faster warm parses
 - Fast MCP startup from persisted `depwire-output.json`
 - `depwire prompt` — workflow prompt for AI agents
@@ -762,13 +724,12 @@ Your license key works in both the VSCode extension and the Cloud app — one su
 
 ## Security posture
 
-Depwire is read-only. It never writes to, modifies, or executes your code.
+The parser reads source files without modifying or executing them. CLI commands can write derived artifacts such as graph output, the parse cache, and `.depwire/AGENTS.md`; coordination tools write their own runtime state.
 
-- Parses with tree-sitter — the same parser used by VS Code and Zed
+- Parses supported grammars with tree-sitter; some languages and Angular templates use pattern-based parsers
 - Visualization server binds to localhost only
-- No data leaves your machine
+- CLI parsing is local; optional usage telemetry is described above, and Cloud is a separate service
 - Blocks access to sensitive system directories
-- npm packages published with provenance verification
 
 See [SECURITY.md](SECURITY.md) for full details.
 
@@ -788,7 +749,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 **Atef Ataya** — AI architect, author, and creator of Depwire.
 
-- [YouTube](https://www.youtube.com/@atefataya) — 650K+ subscribers covering AI agents, MCP, and LLMs
+- [YouTube](https://www.youtube.com/@atefataya) — videos covering AI agents, MCP, and LLMs
 - [The Architect's Playbook: 5 Pillars](https://www.amazon.com/dp/B0GCHNW2W8)
 - [LinkedIn](https://www.linkedin.com/in/atefataya/)
 
@@ -796,7 +757,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## Depwire Action Token (DAT)
 
-Depwire is the reference implementation of the [Depwire Action Token (DAT)](https://github.com/depwire/dat-spec) — an open standard for cryptographically signing AI agent actions. DAT provides tamper-proof audit trails for every tool call, file change, and agent delegation.
+The [Depwire Action Token (DAT)](https://github.com/depwire/dat-spec) is a draft specification for signing AI agent actions. A CLI reference implementation is in progress; current Depwire releases do not issue DAT audit trails for every tool call, file change, or delegation.
 
 ---
 
@@ -848,6 +809,6 @@ files. This repository's architecture CLI entry is
 `depwire docs <path> --include architecture --stats`; there is no standalone
 `architecture` command. `depwire parse <path> --stats` prints graph statistics.
 
-This change keeps graph format version 2. Resolution cache version is 5:
-Windows path-key and resolver-target corrections require old cached parse
-records to be rebuilt. No node or edge kinds change.
+Graph format version is 2. The resolution cache is versioned independently;
+resolution changes invalidate older cached parse records without changing the
+graph format.
