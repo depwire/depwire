@@ -25,7 +25,6 @@ import { createInterface } from 'readline';
 import { findProjectRoot } from './utils/files.js';
 import { runTemporalAnalysis } from './temporal/index.js';
 import { analyzeDeadCode } from './dead-code/index.js';
-import { trackCommand, trackCloudCta } from './telemetry.js';
 import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
 import { verifyChangeCommand } from './commands/verify-change.js';
@@ -63,7 +62,6 @@ program
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
   .action(async (directory: string | undefined, options: { output?: string; pretty?: boolean; stats?: boolean; exclude?: string[]; verbose?: boolean }) => {
-    trackCommand('parse', packageJson.version);
     const startTime = Date.now();
     
     try {
@@ -168,7 +166,6 @@ program
     symbolArgument: string | undefined,
     options: { json?: boolean; includeFileNodes?: boolean },
   ) => {
-    trackCommand('query', packageJson.version);
     try {
       const firstArgumentIsDirectory = symbolArgument !== undefined
         && existsSync(directoryOrSymbol)
@@ -345,7 +342,6 @@ program
   .option('--exclude <patterns...>', 'Glob patterns to exclude (e.g., "**/*.test.*" "dist/**")')
   .option('--verbose', 'Show detailed parsing progress')
   .action(async (directory: string | undefined, options: { port: string; open: boolean; exclude?: string[]; verbose?: boolean }) => {
-    trackCommand('viz', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       
@@ -388,7 +384,6 @@ program
   .option('--verbose', 'Show progress for each commit being parsed')
   .option('--stats', 'Show summary statistics at end')
   .action(async (directory: string | undefined, options: { commits: string; strategy: string; port: string; output?: string; verbose?: boolean; stats?: boolean }) => {
-    trackCommand('temporal', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       
@@ -413,7 +408,6 @@ program
   .option('--from-cache', 'Load graph from depwire-output.json (skip parsing, error if file not found)')
   .option('--no-cache', 'Force full re-parse even if depwire-output.json exists')
   .action(async (directory: string | undefined, options: { fromCache?: boolean; cache?: boolean }) => {
-    trackCommand('mcp', packageJson.version);
     try {
       const state = createEmptyState();
 
@@ -603,7 +597,6 @@ program
     stats?: boolean;
     exclude?: string[];
   }) => {
-    trackCommand('docs', packageJson.version);
     const startTime = Date.now();
     
     try {
@@ -737,7 +730,6 @@ program
   .option('--json', 'Output as JSON')
   .option('--verbose', 'Show detailed breakdown')
   .action(async (directory: string | undefined, options: { json?: boolean; verbose?: boolean }) => {
-    trackCommand('health', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const startTime = Date.now();
@@ -776,7 +768,6 @@ program
         console.error(
           '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
         );
-        trackCloudCta('health', packageJson.version);
       }
     } catch (err) {
       console.error('Error analyzing health:', err);
@@ -797,7 +788,6 @@ program
   .option('--include-low', 'Shortcut for --confidence low')
   .option('--debug', 'Show debug information (exclusion stats)')
   .action(async (directory: string | undefined, options: { confidence?: string; json?: boolean; verbose?: boolean; stats?: boolean; includeTests?: boolean; includeLow?: boolean; debug?: boolean }) => {
-    trackCommand('dead-code', packageJson.version);
     try {
       const projectRoot = directory ? resolve(directory) : findProjectRoot();
       const startTime = Date.now();
@@ -854,7 +844,6 @@ program
   .option('--no-browser', 'Output blast radius as text to stdout (no browser)')
   .option('--timeout <seconds>', 'Auto-close browser server after N seconds (default: 300)')
   .action(async (directory: string | undefined, options: any) => {
-    trackCommand('whatif', packageJson.version);
     try {
       // Commander maps --no-browser to options.browser=false
       if (options.browser === false) {
@@ -874,10 +863,10 @@ program
   .argument('[directory]', 'Project directory to scan (defaults to current directory or auto-detected project root)')
   .option('--target <file>', 'Scan a single file instead of the whole repo')
   .option('--class <classes...>', 'Only run specific vulnerability class checks')
+  .option('--no-dependency-audit', 'Skip dependency CVE and supply-chain checks (no audit requests)')
   .option('--format <format>', 'Output format: table (default), json, sarif', 'table')
   .option('--fail-on <level>', 'Exit with code 1 if findings at this severity or above')
   .action(async (directory: string | undefined, options: any) => {
-    trackCommand('security', packageJson.version);
     try {
       await securityCommand(directory || '.', options);
     } catch (err) {
@@ -901,7 +890,6 @@ program
   .option('--health-threshold <n>', 'Health regression threshold (default: -3)')
   .option('--no-color', 'Disable terminal colors')
   .action(async (directory: string | undefined, options: any) => {
-    trackCommand('verify-change', packageJson.version);
     try {
       await verifyChangeCommand(directory || '.', options);
     } catch (err) {
@@ -923,7 +911,6 @@ program
   .option('--no-health', 'Skip health score comparison (faster)')
   .option('--path <path>', 'Diff a specific subdirectory only')
   .action(async (commitA: string, commitB: string, options: any) => {
-    trackCommand('diff', packageJson.version);
     try {
       await diffCommand(commitA, commitB, '.', options);
     } catch (err) {
@@ -942,7 +929,6 @@ program
   .option('--json', 'Output as JSON')
   .option('--git-diff <ref>', 'Read changed files from git diff (e.g., HEAD~1)')
   .action(async (file: string | undefined, options: any) => {
-    trackCommand('affected', packageJson.version);
     try {
       await affectedCommand(file, '.', options);
     } catch (err) {
@@ -957,7 +943,6 @@ program
   .description('Output Depwire MCP workflow prompt for AI agents')
   .option('--tool <name>', 'Agent tool: claude, cline, codex, generic (default: generic)', 'generic')
   .action((options: any) => {
-    trackCommand('prompt', packageJson.version);
     promptCommand(options);
   });
 

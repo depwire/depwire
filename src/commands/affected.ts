@@ -7,7 +7,6 @@ import { buildGraph } from '../graph/index.js';
 import { countGraphSymbols } from '../graph/counts.js';
 import { findProjectRoot } from '../utils/files.js';
 import { getAffectedFiles, type AffectedFile } from '../graph/queries.js';
-import { trackCloudCta } from '../telemetry.js';
 
 export interface AffectedCommandOptions {
   depth?: string;
@@ -150,5 +149,4 @@ export async function affectedCommand(
   console.error(
     '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m',
   );
-  trackCloudCta('affected');
 }

@@ -6,7 +6,6 @@ import { buildGraph } from '../graph/index.js';
 import { countGraphSymbols } from '../graph/counts.js';
 import { findProjectRoot } from '../utils/files.js';
 import { verifyChange, type VerifyChangeOutput } from '../core/verify-change.js';
-import { trackCloudCta } from '../telemetry.js';
 
 export interface VerifyChangeOptions {
   file?: string;
@@ -56,7 +55,6 @@ export async function verifyChangeCommand(
     console.error(
       '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
     );
-    trackCloudCta('verify-change');
   }
 
   // Exit code

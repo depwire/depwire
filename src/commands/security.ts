@@ -8,7 +8,6 @@ import { findProjectRoot } from '../utils/files.js';
 import { scanSecurity } from '../security/scanner.js';
 import { formatTable, formatJSON, formatSARIF } from '../security/reporter.js';
 import type { Severity, VulnerabilityClass } from '../security/types.js';
-import { trackCloudCta } from '../telemetry.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,6 +31,7 @@ function getVersion(): string {
 export interface SecurityCommandOptions {
   target?: string;
   class?: string[];
+  dependencyAudit?: boolean;
   format?: string;
   failOn?: string;
 }
@@ -64,6 +64,7 @@ export async function securityCommand(
   const result = await scanSecurity(projectRoot, graph, {
     target: options.target,
     classes: options.class as VulnerabilityClass[] | undefined,
+    dependencyAudit: options.dependencyAudit,
     format: (options.format as 'table' | 'json' | 'sarif') || 'table',
     graphAware: true,
   });
@@ -86,7 +87,6 @@ export async function securityCommand(
     console.error(
       '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
     );
-    trackCloudCta('security');
   }
 
   // Fail on severity threshold

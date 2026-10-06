@@ -18,7 +18,7 @@ function runDocs(outputDir: string, only: string) {
     [cliPath, 'docs', fixturePath, '--update', '--only', only, '--no-gitignore', '--output', outputDir],
     {
       encoding: 'utf8',
-      env: { ...process.env, DEPWIRE_NO_TELEMETRY: '1' },
+      env: { ...process.env },
     },
   );
 }

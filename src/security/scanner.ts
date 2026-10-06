@@ -50,9 +50,16 @@ export async function scanSecurity(
   const hasFrontendFiles = filteredFiles.some(f => /\.(?:tsx|jsx|html)$/.test(f.filePath));
 
   // Run all checks in parallel
+  const checkDependencyClasses = !options.classes?.length
+    || options.classes.includes('dependency-cve')
+    || options.classes.includes('supply-chain');
+  const dependencySkipReason = options.target ? 'targeted-scan'
+    : options.dependencyAudit === false ? 'disabled'
+      : !checkDependencyClasses ? 'class-filter' : undefined;
   const checkResults = await Promise.all([
     // Skip dependency checks for single-file scans — they are repo-wide by nature
-    options.target ? Promise.resolve([]) : checkDependencies(filteredFiles, projectRoot),
+    dependencySkipReason
+      ? Promise.resolve([]) : checkDependencies(filteredFiles, projectRoot),
     checkInjection(filteredFiles, projectRoot),
     checkSecrets(filteredFiles, projectRoot),
     checkPathTraversal(filteredFiles, projectRoot),
@@ -120,6 +127,7 @@ export async function scanSecurity(
       ran: hasDeps,
       packageManager: hasDeps ? detectPackageManager(projectRoot) : null,
       rawOutput: '',
+      skippedReason: dependencySkipReason,
     },
   };
 }

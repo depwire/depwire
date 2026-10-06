@@ -42,6 +42,12 @@ export function formatTable(result: SecurityScanResult, elapsedMs: number): stri
     lines.push(chalk.green.bold('  No security findings detected.'));
   }
 
+  if (result.dependencyAudit.skippedReason === 'disabled') {
+    lines.push(chalk.yellow('  Dependency CVE and supply-chain checks skipped (--no-dependency-audit).'));
+  } else if (result.dependencyAudit.skippedReason === 'class-filter') {
+    lines.push(chalk.dim('  Dependency checks skipped: selected classes exclude them.'));
+  }
+
   lines.push('');
 
   if (result.suppressed.length > 0) {
