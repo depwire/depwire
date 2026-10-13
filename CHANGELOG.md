@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## v1.28.2 — connect_repo reliability and response counts
+
+`connect_repo` now accepts Depwire's own clone directory under the default
+macOS `/var/folders/...` temp path after canonicalisation and containment
+checks. The protected-path guard had rejected that path as `/var` after cloning,
+leaving no graph and an orphaned clone. User-supplied paths remain subject to
+the full guard, and failed connection attempts clean up newly created clones.
+
+When a pull fails, Depwire still analyses the cached clone, but the response
+now includes `remoteSync` with `status: "stale"`, the analysed commit SHA, and
+the pull error. The summary also warns that the analysis used a cached revision.
+
+The MCP `connect_repo` response now reports actual file, symbol, edge, and
+cross-file edge counts and numeric file connection counts. Previously several
+counts appeared as `undefined` and connections as `null` even when the graph
+was populated. Symbol counts exclude file-level graph nodes.
+
+`RESOLUTION_VERSION` remains 13 and `formatVersion` remains 2; graph contents
+are unchanged. Build and tests passed on Ubuntu and Windows with Node 20 and 22.
+
+---
+
 ## v1.28.1 — Dependency advisory remediation
 
 Five dependency advisories reported against v1.28.0 are addressed. The
