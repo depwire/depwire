@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { connectToRepo } from '../src/mcp/connect.js';
@@ -152,14 +152,17 @@ describe('connect_repo GitHub clone and pull', () => {
   });
 
   it('rejects a protected local path', async () => {
-    for (const path of ['/etc', '/var']) {
+    const protectedPaths = process.platform === 'win32'
+      ? [join(homedir(), '.ssh')]
+      : ['/etc', '/var', join(homedir(), '.ssh')];
+    for (const path of protectedPaths) {
       const result = await connectToRepo(path, undefined, createEmptyState());
       expect(result.error).toBe('Access denied');
       expect(result.message).toContain(path);
     }
   });
 
-  it('does not exempt an arbitrary protected temp location', async () => {
+  (process.platform === 'win32' ? it.skip : it)('does not exempt an arbitrary protected temp location', async () => {
     process.env.TMPDIR = '/etc';
     const result = await connectToRepo('https://github.com/depwire-test/unreachable.git', undefined, createEmptyState());
     expect(result.error).toBe('Access denied');
