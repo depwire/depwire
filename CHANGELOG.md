@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## v1.28.1 — Dependency advisory remediation
+
+Five dependency advisories reported against v1.28.0 are addressed. The
+production dependency tree now passes `npm audit --omit=dev` with zero findings,
+without overrides or suppressions.
+
+`simple-git` is pinned to 4.0.2, bringing `@simple-git/argv-parser` 2.0.1. This
+addresses CVE-2026-102826, CVE-2026-102827, CVE-2026-102828, and
+CVE-2026-102829. `connect_repo` now uses the v4 named export; its shallow clone,
+no-submodule flags, and pull behavior are unchanged. A real public repository
+was cloned, parsed, and pulled through `connect_repo`. Nonexistent,
+authentication-denied, and network-failure clone paths returned explicit errors.
+
+`@modelcontextprotocol/sdk` is pinned to 1.32.1. CVE-2026-104850 concerns an
+OAuth client and is not reachable through Depwire's stdio MCP server, but the
+vulnerable SDK version is no longer in the dependency tree. The production
+`proxy-addr` advisory found during the audit is also addressed. The full audit
+retains one documented low-severity development-only `esbuild` finding.
+
+Graph output is byte-identical on code-graph, Nest, and Drizzle. The packed MCP
+server completed its handshake and exposed 24 tools. Build and tests passed on
+Ubuntu and Windows with Node 20 and 22. `RESOLUTION_VERSION` remains 13 and
+`formatVersion` remains 2; this release does not change graph contents.
+
+---
+
 ## v1.28.0 — CLI telemetry removal and security scan controls
 
 The CLI no longer collects usage data or sends telemetry events. The telemetry
