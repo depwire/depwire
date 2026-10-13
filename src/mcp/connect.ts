@@ -1,5 +1,5 @@
 import { isWithinRoot } from '../graph/paths.js';
-import simpleGit from 'simple-git';
+import { simpleGit } from 'simple-git';
 import { existsSync } from 'fs';
 import { join, basename, resolve } from 'path';
 import { tmpdir, homedir } from 'os';

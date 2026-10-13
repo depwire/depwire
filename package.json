@@ -90,7 +90,7 @@
     "graphology-types": "0.24.8",
     "minimatch": "10.2.6",
     "open": "11.0.0",
-    "simple-git": "3.36.0",
+    "simple-git": "4.0.2",
     "web-tree-sitter": "0.26.6",
     "ws": "8.21.0",
     "zod": "4.3.6"
