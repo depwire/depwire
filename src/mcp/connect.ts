@@ -5,7 +5,7 @@ import { join, basename, resolve } from 'path';
 import { tmpdir, homedir } from 'os';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
-import { getArchitectureSummary } from '../graph/queries.js';
+import { getArchitectureSummary, getCrossFileEdges } from '../graph/queries.js';
 import { watchProject } from '../watcher.js';
 import type { DepwireState } from './state.js';
 import { updateFileInGraph } from '../graph/updater.js';
@@ -260,6 +260,7 @@ export async function connectToRepo(
 
     // Get architecture summary
     const summary = getArchitectureSummary(graph);
+    const crossFileEdgeCount = getCrossFileEdges(graph).length;
     const mostConnected = summary.mostConnectedFiles.slice(0, 3);
     
     // Count files by language
@@ -287,19 +288,19 @@ export async function connectToRepo(
       projectName,
       ...(remoteSync ? { remoteSync } : {}),
       stats: {
-        files: summary.totalFiles,
-        symbols: summary.totalSymbols,
-        edges: summary.totalEdges,
-        crossFileEdges: summary.crossFileEdges,
+        files: summary.fileCount,
+        symbols: summary.symbolCount,
+        edges: summary.edgeCount,
+        crossFileEdges: crossFileEdgeCount,
         languages: languageBreakdown,
         ...(failedFiles > 0 ? { failedFiles } : {}),
       },
       mostConnectedFiles: mostConnected.map(f => ({
         path: f.filePath,
-        connections: f.incomingCount + f.outgoingCount,
+        connections: f.connections,
       })),
       ...(failedFiles > 0 ? { errorFiles: parsedFiles.errorFiles } : {}),
-      summary: `${remoteSync?.status === 'stale' ? `WARNING: Pull failed; analysed cached revision ${remoteSync.analyzedRevision ?? 'unknown'}. ${remoteSync.pullError}\n` : ''}Connected to ${projectName}. Found ${summary.totalFiles} files with ${summary.totalSymbols} symbols and ${summary.crossFileEdges} cross-file edges.${failedFiles > 0 ? `\n${failedFiles} files failed.` : ''}`,
+      summary: `${remoteSync?.status === 'stale' ? `WARNING: Pull failed; analysed cached revision ${remoteSync.analyzedRevision ?? 'unknown'}. ${remoteSync.pullError}\n` : ''}Connected to ${projectName}. Found ${summary.fileCount} files with ${summary.symbolCount} symbols and ${crossFileEdgeCount} cross-file edges.${failedFiles > 0 ? `\n${failedFiles} files failed.` : ''}`,
     };
     freshCloneDir = undefined;
     return result;
