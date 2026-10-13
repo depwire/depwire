@@ -1,6 +1,6 @@
 import { isWithinRoot } from '../graph/paths.js';
 import { simpleGit } from 'simple-git';
-import { existsSync } from 'fs';
+import { existsSync, lstatSync, mkdirSync, realpathSync, rmSync } from 'fs';
 import { join, basename, resolve } from 'path';
 import { tmpdir, homedir } from 'os';
 import { parseProject } from '../parser/index.js';
@@ -44,9 +44,11 @@ export async function connectToRepo(
   subdirectory: string | undefined,
   state: DepwireState
 ): Promise<any> {
+  let freshCloneDir: string | undefined;
   try {
     let projectRoot: string;
     let projectName: string;
+    let remoteSync: { status: 'current' | 'stale'; analyzedRevision: string | null; pullError?: string } | undefined;
 
     // Detect if source is a GitHub URL or local path
     const isGitHub = source.startsWith('https://github.com/') || source.startsWith('git@github.com:');
@@ -63,14 +65,34 @@ export async function connectToRepo(
         };
       }
       projectName = match[1];
+      if (projectName === '.' || projectName === '..' || projectName.includes('\\')) {
+        return { error: 'Invalid GitHub URL', message: 'Repository name must be a single path segment' };
+      }
 
       // Create temp directory for cloned repos
       const reposDir = join(tmpdir(), 'depwire-repos');
       const cloneDir = join(reposDir, projectName);
+      const tempRoot = resolve(tmpdir());
+      const canonicalTempRoot = realpathSync(tempRoot);
+      // macOS reports its managed temp directory through /var/folders, a symlink to
+      // /private/var/folders. Trust only this OS temp location, not arbitrary /var paths.
+      const managedMacTemp = process.platform === 'darwin'
+        && /^\/var\/folders\/[^/]+\/[^/]+\/T$/.test(tempRoot)
+        && isWithinRoot(canonicalTempRoot, '/private/var/folders');
+      const tempValidation = validateProjectPath(tempRoot);
+      if (!tempValidation.valid && !managedMacTemp) {
+        return { error: 'Access denied', message: tempValidation.error };
+      }
+      mkdirSync(reposDir, { recursive: true });
+      if (realpathSync(reposDir) !== join(canonicalTempRoot, 'depwire-repos')
+        || (existsSync(cloneDir) && lstatSync(cloneDir).isSymbolicLink())) {
+        return { error: 'Access denied', message: 'Clone directory must stay within the managed temp directory' };
+      }
 
       console.error(`Connecting to GitHub repo: ${source}`);
 
       const git = simpleGit();
+      let pullError: string | undefined;
 
       // Check if already cloned
       if (existsSync(cloneDir)) {
@@ -78,10 +100,12 @@ export async function connectToRepo(
         try {
           await git.cwd(cloneDir).pull();
         } catch (error) {
-          console.error(`Pull failed, using existing clone: ${error}`);
+          pullError = String(error);
+          console.error(`Pull failed, using existing clone: ${pullError}`);
         }
       } else {
         console.error(`Cloning ${source} to ${cloneDir}...`);
+        freshCloneDir = cloneDir;
         try {
           await git.clone(source, cloneDir, ['--depth', '1', '--no-recurse-submodules', '--single-branch']);
         } catch (error) {
@@ -103,6 +127,18 @@ export async function connectToRepo(
           };
         }
       }
+      if (existsSync(projectRoot)
+        && !isWithinRoot(realpathSync(projectRoot), realpathSync(cloneDir))) {
+        return { error: 'Access denied', message: 'Subdirectory must be within the project root' };
+      }
+      const analyzedRevision = await git.cwd(cloneDir).revparse(['HEAD'])
+        .then(revision => revision.trim()).catch(() => null);
+      remoteSync = {
+        status: pullError ? 'stale' : 'current',
+        analyzedRevision,
+        ...(pullError ? { pullError } : {}),
+      };
+      if (pullError) console.error(`WARNING: analysing cached revision ${analyzedRevision ?? 'unknown'} after pull failed: ${pullError}`);
     } else {
       // Local path - validate it's safe
       const resolvedSource = resolve(source);
@@ -136,7 +172,7 @@ export async function connectToRepo(
     }
     
     // Validate final projectRoot path
-    const validation = validateProjectPath(projectRoot);
+    const validation = isGitHub ? { valid: true } : validateProjectPath(projectRoot);
     if (!validation.valid) {
       return {
         error: "Access denied",
@@ -245,10 +281,11 @@ export async function connectToRepo(
       languageBreakdown[lang] = (languageBreakdown[lang] || 0) + 1;
     });
 
-    return {
+    const result = {
       connected: true,
       projectRoot,
       projectName,
+      ...(remoteSync ? { remoteSync } : {}),
       stats: {
         files: summary.totalFiles,
         symbols: summary.totalSymbols,
@@ -262,13 +299,20 @@ export async function connectToRepo(
         connections: f.incomingCount + f.outgoingCount,
       })),
       ...(failedFiles > 0 ? { errorFiles: parsedFiles.errorFiles } : {}),
-      summary: `Connected to ${projectName}. Found ${summary.totalFiles} files with ${summary.totalSymbols} symbols and ${summary.crossFileEdges} cross-file edges.${failedFiles > 0 ? `\n${failedFiles} files failed.` : ''}`,
+      summary: `${remoteSync?.status === 'stale' ? `WARNING: Pull failed; analysed cached revision ${remoteSync.analyzedRevision ?? 'unknown'}. ${remoteSync.pullError}\n` : ''}Connected to ${projectName}. Found ${summary.totalFiles} files with ${summary.totalSymbols} symbols and ${summary.crossFileEdges} cross-file edges.${failedFiles > 0 ? `\n${failedFiles} files failed.` : ''}`,
     };
+    freshCloneDir = undefined;
+    return result;
   } catch (error) {
     console.error("Error in connectToRepo:", error);
     return {
       error: "Connection failed",
       message: String(error),
     };
+  } finally {
+    if (freshCloneDir) {
+      try { rmSync(freshCloneDir, { recursive: true, force: true }); }
+      catch (error) { console.error(`Failed to clean up incomplete clone ${freshCloneDir}: ${error}`); }
+    }
   }
 }
