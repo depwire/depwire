@@ -1,7 +1,7 @@
 import { isWithinRoot } from '../graph/paths.js';
 import { simpleGit } from 'simple-git';
 import { existsSync, lstatSync, mkdirSync, realpathSync, rmSync } from 'fs';
-import { join, basename, resolve } from 'path';
+import { join, basename, resolve, sep } from 'path';
 import { tmpdir, homedir } from 'os';
 import { parseProject } from '../parser/index.js';
 import { buildGraph } from '../graph/index.js';
@@ -10,8 +10,30 @@ import { watchProject } from '../watcher.js';
 import type { DepwireState } from './state.js';
 import { updateFileInGraph } from '../graph/updater.js';
 
-function validateProjectPath(source: string): { valid: boolean; error?: string } {
+function validateProjectPath(source: string): { valid: boolean; error?: string; missing?: boolean } {
   const resolved = resolve(source);
+  let canonical: string | undefined;
+  try {
+    canonical = realpathSync(resolved);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT' && code !== 'ENOTDIR') {
+      return { valid: false, error: `Cannot validate project path: ${source}` };
+    }
+  }
+  const within = (path: string, root: string) => path === root || path.startsWith(root + sep);
+  // Only the OS-managed macOS temp tree is exempt from the /var block.
+  // Compare canonical targets so a link out of that tree cannot inherit the exemption.
+  let managedMacTemp = false;
+  const tempRoot = resolve(tmpdir());
+  if (canonical && process.platform === 'darwin'
+    && /^\/(?:private\/)?var\/folders\/[^/]+\/[^/]+\/T$/.test(tempRoot)) {
+    try {
+      const canonicalTemp = realpathSync(tempRoot);
+      managedMacTemp = within(canonicalTemp, '/private/var/folders')
+        && within(canonical, canonicalTemp);
+    } catch { /* An unavailable temp directory grants no exception. */ }
+  }
   
   // Block sensitive system directories
   const blockedPaths = [
@@ -31,11 +53,21 @@ function validateProjectPath(source: string): { valid: boolean; error?: string }
   ];
   
   for (const blocked of blockedPaths) {
-    if (resolved.startsWith(blocked)) {
+    let canonicalBlocked = blocked;
+    try { canonicalBlocked = realpathSync(blocked); }
+    catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT' && code !== 'ENOTDIR') {
+        return { valid: false, error: `Cannot validate protected path: ${blocked}` };
+      }
+    }
+    if (blocked === '/var' && managedMacTemp) continue;
+    if (within(resolved, blocked) || (canonical && within(canonical, canonicalBlocked))) {
       return { valid: false, error: `Access denied: ${blocked} is a protected path` };
     }
   }
   
+  if (!canonical) return { valid: false, missing: true, error: `Directory does not exist: ${source}` };
   return { valid: true };
 }
 
@@ -145,7 +177,7 @@ export async function connectToRepo(
       const validation = validateProjectPath(resolvedSource);
       if (!validation.valid) {
         return {
-          error: "Access denied",
+          error: validation.missing ? "Directory not found" : "Access denied",
           message: validation.error,
         };
       }
@@ -172,10 +204,10 @@ export async function connectToRepo(
     }
     
     // Validate final projectRoot path
-    const validation = isGitHub ? { valid: true } : validateProjectPath(projectRoot);
+    const validation = isGitHub ? { valid: true, missing: false, error: undefined } : validateProjectPath(projectRoot);
     if (!validation.valid) {
       return {
-        error: "Access denied",
+        error: validation.missing ? "Project root not found" : "Access denied",
         message: validation.error,
       };
     }
