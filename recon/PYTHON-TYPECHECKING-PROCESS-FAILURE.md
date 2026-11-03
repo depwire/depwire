@@ -1,8 +1,8 @@
-# Process-failure note: methodology tag changed inside implementation PR
+# Process-failure record: methodology approval and unexecuted Cloud CI tests
 
-**Status:** Retrospective process record, recorded 2026-11-04  
-**Repo:** `/Users/atefataya/Developer/code-graph` (depwire-cli)  
-**Scope:** A `dimensions_v` methodology tag was changed inside an implementation change, violating the contract-before-computation rule.
+**Status:** Retrospective process record, recorded 2026-11-04
+**Repo:** `/Users/atefataya/Developer/code-graph` (depwire-cli)
+**Scope:** Two findings: a `dimensions_v` methodology tag changed inside an implementation PR before its contract existed, and the Cloud test workflow failed during setup without executing tests. The Cloud evidence below was inspected read-only through GitHub; this record does not change Cloud code.
 
 ---
 
@@ -66,3 +66,66 @@ The gap is recorded retroactively in two contract documents:
 - [Cyclic-groups contract](CYCLIC-GROUPS-CONTRACT.md) — Amendment 3 records the existing `.py` policy clause.
 
 These records do not undo the code change; they record the contract that should have existed before it. Future methodology marker changes must follow the contract-before-computation sequence.
+
+---
+
+## 6. Second finding: depwire-cloud CI never ran a test
+
+**Scope of “never”:** all five available runs of `.github/workflows/test.yml`
+inspected on 2026-11-04. This does not claim that developers never ran tests
+locally or that no other workflow could run tests.
+
+### Verified dates and run evidence
+
+The workflow was added to main in
+[`682e8bf3a59f946e75298ef5a5a428b2ebda245c`](https://github.com/depwire/depwire-cloud/commit/682e8bf3a59f946e75298ef5a5a428b2ebda245c)
+on **2026-10-20 at 18:23:00 UTC**. GitHub's path-filtered main history reports
+that addition; the commit file status is `added`.
+
+The five available runs span **2026-10-20 18:24:55 through
+2026-11-03 22:14:50 UTC**, or **October 20 through November 4 in Asia/Dubai
+(UTC+04:00)**. This corrects the initially supplied November 1–4 date range:
+the workflow and first failed run already existed on October 20. November 4 is
+the local date of the latest observed run, not evidence of a UTC November 4 run.
+
+| Run | Event | Created at (UTC) | Head SHA | Test result |
+| --- | --- | --- | --- | --- |
+| [39474512019](https://github.com/depwire/depwire-cloud/actions/runs/39474512019) | pull_request | 2026-10-20T18:24:55Z | `682e8bf3a59f946e75298ef5a5a428b2ebda245c` | Setup failed; both Vitest steps skipped |
+| [41312308337](https://github.com/depwire/depwire-cloud/actions/runs/41312308337) | push | 2026-11-01T13:39:22Z | `21e5ff4fcceb0e392aca37efcae47482103f639e` | Setup failed; both Vitest steps skipped |
+| [41314272715](https://github.com/depwire/depwire-cloud/actions/runs/41314272715) | push | 2026-11-01T14:03:42Z | `7fd1e7aa7759ef5f9c9fe904c6cb28c869a42cc0` | Setup failed; both Vitest steps skipped |
+| [41529405319](https://github.com/depwire/depwire-cloud/actions/runs/41529405319) | push | 2026-11-02T21:33:23Z | `41c890f033069677a2cdc4b0276a74dbd18f19ae` | Setup failed; both Vitest steps skipped |
+| [41729094359](https://github.com/depwire/depwire-cloud/actions/runs/41729094359) | pull_request | 2026-11-03T22:14:50Z | `286bc7c11d99292b2e44eddcb8ffba02c2a6a509` | Setup failed; both Vitest steps skipped |
+| [41736349655](https://github.com/depwire/depwire-cloud/actions/runs/41736349655) | pull_request | 2026-11-03T23:05:42Z | `3ae284cc6bc067b618bf5c8651b3074a8b7d77d6` | Setup failed; both Vitest steps skipped |
+
+For every run, both `api-test` and `frontend-test` failed at
+`Run actions/setup-node@v4`. Their `Run npm ci`, `Run npx tsc --noEmit`, and
+`Run npx vitest run` steps were skipped. Full logs for all five runs contain
+no Vitest output and show the setup error:
+
+> Some specified paths were not resolved, unable to cache dependencies.
+
+### Cause and misleading assurance
+
+The workflow configured `cache-dependency-path: api/package-lock.json` and
+`cache-dependency-path: frontend/package-lock.json`. Neither file exists at
+any of the five run head SHAs. The root `package-lock.json` exists; the root
+package manifest declares `api` and `frontend` as workspaces. Setup therefore
+failed before dependency installation or test execution.
+
+The only successful job in this workflow was
+`assert-era-c-stash-verify-present`. It ran `test -f` on
+`api/src/routes/pr-review_era-c_disable.test.ts` and `grep -q` for `apiKey` and
+`session-auth`. Those assertions establish file and text presence, not test
+execution. A passing presence check is not evidence that the test suite passed.
+
+### Corrective action and evidence needed to close
+
+The fix is **pending** in [depwire-cloud PR #25](https://github.com/depwire/depwire-cloud/pull/25),
+which was open when checked. This record does not mark the workflow fixed.
+Closure requires successful dependency setup and actual Vitest execution/output
+for both workspaces; neither a named test file nor a skipped test step suffices.
+
+Verification used `gh run list --workflow test.yml`, each run's jobs API and full
+logs, the main-branch commit history for the workflow, the addition commit's
+patch, and GitHub tree/package-manifest reads. No Cloud checkout, local Cloud
+filesystem access, workflow rerun, or Cloud write was performed.
