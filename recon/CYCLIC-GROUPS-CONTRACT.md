@@ -9,6 +9,10 @@ implementation gates: [CYCLIC-GROUPS-IMPLEMENTATION.md](CYCLIC-GROUPS-IMPLEMENTA
 Amendment 2 keeps production Cloud row verification and released-SLM dataset
 lineage as **release blockers**, not post-release follow-ups. No merge, publish,
 deploy or stored-data write is part of this implementation.
+Amendment 3 records the Python `.py` exclusion from policy A retroactively,
+effective with PR #61 on 2026-10-04 and recorded on 2026-11-04. The versioned
+change is `dimensions_v`; runtime `contractVersion` remains `cyclic-groups-v1`.
+See [the RETROACTIVE Python contract](PYTHON-TYPECHECKING-DIMENSIONS-CONTRACT.md).
 
 Branch `feat/cyclic-groups-metric` starts directly from main `28ec599`
 (depwire-cli 1.21.2). The earlier investigation is carried forward unchanged as
@@ -148,6 +152,21 @@ unscored diagnostic views. Only A uses the approved score curve.
 The eight-repository comparison is in the implementation report. In particular,
 Drizzle changes from B's 207 cyclic files / score 35 to A's 272 / score 20, so
 omitting normalization is not a negligible simplification.
+
+**Amendment 3 — Python `.py` policy clause (RETROACTIVE):** for a
+`references-type` edge whose source-file metadata `filePath` ends with `.py`,
+policy A does not apply legacy type-only import normalization. The edge is
+excluded regardless of `typeOnlyImport`, `typeOnlyFallback`, or
+`originalImportTarget`. The existing normalization clause remains in force for
+non-Python files. Python imports guarded by `TYPE_CHECKING` must not be restored
+as runtime imports, which would reintroduce false runtime coupling.
+
+This is the existing `project` behavior in `src/graph/cyclic-groups.ts`, mirrored
+in `src/health/index.ts`. It changes neither the group definition, score curve,
+witness rules, C3 comparisons, alternative views, default view name, nor
+Amendments 1 and 2. The historical C6 markers below describe the original
+methodology; the [Python contract](PYTHON-TYPECHECKING-DIMENSIONS-CONTRACT.md)
+records the subsequent dimensions marker and parser-resolution boundary.
 
 
 **Policy B (explicit diagnostic view, not the approved default) `value-dependencies-v1`:** retain existing edge kinds `imports`,
