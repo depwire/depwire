@@ -60,7 +60,7 @@ All top-level fields below MUST be present. Unless marked nullable or optional, 
 | `security_findings` | array of `{severity:string, description:string, file:string, line:number}` or null; null iff security_status is not computed; line is nonnegative integer, 0 means unknown location, not an uncomputed health score. Existing scan covers files on disk, not certified proposed content. |
 | `security_status` | `"computed" | "unavailable" | "not_applicable" | "error"`; informational scan availability. |
 | `security_reason` | string or null; null iff computed, otherwise a nonempty reason. |
-| `partial` | boolean, always present; true iff health_status or security_status is "error". Structural coverage limits do NOT set it. **manager interpretation — confirm**. |
+| `partial` | boolean, always present; true iff health_status or security_status is "error". Structural coverage limits do NOT set it. |
 | `affected_files` | canonical, deduplicated, sorted string array of known changed/impacted files. |
 | `blast_radius` | nonnegative integer, exactly affected_files.length; on error only the known count, not a completeness claim. |
 | `warnings`, `relevant_warnings` | string arrays; warnings explain limitations/context; relevant_warnings concerns this change. Preserve current equal copies for this correction (O3); neither count gates verdict. |
@@ -81,6 +81,8 @@ Nested cyclic schema MUST preserve the pinned contract from /Users/atefataya/Dev
 - `membershipsChanged` entries are `{beforeKey:string,afterKey:string,addedMembers:string[],removedMembers:string[]}`; `internalEdgesChanged` entries are `{beforeKey:string,afterKey:string,addedFileEdges:string[][],removedFileEdges:string[][]}` with each inner array a source/target pair. These arrays MUST be present on compared, including when empty.
 
 ## 4. Health computation and history
+
+Atef’s 21:26 decision (Addendum 2): simulate() MUST offer an opt-in option that skips internal health scoring entirely (never calling or catching computeHealthScore) and returns only structural results. verify-change MUST use this option and call workspace-aware calculateHealthScore once per state with history disabled. With the option absent, engine output MUST remain byte-identical to the pinned base, verified against fixed-fixture golden outputs captured before the engine edit.
 
 Before and after MUST use the same scorer, weights, exclusions, edge normalization and dimensions version. Delta MUST describe the actual proposed after-state, not a substitute full-file deletion or the last of multiple independent simulations.
 
@@ -139,7 +141,9 @@ Approval order MUST remain: verifier reproduction → Atef approves this contrac
 
 - O1: Only required structural failures set the error verdict. Informational crashes set section null/error/reason and partial:true without changing safe, risk_level, or exits.
 - O2: Exactly one typed input mode; malformed/unsupported diffs and required parser/topology failures are errors; valid unresolved after-states remain medium.
-- O3: error_reason and health statuses/reasons are approved; security_status/security_reason mirror health, with error added to both enums and security_findings nullable. Exact context copies include partial; its iff-error interpretation is **manager interpretation — confirm**.
+- O3: error_reason and health statuses/reasons are approved; security_status/security_reason mirror health, with error added to both enums and security_findings nullable. Exact context copies include partial; its iff-error interpretation is
 - O4: Both scores use workspace-aware calculateHealthScore with equivalent context and history disabled; no mixed scorer or substitute after-state.
 - O5: verify-change writes no history on any path; other callers retain persistence.
 - O6: Required structural errors exit 1 and use the complete CLI/MCP payload; successful risk exits and the flag name remain, with the exact help text in §5. Existing rejection assertions stay intact through outer-boundary normalization.
+
+- Addendum 2 (Atef, 21:26): approve the opt-in structural-only simulation option in §4 with default output unchanged; confirm partial is true only for informational status "error", never unavailable/not_applicable.
