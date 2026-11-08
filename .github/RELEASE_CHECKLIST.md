@@ -14,7 +14,7 @@ After every version bump, complete ALL of the following before considering the r
 
 ## Website
 - [ ] website/index.html language count updated if new language added
-- [ ] website/index.html version number updated
+- [ ] `npm run website:build && wrangler pages deploy website/dist --project-name depwire`
 - [ ] website/index.html new language added to badge row and supported-languages section
 - [ ] website/index.html evidence-backed project statistics reviewed
 - [ ] website/index.html meta keywords updated
