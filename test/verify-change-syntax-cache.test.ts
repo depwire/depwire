@@ -7,6 +7,7 @@ import { initParser } from '../src/parser/wasm-init.js';
 import { getParserForFile } from '../src/parser/detect.js';
 import { canonicalParsedFile } from '../src/graph/path-boundary.js';
 import { buildGraph } from '../src/graph/index.js';
+import * as graphModule from '../src/graph/index.js';
 import { getCachedFiles, openCache, updateCache, RESOLUTION_VERSION } from '../src/parser/cache.js';
 import { verifyChange } from '../src/core/verify-change.js';
 import { runVerifyChangeAction } from '../src/commands/verify-change-action.js';
@@ -148,4 +149,31 @@ it('oversized changed file leaves all syntax checks null in the CLI envelope', a
   const result = JSON.parse(log.mock.calls.flat().join(''));
   expect(result).toMatchObject({ risk_level: 'error', syntax_check: null, coverage_gaps: null, syntax_errors_outside_affected_set: null });
   expect(result.warnings.join(' ')).toContain('large.ts'); expect(exit).toHaveBeenCalledWith(1);
+});
+
+it('oversized non-changed affected dependent has null gaps through real core, CLI and MCP', async () => {
+  const root = fixture({ 'caller.ts': caller, 'dep.ts': good, 'keep.ts': good }, true);
+  // Retain a real graph from before the dependent grew beyond the parser limit.
+  const graph = buildGraph(await parseProject(root, { useCache: false }), root);
+  writeFileSync(join(root, 'caller.ts'), caller + ' '.repeat(1_000_001));
+  const args = { file_path: 'dep.ts', new_content: good };
+  const check = (result: any) => {
+    expect(result.affected_files).toContain('caller.ts');
+    expect(result.affected_files).toContain('dep.ts');
+    expect(result).toMatchObject({ risk_level: 'medium', error_reason: null, partial: false,
+      syntax_check: 'checked', coverage_gaps: null, syntax_errors_outside_affected_set: null });
+    expect(result.warnings.join(' ')).toContain('skipped files: caller.ts');
+  };
+  check(await verifyChange(args, { projectRoot: root, graph }));
+  const response = await handleToolCall('verify_change', args, { ...createEmptyState(), projectRoot: root, graph });
+  check(JSON.parse(response.content[0].text));
+  // CLI normally rebuilds and loses the skipped dependent. Supply the retained
+  // real graph at its build boundary to exercise the same affected-set premise;
+  // project scanning, oversized-file skipping and verifyChange remain real.
+  vi.spyOn(graphModule, 'buildGraph').mockReturnValue(graph);
+  const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+  const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+  await runVerifyChangeAction(root, { file: 'dep.ts', content: good, json: true, failOnWarnings: true });
+  check(JSON.parse(log.mock.calls.flat().join('')));
+  expect(exit).toHaveBeenCalledWith(1);
 });
