@@ -129,6 +129,16 @@ Required CHANGELOG wording:
 >
 > risk_level adds "error". Any failed required structural analysis, including invalid input, malformed/unparseable diffs, parser/topology failures and simulation failures, returns safe:false, risk_level:"error" and a non-empty error_reason; successful-analysis results use error_reason:null. Analysis errors exit 1 regardless of --fail-on-warnings. Clients must handle nullable health and security fields and expanded status/risk enums. Structurally low results previously raised to medium solely by health regression can now return safe:true and exit 0 with --fail-on-warnings. Unsupported topology comparisons remain unsafe and at least medium unless analysis fails, which is error. This correction applies to local CLI/MCP, not Cloud's separate verify_change implementation or Action's health-report pipeline.
 
+## Limitations
+
+tree-sitter recovery can flag valid syntax beyond the grammar; error_reason shows where.
+
+**manager proposal — Atef confirms**: Pattern-based parsers (Mojo, Dart, R, HTML) and manifest/build-file branches (CMakeLists.txt, conanfile.txt, vcpkg.json, .csproj, Maven/Gradle, Gemfile, Package.swift) perform no syntax check; a syntax error there cannot yield error and the verdict stays as structural analysis decides.
+
+Nonstandard `diff --git` headers that git accepts are not malformed. Overlapping hunks and patch apply-ability are outside this correction's scope; both verifier diff cases stay medium because a faithful after-graph is unavailable, not because required analysis failed.
+
+Required changed-source syntax errors MUST produce error with file:line and the first ERROR/MISSING node text (sensibly truncated). Diagnostics MUST follow the parse that produced symbols: original outside recovered fragments, normalized re-parse within recovered fragments. Recovery MUST NOT discard unrelated original-file errors. Only verify-change acts on the additive syntaxErrors metadata; other consumers retain their output.
+
 ## 6. Acceptance and scope
 
 Implementation MUST verify: injected simulation failure; parser and topology failure; malformed diff/invalid input; CLI input I/O and MCP no-project errors; export-only/unmatched/last-file health nulls; exact top-level/context parity; genuine computed zero; single-method before/after and valid-diff unavailable handling; health/security value independence; risk-based exit matrix; removed threshold; no history creation or modification. Also verify health crash with safe unchanged and partial:true; security crash with null findings, never []; both crashing together; and an outer CLI stdin-failure envelope with exit 1 while the existing command-rejection assertion remains unchanged. Other health callers MUST retain persistence, proven by tests.
@@ -147,3 +157,6 @@ Approval order MUST remain: verifier reproduction → Atef approves this contrac
 - O6: Required structural errors exit 1 and use the complete CLI/MCP payload; successful risk exits and the flag name remain, with the exact help text in §5. Existing rejection assertions stay intact through outer-boundary normalization.
 
 - Addendum 2 (Atef, 21:26): approve the opt-in structural-only simulation option in §4 with default output unchanged; confirm partial is true only for informational status "error", never unavailable/not_applicable.
+
+- Addendum 3 (Atef, 8 Nov 22:40): add syntaxErrors to the 13 tolerant tree-sitter source branches only; preserve manifest/build-file and pattern-based branches. Only verify-change interprets the metadata. Prove other consumer outputs unchanged with pre-edit goldens and exercise natural syntax failures through core/CLI/MCP. The two verifier diff cases remain medium for the reasons in Limitations.
+- Addendum 4 (Atef, 9 Nov 00:32): diagnostics follow the symbol-producing parse, including normalized TypeScript recovery; retain diagnostics outside recovered fragments. Test valid recovered exports, a genuinely broken rewritten export, and a valid recovered export alongside an unrelated syntax error. The manager-proposal limitation remains unconfirmed.
