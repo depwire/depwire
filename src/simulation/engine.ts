@@ -31,6 +31,13 @@ export interface SimulationResult {
   simulatedGraphInstance?: DirectedGraph;
 }
 
+/** Structural-only opt-in; default SimulationResult remains unchanged. */
+export interface StructuralSimulationResult {
+  action: SimulationAction;
+  diff: GraphDiff;
+  simulatedGraphInstance: DirectedGraph;
+}
+
 export interface GraphSnapshot {
   nodeCount: number;
   edgeCount: number;
@@ -111,7 +118,10 @@ export class SimulationEngine {
     this.original = graph;
   }
 
-  simulate(action: SimulationAction): SimulationResult {
+  simulate(action: SimulationAction): SimulationResult;
+  simulate(action: SimulationAction, options: { structuralOnly: true }): StructuralSimulationResult;
+  simulate(action: SimulationAction, options?: { structuralOnly: boolean }): SimulationResult | StructuralSimulationResult;
+  simulate(action: SimulationAction, options?: { structuralOnly: boolean }): SimulationResult | StructuralSimulationResult {
     action = { ...action };
     for (const key of ['target', 'destination', 'source', 'newFile'] as const) {
       if (key in action) {
@@ -147,6 +157,9 @@ export class SimulationEngine {
       this.original.forEachNode((_id, attrs) => {if (fileMatch(attrs.filePath, action.target)) renames[attrs.filePath] = destination;});
     }
     const diff = this.computeDiff(this.original, clone, brokenImports, renames);
+    // recon/VERIFY-CHANGE-VERDICT-CONTRACT.md §4 (Atef 21:26): skip,
+    // never catch, informational scoring when only structural evidence is needed.
+    if (options?.structuralOnly) return { action, diff, simulatedGraphInstance: clone };
     const beforeHealth = this.computeHealthScore(this.original);
     const afterHealth = this.computeHealthScore(clone);
 

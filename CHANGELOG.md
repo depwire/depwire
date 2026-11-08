@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.29.0 (Unreleased) — verify-change corrective contract migration
+
+Local CLI/MCP verify-change now uses a structural-only safety verdict. Health and security fields are informational and are not verdict or exit-code gates. The unused --health-threshold option has been removed. --fail-on-warnings retains its risk-based behavior and name; its help text now describes that behavior.
+
+JSON/MCP health_score_before, health_score_after and health_score_delta, including their unrelated_context copies, change from number to number | null. Uncomputed scores and deltas are null, never fabricated zero or NaN; health_status and health_reason explain availability. Computed comparisons use the same workspace-aware scorer for both states; a diff without a faithful scored after-state reports unavailable health. verify-change no longer writes health history, including original before scores.
+
+security_findings changes from array to array | null, including its unrelated_context copy. New security_status, security_reason, and partial fields explain scan availability and informational failures, with identical unrelated_context copies. health_status and security_status include "error": a crashed health scorer yields all health scores null, and a crashed security scan yields null findings, never []. Both provide nonempty reasons and set partial:true without changing the structural verdict or exit code. partial is true iff either informational status is "error"; structural coverage limits do not set it.
+
+risk_level adds "error". Any failed required structural analysis, including invalid input, malformed/unparseable diffs, parser/topology failures and simulation failures, returns safe:false, risk_level:"error" and a non-empty error_reason; successful-analysis results use error_reason:null. Analysis errors exit 1 regardless of --fail-on-warnings. Clients must handle nullable health and security fields and expanded status/risk enums. Structurally low results previously raised to medium solely by health regression can now return safe:true and exit 0 with --fail-on-warnings. Unsupported topology comparisons remain unsafe and at least medium unless analysis fails, which is error. This correction applies to local CLI/MCP, not Cloud's separate verify_change implementation or Action's health-report pipeline.
+
 All notable changes to Depwire will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

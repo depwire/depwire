@@ -19,7 +19,7 @@ import { countGraphSymbols, isCountableSymbol } from '../graph/counts.js';
 /**
  * Calculate the overall health score for a project
  */
-export function calculateHealthScore(graph: DirectedGraph, projectRoot: string): HealthReport {
+export function calculateHealthScore(graph: DirectedGraph, projectRoot: string, options: { persistHistory?: boolean } = {}): HealthReport {
   // Guard: if nothing was parsed, refuse to score rather than combining
   // six dimension functions that would each report a fake perfect score
   // for an absence of data. Never call the dimension functions below for
@@ -175,7 +175,7 @@ export function calculateHealthScore(graph: DirectedGraph, projectRoot: string):
   };
   
   // Save to history
-  saveHealthHistory(projectRoot, report);
+  if (options.persistHistory !== false) saveHealthHistory(projectRoot, report);
   
   return report;
 }
