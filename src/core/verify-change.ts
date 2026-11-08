@@ -6,6 +6,8 @@ import { calculateHealthScore } from '../health/index.js';
 import { scanSecurity } from '../security/scanner.js';
 import { getImpact, getDependents } from '../graph/queries.js';
 import { getParserForFile } from '../parser/detect.js';
+import { parseVerifyProject } from './verify-change-project.js';
+import type { ParsedFile } from '../parser/types.js';
 import { initParser } from '../parser/wasm-init.js';
 import { cpSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -39,6 +41,9 @@ export interface VerifyChangeOutput extends InformationalContext {
   broken_imports: BrokenImportEntry[];
   dimensions_v: string;
   cyclicGroupChanges: CyclicGroupChanges | { status: 'not_comparable'; reason: string };
+  coverage_gaps: Array<{ file: string; reason: string }> | null;
+  syntax_errors_outside_affected_set: number | null;
+  syntax_check: 'checked' | 'not_applicable' | null;
   affected_files: string[];
   blast_radius: number;
   warnings: string[];
@@ -50,6 +55,7 @@ export interface VerifyChangeContext {
   projectRoot: string;
   sourceCoverage?: 'complete' | 'partial' | 'unknown';
   unparsedFiles?: string[];
+  parsedFiles?: ParsedFile[];
 }
 const NOTE = 'Health score and security findings are informational and do NOT affect the safety verdict.';
 const AFTER_UNAVAILABLE = 'A fully resolved after-graph is unavailable for edited content or unified diffs. Export comparison does not establish cyclic-group safety.';
@@ -81,6 +87,7 @@ export function verifyChangeError(stage: string, error: unknown): VerifyChangeOu
   const reason = failureReason(stage, error);
   const info = information(reason);
   return finish({ ...info, safe: false, risk_level: 'error', error_reason: reason,
+    coverage_gaps: null, syntax_errors_outside_affected_set: null, syntax_check: null,
     broken_imports: [], dimensions_v: DIMENSIONS_VERSION,
     cyclicGroupChanges: { status: 'not_comparable', reason }, affected_files: [], blast_radius: 0,
     warnings: [`Security scan not applicable: ${reason}`], relevant_warnings: [],
@@ -160,6 +167,7 @@ function assertTopology(result: ReturnType<typeof analyzeCyclicGroups>): void {
   if (result.status === 'unavailable') throw new Error(result.reason);
 }
 /** Structural verdict only: recon/VERIFY-CHANGE-VERDICT-CONTRACT.md §§1–3.
+ * Addendum 5: affected syntax gaps impose a medium floor; outside errors never gate.
  * Required analysis failures dominate; informational crashes never enter this function. */
 export function structuralVerdict(broken: BrokenImportEntry[], changes: VerifyChangeOutput['cyclicGroupChanges']): 'low' | 'medium' | 'high' {
   if ('before' in changes) { assertTopology(changes.before); assertTopology(changes.after); }
@@ -181,6 +189,7 @@ export async function verifyChange(args: VerifyChangeInput, ctx: VerifyChangeCon
     valid = true;
     result = { ...result, ...information('Structural analysis has not completed'), warnings: [] };
     result.health_status = 'unavailable'; result.security_status = 'unavailable';
+    if (ctx.unparsedFiles?.length) result.warnings.push(`Syntax census incomplete; skipped files: ${ctx.unparsedFiles.join(', ')}`);
     stage = 'baseline topology';
     assertTopology(analyzeCyclicGroups(graph));
     const drops = [...(graph.getAttribute('edgeDrops') ?? []), ...(graph.getAttribute('crossLanguageDrops') ?? [])];
@@ -193,21 +202,22 @@ export async function verifyChange(args: VerifyChangeInput, ctx: VerifyChangeCon
       if (ctx.unparsedFiles?.includes(file)) throw new Error('Required changed file was not parsed');
       const nodes = nodesInFile(graph, file, projectRoot);
       // Parse even unmatched proposed content: a missing parser must not disappear as a new-path limitation.
-      if (input.content !== undefined && input.content.length > 0) {
+      if (input.content !== undefined) {
         stage = `parser (${file})`;
         await initParser();
         const parser = getParserForFile(file, input.content);
         if (!parser) throw new Error('No required parser available');
         const parsed = parser.parseFile(file, input.content, projectRoot);
-        if (parsed.syntaxErrors?.hasError) {
-          const { file, line, text } = parsed.syntaxErrors;
+        result.syntax_check = parsed.syntaxCheck ?? null;
+        if (parsed.syntaxErrors?.length) {
+          const { file, line, text } = parsed.syntaxErrors[0];
           throw new Error(`Syntax error at ${file}:${line}: ${text}`);
         }
         const errors = (parsed as typeof parsed & { errors?: unknown[]; errorFiles?: unknown[] }).errors ?? (parsed as typeof parsed & { errorFiles?: unknown[] }).errorFiles;
         if (errors?.length) throw new Error(`Parser reported errors: ${JSON.stringify(errors)}`);
         stage = `removed exports (${file})`;
         const exports = new Set(parsed.symbols.filter(s => s.exported).map(s => s.name));
-        for (const node of nodes) {
+        for (const node of input.content === '' ? [] : nodes) {
           const attrs = graph.getNodeAttributes(node);
           if (!attrs.exported || exports.has(attrs.name)) continue;
           for (const dep of getDependents(graph, node)) {
@@ -241,7 +251,29 @@ export async function verifyChange(args: VerifyChangeInput, ctx: VerifyChangeCon
     stage = 'structural verdict';
     result.broken_imports = [...new Map(result.broken_imports.map(b => [JSON.stringify([b.file, b.missing_symbol]), b])).values()];
     result.affected_files = [...affected].sort(); result.blast_radius = result.affected_files.length;
+    stage = 'project syntax census';
+    const census = ctx.parsedFiles
+      ? { parsed: ctx.parsedFiles, unparsedFiles: ctx.unparsedFiles ?? [] }
+      : await parseVerifyProject(projectRoot);
+    const records = new Map(census.parsed.map(file => [canonicalPath(file.filePath, projectRoot), file]));
+    const skipped = [...new Set([...census.unparsedFiles, ...(ctx.unparsedFiles ?? []),
+      ...census.parsed.filter(file => file.syntaxCheck === undefined).map(file => canonicalPath(file.filePath, projectRoot))])].sort();
+    if (skipped.length && !result.warnings.some(w => w.startsWith('Syntax census incomplete;'))) result.warnings.push(`Syntax census incomplete; skipped files: ${skipped.join(', ')}`);
+    // Proposed changed content was checked above; baseline records cover the rest.
+    const uncheckedAffected = result.affected_files.filter(file => !paths.includes(file) &&
+      (skipped.includes(file) || !records.has(file)));
+    const changedChecked = result.syntax_check !== null;
+    if (changedChecked && !uncheckedAffected.length) {
+      result.coverage_gaps = result.affected_files.filter(file => !paths.includes(file)).flatMap(file => {
+        const first = records.get(file)?.syntaxErrors?.[0];
+        return first ? [{ file, reason: `Syntax error at ${file}:${first.line}: ${first.text}` }] : [];
+      });
+    }
+    if (!skipped.length) result.syntax_errors_outside_affected_set = census.parsed.filter(file =>
+      !affected.has(canonicalPath(file.filePath, projectRoot)) && file.syntaxErrors?.length).length;
+    stage = 'structural verdict';
     result.risk_level = structuralVerdict(result.broken_imports, result.cyclicGroupChanges);
+    if (result.risk_level === 'low' && (result.coverage_gaps?.length || skipped.length || uncheckedAffected.length)) result.risk_level = 'medium';
     result.safe = result.risk_level === 'low'; result.error_reason = null;
     if (result.cyclicGroupChanges.status === 'not_comparable') result.warnings.push(result.cyclicGroupChanges.reason);
   } catch (error) {

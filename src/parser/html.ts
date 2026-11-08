@@ -1,3 +1,4 @@
+import { withSyntaxNotApplicable } from './syntax-errors.js';
 import { basename } from 'path';
 import { ParsedFile, LanguageParser } from './types.js';
 
@@ -115,7 +116,7 @@ export function parseHtmlTemplate(
  * component/template pairing pass in parser/index.ts, which has the
  * cross-file context needed to resolve Angular selectors to component classes.
  */
-export function parseHtmlFile(
+function parseHtmlFileUnchecked(
   filePath: string,
   content: string,
   _projectRoot: string
@@ -146,3 +147,7 @@ export const htmlParser: LanguageParser = {
   extensions: ['.html'],
   parseFile: parseHtmlFile,
 };
+
+export function parseHtmlFile(filePath: string, sourceCode: string, projectRoot: string): ParsedFile {
+  return withSyntaxNotApplicable(parseHtmlFileUnchecked(filePath, sourceCode, projectRoot));
+}

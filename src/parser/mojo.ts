@@ -1,3 +1,4 @@
+import { withSyntaxNotApplicable } from './syntax-errors.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
 import { existsSync, readFileSync } from 'fs';
@@ -22,7 +23,7 @@ interface Context {
   imports: Map<string, string>;
 }
 
-export function parseMojoFile(
+function parseMojoFileUnchecked(
   filePath: string,
   sourceCode: string,
   projectRoot: string
@@ -426,3 +427,7 @@ export const mojoParser: LanguageParser = {
   extensions: ['.mojo', '.🔥', 'mojoproject.toml'],
   parseFile: parseMojoFile,
 };
+
+export function parseMojoFile(filePath: string, sourceCode: string, projectRoot: string): ParsedFile {
+  return withSyntaxNotApplicable(parseMojoFileUnchecked(filePath, sourceCode, projectRoot));
+}

@@ -1,4 +1,4 @@
-import { withSyntaxErrors } from './syntax-errors.js';
+import { withSyntaxErrors, withSyntaxNotApplicable } from './syntax-errors.js';
 import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
@@ -25,17 +25,17 @@ export function parseCppFile(
 ): ParsedFile {
   // Handle CMakeLists.txt
   if (basename(filePath) === 'CMakeLists.txt') {
-    return parseCMakeLists(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseCMakeLists(filePath, sourceCode, projectRoot));
   }
 
   // Handle conanfile.txt
   if (basename(filePath) === 'conanfile.txt') {
-    return parseConanfileTxt(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseConanfileTxt(filePath, sourceCode, projectRoot));
   }
 
   // Handle vcpkg.json
   if (basename(filePath) === 'vcpkg.json') {
-    return parseVcpkgJson(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseVcpkgJson(filePath, sourceCode, projectRoot));
   }
 
   const parser = getParser('cpp');

@@ -37,6 +37,7 @@ it.each([true, false])('outer CLI stdin failure renders full envelope or human r
     expect(out.exit).toHaveBeenCalledWith(1);
     if (json) {
       const p = out.payload(); expect(p).toMatchObject({ risk_level: 'error', safe: false, partial: false, health_score_delta: null, security_findings: null });
+      expect(p).toMatchObject({ syntax_check: null, coverage_gaps: null, syntax_errors_outside_affected_set: null });
       expect(p.error_reason).toContain('Failed to read change content'); expect(p.error_reason).toContain('EIO'); expect(p.unrelated_context).toHaveProperty('security_status');
     } else expect(out.log.mock.calls.flat().join(' ')).toContain('ERROR — CLI input/project analysis: Failed to read change content');
   } finally { if (descriptor) Object.defineProperty(process.stdin, 'isTTY', descriptor); else delete (process.stdin as any).isTTY; }
@@ -65,6 +66,7 @@ it('MCP no-project returns the complete error envelope in text content', async (
   const r = await handleToolCall('verify_change', {}, createEmptyState());
   expect(Object.keys(r)).toEqual(['content']); const p = JSON.parse(r.content[0].text);
   expect(p).toMatchObject({ safe: false, risk_level: 'error', security_findings: null, health_score_delta: null }); expect(p.error_reason).toContain('No project loaded');
+  expect(p).toMatchObject({ syntax_check: null, coverage_gaps: null, syntax_errors_outside_affected_set: null });
 });
 it('MCP invalid runtime input and project failures retain the same complete envelope', async () => {
   const r = root(); const state = { ...createEmptyState(), graph: new DirectedGraph(), projectRoot: r };

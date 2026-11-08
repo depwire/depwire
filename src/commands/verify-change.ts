@@ -35,7 +35,7 @@ export async function verifyChangeCommand(
   console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
 
   // Run verification
-  const result = await verifyChange(input, { graph, projectRoot, sourceCoverage, unparsedFiles });
+  const result = await verifyChange(input, { graph, projectRoot, sourceCoverage, unparsedFiles, parsedFiles: parsed });
 
   renderVerifyChange(result, options);
   const code = verifyChangeExitCode(result, options.failOnWarnings);

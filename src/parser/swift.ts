@@ -1,4 +1,4 @@
-import { withSyntaxErrors } from './syntax-errors.js';
+import { withSyntaxErrors, withSyntaxNotApplicable } from './syntax-errors.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -24,7 +24,7 @@ export function parseSwiftFile(
 ): ParsedFile {
   // Handle Package.swift (Swift Package Manager manifest)
   if (filePath.endsWith('Package.swift')) {
-    return parsePackageSwift(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parsePackageSwift(filePath, sourceCode, projectRoot));
   }
 
   const parser = getParser('swift');

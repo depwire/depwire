@@ -10,6 +10,8 @@ security_findings changes from array to array | null, including its unrelated_co
 
 risk_level adds "error". Any failed required structural analysis, including invalid input, malformed/unparseable diffs, parser/topology failures and simulation failures, returns safe:false, risk_level:"error" and a non-empty error_reason; successful-analysis results use error_reason:null. Analysis errors exit 1 regardless of --fail-on-warnings. Clients must handle nullable health and security fields and expanded status/risk enums. Structurally low results previously raised to medium solely by health regression can now return safe:true and exit 0 with --fail-on-warnings. Unsupported topology comparisons remain unsafe and at least medium unless analysis fails, which is error. This correction applies to local CLI/MCP, not Cloud's separate verify_change implementation or Action's health-report pipeline.
 
+Syntax diagnostics now persist through canonicalization and the versioned parse cache. New structural coverage_gaps, syntax_errors_outside_affected_set and syntax_check fields distinguish affected-file syntax gaps, outside-set errors and changed-file checking. Uncomputed checks/counts are null; pattern/manifest checks are not_applicable. Changed-file syntax errors remain error; other affected syntax errors impose a medium floor without lowering high; outside-set errors do not change the verdict.
+
 All notable changes to Depwire will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

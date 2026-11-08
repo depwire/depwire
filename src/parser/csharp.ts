@@ -1,4 +1,4 @@
-import { withSyntaxErrors } from './syntax-errors.js';
+import { withSyntaxErrors, withSyntaxNotApplicable } from './syntax-errors.js';
 import { isWithinRoot, canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
@@ -25,7 +25,7 @@ export function parseCSharpFile(
 ): ParsedFile {
   // Handle .csproj files as XML — extract ProjectReference and PackageReference edges
   if (filePath.endsWith('.csproj')) {
-    return parseCsprojFile(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseCsprojFile(filePath, sourceCode, projectRoot));
   }
 
   const parser = getParser('c_sharp');

@@ -22,16 +22,19 @@ export function collectSyntaxIssues(root: Node, file: string, source: string, ma
   return issues;
 }
 
-/** Additive, non-enumerable diagnostics preserve every existing serialized consumer
- * output/cache shape. Only verify-change reads this property (contract §Limitations).
+/** Enumerable diagnostics survive canonicalization and cache storage (contract §3).
+ * Only verify-change interprets these fields.
  * Recovered fragments replace only their own original diagnostics. */
 export function withSyntaxErrors(result: ParsedFile, root: Node, source: string, recoveries: SyntaxRecovery[] = []): ParsedFile {
   const original = collectSyntaxIssues(root, result.filePath, source)
     .filter(issue => !recoveries.some(r => issue.index >= r.start && issue.index < r.end));
-  const first = [...original, ...recoveries.flatMap(r => r.issues)].sort((a, b) => a.index - b.index)[0];
-  if (first) {
-    const { index: _index, ...syntaxErrors } = first;
-    Object.defineProperty(result, 'syntaxErrors', { value: syntaxErrors, enumerable: false });
-  }
+  result.syntaxCheck = 'checked';
+  result.syntaxErrors = [...original, ...recoveries.flatMap(r => r.issues)]
+    .sort((a, b) => a.index - b.index).map(({ index: _index, ...issue }) => issue);
   return result;
+}
+
+/** No grammar check ran; null must never masquerade as a checked-clean array. */
+export function withSyntaxNotApplicable(result: ParsedFile): ParsedFile {
+  return Object.assign(result, { syntaxCheck: 'not_applicable' as const, syntaxErrors: null });
 }

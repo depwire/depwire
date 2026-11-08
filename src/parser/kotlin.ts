@@ -1,4 +1,4 @@
-import { withSyntaxErrors } from './syntax-errors.js';
+import { withSyntaxErrors, withSyntaxNotApplicable } from './syntax-errors.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -51,17 +51,17 @@ export function parseKotlinFile(
 ): ParsedFile {
   // Handle build.gradle.kts (Kotlin DSL)
   if (filePath.endsWith('build.gradle.kts')) {
-    return parseGradleBuild(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseGradleBuild(filePath, sourceCode, projectRoot));
   }
 
   // Handle build.gradle (Groovy DSL)
   if (filePath.endsWith('build.gradle')) {
-    return parseGradleBuild(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseGradleBuild(filePath, sourceCode, projectRoot));
   }
 
   // Handle settings.gradle.kts
   if (filePath.endsWith('settings.gradle.kts') || filePath.endsWith('settings.gradle')) {
-    return parseSettingsGradle(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseSettingsGradle(filePath, sourceCode, projectRoot));
   }
 
   const parser = getParser('kotlin');

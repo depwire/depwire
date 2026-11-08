@@ -191,7 +191,8 @@ export interface SyntaxErrors {
 }
 
 export interface ParsedFile {
-  syntaxErrors?: SyntaxErrors;
+  syntaxCheck?: 'checked' | 'not_applicable';
+  syntaxErrors?: SyntaxErrors[] | null;
   filePath: string;    // Relative to project root
   symbols: SymbolNode[];
   edges: SymbolEdge[];

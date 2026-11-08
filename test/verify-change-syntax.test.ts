@@ -27,7 +27,7 @@ async function fixture(file = 'orphan.ts', baseline = 'export function unused() 
 for (const source of ["export\n type { A } from './x';", "export\n type { A, } from './x';"]) {
   it(`valid recovered construct preserves medium: ${JSON.stringify(source)}`, async () => {
     const f = await fixture();
-    expect(getParserForFile(f.file)!.parseFile(f.file, source, f.root).syntaxErrors).toBeUndefined();
+    expect(getParserForFile(f.file)!.parseFile(f.file, source, f.root).syntaxErrors).toEqual([]);
     const result = await verifyChange({ file_path: f.file, new_content: source }, { graph: f.graph, projectRoot: f.root });
     expect(result).toMatchObject({ risk_level: 'medium', safe: false, error_reason: null });
   });
@@ -45,8 +45,9 @@ for (const sample of broken) {
   it(`${sample.name}: real core, CLI and MCP error with location and node text`, async () => {
     const f = await fixture(sample.file, sample.baseline);
     const parsed = getParserForFile(f.file)!.parseFile(f.file, sample.source, f.root);
-    expect(parsed.syntaxErrors).toEqual({ hasError: true, file: f.file, line: sample.line, text: sample.text });
-    expect(Object.keys(parsed)).not.toContain('syntaxErrors');
+    expect(parsed.syntaxErrors?.[0]).toEqual({ hasError: true, file: f.file, line: sample.line, text: sample.text });
+    expect(parsed.syntaxCheck).toBe('checked');
+    expect(Object.keys(parsed)).toEqual(expect.arrayContaining(['syntaxCheck', 'syntaxErrors']));
     const args = { file_path: f.file, new_content: sample.source };
     const core = await verifyChange(args, { graph: f.graph, projectRoot: f.root });
     const check = (payload: any) => {
@@ -82,6 +83,6 @@ it('source branches of every touched parser expose real tree errors', async () =
   const f = await fixture();
   for (const [file, source] of samples) {
     const result = getParserForFile(file)!.parseFile(file, source, f.root);
-    expect(result.syntaxErrors, file).toMatchObject({ hasError: true, file });
+    expect(result.syntaxErrors?.[0], file).toMatchObject({ hasError: true, file });
   }
 });
