@@ -199,6 +199,10 @@ export async function verifyChange(args: VerifyChangeInput, ctx: VerifyChangeCon
         const parser = getParserForFile(file, input.content);
         if (!parser) throw new Error('No required parser available');
         const parsed = parser.parseFile(file, input.content, projectRoot);
+        if (parsed.syntaxErrors?.hasError) {
+          const { file, line, text } = parsed.syntaxErrors;
+          throw new Error(`Syntax error at ${file}:${line}: ${text}`);
+        }
         const errors = (parsed as typeof parsed & { errors?: unknown[]; errorFiles?: unknown[] }).errors ?? (parsed as typeof parsed & { errorFiles?: unknown[] }).errorFiles;
         if (errors?.length) throw new Error(`Parser reported errors: ${JSON.stringify(errors)}`);
         stage = `removed exports (${file})`;

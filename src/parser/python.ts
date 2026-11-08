@@ -1,3 +1,4 @@
+import { withSyntaxErrors } from './syntax-errors.js';
 import { canonicalPath, isWithinRoot } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser, UnresolvedImport } from './types.js';
@@ -43,12 +44,12 @@ export function parsePythonFile(
   
   walkNode(tree.rootNode, context);
   
-  return {
+  return withSyntaxErrors({
     filePath,
     symbols: context.symbols,
     edges: context.edges,
     ...(context.unresolvedImports.length ? { unresolvedImports: context.unresolvedImports } : {}),
-  };
+  }, tree!.rootNode, sourceCode);
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {

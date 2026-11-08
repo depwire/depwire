@@ -182,7 +182,16 @@ export interface UnresolvedEdge {
   candidates?: string[];
 }
 
+/** Required-change diagnostics; only verify-change interprets this metadata. */
+export interface SyntaxErrors {
+  hasError: true;
+  file: string;
+  line: number;
+  text: string;
+}
+
 export interface ParsedFile {
+  syntaxErrors?: SyntaxErrors;
   filePath: string;    // Relative to project root
   symbols: SymbolNode[];
   edges: SymbolEdge[];

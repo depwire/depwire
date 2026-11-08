@@ -1,3 +1,4 @@
+import { withSyntaxErrors } from './syntax-errors.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -44,11 +45,11 @@ export function parseSwiftFile(
 
   walkNode(tree.rootNode, context);
 
-  return {
+  return withSyntaxErrors({
     filePath,
     symbols: context.symbols,
     edges: context.edges,
-  };
+  }, tree!.rootNode, sourceCode);
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {
