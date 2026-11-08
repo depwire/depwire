@@ -1,6 +1,6 @@
 # verify-change verdict contract — approved 8 Nov 2026
 
-Applies to local CLI JSON and local MCP `verify_change`; base `8b654da5c9dec6521f8fc0864905d400483d9689`. Implementation follows the approved ruling and Addendum 1.
+Applies to local CLI JSON and local MCP `verify_change`; base `8b654da5c9dec6521f8fc0864905d400483d9689`. Implementation follows the approved ruling and Addenda 1–5.
 Destination: /Users/atefataya/Developer/code-graph/recon/VERIFY-CHANGE-VERDICT-CONTRACT.md.
 Authority: /tmp/depwire-recon/verify-change-ruling-ATEF-2026-11-08.md; option A in /tmp/depwire-recon/verify-change-366-375.md; corrections in /tmp/depwire-recon/vc-repro.md take precedence over that recon.
 MUST/MUST NOT are normative requirements.
@@ -44,7 +44,7 @@ The injected simulation failure reproduced low/safe with a warning and fabricate
 
 ## 3. Complete local JSON/MCP payload
 
-All top-level fields below MUST be present. Unless marked nullable or optional, fields MUST NOT be null/omitted. Numbers MUST be finite; counts MUST be nonnegative integers. Arrays MUST never be null except security_findings under its explicit null rule. On error they contain only known evidence, possibly empty, and MUST NOT imply completed analysis.
+All top-level fields below MUST be present. Unless marked nullable or optional, fields MUST NOT be null/omitted. Numbers MUST be finite; counts MUST be nonnegative integers. Arrays MUST never be null except security_findings and coverage_gaps under their explicit null rules. On error they contain only known evidence, possibly empty, and MUST NOT imply completed analysis.
 
 | Field | Type and meaning/null rule |
 |---|---|
@@ -62,6 +62,9 @@ All top-level fields below MUST be present. Unless marked nullable or optional, 
 | `security_reason` | string or null; null iff computed, otherwise a nonempty reason. |
 | `partial` | boolean, always present; true iff health_status or security_status is "error". Structural coverage limits do NOT set it. |
 | `affected_files` | canonical, deduplicated, sorted string array of known changed/impacted files. |
+| `coverage_gaps` | array of `{file:string, reason:string}` or null; affected-file syntax gaps, with completion/null rules below. |
+| `syntax_errors_outside_affected_set` | nonnegative integer or null; count of files with syntax errors outside affected_files, with completion/null rules below. |
+| `syntax_check` | `"checked" | "not_applicable" | null`; changed-file syntax check, with completion/null rules below. |
 | `blast_radius` | nonnegative integer, exactly affected_files.length; on error only the known count, not a completeness claim. |
 | `warnings`, `relevant_warnings` | string arrays; warnings explain limitations/context; relevant_warnings concerns this change. Preserve current equal copies for this correction (O3); neither count gates verdict. |
 | `unrelated_context` | non-null object containing `note:string`, exact copies of all three nullable health fields, health_status, health_reason, security_findings, security_status, security_reason, and partial; no divergent copies. |
@@ -79,6 +82,15 @@ Nested cyclic schema MUST preserve the pinned contract from /Users/atefataya/Dev
 - `Group` is `{key:string,files:string[],size:number,witness:{files:string[],edges:Evidence[]}}`. Evidence is `{sourceFile:string,targetFile:string,sourceSymbol:string,targetSymbol:string,kind:string,line:number|null,normalizedTypeOnlyImport:boolean}`; line is null if unknown. No other field here is nullable.
 - A `compared` result MUST have both analyzed snapshots and these non-null arrays: `newlyCyclicFiles`, `freedFiles`, `addedCyclicFiles`, `removedCyclicFiles`, `groupsFormed`, `groupsEliminated` are string[]; `groupsMerged` entries are `{beforeKeys:string[],afterKey:string}`; `groupsSplit` entries are `{beforeKey:string,afterKeys:string[]}`.
 - `membershipsChanged` entries are `{beforeKey:string,afterKey:string,addedMembers:string[],removedMembers:string[]}`; `internalEdgesChanged` entries are `{beforeKey:string,afterKey:string,addedFileEdges:string[][],removedFileEdges:string[][]}` with each inner array a source/target pair. These arrays MUST be present on compared, including when empty.
+
+### Syntax coverage and persistence (Addendum 5)
+
+- I1 — **manager interpretation — Atef confirms**: The affected set is exactly the existing affected_files set. Changed-file syntax errors remain error; syntax errors in other affected files create coverage_gaps entries with canonical file and a reason including the first error's file:line and node text.
+- I2 — **manager interpretation — Atef confirms**: Precedence is error > high > medium > low. An affected syntax gap raises low to medium only, never lowers high or overrides error. Non-error results keep error_reason:null. coverage_gaps is structural, is not copied into unrelated_context, and does not set partial.
+- I3 — **manager interpretation — Atef confirms**: syntax_errors_outside_affected_set is always present: a real integer count of files, only when the project syntax census completed; null when unavailable or incomplete, including oversized/skipped files. Warnings identify skipped files. Outside-set syntax errors do not affect the verdict. coverage_gaps is always present: null whenever the affected-set check did not complete (including early errors); [] only for a completed check with no gaps.
+- I4 — **manager interpretation — Atef confirms**: syntax_check is always present: checked only when changed-file checking completed, not_applicable for pattern/manifest branches, null when it could not complete. Stored parsed-file records carry enumerable syntaxCheck and syntaxErrors: checked pairs with an array ([] only when checked and clean); not_applicable pairs with null, present rather than omitted. Diagnostics follow the symbol-producing parse under Addendum 4.
+
+canonicalParsedFile and SQLite MUST preserve these real fields. Increment the existing RESOLUTION_VERSION from 13 to 14 so old rows rebuild; absent metadata MUST NOT mean clean. Only verify-change interprets syntax metadata. Other consumers' serialization may change ONLY by adding syntaxCheck/syntaxErrors on parsed-file records; buildGraph, health, simulate and other CLI/MCP output remain byte-identical except the new verdict fields.
 
 ## 4. Health computation and history
 
@@ -129,19 +141,23 @@ Required CHANGELOG wording:
 >
 > risk_level adds "error". Any failed required structural analysis, including invalid input, malformed/unparseable diffs, parser/topology failures and simulation failures, returns safe:false, risk_level:"error" and a non-empty error_reason; successful-analysis results use error_reason:null. Analysis errors exit 1 regardless of --fail-on-warnings. Clients must handle nullable health and security fields and expanded status/risk enums. Structurally low results previously raised to medium solely by health regression can now return safe:true and exit 0 with --fail-on-warnings. Unsupported topology comparisons remain unsafe and at least medium unless analysis fails, which is error. This correction applies to local CLI/MCP, not Cloud's separate verify_change implementation or Action's health-report pipeline.
 
+> Syntax diagnostics now persist through canonicalization and the versioned parse cache. New structural coverage_gaps, syntax_errors_outside_affected_set and syntax_check fields distinguish affected-file syntax gaps, outside-set errors and changed-file checking. Uncomputed checks/counts are null; pattern/manifest checks are not_applicable. Changed-file syntax errors remain error; other affected syntax errors impose a medium floor without lowering high; outside-set errors do not change the verdict.
+
 ## Limitations
 
 tree-sitter recovery can flag valid syntax beyond the grammar; error_reason shows where.
 
-**manager proposal — Atef confirms**: Pattern-based parsers (Mojo, Dart, R, HTML) and manifest/build-file branches (CMakeLists.txt, conanfile.txt, vcpkg.json, .csproj, Maven/Gradle, Gemfile, Package.swift) perform no syntax check; a syntax error there cannot yield error and the verdict stays as structural analysis decides.
+Pattern-based parsers (Mojo, Dart, R, HTML) and manifest/build-file branches (CMakeLists.txt, conanfile.txt, vcpkg.json, .csproj, Maven/Gradle, Gemfile, Package.swift) perform no syntax check; a syntax error there cannot yield error and the verdict stays as structural analysis decides.
 
 Nonstandard `diff --git` headers that git accepts are not malformed. Overlapping hunks and patch apply-ability are outside this correction's scope; both verifier diff cases stay medium because a faithful after-graph is unavailable, not because required analysis failed.
 
-Required changed-source syntax errors MUST produce error with file:line and the first ERROR/MISSING node text (sensibly truncated). Diagnostics MUST follow the parse that produced symbols: original outside recovered fragments, normalized re-parse within recovered fragments. Recovery MUST NOT discard unrelated original-file errors. Only verify-change acts on the additive syntaxErrors metadata; other consumers retain their output.
+Required changed-source syntax errors MUST produce error with file:line and the first ERROR/MISSING node text (sensibly truncated). Diagnostics MUST follow the parse that produced symbols: original outside recovered fragments, normalized re-parse within recovered fragments. Recovery MUST NOT discard unrelated original-file errors. Only verify-change acts on the additive syntaxErrors metadata; other consumers retain their output except the explicitly permitted parsed-file metadata additions in §3.
 
 ## 6. Acceptance and scope
 
 Implementation MUST verify: injected simulation failure; parser and topology failure; malformed diff/invalid input; CLI input I/O and MCP no-project errors; export-only/unmatched/last-file health nulls; exact top-level/context parity; genuine computed zero; single-method before/after and valid-diff unavailable handling; health/security value independence; risk-based exit matrix; removed threshold; no history creation or modification. Also verify health crash with safe unchanged and partial:true; security crash with null findings, never []; both crashing together; and an outer CLI stdin-failure envelope with exit 1 while the existing command-rejection assertion remains unchanged. Other health callers MUST retain persistence, proven by tests.
+
+Addendum 5 acceptance: cache round-trip; byte-identical cache-hit/cache-miss output; version-13 rows rebuild; broken affected non-changed file cannot reach low; outside-set broken file preserves verdict and counts one; pattern/manifest changes report not_applicable; no-project MCP and stdin-failure envelopes have null syntax_check, coverage_gaps and outside count; oversized/skipped files leave incomplete counts/checks null and identify skipped paths in warnings. Preserve pre-edit consumer goldens except the exact parsed-record field additions, reporting the exact diff.
 
 Out of scope: Cloud's separate verify_change heuristic; Action formatDelta and its HealthReport pipeline; rename of --fail-on-warnings before a major; redesign of cyclic-group or general health metric internals; new full-diff graph reconstruction. The error contract MUST NOT be deferred merely because a failure was previously swallowed.
 
@@ -159,4 +175,6 @@ Approval order MUST remain: verifier reproduction → Atef approves this contrac
 - Addendum 2 (Atef, 21:26): approve the opt-in structural-only simulation option in §4 with default output unchanged; confirm partial is true only for informational status "error", never unavailable/not_applicable.
 
 - Addendum 3 (Atef, 8 Nov 22:40): add syntaxErrors to the 13 tolerant tree-sitter source branches only; preserve manifest/build-file and pattern-based branches. Only verify-change interprets the metadata. Prove other consumer outputs unchanged with pre-edit goldens and exercise natural syntax failures through core/CLI/MCP. The two verifier diff cases remain medium for the reasons in Limitations.
-- Addendum 4 (Atef, 9 Nov 00:32): diagnostics follow the symbol-producing parse, including normalized TypeScript recovery; retain diagnostics outside recovered fragments. Test valid recovered exports, a genuinely broken rewritten export, and a valid recovered export alongside an unrelated syntax error. The manager-proposal limitation remains unconfirmed.
+- Addendum 4 (Atef, 9 Nov 00:32): diagnostics follow the symbol-producing parse, including normalized TypeScript recovery; retain diagnostics outside recovered fragments. Test valid recovered exports, a genuinely broken rewritten export, and a valid recovered export alongside an unrelated syntax error. The pattern/manifest limitation was subsequently confirmed in Addendum 5.
+
+- Addendum 5 (Atef, 9 Nov 01:01): persist enumerable syntax metadata through canonicalization and the versioned SQLite cache; changed-file errors remain error, affected-file errors impose a medium floor, and outside-set errors are counted without affecting the verdict. Confirm pattern/manifest not_applicable and retain the limitation. Manager interpretations I1–I4 in §3 include the subsequent approved null rules and remain marked for Atef confirmation.
