@@ -1143,12 +1143,12 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤖</div>
                     <h3>AI Context Engine</h3>
-                    <p>24 MCP tools that give Claude, Cursor, and any AI assistant dependency context. Your AI rarely flies blind again.</p>
+                    <p>24 MCP tools that give Claude, Cursor, and any AI assistant dependency context so your AI isn't working blind.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">💥</div>
                     <h3>Impact Analysis</h3>
-                    <p>Renaming a function? Moving a file? Upgrading a dependency? Know the blast radius — 2-3 levels deep — before you change a single line.</p>
+                    <p>Renaming a function? Moving a file? Upgrading a dependency? Know the blast radius — the full dependent chain — before you change a single line.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🌍</div>
@@ -1163,7 +1163,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🔄</div>
                     <h3>Live Updates</h3>
-                    <p>Live visualization watches files and attempts incremental graph updates. Reparse the project when you need a fresh full analysis.</p>
+                    <p>Live visualization watches files and rebuilds the graph when they change.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">📄</div>
@@ -1324,7 +1324,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">📸</div>
                     <h3>CURRENT.md</h3>
-                    <p>Codebase snapshot — files, symbols, connections. The structural reference.</p>
+                    <p>Codebase snapshot — files, symbols, connections. The reference.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">✅</div>
@@ -1487,6 +1487,9 @@
                         <pre><code>app.depwire.dev</code></pre>
                         <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Connect a GitHub repository to use hosted graph tools through the Cloud MCP endpoint. Setup and parsing time depend on the repository and service availability.</p>
                         <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Cloud — verify_change is a heuristic impact report using the existing dependency graph and regex checks on supplied text. It does not apply or reparse changes, run builds, type checks or tests, or verify safety. Potential import impacts assume affected symbols are removed; reported cycles already exist in the loaded graph. Health deltas are estimates. Security checks are regex matches, not a comprehensive audit; unified diffs are scanned including removed lines. Results depend on graph coverage and freshness, and missing or unmatched files can yield no findings. The response includes analysis_mode: existing_graph_heuristic and assessment_under_revision: “The safe/risk_level assessment is a heuristic under active revision; see limitations for details.” safe means only that the heuristic assigned low risk, not a correctness or security guarantee.</p>
+                        <ul style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
+                            <li>Cloud regex findings from supplied text</li>
+                        </ul>
                         <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Cloud’s /pr-review endpoint has been disabled since 18 Oct 2026 and returns HTTP 503 without analysis or a posted comment.</p>
                     </div>
                     <a href="https://app.depwire.dev" target="_blank" class="btn btn-secondary" style="white-space: nowrap; color: var(--accent-cyan); border-color: var(--accent-cyan);">Open Cloud App →</a>
