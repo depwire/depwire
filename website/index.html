@@ -1007,7 +1007,7 @@
         <div class="container">
             <h1>Your AI doesn't know your architecture. Depwire does.</h1>
             <p class="hero-category">Depwire is the context and safety layer for AI-generated code.</p>
-            <h2>Before your AI touches a single file, Depwire has already mapped every connection, scored every risk, and simulated every change.</h2>
+            <h2>Before your AI touches a single file, Depwire has already mapped connections, scored risks, and simulated changes.</h2>
             <p class="hero-solution" style="font-size: clamp(0.85rem, 1.5vw, 0.95rem); color: var(--text-muted); margin-top: -1.5rem;">14 CLI commands. 24 MCP tools. 13 auto-generated documents. What If simulation. Pre-action verification. Security scanner. Structural diff. Architecture health scoring. Multi-agent coordination.</p>
             
             <div class="cta-buttons">
@@ -1027,7 +1027,7 @@
         <div class="container" style="text-align: center;">
             <h2 class="section-title scroll-reveal" style="color: #00d4aa; font-size: clamp(1.8rem, 4vw, 2.8rem);">DETERMINISTIC, NOT PROBABILISTIC</h2>
             <p class="scroll-reveal" style="font-size: clamp(1.2rem, 2.5vw, 1.6rem); color: var(--text-primary); font-weight: 700; margin-bottom: 1.5rem;">This is not RAG.</p>
-            <p class="scroll-reveal" style="max-width: 800px; margin: 0 auto 2.5rem; color: var(--text-secondary); font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.8;">No embeddings. No similarity scores. No guesses. Depwire uses tree-sitter to parse every file and extract exact symbol-level facts — every function, class, interface, and import relationship across 17 languages including HTML/Angular templates. The result is a compiler-grade dependency graph that AI tools can query for exact answers, not probabilistic estimates.</p>
+            <p class="scroll-reveal" style="max-width: 800px; margin: 0 auto 2.5rem; color: var(--text-secondary); font-size: clamp(0.95rem, 1.8vw, 1.15rem); line-height: 1.8;">No embeddings. No similarity scores. No guesses. 16 programming languages — TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, and R — plus Angular templates. Parsing uses tree-sitter and pattern-based parsers. Results cover supported constructs and recorded relationships, not every relationship in an arbitrary codebase.</p>
             <img src="assets/deterministic_vs_rag_diagram.svg" alt="Depwire: Deterministic vs RAG architecture comparison" style="width:100%;max-width:680px;margin:2rem auto;display:block;">
         </div>
     </section>
@@ -1077,7 +1077,7 @@
                 <div class="pipeline-step scroll-reveal">
                     <div class="pipeline-icon">🔍</div>
                     <h4>Parse</h4>
-                    <p>tree-sitter extracts every symbol and reference</p>
+                    <p>tree-sitter extracts supported symbols and references</p>
                 </div>
                 <div class="pipeline-step scroll-reveal">
                     <div class="pipeline-icon">🕸️</div>
@@ -1112,11 +1112,11 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 3rem auto 0;">
           <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
             <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Local</div>
-            <div style="font-size: 0.875rem; color: var(--text-muted);">Everything runs on your machine. No cloud parsing. No data sent anywhere.</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">The Depwire CLI analyses your code locally. It makes network requests only when you ask it to: cloning a repository you name, checking package registries and advisory databases during security scans and structural diffs, and loading the chart library its visualization pages use from a CDN. The CLI never sends your source code to Depwire; what your MCP client forwards is governed by that client.</div>
           </div>
           <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
             <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Secure</div>
-            <div style="font-size: 0.875rem; color: var(--text-muted);">Your code never leaves your machine. Security scanner requires no API key.</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">The security scanner requires no Depwire API key.</div>
           </div>
           <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center;">
             <div style="font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Token-efficient</div>
@@ -1143,27 +1143,27 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤖</div>
                     <h3>AI Context Engine</h3>
-                    <p>24 MCP tools that give Claude, Cursor, and any AI assistant full dependency context. Your AI never flies blind again.</p>
+                    <p>24 MCP tools that give Claude, Cursor, and any AI assistant dependency context. Your AI rarely flies blind again.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">💥</div>
                     <h3>Impact Analysis</h3>
-                    <p>Renaming a function? Moving a file? Upgrading a dependency? Know the full blast radius — 2-3 levels deep — before you change a single line.</p>
+                    <p>Renaming a function? Moving a file? Upgrading a dependency? Know the blast radius — 2-3 levels deep — before you change a single line.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🌍</div>
                     <h3>Multi-Language</h3>
-                    <p>TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, R, and HTML/Angular. Mixed-language monorepos supported. Tree-sitter parsing for deterministic accuracy.</p>
+                    <p>16 programming languages — TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, Mojo, Ruby, Dart, and R — plus Angular templates. Parsing uses tree-sitter and pattern-based parsers. Results cover supported constructs and recorded relationships, not every relationship in an arbitrary codebase.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">⚡</div>
                     <h3>Zero Config</h3>
-                    <p>One command: npm install -g depwire-cli. No databases, no cloud accounts, no Docker. Everything runs locally, everything stays private.</p>
+                    <p>Install with npm install -g depwire-cli. Local CLI analysis requires no Cloud account or separately managed database. Network access can occur for installation, GitHub connections, dependency audits, and browser visualization assets.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🔄</div>
                     <h3>Live Updates</h3>
-                    <p>Edit a file and the graph updates automatically. No re-indexing, no cache invalidation. Always see the current state of your architecture.</p>
+                    <p>Live visualization watches files and attempts incremental graph updates. Reparse the project when you need a fresh full analysis.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">📄</div>
@@ -1189,7 +1189,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🔮</div>
                     <h3>What If Simulation</h3>
-                    <p>Simulate delete, move, rename, split, merge — see the full blast radius, broken imports, and health score delta before your AI makes a single change.</p>
+                    <p>Simulate delete, move, rename, split, merge — see the blast radius, broken imports, and health score delta before your AI makes a single change.</p>
                     <ul>
                         <li>Health score delta (before/after)</li>
                         <li>Broken import detection</li>
@@ -1201,11 +1201,11 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">&#x2714;&#xFE0F;</div>
                     <h3>Pre-action Verification</h3>
-                    <p>Verify a proposed code change is safe before applying it. Pass file content or a unified diff and get a deterministic safety report — broken imports, circular deps, health delta, security findings, and blast radius.</p>
+                    <p>CLI — Analyze a proposed change with depwire verify-change or the CLI MCP tool verify_change. Reports include potential broken imports, affected files, health movement, and security findings from files on disk. Export-only comparisons and unified diffs return not_comparable for cyclic-group changes and do not certify safety; no build or tests are run.</p>
                     <ul>
-                        <li>Broken imports + circular deps</li>
-                        <li>Health score regression detection</li>
-                        <li>Security findings on changed code</li>
+                        <li>Potential broken imports; cyclic-group comparison or an explicit not_comparable result</li>
+                        <li>Reported health movement; not proof of correctness</li>
+                        <li>CLI security findings from files on disk</li>
                         <li>CI-ready: <code>--fail-on-warnings</code></li>
                         <li>CLI: <code>depwire verify-change</code></li>
                         <li>MCP tool: <code>verify_change</code></li>
@@ -1214,9 +1214,9 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🛡️</div>
                     <h3>Security Scanner</h3>
-                    <p>AI will confidently ship vulnerable code. Depwire stops it before production. Graph-aware severity — a vulnerability reachable from an MCP tool is automatically elevated to Critical. No API key required.</p>
+                    <p>The security scanner reports findings and can fail a configured CLI gate. Graph-based reachability can raise severity: for example, a medium finding reachable from an MCP-classified entry point becomes high. Entry-point classification uses path heuristics. No Depwire API key is required.</p>
                     <ul>
-                        <li>10 vulnerability categories, 40+ patterns</li>
+                        <li>10 check modules; 12 finding classes</li>
                         <li>Graph-aware severity elevation</li>
                         <li>SARIF output for GitHub Security tab</li>
                         <li>CLI: <code>depwire security</code></li>
@@ -1244,14 +1244,14 @@
                         <li>Symbols added / removed / modified</li>
                         <li>Health score delta with grade change</li>
                         <li>Security findings diff</li>
-                        <li>Safe: stashes uncommitted changes, restores on error</li>
+                        <li>Temporarily stashes changes and attempts restoration; failed restoration requires manual recovery.</li>
                         <li>CLI: <code>depwire diff</code></li>
                     </ul>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🤝</div>
                     <h3>Multi-agent coordination</h3>
-                    <p>Coordinate multiple AI agents working on the same codebase. Claim files, verify changes, and record decisions — so agents don't stomp on each other's work.</p>
+                    <p>Coordinate cooperating clients through file claims and decision records. Claims communicate intent; they do not prevent other tools from editing files.</p>
                 </div>
             </div>
         </div>
@@ -1273,7 +1273,7 @@
     <section class="proof-section">
         <div class="container">
             <h2 class="section-title scroll-reveal">Documentation from Your Dependency Graph</h2>
-            <p class="solution-subtitle scroll-reveal">One command. Thirteen comprehensive documents. Generated from your actual code structure, not guesses.</p>
+            <p class="solution-subtitle scroll-reveal">One command. Thirteen documents. Generated from your actual code structure, not guesses.</p>
             
             <div class="features-grid" style="margin-top: 3rem;">
                 <div class="feature-card scroll-reveal">
@@ -1299,12 +1299,12 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">📁</div>
                     <h3>FILES.md</h3>
-                    <p>Complete file catalog with stats, orphan files detection, and hub files that break the most things when changed.</p>
+                    <p>File catalog with stats, orphan files detection, and hub files that break the most things when changed.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🔌</div>
                     <h3>API_SURFACE.md</h3>
-                    <p>All exported symbols (public API), most-used exports, unused exports, and barrel file analysis.</p>
+                    <p>Recorded exported symbols (public API), most-used exports, unused exports, and barrel file analysis.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">⚠️</div>
@@ -1314,7 +1314,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">🧪</div>
                     <h3>TESTS.md</h3>
-                    <p>Test file inventory, test-to-source mapping, untested files prioritized by risk, and coverage stats.</p>
+                    <p>Test-file inventory, filename-based test-to-source matching, and files without matched tests. These are structural coverage indicators, not executed test coverage.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">📜</div>
@@ -1324,7 +1324,7 @@
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">📸</div>
                     <h3>CURRENT.md</h3>
-                    <p>Complete codebase snapshot — every file, every symbol, every connection. The exhaustive reference.</p>
+                    <p>Codebase snapshot — files, symbols, connections. The structural reference.</p>
                 </div>
                 <div class="feature-card scroll-reveal">
                     <div class="feature-icon">✅</div>
@@ -1351,6 +1351,7 @@
             </div>
 
             <p class="proof-tagline scroll-reveal">Tested on Hono (352 files, 6,072 symbols) — generates all 13 documents in under 0.3 seconds.</p>
+            <p class="scroll-reveal" style="color: var(--text-muted);">Generated documents cover supported constructs and recorded relationships; source-pattern and structural indicators do not establish runtime behavior or implementation completeness.</p>
         </div>
     </section>
 
@@ -1484,7 +1485,9 @@
                     <div style="flex: 1; min-width: 250px;">
                         <div class="code-block-title">Option 3 — Cloud App (no local setup)</div>
                         <pre><code>app.depwire.dev</code></pre>
-                        <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Connect a GitHub repo. Get a hosted MCP endpoint in 60 seconds. Works with Claude, Cursor, any MCP client.</p>
+                        <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Connect a GitHub repository to use hosted graph tools through the Cloud MCP endpoint. Setup and parsing time depend on the repository and service availability.</p>
+                        <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Cloud — verify_change is a heuristic impact report using the existing dependency graph and regex checks on supplied text. It does not apply or reparse changes, run builds, type checks or tests, or verify safety. Potential import impacts assume affected symbols are removed; reported cycles already exist in the loaded graph. Health deltas are estimates. Security checks are regex matches, not a comprehensive audit; unified diffs are scanned including removed lines. Results depend on graph coverage and freshness, and missing or unmatched files can yield no findings. The response includes analysis_mode: existing_graph_heuristic and assessment_under_revision: “The safe/risk_level assessment is a heuristic under active revision; see limitations for details.” safe means only that the heuristic assigned low risk, not a correctness or security guarantee.</p>
+                        <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">Cloud’s /pr-review endpoint has been disabled since 18 Oct 2026 and returns HTTP 503 without analysis or a posted comment.</p>
                     </div>
                     <a href="https://app.depwire.dev" target="_blank" class="btn btn-secondary" style="white-space: nowrap; color: var(--accent-cyan); border-color: var(--accent-cyan);">Open Cloud App →</a>
                 </div>
@@ -1506,7 +1509,7 @@ depwire diff main feature/auth-refactor
 depwire diff HEAD~5 HEAD --verbose
 depwire diff v1.5.0 v1.6.0 --json | jq
 
-<span class="code-comment"># Verify a proposed change is safe before applying it</span>
+<span class="code-comment"># Verify a proposed change before applying it</span>
 depwire verify-change --file src/foo.ts --content-from new-version.ts
 depwire verify-change --diff feature.patch --fail-on-warnings
 
@@ -1557,7 +1560,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                     <tbody>
                         <tr>
                             <td><code>connect_repo</code></td>
-                            <td>Connect to any local project or GitHub repo</td>
+                            <td>Connect a permitted local project path or a GitHub repository URL.</td>
                         </tr>
                         <tr>
                             <td><code>impact_analysis</code></td>
@@ -1617,7 +1620,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         </tr>
                         <tr>
                             <td><code>simulate_change</code></td>
-                            <td>Simulate a move/delete/rename/split/merge before touching code. Returns health score delta, broken imports, and affected nodes. Zero file I/O.</td>
+                            <td>Simulate move, delete, rename, split, or merge operations on a loaded graph. The simulation does not edit source files; loading or parsing the graph requires file I/O.</td>
                         </tr>
                         <tr>
                             <td><code>security_scan</code></td>
@@ -1625,11 +1628,11 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         </tr>
                         <tr>
                             <td><code>verify_change</code></td>
-                            <td>Deterministic safety report before applying code changes. Returns broken imports, circular deps, health delta, blast radius. Also available as CLI: <code>depwire verify-change</code></td>
+                            <td>CLI: compare proposed exports and report impact, health movement, and comparison limits. Edited content and unified diffs return not_comparable for cyclic-group safety. Cloud: a separate existing-graph heuristic with assessment_under_revision; see the labelled Cloud disclosure.</td>
                         </tr>
                         <tr>
                             <td><code>claim_files</code></td>
-                            <td>Multi-agent coordination: declare intent to modify files so other clients avoid conflicts.</td>
+                            <td>Declare file-editing intent for cooperating clients; claims do not enforce filesystem locks.</td>
                         </tr>
                         <tr>
                             <td><code>release_files</code></td>
@@ -1667,11 +1670,11 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 <div class="feature-card scroll-reveal" style="grid-row: span 2;">
                     <div class="feature-icon" style="font-size: 3.5rem;">🔀</div>
                     <h3>Automatic Dependency Impact Reports</h3>
-                    <p style="margin-bottom: 1.5rem;">The Depwire GitHub Action runs on every pull request and posts an automatic dependency impact report. Know exactly which symbols break, which files are affected, and what the architectural blast radius is — before the code lands.</p>
+                    <p style="margin-bottom: 1.5rem;">The Depwire GitHub Action runs on configured pull requests and posts an automatic dependency impact report. Know which symbols break, which files are affected, and what the architectural blast radius is — before the code lands.</p>
                     <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
                         <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Automatic PR comments with impact analysis</li>
                         <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Dependency diff (added, removed, changed)</li>
-                        <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Zero configuration for public repos</li>
+                        <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">Configure the workflow and grant pull-request comment permissions.</li>
                         <li style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);"><span class="check">✓</span> Free on GitHub Marketplace</li>
                     </ul>
                     <div style="margin-top: 2rem;">
@@ -1685,6 +1688,10 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
   <span class="code-keyword">pull_request:</span>
     <span class="code-keyword">branches:</span> [main]
 
+<span class="code-keyword">permissions:</span>
+  <span class="code-keyword">contents:</span> read
+  <span class="code-keyword">pull-requests:</span> write
+
 <span class="code-keyword">jobs:</span>
   <span class="code-keyword">impact:</span>
     <span class="code-keyword">runs-on:</span> ubuntu-latest
@@ -1692,6 +1699,9 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
       - <span class="code-keyword">uses:</span> actions/checkout@v4
         <span class="code-keyword">with:</span>
           <span class="code-keyword">fetch-depth:</span> 0
+      - <span class="code-keyword">uses:</span> actions/setup-node@v4
+        <span class="code-keyword">with:</span>
+          <span class="code-keyword">node-version:</span> <span class="code-string">"20"</span>
       - <span class="code-keyword">uses:</span> depwire/depwire-action@v1
         <span class="code-keyword">with:</span>
           <span class="code-keyword">github-token:</span> <span class="code-string">${{ secrets.GITHUB_TOKEN }}</span></code></pre>
@@ -1736,7 +1746,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                         </tr>
                         <tr>
                             <td><strong>Token Cost</strong></td>
-                            <td><span class="check">✓</span> Ultra-low — surgical reads</td>
+                            <td>Focused graph queries; token use depends on the client and response size</td>
                             <td>High — context stuffing</td>
                             <td>Extreme — scans everything</td>
                         </tr>
@@ -1891,7 +1901,7 @@ npx depwire-cli parse --exclude <span class="code-string">"**/*.test.*"</span> <
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>Latest: v1.15.0 &middot; &copy; 2026 ATEF ATAYA LLC. Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BSL 1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
+                <p>&copy; 2026 ATEF ATAYA LLC &middot; <a href="https://www.npmjs.com/package/depwire-cli" target="_blank">Current release on npm</a> &middot; Licensed under <a href="https://github.com/depwire/depwire/blob/main/LICENSE" target="_blank">BUSL-1.1</a> (converts to Apache 2.0 on Feb 25, 2029)</p>
             </div>
         </div>
     </footer>

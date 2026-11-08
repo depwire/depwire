@@ -2,18 +2,11 @@
 
 ## What Depwire Accesses
 
-Depwire analyzes supported source files and project manifests locally. It:
+Depwire analyzes supported source files and project manifests locally. Parsing does not execute those source files. The local visualization servers bind to 127.0.0.1. Local commands can write derived artifacts, including graph output, parse caches, generated documentation, health history, and coordination state. The Depwire CLI analyzes supported source files locally and collects no usage telemetry. It makes network requests only when you ask it to: connecting a GitHub URL clones or pulls that repository; dependency checks, which run by default in security scans and security-enabled structural diffs, invoke external audit tools and may send dependency metadata to package registries and advisory services (npm advisory enrichment also contacts GitHub); and the visualization, What If, and temporal browser pages download D3 from external hosts. The CLI never sends your source code or analysis to Depwire. MCP returns requested graph context and generated documentation to your MCP client; what that client forwards is governed by that client. Depwire Cloud is a separate hosted service that clones the repositories you connect.
 
-- Reads supported source files without executing them during parsing
-- Uses tree-sitter and language-specific parsers to extract relationships
-- Binds the visualization server to localhost (127.0.0.1)
-- Clones a GitHub repository to a temporary directory when given its URL to `connect_repo`
+To skip dependency checks and their network requests in repository-wide security scans, use depwire security --no-dependency-audit. The security_scan MCP tool and scanSecurity SDK function accept dependencyAudit: false. Targeted scans and --class secrets also skip dependency checks. Structural diff runs security scans by default; --no-security skips those scans. These controls do not disable Git connections, external browser assets, installation traffic, or onward sharing by an MCP client.
 
-Local commands can write derived artifacts, including graph output, parse caches, generated documentation, health history, and coordination state. The CLI does not upload source code, file names, graph data or analysis, and collects no usage telemetry. Applicable `security` scans run dependency vulnerability and supply-chain checks by default; these may contact package registries and public advisory databases. `connect_repo` clones or pulls when given a GitHub URL. The What If browser page loads D3 from a CDN. Cloud is a separate service.
-
-To skip dependency checks and their network requests, use `depwire security --no-dependency-audit`; the other security checks still run. `--class secrets` also skips dependency checks. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior.
-
-Depwire does not expose its visualization server to other machines.
+The local visualization servers listen on 127.0.0.1. The visualization, What If, and temporal browser pages still download external D3 scripts. Loopback binding does not make these pages offline.
 
 ## Security Features
 

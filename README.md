@@ -79,12 +79,7 @@ Depwire provides graph context to AI coding assistants. Parse a project to inspe
 
 ## Performance evidence
 
-The previously published agent benchmark has been withdrawn after an audit found
-that the task prompt exposed its answer key, the scored file set was narrower
-than the change required by the monorepo, and one arm started in a different
-working directory. Three corrected exploratory sessions have since been run;
-they do not establish a performance or correctness advantage. No conclusion
-from the withdrawn runs should be cited.
+The July agent-benchmark results and derived performance and correctness claims were withdrawn after an audit found an exposed answer key, an incomplete scored file set, and unequal working directories. The linked corrected report records three sessions per arm. These exploratory observations do not establish a general or causal performance advantage. Do not cite conclusions from the withdrawn runs.
 
 [Audit and corrected harness →](https://github.com/depwire/depwire-benchmark)
 
@@ -116,7 +111,7 @@ Depwire builds a dependency graph from supported source constructs using tree-si
 
 How it works:
 
-- **Local** — the CLI analyzes source code on your machine and collects no usage telemetry. It does not upload source code, file names, graph data or analysis. Applicable `security` scans run dependency vulnerability and supply-chain checks by default; these may contact package registries and public advisory databases. `connect_repo` accesses GitHub when given a GitHub URL. The What If browser page loads D3 from a CDN. Cloud is a separate service.
+- **Local** — The Depwire CLI analyzes supported source files locally and collects no usage telemetry. It makes network requests only when you ask it to: connecting a GitHub URL clones or pulls that repository; dependency checks, which run by default in security scans and security-enabled structural diffs, invoke external audit tools and may send dependency metadata to package registries and advisory services (npm advisory enrichment also contacts GitHub); and the visualization, What If, and temporal browser pages download D3 from external hosts. The CLI never sends your source code or analysis to Depwire. MCP returns requested graph context and generated documentation to your MCP client; what that client forwards is governed by that client. Depwire Cloud is a separate hosted service that clones the repositories you connect.
 - **Security scanner** — runs local code checks and applicable dependency audits by default; no Depwire API key is required.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
 - **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
@@ -233,9 +228,9 @@ depwire security . --class secrets         # specific check only
 depwire security . --no-dependency-audit   # skip dependency checks and their network requests
 ```
 
-10 check categories — dependency CVEs, process safety, credential management, path safety, authentication safety, input validation, information disclosure, cryptography weaknesses, output encoding safety, and architecture-level risks.
+Ten check modules emit twelve finding classes, including dependency and supply-chain findings. Individual checks are pattern-based and do not constitute a comprehensive security audit.
 
-Applicable security scans run dependency vulnerability and supply-chain checks by default; these may contact package registries and public advisory databases. To skip those checks and their network requests, use `--no-dependency-audit`; the other checks still run. The `security_scan` MCP tool and SDK accept `dependencyAudit: false` for the same behavior. Selecting classes that exclude dependency checks, such as `--class secrets`, also skips the audit request.
+Applicable repository-wide security scans run dependency checks by default. To skip their network requests, use --no-dependency-audit, security_scan with dependencyAudit: false, or scanSecurity with dependencyAudit: false. --class secrets and targeted scans also skip dependency checks. Structural diff runs security scans by default; use --no-security to skip those scans and their dependency-audit traffic.
 
 Graph-aware severity uses recorded reachability from MCP tools and HTTP routes when classifying findings.
 
@@ -245,7 +240,7 @@ Available as MCP tool `security_scan` and via `depwire-cli/sdk`.
 
 ## Pre-action verification
 
-Analyze a proposed change before applying it. Reports broken imports, cyclic-group changes when a resolved after-graph is available, health movement, and security findings. Export-only comparisons of edited content or unified diffs cannot establish cyclic-group safety: they return `cyclicGroupChanges.status: not_comparable` and do not certify the change as safe.
+CLI — Analyze a proposed change with depwire verify-change or the CLI MCP tool verify_change. Supplied replacement content is parsed to compare exported symbols with the loaded graph. Export-only comparisons and unified diffs do not provide a fully resolved after-graph: cyclicGroupChanges.status is not_comparable, and the result does not certify safety. Reports include potential broken imports, affected files, health movement, and security findings from files on disk. No build or tests are run.
 
 ```bash
 depwire verify-change --file src/auth.ts --content-from new-auth.ts
@@ -309,6 +304,8 @@ Watch recorded architecture change over git history. A timeline slider moves thr
 
 | Command | Description |
 |---------|-------------|
+| `depwire query` | Query recorded symbols and relationships |
+| `depwire affected` | List affected files for a file or symbol |
 | `depwire viz` | Interactive arc diagram in browser |
 | `depwire whatif` | Simulate changes before touching code |
 | `depwire verify-change` | Analyze a proposed change — broken imports, health delta, security, and comparison limits |
@@ -322,7 +319,7 @@ Watch recorded architecture change over git history. A timeline slider moves thr
 | `depwire diff` | Structural diff between two git commits — symbols, edges, health, security |
 | `depwire mcp` | Start MCP server for AI coding assistants |
 
-Commands accept a project path; `depwire parse` uses the supplied directory or the current directory when omitted.
+Commands have command-specific arguments. parse accepts a project directory; diff requires two Git refs and supports --path for a subdirectory.
 
 ### `depwire prompt` — graph-first workflow for AI agents
 
@@ -431,8 +428,8 @@ The reference makes the generated project context available without an MCP tool 
 | `get_temporal_graph` | Architecture evolution over git history |
 | `simulate_change` | Simulate move/delete/rename/split/merge before touching code. Returns health delta, broken imports, affected nodes. Cross-language edges included. |
 | `security_scan` | Scan for vulnerabilities with graph-aware severity elevation. No API key required. |
-| `verify_change` | Safety report before applying code changes. Returns broken imports, cyclic-group changes (or an explicit unavailable reason), health delta, affected files. Also available as `depwire verify-change` CLI. |
-| `claim_files` | Multi-agent coordination: declare intent to modify files so other clients avoid conflicts. |
+| `verify_change` | CLI export comparison and impact report with explicit comparison limits. Edited content and unified diffs return not_comparable for cyclic-group safety; no build or tests are run. Cloud has a separate existing-graph heuristic with assessment_under_revision. |
+| `claim_files` | Record file-editing intent for cooperating clients; no filesystem lock is enforced. |
 | `release_files` | Release a previously made file claim. |
 | `get_active_claims` | Query who is currently working on what. |
 | `record_decision` | Save a structured decision for future sessions to reference. |
@@ -441,7 +438,7 @@ The reference makes the generated project context available without an MCP tool 
 
 #### `.depwire/` runtime state
 
-The coordination tools (`claim_files`, `release_files`, `get_active_claims`, `record_decision`, `get_decisions`) write runtime state to `.depwire/claims.jsonl` and `.depwire/decisions.jsonl`. Add these to your project's `.gitignore`:
+The coordination tools read or append runtime records in .depwire/claims.jsonl and .depwire/decisions.jsonl. Add both files to your project’s .gitignore.
 
 ```
 .depwire/claims.jsonl
@@ -527,7 +524,7 @@ import {
 } from 'depwire-cli/sdk';
 ```
 
-The SDK is the stable public API surface. All integrations should import from `depwire-cli/sdk` — never from internal paths.
+Use the documented public entry points: depwire-cli/sdk for the SDK, depwire-cli/graph for graph utilities, and depwire-cli/tools for the composable tool registry. Avoid undocumented internal paths.
 
 ---
 
@@ -570,7 +567,7 @@ TypeScript, JavaScript, Python, Go, Rust, C, C#, Java, C++, Kotlin, PHP, Swift, 
 
 **R / Statistics & Data Science** — functions (including anonymous functions and closures), S3/S4/R5/R6 class definitions, methods, variable assignments (both `<-` and `=` forms), library/require/source dependency edges, NAMESPACE import/export directives, DESCRIPTION file dependency parsing. Pattern-based parser (tree-sitter-r unavailable on npm). Cross-language edge detection: plumber HTTP API route definitions (`@get`, `@post`, `@put`, `@delete`, `@patch` decorators) matched to client callers; Shiny reactive graph edges (server/UI function wiring, `observe`, `reactive`, `eventReactive`, `renderXxx` output bindings); outgoing HTTP client edges via httr (`GET`, `POST`, `PUT`, `DELETE`) and httr2 (`request` + `req_perform`); DBI database connection edges (`dbConnect`, `dbGetQuery`, `dbExecute`); reticulate Python interop edges (`import_from_path`, `source_python`, `py_run_file`). Dead code detection with S3/S4 generic registration exclusions, Shiny module server/UI functions, and testthat/RUnit test block exclusions. Security scanner: string interpolation in database query calls, `system`/`system2`/`shell` execution safety patterns, `eval`/`parse` runtime evaluation safety, file path handling safety, credential management patterns, weak PRNG in statistical-security contexts (`sample`/`runif` vs `openssl` for key material), and unvalidated input in plumber route handlers.
 
-**HTML / Angular templates** — Angular component template parsing (*.component.html). Pairs each template with its sibling *.component.ts component automatically. Extracts component selectors (custom element tags), structural directives, attribute directives, event bindings, and pipe references from Angular template syntax. Emits `uses` edges from the template to the components and pipes it references. External/library components (Angular built-ins, PrimeNG, ngx-translate etc.) resolve to `external::` markers and are excluded from the graph to avoid phantom nodes. Pattern-based parser (regex extraction of Angular template syntax).
+**HTML / Angular templates** — Pattern-based extraction of custom component selectors containing a hyphen, custom structural directives, and pipe references. Standard HTML tags, Angular built-ins, DOM events, and component input/output bindings are not surfaced as project-symbol references. A later pairing pass links templates to sibling components and resolves supported project references; external markers are excluded.
 
 ---
 
@@ -627,7 +624,7 @@ This repository ships a `.pre-commit-hooks.yaml`, so Depwire can be used as a re
 ```yaml
 repos:
   - repo: https://github.com/depwire/depwire
-    rev: v1.21.2
+    rev: v1.28.3
     hooks:
       - id: depwire
         args: ["parse", ".", "--stats"]
@@ -641,9 +638,9 @@ The hook only runs when a staged file is in a language or build manifest Depwire
 
 ## Cloud dashboard
 
-[app.depwire.dev](https://app.depwire.dev) — full dependency graph, health score, dead code report, and AI codebase chat in the browser. No local setup required.
+Cloud provides a hosted dependency graph, health results, dead-code candidates, and AI codebase chat. Cloud is separate from the local CLI. Its /pr-review endpoint has been disabled since 18 Oct 2026 and returns HTTP 503 without performing analysis or posting a comment.
 
-- Free for public repos
+- Free tier: one public-repository connection. Deleting a repository does not reset the connection counter.
 - Pro ($9.99/month) — unlimited repos, private repo support, AI codebase chat
 
 ---
@@ -716,9 +713,9 @@ Subscribe at [app.depwire.dev/subscribe](https://app.depwire.dev/subscribe).
 The parser reads source files without modifying or executing them. CLI commands can write derived artifacts such as graph output, the parse cache, and `.depwire/AGENTS.md`; coordination tools write their own runtime state.
 
 - Parses supported grammars with tree-sitter; some languages and Angular templates use pattern-based parsers
-- Visualization server binds to localhost only
-- The CLI does not upload source code, file names, graph data or analysis, and collects no usage telemetry. Applicable security scans perform dependency checks by default and may contact external vulnerability services. `connect_repo` accesses GitHub when given its URL; the What If browser page loads D3 from a CDN. Cloud is a separate service
-- Blocks access to sensitive system directories
+- The local visualization servers bind to 127.0.0.1. Browser pages still load external D3 assets.
+- Network behaviour and data handling: see **Local** under Privacy above.
+- connect_repo rejects listed sensitive paths after canonical path validation; this is not a blanket sandbox for every CLI command.
 
 See [SECURITY.md](SECURITY.md) for full details.
 
