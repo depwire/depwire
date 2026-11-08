@@ -141,7 +141,7 @@ Approval order MUST remain: verifier reproduction → Atef approves this contrac
 
 - O1: Only required structural failures set the error verdict. Informational crashes set section null/error/reason and partial:true without changing safe, risk_level, or exits.
 - O2: Exactly one typed input mode; malformed/unsupported diffs and required parser/topology failures are errors; valid unresolved after-states remain medium.
-- O3: error_reason and health statuses/reasons are approved; security_status/security_reason mirror health, with error added to both enums and security_findings nullable. Exact context copies include partial; its iff-error interpretation is
+- O3: error_reason and health statuses/reasons are approved; security_status/security_reason mirror health, with error added to both enums and security_findings nullable. Exact context copies include partial; its iff-error interpretation is confirmed by Addendum 2.
 - O4: Both scores use workspace-aware calculateHealthScore with equivalent context and history disabled; no mixed scorer or substitute after-state.
 - O5: verify-change writes no history on any path; other callers retain persistence.
 - O6: Required structural errors exit 1 and use the complete CLI/MCP payload; successful risk exits and the flag name remain, with the exact help text in §5. Existing rejection assertions stay intact through outer-boundary normalization.
