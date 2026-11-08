@@ -4,6 +4,8 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { scanFile } from '../website/build.mjs';
+
 const root = process.cwd();
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 const temporaryRoots: string[] = [];
@@ -64,8 +66,7 @@ describe('website build', () => {
     expect(builtFiles.length).toBeGreaterThan(0);
     for (const path of builtFiles) {
       expect(path).not.toMatch(/\.md$/i);
-      const bytes = readFileSync(path);
-      if (!bytes.includes(0)) expect(bytes.toString('utf8'), path).not.toMatch(/\{\{[^}]*\}\}/);
+      expect(() => scanFile(path)).not.toThrow();
     }
     for (const page of ['index.html', 'privacy.html']) {
       const html = readFileSync(join(output, page), 'utf8');
@@ -80,6 +81,34 @@ describe('website build', () => {
     const result = build(directory);
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('Unresolved placeholder');
+  });
+
+  it.each([
+    ['utf16le.svg', Buffer.from('\ufeff<svg>{{X}}</svg>', 'utf16le'), 'Unresolved placeholder'],
+    ['utf16be.svg', Buffer.from('\ufeff<svg>{{X}}</svg>', 'utf16le').swap16(), 'Unresolved placeholder'],
+    ['nul.css', Buffer.from('\0{{X}}'), 'unexpected binary content'],
+    ['unknown.custom', Buffer.from('{{X}}'), 'Unresolved placeholder'],
+    ['bom.txt', Buffer.from('\ufeff{{X}}'), 'Unresolved placeholder'],
+    ['invalid.txt', Buffer.from([0xff]), 'unexpected binary content'],
+  ])('rejects unsafe text asset %s', (name, bytes, error) => {
+    const directory = fixture();
+    const path = join(directory, 'website', 'assets', name);
+    writeFileSync(path, bytes);
+    expect(() => scanFile(path)).toThrow(error);
+    const result = build(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain(error);
+  });
+
+  it('allows placeholder bytes in an allowlisted PNG', () => {
+    const directory = fixture();
+    const path = join(directory, 'website', 'assets', 'binary.png');
+    const bytes = Buffer.from('\0{{X}}');
+    writeFileSync(path, bytes);
+    expect(() => scanFile(path)).not.toThrow();
+    const result = build(directory);
+    expect(result.status, result.stderr).toBe(0);
+    expect(readFileSync(join(directory, 'website', 'dist', 'assets', 'binary.png'))).toEqual(bytes);
   });
 
   it.each([undefined, '', '1.2', '01.2.3', '1.2.3-01', '1.2.3\n'])('rejects invalid package version %s', invalid => {
