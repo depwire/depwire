@@ -1,5 +1,5 @@
 import { cpSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, extname, join } from 'node:path';
+import { dirname, extname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const binaryExtensions = new Set([
@@ -29,6 +29,13 @@ export function scanFile(path) {
   }
 }
 
+// Relative paths may use either separator (including cpSync callback paths).
+export function shouldCopy(relativePath) {
+  const parts = relativePath.split(/[\\/]/);
+  return parts[0] !== 'dist' && relativePath !== 'build.mjs'
+    && !parts.some(part => /\.md$/i.test(part) || part === '.DS_Store');
+}
+
 function build() {
   const source = dirname(fileURLToPath(import.meta.url));
   const output = join(source, 'dist');
@@ -45,11 +52,10 @@ function build() {
   mkdirSync(output, { recursive: true });
   for (const entry of readdirSync(source)) {
     const path = join(source, entry);
-    if (path === output) continue;
+    if (!shouldCopy(relative(source, path))) continue;
     cpSync(path, join(output, entry), {
       recursive: true,
-      filter: path => path !== fileURLToPath(import.meta.url)
-        && !/\.md$/i.test(path) && !path.endsWith('/.DS_Store'),
+      filter: path => shouldCopy(relative(source, path)),
     });
   }
 
@@ -70,4 +76,4 @@ function build() {
   console.log(`Built website with version ${version}`);
 }
 
-if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) build();
+if (process.argv[1] && relative(realpathSync(process.argv[1]), realpathSync(fileURLToPath(import.meta.url))) === '') build();

@@ -2,9 +2,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, win32 } from 'node:path';
 
-import { scanFile } from '../website/build.mjs';
+import { scanFile, shouldCopy } from '../website/build.mjs';
 
 const root = process.cwd();
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
@@ -18,7 +18,7 @@ function fixture() {
   temporaryRoots.push(directory);
   cpSync(join(root, 'website'), join(directory, 'website'), {
     recursive: true,
-    filter: path => path !== join(root, 'website', 'dist'),
+    filter: path => relative(join(root, 'website'), path).split(/[\\/]/)[0] !== 'dist',
   });
   cpSync(join(root, 'package.json'), join(directory, 'package.json'));
   return directory;
@@ -48,7 +48,7 @@ describe('release documentation', () => {
 
   it('deploys only the built website from the checklist', () => {
     const checklist = readFileSync(join(root, '.github', 'RELEASE_CHECKLIST.md'), 'utf8');
-    const commands = checklist.split('\n').filter(line => /pages\s+deploy/.test(line));
+    const commands = checklist.split(/\r?\n/).filter(line => /pages\s+deploy/.test(line));
     expect(commands).toEqual([
       '- [ ] `npm run website:build && wrangler pages deploy website/dist --project-name depwire`',
     ]);
@@ -56,6 +56,16 @@ describe('release documentation', () => {
 });
 
 describe('website build', () => {
+  it('matches exclusions with Windows relative paths on every platform', () => {
+    const source = 'C:\\repo\\website';
+    for (const excluded of ['build.mjs', 'dist', 'dist/index.html', 'review.md', 'assets/review.MD', '.DS_Store', 'assets/.DS_Store']) {
+      expect(shouldCopy(win32.relative(source, win32.join(source, excluded))), excluded).toBe(false);
+    }
+    for (const included of ['index.html', 'assets/icon.png', 'assets/architecture.svg', 'assets/build.mjs']) {
+      expect(shouldCopy(win32.relative(source, win32.join(source, included))), included).toBe(true);
+    }
+  });
+
   it('produces dist without placeholders or Markdown and stamps both footers exactly', () => {
     const directory = fixture();
     writeFileSync(join(directory, 'website', 'review.md'), '{{REVIEW}}');
