@@ -16,6 +16,7 @@ export interface VerifyChangeOptions {
   quiet?: boolean;
   failOnWarnings?: boolean;
   noColor?: boolean;
+  exclude?: string[];
 }
 
 export async function verifyChangeCommand(
@@ -30,12 +31,12 @@ export async function verifyChangeCommand(
   const projectRoot = dir === '.' ? findProjectRoot() : resolve(dir);
   console.error(`Parsing project: ${projectRoot}`);
 
-  const { parsed, sourceCoverage, unparsedFiles } = await parseVerifyProject(projectRoot);
+  const { parsed, sourceCoverage, unparsedFiles, skippedFiles } = await parseVerifyProject(projectRoot, { exclude: options.exclude });
   const graph = buildGraph(parsed, projectRoot);
   console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
 
   // Run verification
-  const result = await verifyChange(input, { graph, projectRoot, sourceCoverage, unparsedFiles, parsedFiles: parsed });
+  const result = await verifyChange(input, { graph, projectRoot, sourceCoverage, unparsedFiles, parsedFiles: parsed, skippedFiles });
 
   renderVerifyChange(result, options);
   const code = verifyChangeExitCode(result, options.failOnWarnings);

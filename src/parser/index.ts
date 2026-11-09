@@ -11,7 +11,7 @@ import { canonicalParsedFile } from '../graph/path-boundary.js';
 
 import { readFileSync, statSync } from 'fs';
 import { readFile } from 'fs/promises';
-import { join, resolve } from 'path';
+import { join, resolve, extname } from 'path';
 import { scanDirectory } from '../utils/files.js';
 import { getParserForFile } from './detect.js';
 import { ParsedFile, SymbolNode, SymbolEdge } from './types.js';
@@ -41,11 +41,19 @@ export interface ParseErrorFile {
   reason: string;
 }
 
-/** ParsedFile[] with additive failure metadata; remains array-compatible. */
-export type ParseProjectResult = ParsedFile[] & { errorFiles: ParseErrorFile[] };
+/** Addendum 7/D1: why a scanned file was skipped, so verify-change can explain
+ * a null coverage_gaps. Reasons use stable prefixes: 'File too large',
+ * 'Outside project root', 'Excluded by', 'No parser'. */
+export interface SkippedFile {
+  file: string;
+  reason: string;
+}
 
-function withErrorFiles(files: ParsedFile[], errorFiles: ParseErrorFile[]): ParseProjectResult {
-  return Object.assign(files, { errorFiles });
+/** ParsedFile[] with additive failure metadata; remains array-compatible. */
+export type ParseProjectResult = ParsedFile[] & { errorFiles: ParseErrorFile[]; skippedFiles: SkippedFile[] };
+
+function withErrorFiles(files: ParsedFile[], errorFiles: ParseErrorFile[], skippedFiles: SkippedFile[]): ParseProjectResult {
+  return Object.assign(files, { errorFiles, skippedFiles });
 }
 
 function shouldParseFile(fullPath: string): boolean {
@@ -65,6 +73,7 @@ export async function parseProject(
   options = { ...options, exclude: options?.exclude?.map(pattern => canonicalPath(pattern)) };
   const files = scanDirectory(projectRoot);
   const errorFiles: ParseErrorFile[] = [];
+  const skippedFiles: SkippedFile[] = [];
 
   // Initialize WASM parsers (no-op if already initialized)
   try {
@@ -74,7 +83,7 @@ export async function parseProject(
     for (const file of files) errorFiles.push({ path: file, reason });
     console.error(`[Parser] ${reason}`);
     console.error(`  Errors: ${errorFiles.length} files`);
-    return withErrorFiles([], errorFiles);
+    return withErrorFiles([], errorFiles, skippedFiles);
   }
 
   // ─── JVM multi-module pre-pass ─────────────────────────────
@@ -99,7 +108,7 @@ export async function parseProject(
   // ───────────────────────────────────────────────────────────
   
   const parsedFiles: ParsedFile[] = [];
-  let skippedFiles = 0;
+  let skippedFilesCount = 0;
 
   // ─── Parse cache (opt-in, on by default) ───────────────────
   // Restore unchanged files from {projectRoot}/.depwire/cache.db so only
@@ -132,27 +141,31 @@ export async function parseProject(
       
       // Path containment check
       if (!isWithinRoot(resolve(fullPath), resolve(projectRoot))) {
-        skippedFiles++;
+        skippedFiles.push({ file, reason: 'Outside project root' });
+        skippedFilesCount++;
         continue;
       }
-      
+
       // Check if file should be excluded
       if (options?.exclude) {
-        const shouldExclude = options.exclude.some((pattern: string) => 
+        const matchedPattern = options.exclude.find((pattern: string) =>
           minimatch(file, pattern, { matchBase: true })
         );
-        if (shouldExclude) {
+        if (matchedPattern !== undefined) {
           if (options.verbose) {
             console.error(`[Parser] Excluded: ${file}`);
           }
-          skippedFiles++;
+          skippedFiles.push({ file, reason: `Excluded by configured pattern: ${matchedPattern}` });
+          skippedFilesCount++;
           continue;
         }
       }
-      
+
       // Skip large files
       if (!shouldParseFile(fullPath)) {
-        skippedFiles++;
+        const sizeKB = (statSync(fullPath).size / 1024).toFixed(0);
+        skippedFiles.push({ file, reason: `File too large (${sizeKB}KB exceeds ${(MAX_FILE_SIZE / 1024).toFixed(0)}KB parse limit)` });
+        skippedFilesCount++;
         continue;
       }
 
@@ -173,7 +186,8 @@ export async function parseProject(
       const parser = getParserForFile(file, sourceCode);
       if (!parser) {
         console.error(`No parser found for file: ${file}`);
-        skippedFiles++;
+        skippedFiles.push({ file, reason: `No parser for this file type (extension ${extname(file).toLowerCase() || '(none)'})` });
+        skippedFilesCount++;
         continue;
       }
       
@@ -254,15 +268,15 @@ export async function parseProject(
   if (options?.verbose || errorFiles.length > 0) {
     console.error(`\n[Parser] Summary:`);
     console.error(`  Parsed: ${parsedFiles.length} files`);
-    if (skippedFiles > 0) {
-      console.error(`  Skipped: ${skippedFiles} files`);
+    if (skippedFilesCount > 0) {
+      console.error(`  Skipped: ${skippedFilesCount} files`);
     }
     if (errorFiles.length > 0) {
       console.error(`  Errors: ${errorFiles.length} files`);
     }
   }
-  
-  return withErrorFiles(parsedFiles, errorFiles);
+
+  return withErrorFiles(parsedFiles, errorFiles, skippedFiles);
 }
 
 /**

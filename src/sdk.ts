@@ -17,7 +17,7 @@ export const DepwireSDKVersion: string = (
 
 /** Parse a codebase directory and return raw parsed data */
 export { parseProject } from './parser/index.js';
-export type { ParseErrorFile, ParseProjectResult } from './parser/index.js';
+export type { ParseErrorFile, ParseProjectResult, SkippedFile } from './parser/index.js';
 
 /**
  * Flattens the per-file `unresolvedImports` instrument across a parse

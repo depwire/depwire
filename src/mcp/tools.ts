@@ -387,6 +387,11 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
             type: "string",
             description: "Optional, reserved for future DAT integration",
           },
+          exclude: {
+            type: "array",
+            items: { type: "string" },
+            description: "Optional glob patterns excluding files from the verification census (e.g. [\"**/*.test.*\"]); excluded files are listed in skipped_files and do not null coverage_gaps",
+          },
         },
       },
     },

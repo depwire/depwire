@@ -50,7 +50,7 @@ it.each(['missing-mode', 'diff-io', 'content-io', 'root-io', 'parse', 'graph', '
   if (kind === 'diff-io') opts = { json: true, diff: join(r, 'missing.patch') };
   if (kind === 'content-io') opts = { json: true, file: 'index.ts', contentFrom: join(r, 'missing.txt') };
   if (kind === 'root-io') directory = join(r, 'missing');
-  if (kind === 'parse') vi.spyOn(parser, 'parseProject').mockResolvedValue(Object.assign([], { errorFiles: [{ path: 'index.ts', reason: 'parse exploded' }] }));
+  if (kind === 'parse') vi.spyOn(parser, 'parseProject').mockResolvedValue(Object.assign([], { errorFiles: [{ path: 'index.ts', reason: 'parse exploded' }], skippedFiles: [] }));
   if (kind === 'graph') vi.spyOn(graphModule, 'buildGraph').mockImplementation(() => { throw new Error('build failed'); });
   if (kind === 'conflicting') opts.diff = join(r, 'missing.patch');
   await runVerifyChangeAction(directory, opts);
@@ -87,6 +87,7 @@ it('project loader propagates JVM discovery and directory inspection failures', 
 it('project loader declares skipped oversized sources as partial coverage', async () => {
   const r = root(); writeFileSync(join(r, 'large.ts'), ' '.repeat(1_000_001));
   const parsed = await parseVerifyProject(r); expect(parsed.sourceCoverage).toBe('partial'); expect(parsed.unparsedFiles).toContain('large.ts');
+  expect(parsed.skippedFiles).toEqual([{ file: 'large.ts', reason: expect.stringContaining('File too large') }]);
 });
 it('commander action uses the tested outer boundary and exact risk help', () => {
   const source = readFileSync(new URL('../src/index.ts', import.meta.url), 'utf8'); expect(source).toContain('.action(runVerifyChangeAction)');

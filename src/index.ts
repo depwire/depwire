@@ -888,6 +888,7 @@ program
   .option('--quiet', 'Only output the verdict line')
   .option('--fail-on-warnings', 'Exit 1 on medium risk and 2 on high risk; warning count is ignored. Analysis errors always exit 1.')
   .option('--no-color', 'Disable terminal colors')
+  .option('--exclude <patterns...>', 'Glob patterns to exclude from the census (e.g., "**/*.test.*" "dist/**"); excluded files are listed in skipped_files')
   .action(runVerifyChangeAction);
 
 // Diff command

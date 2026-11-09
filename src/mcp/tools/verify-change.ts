@@ -15,7 +15,7 @@ export async function handleVerifyChange(
 ): Promise<VerifyChangeOutput> {
   try {
     if (!state.graph || !state.projectRoot) return verifyChangeError('MCP project', 'No project loaded; use connect_repo first');
-    const { parsed, sourceCoverage, unparsedFiles } = await parseVerifyProject(state.projectRoot);
-    return await verifyChange(args, { graph: state.graph, projectRoot: state.projectRoot, sourceCoverage, unparsedFiles, parsedFiles: parsed });
+    const { parsed, sourceCoverage, unparsedFiles, skippedFiles } = await parseVerifyProject(state.projectRoot, { exclude: args.exclude });
+    return await verifyChange(args, { graph: state.graph, projectRoot: state.projectRoot, sourceCoverage, unparsedFiles, parsedFiles: parsed, skippedFiles });
   } catch (error) { return verifyChangeError('MCP verify_change', error); }
 }

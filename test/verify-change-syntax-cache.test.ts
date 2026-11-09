@@ -7,7 +7,6 @@ import { initParser } from '../src/parser/wasm-init.js';
 import { getParserForFile } from '../src/parser/detect.js';
 import { canonicalParsedFile } from '../src/graph/path-boundary.js';
 import { buildGraph } from '../src/graph/index.js';
-import * as graphModule from '../src/graph/index.js';
 import { getCachedFiles, openCache, updateCache, RESOLUTION_VERSION } from '../src/parser/cache.js';
 import { verifyChange } from '../src/core/verify-change.js';
 import { runVerifyChangeAction } from '../src/commands/verify-change-action.js';
@@ -137,9 +136,11 @@ it.each([['a.mojo', 'fn alpha() -> Int:\n    return 1\n'], ['Gemfile', "gem 'rai
 it('oversized outside file makes census null and names the skipped file without inventing affected gaps', async () => {
   const root = fixture({ 'caller.ts': good, 'large.ts': ' '.repeat(1_000_001), 'keep.ts': good });
   const parsed = await parseProject(root, { useCache: false });
-  const result = await verifyChange(input, { projectRoot: root, graph: buildGraph(parsed, root) });
-  expect(result).toMatchObject({ syntax_check: 'checked', syntax_errors_outside_affected_set: null, coverage_gaps: [], risk_level: 'medium', partial: false });
+  const result = await verifyChange(input, { projectRoot: root, graph: buildGraph(parsed, root), parsedFiles: parsed });
+  expect(result).toMatchObject({ syntax_check: 'checked', syntax_errors_outside_affected_set: null, coverage_gaps: null, risk_level: 'medium', partial: false });
+  expect(result.skipped_files).toEqual([{ file: 'large.ts', reason: expect.stringContaining('File too large') }]);
   expect(result.warnings.join(' ')).toContain('skipped files: large.ts');
+  expect(result.unrelated_context).not.toHaveProperty('skipped_files');
 });
 it('oversized changed file leaves all syntax checks null in the CLI envelope', async () => {
   const root = fixture({ 'large.ts': ' '.repeat(1_000_001), 'keep.ts': good });
@@ -151,26 +152,28 @@ it('oversized changed file leaves all syntax checks null in the CLI envelope', a
   expect(result.warnings.join(' ')).toContain('large.ts'); expect(exit).toHaveBeenCalledWith(1);
 });
 
-it('oversized non-changed affected dependent has null gaps through real core, CLI and MCP', async () => {
-  const root = fixture({ 'caller.ts': caller, 'dep.ts': good, 'keep.ts': good }, true);
-  // Retain a real graph from before the dependent grew beyond the parser limit.
-  const graph = buildGraph(await parseProject(root, { useCache: false }), root);
-  writeFileSync(join(root, 'caller.ts'), caller + ' '.repeat(1_000_001));
+it('oversized dependent nulls gaps and is listed in skipped_files through real core, fresh MCP load and the CLI action', async () => {
+  // Addendum 7: no prepared graph. caller.ts is oversized on disk, so every
+  // fresh parse skips it and no graph ever contains it.
+  const root = fixture({ 'caller.ts': caller + ' '.repeat(1_000_001), 'dep.ts': good, 'keep.ts': good }, true);
   const args = { file_path: 'dep.ts', new_content: good };
   const check = (result: any) => {
-    expect(result.affected_files).toContain('caller.ts');
-    expect(result.affected_files).toContain('dep.ts');
     expect(result).toMatchObject({ risk_level: 'medium', error_reason: null, partial: false,
       syntax_check: 'checked', coverage_gaps: null, syntax_errors_outside_affected_set: null });
+    expect(result.skipped_files).toEqual([{ file: 'caller.ts', reason: expect.stringContaining('File too large') }]);
     expect(result.warnings.join(' ')).toContain('skipped files: caller.ts');
+    expect(result.unrelated_context).not.toHaveProperty('skipped_files');
   };
-  check(await verifyChange(args, { projectRoot: root, graph }));
-  const response = await handleToolCall('verify_change', args, { ...createEmptyState(), projectRoot: root, graph });
-  check(JSON.parse(response.content[0].text));
-  // CLI normally rebuilds and loses the skipped dependent. Supply the retained
-  // real graph at its build boundary to exercise the same affected-set premise;
-  // project scanning, oversized-file skipping and verifyChange remain real.
-  vi.spyOn(graphModule, 'buildGraph').mockReturnValue(graph);
+  const parsed = await parseProject(root, { useCache: false });
+  check(await verifyChange(args, { projectRoot: root, graph: buildGraph(parsed, root), parsedFiles: parsed }));
+  // Fresh MCP load: connect_repo builds the state; no graph is injected.
+  const state = createEmptyState();
+  await handleToolCall('connect_repo', { source: root }, state);
+  try {
+    check(JSON.parse((await handleToolCall('verify_change', args, state)).content[0].text));
+  } finally {
+    await state.watcher?.close(); state.watcher = null;
+  }
   const log = vi.spyOn(console, 'log').mockImplementation(() => {});
   const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
   await runVerifyChangeAction(root, { file: 'dep.ts', content: good, json: true, failOnWarnings: true });

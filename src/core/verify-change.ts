@@ -8,6 +8,7 @@ import { getImpact, getDependents } from '../graph/queries.js';
 import { getParserForFile } from '../parser/detect.js';
 import { parseVerifyProject } from './verify-change-project.js';
 import type { ParsedFile } from '../parser/types.js';
+import type { ParseProjectResult } from '../parser/index.js';
 import { initParser } from '../parser/wasm-init.js';
 import { cpSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -18,7 +19,10 @@ export interface VerifyChangeInput {
   new_content?: string;
   unified_diff?: string;
   depwire_action_token?: string;
+  /** Glob patterns (MCP surface): files matched are skipped like `depwire parse --exclude`. */
+  exclude?: string[];
 }
+export interface SkippedFileRecord { file: string; reason: string }
 export interface BrokenImportEntry { file: string; missing_symbol: string; reason?: string }
 export interface SecurityFinding { severity: string; description: string; file: string; line: number }
 export type InformationStatus = 'computed' | 'unavailable' | 'not_applicable' | 'error';
@@ -42,6 +46,7 @@ export interface VerifyChangeOutput extends InformationalContext {
   dimensions_v: string;
   cyclicGroupChanges: CyclicGroupChanges | { status: 'not_comparable'; reason: string };
   coverage_gaps: Array<{ file: string; reason: string }> | null;
+  skipped_files: SkippedFileRecord[] | null;
   syntax_errors_outside_affected_set: number | null;
   syntax_check: 'checked' | 'not_applicable' | null;
   affected_files: string[];
@@ -56,6 +61,8 @@ export interface VerifyChangeContext {
   sourceCoverage?: 'complete' | 'partial' | 'unknown';
   unparsedFiles?: string[];
   parsedFiles?: ParsedFile[];
+  /** Loader skip records (Addendum 7); defaults to metadata attached to parsedFiles. */
+  skippedFiles?: SkippedFileRecord[];
 }
 const NOTE = 'Health score and security findings are informational and do NOT affect the safety verdict.';
 const AFTER_UNAVAILABLE = 'A fully resolved after-graph is unavailable for edited content or unified diffs. Export comparison does not establish cyclic-group safety.';
@@ -87,7 +94,7 @@ export function verifyChangeError(stage: string, error: unknown): VerifyChangeOu
   const reason = failureReason(stage, error);
   const info = information(reason);
   return finish({ ...info, safe: false, risk_level: 'error', error_reason: reason,
-    coverage_gaps: null, syntax_errors_outside_affected_set: null, syntax_check: null,
+    coverage_gaps: null, skipped_files: null, syntax_errors_outside_affected_set: null, syntax_check: null,
     broken_imports: [], dimensions_v: DIMENSIONS_VERSION,
     cyclicGroupChanges: { status: 'not_comparable', reason }, affected_files: [], blast_radius: 0,
     warnings: [`Security scan not applicable: ${reason}`], relevant_warnings: [],
@@ -253,17 +260,38 @@ export async function verifyChange(args: VerifyChangeInput, ctx: VerifyChangeCon
     result.affected_files = [...affected].sort(); result.blast_radius = result.affected_files.length;
     stage = 'project syntax census';
     const census = ctx.parsedFiles
-      ? { parsed: ctx.parsedFiles, unparsedFiles: ctx.unparsedFiles ?? [] }
+      ? { parsed: ctx.parsedFiles, unparsedFiles: ctx.unparsedFiles ?? [],
+          skippedFiles: ctx.skippedFiles ?? (ctx.parsedFiles as ParseProjectResult).skippedFiles ?? [] }
       : await parseVerifyProject(projectRoot);
     const records = new Map(census.parsed.map(file => [canonicalPath(file.filePath, projectRoot), file]));
+    const skipRecords = new Map(census.skippedFiles.map(skip => [canonicalPath(skip.file, projectRoot), skip]));
+    // Addendum 7/D2 nulling rule: oversized, path-containment and no-parser skips on a
+    // SUPPORTED extension make the affected-set coverage check incomplete anywhere in
+    // the project. Configured exclusions and no-parser skips on unsupported extensions
+    // are listed in skipped_files only and do NOT null coverage_gaps. (A no-parser skip
+    // on a supported extension cannot arise today: grammar-init failure short-circuits
+    // before the parse loop and getParserForFile is static extension matching.)
+    const nullingSkip = (skip: SkippedFileRecord) =>
+      !skip.reason.startsWith('Excluded by')
+      && !(skip.reason.startsWith('No parser') && !getParserForFile(skip.file));
+    const censusIncomplete = census.skippedFiles.some(nullingSkip);
     const skipped = [...new Set([...census.unparsedFiles, ...(ctx.unparsedFiles ?? []),
+      ...skipRecords.keys(),
       ...census.parsed.filter(file => file.syntaxCheck === undefined).map(file => canonicalPath(file.filePath, projectRoot))])].sort();
     if (skipped.length && !result.warnings.some(w => w.startsWith('Syntax census incomplete;'))) result.warnings.push(`Syntax census incomplete; skipped files: ${skipped.join(', ')}`);
+    result.skipped_files = [...skipRecords.values()].sort((a, b) => a.file.localeCompare(b.file));
     // Proposed changed content was checked above; baseline records cover the rest.
-    const uncheckedAffected = result.affected_files.filter(file => !paths.includes(file) &&
-      (skipped.includes(file) || !records.has(file)));
+    // Affected files skipped for a non-nulling reason (exclusion/unsupported) stay
+    // covered; parsed-but-unchecked and unaccounted files keep the check incomplete.
+    const uncheckedAffected = result.affected_files.filter(file => {
+      if (paths.includes(file)) return false;
+      const record = records.get(file);
+      if (record) return record.syntaxCheck === undefined;
+      const skip = skipRecords.get(file);
+      return !skip || nullingSkip(skip);
+    });
     const changedChecked = result.syntax_check !== null;
-    if (changedChecked && !uncheckedAffected.length) {
+    if (changedChecked && !uncheckedAffected.length && !censusIncomplete) {
       result.coverage_gaps = result.affected_files.filter(file => !paths.includes(file)).flatMap(file => {
         const first = records.get(file)?.syntaxErrors?.[0];
         return first ? [{ file, reason: `Syntax error at ${file}:${first.line}: ${first.text}` }] : [];
