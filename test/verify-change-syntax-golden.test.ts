@@ -27,12 +27,20 @@ const cases = [
  ['manifest','Gemfile',"source 'https://rubygems.org'\ngem 'rails'\n"],
  ['pattern','a.mojo','fn alpha() -> Int:\n    return 1\n'],
 ];
+/** Platform-independent golden bytes: the run-time temp root becomes <ROOT>
+ * and any remaining backslashes (Windows path separators) become '/', so the
+ * same golden passes on every OS and TMPDIR. */
+const normalise = (bytes: string, root: string) =>
+  bytes.split(root).join('<ROOT>').replaceAll('\\', '/');
 it('all source-language consumers plus manifest and pattern consumers match pre-edit byte goldens', async () => {
   vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('2026-11-09T00:00:00.000Z');
   const path = new URL('./fixtures/verify-change-syntax-consumers.json', import.meta.url);
-  const golden = JSON.parse(readFileSync(path, 'utf8'));
-  const root = golden.root;
-  expect(existsSync(root)).toBe(false); mkdirSync(root);
+  const raw = readFileSync(path, 'utf8');
+  // Goldens must contain no absolute paths (Atef, PR #82 F1).
+  expect(raw).not.toMatch(/\/(var|tmp|Users|home|private)\//);
+  expect(raw).not.toMatch(/\b[A-Za-z]:[\\/]/);
+  const golden = JSON.parse(raw);
+  const root = mkdtempSync(join(tmpdir(), 'vc-syntax-golden-'));
   try {
     await initParser();
     const outputs = [];
@@ -43,7 +51,7 @@ it('all source-language consumers plus manifest and pattern consumers match pre-
       const graph = buildGraph(parsed, dir);
       const health = calculateHealthScore(graph, dir, { persistHistory: false });
       const simulate = new SimulationEngine(graph).simulate({ type: 'delete', target: file });
-      outputs.push({ language, bytes: JSON.stringify({ direct, parsed, graph, health, simulate }) });
+      outputs.push({ language, bytes: normalise(JSON.stringify({ direct, parsed, graph, health, simulate }), root) });
       expect(existsSync(join(dir, '.depwire/health-history.json'))).toBe(false);
     }
     expect(outputs).toEqual(golden.outputs);
