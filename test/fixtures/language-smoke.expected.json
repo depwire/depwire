@@ -35,7 +35,9 @@
         "unresolvedImports": [],
         "unresolvedCalls": [],
         "unresolvedTypeRefs": [],
-        "wildcardReExports": []
+        "wildcardReExports": [],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -93,7 +95,9 @@
         "unresolvedImports": [],
         "unresolvedCalls": [],
         "unresolvedTypeRefs": [],
-        "wildcardReExports": []
+        "wildcardReExports": [],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -143,7 +147,9 @@
             "filePath": "sample.js",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -197,7 +203,9 @@
             "exported": true
           }
         ],
-        "edges": []
+        "edges": [],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -247,7 +255,9 @@
             "filePath": "sample.py",
             "line": 4
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -318,7 +328,9 @@
             "filePath": "sample.go",
             "line": 3
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -389,7 +401,9 @@
             "filePath": "sample.rs",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -460,7 +474,9 @@
             "filePath": "sample.c",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -542,7 +558,9 @@
             "filePath": "Sample.cs",
             "line": 1
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -637,7 +655,9 @@
             "filePath": "Sample.java",
             "line": 1
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -721,7 +741,9 @@
             "filePath": "sample.cpp",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -792,7 +814,9 @@
             "filePath": "sample.kt",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -863,7 +887,9 @@
             "filePath": "sample.php",
             "line": 3
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -934,7 +960,9 @@
             "filePath": "sample.swift",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -997,7 +1025,9 @@
             "exported": true
           }
         ],
-        "edges": []
+        "edges": [],
+        "syntaxCheck": "not_applicable",
+        "syntaxErrors": null
       }
     ],
     "nodes": [
@@ -1058,7 +1088,9 @@
             "filePath": "sample.rb",
             "line": 5
           }
-        ]
+        ],
+        "syntaxCheck": "checked",
+        "syntaxErrors": []
       }
     ],
     "nodes": [
@@ -1129,7 +1161,9 @@
             "filePath": "sample.dart",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "not_applicable",
+        "syntaxErrors": null
       }
     ],
     "nodes": [
@@ -1200,7 +1234,9 @@
             "filePath": "sample.R",
             "line": 2
           }
-        ]
+        ],
+        "syntaxCheck": "not_applicable",
+        "syntaxErrors": null
       }
     ],
     "nodes": [
@@ -1263,7 +1299,9 @@
             }
           }
         ],
-        "edges": []
+        "edges": [],
+        "syntaxCheck": "not_applicable",
+        "syntaxErrors": null
       }
     ],
     "nodes": [

@@ -1,7 +1,7 @@
 import { resolve } from 'path';
 import { readFileSync, readSync } from 'fs';
 import chalk from 'chalk';
-import { parseProject } from '../parser/index.js';
+import { parseVerifyProject } from '../core/verify-change-project.js';
 import { buildGraph } from '../graph/index.js';
 import { countGraphSymbols } from '../graph/counts.js';
 import { findProjectRoot } from '../utils/files.js';
@@ -15,8 +15,8 @@ export interface VerifyChangeOptions {
   json?: boolean;
   quiet?: boolean;
   failOnWarnings?: boolean;
-  healthThreshold?: string;
   noColor?: boolean;
+  exclude?: string[];
 }
 
 export async function verifyChangeCommand(
@@ -25,58 +25,46 @@ export async function verifyChangeCommand(
 ): Promise<void> {
   // Resolve input mode
   const input = resolveInput(options);
-  if (!input) {
-    printUsage();
-    process.exit(1);
-  }
+  if (!input) throw new Error('Missing input: provide file and content, or a unified diff');
 
   // Parse codebase
   const projectRoot = dir === '.' ? findProjectRoot() : resolve(dir);
   console.error(`Parsing project: ${projectRoot}`);
 
-  const parsedFiles = await parseProject(projectRoot);
-  const graph = buildGraph(parsedFiles, projectRoot);
+  const { parsed, sourceCoverage, unparsedFiles, skippedFiles } = await parseVerifyProject(projectRoot, { exclude: options.exclude });
+  const graph = buildGraph(parsed, projectRoot);
   console.error(`Built graph: ${countGraphSymbols(graph)} symbols, ${graph.size} edges`);
 
   // Run verification
-  const result = await verifyChange(input, { graph, projectRoot });
+  const result = await verifyChange(input, { graph, projectRoot, sourceCoverage, unparsedFiles, parsedFiles: parsed, skippedFiles });
 
-  // Output
-  if (options.json) {
-    console.log(JSON.stringify(result, null, 2));
-  } else if (options.quiet) {
-    printVerdict(result, options);
-  } else {
-    printHumanReadable(result, options);
-  }
+  renderVerifyChange(result, options);
+  const code = verifyChangeExitCode(result, options.failOnWarnings);
+  if (code) process.exit(code);
+}
 
-  // Cloud upsell (stderr, skip for machine-readable output)
-  if (!options.json && !options.quiet) {
-    console.error(
-      '\n\x1b[2m→ Full report at app.depwire.dev — free to sign up\x1b[0m'
-    );
-  }
-
-  // Exit code
-  if (options.failOnWarnings) {
-    if (result.risk_level === 'high') {
-      process.exit(2);
-    } else if (result.risk_level === 'medium') {
-      process.exit(1);
-    }
-  }
+export function verifyChangeExitCode(result: Pick<VerifyChangeOutput, 'risk_level'>, failOnWarnings = false): number {
+  if (result.risk_level === 'error') return 1;
+  return failOnWarnings ? result.risk_level === 'high' ? 2 : result.risk_level === 'medium' ? 1 : 0 : 0;
+}
+export function renderVerifyChange(result: VerifyChangeOutput, options: VerifyChangeOptions): void {
+  if (options.json) console.log(JSON.stringify(result, null, 2));
+  else if (options.quiet) printVerdict(result, options);
+  else printHumanReadable(result, options);
 }
 
 function resolveInput(
   options: VerifyChangeOptions
 ): { file_path?: string; new_content?: string; unified_diff?: string } | null {
-  if (options.diff) {
+  if ((options.diff !== undefined && (options.file !== undefined || options.content !== undefined || options.contentFrom !== undefined)) ||
+      (options.content !== undefined && options.contentFrom !== undefined)) throw new Error('Conflicting input modes');
+  if (options.diff !== undefined) {
     // Mode C: unified diff from file
     const diffContent = readFileSync(resolve(options.diff), 'utf-8');
     return { unified_diff: diffContent };
   }
 
-  if (options.file && options.content) {
+  if (options.file && options.content !== undefined) {
     // Mode A: inline content
     return { file_path: options.file, new_content: options.content };
   }
@@ -87,7 +75,7 @@ function resolveInput(
     return { file_path: options.file, new_content: content };
   }
 
-  if (options.file && !options.content && !options.contentFrom && !options.diff) {
+  if (options.file && options.content === undefined && options.contentFrom === undefined && options.diff === undefined) {
     // Mode D: piped stdin
     if (!process.stdin.isTTY) {
       const chunks: Buffer[] = [];
@@ -111,33 +99,20 @@ function resolveInput(
   return null;
 }
 
-function printUsage(): void {
-  console.error(`Usage: depwire verify-change [options]
-
-Input modes (exactly one required):
-  --file <path> --content <string>       File path + new content inline
-  --file <path> --content-from <file>    File path + content from another file
-  --diff <patch-file>                    Unified diff file
-  cat file | depwire verify-change --file <path>   Piped stdin
-
-Options:
-  --json                Output raw JSON
-  --quiet               Only output the verdict line
-  --fail-on-warnings    Exit 1 on medium risk, 2 on high risk
-  --health-threshold N  Health regression threshold (default: -3)
-  --no-color            Disable terminal colors`);
-}
-
 function printVerdict(result: VerifyChangeOutput, options: VerifyChangeOptions): void {
   const useColor = !options.noColor && process.stdout.isTTY;
   const c = useColor ? chalk : { green: (s: string) => s, red: (s: string) => s, yellow: (s: string) => s, dim: (s: string) => s, bold: (s: string) => s } as typeof chalk;
 
-  if (result.safe) {
+  if (result.risk_level === 'error') console.log(c.red(`ERROR — ${result.error_reason}`));
+  else if (result.safe) {
     console.log(c.green('✓ SAFE') + c.dim(` — risk: ${result.risk_level}`));
   } else {
     const icon = result.risk_level === 'high' ? '✗' : '⚠';
     const color = result.risk_level === 'high' ? c.red : c.yellow;
     console.log(color(`${icon} UNSAFE`) + c.dim(` — risk: ${result.risk_level}`));
+  }
+  for (const section of ['health', 'security'] as const) {
+    if (result[`${section}_status`] !== 'computed') console.log(`${section}: ${result[`${section}_status`]} — ${result[`${section}_reason`]}`);
   }
 }
 
@@ -155,13 +130,10 @@ function printHumanReadable(result: VerifyChangeOutput, options: VerifyChangeOpt
   console.log(c.dim(line));
 
   // Health score
-  const deltaSign = result.health_score_delta >= 0 ? '+' : '';
-  const deltaColor = result.health_score_delta > 0 ? c.green
-    : result.health_score_delta === 0 ? c.yellow : c.red;
-  console.log(
-    `${c.bold('Health Score:')}  ${result.health_score_before} → ${result.health_score_after}  ` +
-    deltaColor(`(${deltaSign}${result.health_score_delta})`)
-  );
+  if (result.health_status === 'computed' && result.health_score_delta !== null) {
+    const deltaSign = result.health_score_delta >= 0 ? '+' : '';
+    console.log(`${c.bold('Health Score:')} ${result.health_score_before} → ${result.health_score_after} (${deltaSign}${result.health_score_delta})`);
+  }
 
   // Broken imports
   console.log(`${c.bold('Broken Imports:')} ${result.broken_imports.length}`);
@@ -174,8 +146,8 @@ function printHumanReadable(result: VerifyChangeOutput, options: VerifyChangeOpt
   console.log(`${c.bold('Cyclic Group Changes:')} ${JSON.stringify(result.cyclicGroupChanges)}`);
 
   // Security findings
-  console.log(`${c.bold('Security Findings:')} ${result.security_findings.length}`);
-  if (result.security_findings.length > 0) {
+  if (result.security_status === 'computed') console.log(`${c.bold('Security Findings:')} ${result.security_findings!.length}`);
+  if (result.security_findings && result.security_findings.length > 0) {
     for (const f of result.security_findings) {
       const sevColor = f.severity === 'critical' || f.severity === 'high'
         ? c.red : f.severity === 'medium' ? c.yellow : c.dim;

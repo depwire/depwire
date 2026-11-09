@@ -1,3 +1,4 @@
+import { withSyntaxNotApplicable } from './syntax-errors.js';
 import { canonicalPath } from '../graph/paths.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, resolve, basename } from 'path';
@@ -25,7 +26,7 @@ interface Context {
   imports: Map<string, string>;
 }
 
-export function parseRFile(
+function parseRFileUnchecked(
   filePath: string,
   sourceCode: string,
   projectRoot: string
@@ -581,3 +582,7 @@ export const rParser: LanguageParser = {
   extensions: ['.R', '.r', '.Rmd', '.rmd'],
   parseFile: parseRFile,
 };
+
+export function parseRFile(filePath: string, sourceCode: string, projectRoot: string): ParsedFile {
+  return withSyntaxNotApplicable(parseRFileUnchecked(filePath, sourceCode, projectRoot));
+}

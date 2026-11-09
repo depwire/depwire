@@ -27,7 +27,7 @@ import { runTemporalAnalysis } from './temporal/index.js';
 import { analyzeDeadCode } from './dead-code/index.js';
 import { whatif } from './commands/whatif.js';
 import { securityCommand } from './commands/security.js';
-import { verifyChangeCommand } from './commands/verify-change.js';
+import { runVerifyChangeAction } from './commands/verify-change-action.js';
 import { diffCommand } from './commands/diff.js';
 import { affectedCommand } from './commands/affected.js';
 import { promptCommand } from './commands/prompt.js';
@@ -886,17 +886,10 @@ program
   .option('--diff <patch>', 'Unified diff file to verify')
   .option('--json', 'Output raw JSON')
   .option('--quiet', 'Only output the verdict line')
-  .option('--fail-on-warnings', 'Exit 1 on medium risk, 2 on high risk')
-  .option('--health-threshold <n>', 'Health regression threshold (default: -3)')
+  .option('--fail-on-warnings', 'Exit 1 on medium risk and 2 on high risk; warning count is ignored. Analysis errors always exit 1.')
   .option('--no-color', 'Disable terminal colors')
-  .action(async (directory: string | undefined, options: any) => {
-    try {
-      await verifyChangeCommand(directory || '.', options);
-    } catch (err) {
-      console.error('Error running verify-change:', err);
-      process.exit(1);
-    }
-  });
+  .option('--exclude <patterns...>', 'Glob patterns to exclude from the census (e.g., "**/*.test.*" "dist/**"); excluded files are listed in skipped_files')
+  .action(runVerifyChangeAction);
 
 // Diff command
 program

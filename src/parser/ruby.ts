@@ -1,3 +1,4 @@
+import { withSyntaxErrors, withSyntaxNotApplicable } from './syntax-errors.js';
 import { canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
@@ -24,7 +25,7 @@ export function parseRubyFile(
 ): ParsedFile {
   // Handle Gemfile (dependency manifest)
   if (basename(filePath) === 'Gemfile') {
-    return parseGemfile(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseGemfile(filePath, sourceCode, projectRoot));
   }
 
   const parser = getParser('ruby');
@@ -45,11 +46,11 @@ export function parseRubyFile(
 
   walkNode(tree.rootNode, context);
 
-  return {
+  return withSyntaxErrors({
     filePath,
     symbols: context.symbols,
     edges: context.edges,
-  };
+  }, tree!.rootNode, sourceCode);
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {

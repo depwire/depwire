@@ -1,3 +1,4 @@
+import { withSyntaxNotApplicable } from './syntax-errors.js';
 import { canonicalPath } from '../graph/paths.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
 import { dirname, join, extname, resolve, basename } from 'path';
@@ -24,7 +25,7 @@ interface Context {
   imports: Map<string, string>;
 }
 
-export function parseDartFile(
+function parseDartFileUnchecked(
   filePath: string,
   sourceCode: string,
   projectRoot: string
@@ -838,3 +839,7 @@ export const dartParser: LanguageParser = {
   extensions: ['.dart', 'pubspec.yaml'],
   parseFile: parseDartFile,
 };
+
+export function parseDartFile(filePath: string, sourceCode: string, projectRoot: string): ParsedFile {
+  return withSyntaxNotApplicable(parseDartFileUnchecked(filePath, sourceCode, projectRoot));
+}

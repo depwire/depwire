@@ -2,7 +2,15 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { getCacheStats, isCacheAvailable, openCache, RESOLUTION_VERSION } from '../src/parser/cache.js';
+import { getCacheStats, openCache, RESOLUTION_VERSION } from '../src/parser/cache.js';
+
+// PR #82 F2: better-sqlite3 12.x ships no Node 20 prebuilds (12.10.0 removed the
+// EOL node-v115 builds), so on Node 20 the addon may fail to load and the parse
+// cache is unavailable (full reparse, CLI otherwise functional). These tests
+// assert cache behaviour and run only on the supported engine floor, Node >=22.
+// The gate is an explicit version allowlist — never runtime availability
+// detection, which would silently mask real cache regressions on supported Nodes.
+const CACHE_ENGINE_SUPPORTED = parseInt(process.version.slice(1), 10) >= 22;
 
 const roots: string[] = [];
 
@@ -10,7 +18,7 @@ afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
-describe.skipIf(!isCacheAvailable())('parse cache format migration', () => {
+describe.skipIf(!CACHE_ENGINE_SUPPORTED)('parse cache format migration (requires Node >=22: better-sqlite3 12.x prebuilds)', () => {
   it('does not reuse a cache row written before the block-id version bump', () => {
     const root = mkdtempSync(join(tmpdir(), 'depwire-cache-v1-'));
     roots.push(root);

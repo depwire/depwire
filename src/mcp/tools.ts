@@ -1,3 +1,4 @@
+import { verifyChangeError } from '../core/verify-change.js';
 import { isWithinRoot, canonicalPath, normalizePath } from '../graph/paths.js';
 import { DirectedGraph } from "graphology";
 import { dirname, join, resolve } from "path";
@@ -386,6 +387,11 @@ Returns ranked findings (Critical → Low) with attack scenarios and suggested f
             type: "string",
             description: "Optional, reserved for future DAT integration",
           },
+          exclude: {
+            type: "array",
+            items: { type: "string" },
+            description: "Optional glob patterns excluding files from the verification census (e.g. [\"**/*.test.*\"]); excluded files are listed in skipped_files and do not null coverage_gaps",
+          },
         },
       },
     },
@@ -668,17 +674,7 @@ export async function handleToolCall(
         });
       }
     } else if (name === "verify_change") {
-      if (!isProjectLoaded(state)) {
-        result = {
-          error: "No project loaded",
-          message: "Use connect_repo to connect to a codebase first",
-        };
-      } else {
-        result = await handleVerifyChange(
-          { ...args, file_path: normalizePath(args.file_path) } as any,
-          state
-        );
-      }
+      result = await handleVerifyChange(args, state);
     } else if (name === "claim_files") {
       if (!isProjectLoaded(state)) {
         result = {
@@ -805,7 +801,7 @@ export async function handleToolCall(
       content: [
         {
           type: "text",
-          text: JSON.stringify({ error: String(error) }, null, 2),
+          text: JSON.stringify(name === "verify_change" ? verifyChangeError("MCP dispatch/serialization", error) : { error: String(error) }, null, 2),
         },
       ],
     };

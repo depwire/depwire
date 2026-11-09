@@ -1,3 +1,4 @@
+import { withSyntaxErrors, collectSyntaxIssues, type SyntaxRecovery } from './syntax-errors.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, SymbolKind, EdgeKind, LanguageParser, UnresolvedImport, UnresolvedCall, UnresolvedCallReason, UnresolvedTypeRef, UnresolvedTypeRefReason, PendingSuperCall, PendingNamespaceCall, NonCodeDependency, ReExportSite } from './types.js';
 import { resolveImportPath, classifyUnresolvedImport } from './resolver.js';
@@ -75,7 +76,7 @@ export function parseTypeScriptFile(
   };
   
   walkNode(tree.rootNode, context);
-  recoverLineBreakTypeReExports(tree.rootNode, parser, context);
+  const syntaxRecoveries = recoverLineBreakTypeReExports(tree.rootNode, parser, context);
   for (const target of context.exportTargets) {
     const symbol = context.symbols.find(s => s.id === `${context.filePath}::${target.name}`);
     if (symbol) symbol.exported = true;
@@ -86,7 +87,7 @@ export function parseTypeScriptFile(
   resolveUnresolvedCallEdges(context);
   resolvePendingTypeReferences(context);
   
-  return {
+  return withSyntaxErrors({
     filePath,
     symbols: context.symbols,
     edges: context.edges,
@@ -100,7 +101,7 @@ export function parseTypeScriptFile(
     pendingNamespaceCalls: context.pendingNamespaceCalls,
     unresolvedTypeRefs: context.unresolvedTypeRefs,
     wildcardReExports: context.wildcardReExports,
-  };
+  }, tree!.rootNode, sourceCode, syntaxRecoveries);
 }
 
 /**
@@ -109,7 +110,8 @@ export function parseTypeScriptFile(
  * sequence with the line break normalized, then restore original locations.
  * This keeps the source-site ledger from silently missing a valid type export.
  */
-function recoverLineBreakTypeReExports(root: Parser.SyntaxNode, parser: Parser, context: Context): void {
+function recoverLineBreakTypeReExports(root: Parser.SyntaxNode, parser: Parser, context: Context): SyntaxRecovery[] {
+  const recoveries: SyntaxRecovery[] = [];
   const nodes = root.namedChildren;
   for (let i = 0; i + 4 < nodes.length; i++) {
     const [first, second, block, from, literal] = nodes.slice(i, i + 5);
@@ -120,8 +122,15 @@ function recoverLineBreakTypeReExports(root: Parser.SyntaxNode, parser: Parser, 
     const original = context.sourceCode.slice(first.startIndex, literal.endIndex);
     if (!/^export[ \t]*\r?\n[ \t]*type\b/.test(original)) continue;
     const normalized = original.replace(/^export[ \t]*\r?\n[ \t]*type\b/, 'export type');
-    const recovered = parser.parse(normalized).rootNode.namedChildren.find(child => child.type === 'export_statement');
+    const recoveryTree = parser.parse(normalized);
+    const recovered = recoveryTree.rootNode.namedChildren.find(child => child.type === 'export_statement');
     if (!recovered || !recovered.childForFieldName('source')) continue;
+    // Addendum 4: this fragment's symbols use the normalized parse. Keep
+    // original diagnostics everywhere else, and map normalized offsets back.
+    const prefixLength = /^export[ \t]*\r?\n[ \t]*type\b/.exec(original)![0].length;
+    recoveries.push({ start: first.startIndex, end: literal.endIndex,
+      issues: collectSyntaxIssues(recoveryTree.rootNode, context.filePath, context.sourceCode,
+        index => first.startIndex + index + (index >= 7 ? prefixLength - 'export type'.length : 0)) });
     const symbolStart = context.symbols.length;
     const edgeStart = context.edges.length;
     const siteStart = context.reExportSites.length;
@@ -138,6 +147,7 @@ function recoverLineBreakTypeReExports(root: Parser.SyntaxNode, parser: Parser, 
     }
     i += 4;
   }
+  return recoveries;
 }
 
 const LEXICAL_SCOPE_TYPES = new Set([

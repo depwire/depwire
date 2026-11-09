@@ -1,3 +1,4 @@
+import { withSyntaxErrors, withSyntaxNotApplicable } from './syntax-errors.js';
 import { isWithinRoot, canonicalPath } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser } from './types.js';
@@ -50,12 +51,12 @@ export function parseJavaFile(
 ): ParsedFile {
   // Handle Maven pom.xml
   if (filePath.endsWith('pom.xml')) {
-    return parsePomXml(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parsePomXml(filePath, sourceCode, projectRoot));
   }
 
   // Handle Gradle build files
   if (filePath.endsWith('build.gradle') || filePath.endsWith('build.gradle.kts')) {
-    return parseGradleBuild(filePath, sourceCode, projectRoot);
+    return withSyntaxNotApplicable(parseGradleBuild(filePath, sourceCode, projectRoot));
   }
 
   const parser = getParser('java');
@@ -76,11 +77,11 @@ export function parseJavaFile(
 
   walkNode(tree.rootNode, context);
 
-  return {
+  return withSyntaxErrors({
     filePath,
     symbols: context.symbols,
     edges: context.edges,
-  };
+  }, tree!.rootNode, sourceCode);
 }
 
 function walkNode(node: Parser.SyntaxNode, context: Context): void {

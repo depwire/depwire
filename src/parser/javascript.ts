@@ -1,3 +1,4 @@
+import { withSyntaxErrors } from './syntax-errors.js';
 import { canonicalPath, isWithinRoot } from '../graph/paths.js';
 import { getParser } from './wasm-init.js';
 import { SymbolNode, SymbolEdge, ParsedFile, LanguageParser, UnresolvedCall, UnresolvedImport, NonCodeDependency } from './types.js';
@@ -60,7 +61,7 @@ export function parseJavaScriptFile(
   }
   resolvePendingReferences(context);
   
-  return {
+  return withSyntaxErrors({
     filePath,
     symbols: context.symbols,
     edges: context.edges,
@@ -68,7 +69,7 @@ export function parseJavaScriptFile(
     ...(context.unresolvedImports.length ? { unresolvedImports: context.unresolvedImports } : {}),
     ...(context.nonCodeDependencies.length ? { nonCodeDependencies: context.nonCodeDependencies } : {}),
     ...(context.unresolvedExports.length ? { unresolvedExports: context.unresolvedExports } : {}),
-  };
+  }, tree!.rootNode, sourceCode);
 }
 
 const LEXICAL_SCOPE_TYPES = new Set([

@@ -24,7 +24,7 @@ import { ParsedFile } from './types.js';
 
 /** Bump whenever parser resolution changes invalidate otherwise-unchanged files. */
 // Re-export module relationships change parsed graph contents on this branch.
-export const RESOLUTION_VERSION = 13;
+export const RESOLUTION_VERSION = 14;
 
 /**
  * Lazily resolve better-sqlite3. It is an OPTIONAL native addon: on platforms
@@ -40,8 +40,15 @@ let Database: any = null;
 try {
   const nodeRequire = createRequire(import.meta.url);
   Database = nodeRequire('better-sqlite3');
-} catch {
+} catch (err) {
   // better-sqlite3 unavailable — cache disabled, full parse still works.
+  // This catch runs at module load, so the diagnostic is logged exactly once
+  // per process run (not per openCache call). The error detail matters: on
+  // Node 20 Windows the 12.x prebuild is absent and the source-built addon
+  // fails to load, and without this message the failure mode is invisible.
+  console.error(
+    `[Parser] better-sqlite3 failed to load — parse cache disabled, falling back to full parse mode: ${err instanceof Error ? err.message : err}`
+  );
 }
 
 /** Whether the SQLite parse cache is available in this environment. */
@@ -180,7 +187,11 @@ export function getCachedFiles(
     }
 
     try {
-      result.set(relPath, JSON.parse(row.parsed_data) as ParsedFile);
+      const parsed = JSON.parse(row.parsed_data) as ParsedFile;
+      // Contract §3: absent metadata is a cache miss, never evidence of clean syntax.
+      if (!((parsed.syntaxCheck === 'checked' && Array.isArray(parsed.syntaxErrors)) ||
+            (parsed.syntaxCheck === 'not_applicable' && parsed.syntaxErrors === null))) continue;
+      result.set(relPath, parsed);
     } catch {
       // Corrupt JSON — skip so the file is re-parsed.
       continue;

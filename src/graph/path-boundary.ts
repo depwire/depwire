@@ -14,6 +14,7 @@ export function canonicalParsedFile(file: ParsedFile, root = ''): ParsedFile {
   const diagnostics = <T extends { fromFile: string }>(rows: T[] | undefined) =>
     rows?.map(row => ({ ...row, fromFile: canonicalPath(row.fromFile, root) }));
   return { ...file, filePath: canonicalPath(file.filePath, root),
+    ...(file.syntaxErrors === undefined ? {} : { syntaxErrors: file.syntaxErrors?.map(issue => ({ ...issue, file: canonicalPath(issue.file, root) })) ?? null }),
     symbols: file.symbols.map(n => canonicalNode(n, root)), edges: file.edges.map(e => canonicalEdge(e, root)),
     unresolvedImports: diagnostics(file.unresolvedImports),
     nonCodeDependencies: file.nonCodeDependencies?.map(row => ({ ...row,
