@@ -40,8 +40,15 @@ let Database: any = null;
 try {
   const nodeRequire = createRequire(import.meta.url);
   Database = nodeRequire('better-sqlite3');
-} catch {
+} catch (err) {
   // better-sqlite3 unavailable — cache disabled, full parse still works.
+  // This catch runs at module load, so the diagnostic is logged exactly once
+  // per process run (not per openCache call). The error detail matters: on
+  // Node 20 Windows the 12.x prebuild is absent and the source-built addon
+  // fails to load, and without this message the failure mode is invisible.
+  console.error(
+    `[Parser] better-sqlite3 failed to load — parse cache disabled, falling back to full parse mode: ${err instanceof Error ? err.message : err}`
+  );
 }
 
 /** Whether the SQLite parse cache is available in this environment. */
