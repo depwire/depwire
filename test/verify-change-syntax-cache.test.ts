@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -43,6 +43,15 @@ async function run(root: string, useCache = false) {
   const parsed = await parseProject(root, { useCache }); const graph = buildGraph(parsed, root);
   return { parsed, graph, result: await verifyChange(input, { projectRoot: root, graph, parsedFiles: parsed }) };
 }
+// PR #82 F2: better-sqlite3 12.x ships no Node 20 prebuilds (12.10.0 removed the
+// EOL node-v115 builds), so on Node 20 the addon may fail to load and the parse
+// cache is unavailable (full reparse, CLI otherwise functional). The four tests
+// below assert cache behaviour and run only on the supported engine floor,
+// Node >=22; the verify-change tests after them are cache-independent and always
+// run. The gate is an explicit version allowlist — never runtime availability
+// detection, which would silently mask real cache regressions on supported Nodes.
+const CACHE_ENGINE_SUPPORTED = parseInt(process.version.slice(1), 10) >= 22;
+describe.skipIf(!CACHE_ENGINE_SUPPORTED)('parse cache records (requires Node >=22: better-sqlite3 12.x prebuilds)', () => {
 it('enumerable checked and not-applicable metadata survives canonicalization and SQLite round-trip', () => {
   const root = fixture({ 'broken.ts': broken, 'clean.ts': good, Gemfile: "gem 'rails'" });
   const files = ['broken.ts', 'clean.ts', 'Gemfile'].map(file => canonicalParsedFile(
@@ -91,6 +100,7 @@ it('current-version row missing syntax metadata is a cache miss, never clean', a
     expect(getCachedFiles(db, root, ['broken.ts']).size).toBe(0);
   } finally { db.close(); }
   expect((await parseProject(root, { useCache: true }))[0].syntaxErrors).toHaveLength(1);
+});
 });
 it('broken affected dependency raises a real low deletion to medium through core, CLI and MCP', async () => {
   const root = fixture({ 'caller.ts': caller, 'dep.ts': good, 'keep.ts': good }, true);

@@ -132,6 +132,8 @@ depwire security   # scan for supported finding patterns
 depwire viz        # view the recorded dependency graph
 ```
 
+**Node version note:** Node.js 20 reached end of life on 2026-04-30. Node 22 or newer is recommended. On Node 20 the incremental parse cache may be unavailable (`better-sqlite3` 12.x ships no Node 20 prebuilt binaries); depwire then falls back to full parsing with identical results, and the CLI and MCP server are otherwise fully functional. A future major release will raise the `engines` floor to `>=22`.
+
 ---
 
 ## Tested on real-world projects
