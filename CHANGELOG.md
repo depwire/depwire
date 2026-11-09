@@ -16,6 +16,8 @@ A new structural skipped_files field lists `{file, reason}` records from the par
 
 RESOLUTION_VERSION 13→14 is cache invalidation only; resolution behaviour is unchanged.
 
+better-sqlite3 is pinned to ^11.10.0 (from ^12.11.1): 12.10.0 dropped its Node 20 prebuilt binaries, so `npm ci` on Node 20 Windows fell back to a source build whose addon failed to load and the parse cache silently degraded to full reparse. 11.10.0 ships prebuilds for Node 18/20/22/23 across platforms and has no open security advisory (GitHub Advisory Database and npm audit both clean; the module's API surface used by the cache — Database constructor, pragma, exec, prepare, transaction — is unchanged between 11 and 12). When the addon cannot load, the failure and its error detail are now logged exactly once per process run instead of being silently swallowed.
+
 All notable changes to Depwire will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
