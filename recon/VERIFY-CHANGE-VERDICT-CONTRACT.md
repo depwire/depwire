@@ -1,6 +1,6 @@
 # verify-change verdict contract — approved 8 Nov 2026
 
-Applies to local CLI JSON and local MCP `verify_change`; base `8b654da5c9dec6521f8fc0864905d400483d9689`. Implementation follows the approved ruling and Addenda 1–5.
+Applies to local CLI JSON and local MCP `verify_change`; base `8b654da5c9dec6521f8fc0864905d400483d9689`. Implementation follows the approved ruling and Addenda 1–8.
 Destination: /Users/atefataya/Developer/code-graph/recon/VERIFY-CHANGE-VERDICT-CONTRACT.md.
 Authority: /tmp/depwire-recon/verify-change-ruling-ATEF-2026-11-08.md; option A in /tmp/depwire-recon/verify-change-366-375.md; corrections in /tmp/depwire-recon/vc-repro.md take precedence over that recon.
 MUST/MUST NOT are normative requirements.
@@ -44,7 +44,7 @@ The injected simulation failure reproduced low/safe with a warning and fabricate
 
 ## 3. Complete local JSON/MCP payload
 
-All top-level fields below MUST be present. Unless marked nullable or optional, fields MUST NOT be null/omitted. Numbers MUST be finite; counts MUST be nonnegative integers. Arrays MUST never be null except security_findings and coverage_gaps under their explicit null rules. On error they contain only known evidence, possibly empty, and MUST NOT imply completed analysis.
+All top-level fields below MUST be present. Unless marked nullable or optional, fields MUST NOT be null/omitted. Numbers MUST be finite; counts MUST be nonnegative integers. Arrays MUST never be null except security_findings, coverage_gaps and skipped_files under their explicit null rules. On error they contain only known evidence, possibly empty, and MUST NOT imply completed analysis.
 
 | Field | Type and meaning/null rule |
 |---|---|
@@ -63,6 +63,7 @@ All top-level fields below MUST be present. Unless marked nullable or optional, 
 | `partial` | boolean, always present; true iff health_status or security_status is "error". Structural coverage limits do NOT set it. Completeness requires partial:false AND coverage_gaps:[] (not null). |
 | `affected_files` | canonical, deduplicated, sorted string array of known changed/impacted files. |
 | `coverage_gaps` | array of `{file:string, reason:string}` or null; affected-file syntax gaps, with completion/null rules below. |
+| `skipped_files` | array of `{file:string, reason:string}` or null; loader skip records explaining a null coverage_gaps. Always present once the project census ran (possibly `[]`); null when the census did not run, including error envelopes. Structural: never copied into unrelated_context. Reasons come from the parse loader's four skip branches (oversized, path containment, configured exclusion, no parser). |
 | `syntax_errors_outside_affected_set` | nonnegative integer or null; count of files with syntax errors outside affected_files, with completion/null rules below. |
 | `syntax_check` | `"checked" | "not_applicable" | null`; changed-file syntax check, with completion/null rules below. |
 | `blast_radius` | nonnegative integer, exactly affected_files.length; on error only the known count, not a completeness claim. |
@@ -87,7 +88,7 @@ Nested cyclic schema MUST preserve the pinned contract from /Users/atefataya/Dev
 
 - I1 — **approved (Atef, Addendum 6)**: The affected set is exactly the existing affected_files set. Changed-file syntax errors remain error; syntax errors in other affected files create coverage_gaps entries with canonical file and a reason including the first error's file:line and node text.
 - I2 — **approved (Atef, Addendum 6)**: Precedence is error > high > medium > low. An affected syntax gap raises low to medium only, never lowers high or overrides error. Non-error results keep error_reason:null. coverage_gaps is structural, is not copied into unrelated_context, and does not set partial.
-- I3 — **approved (Atef, Addendum 6)**: syntax_errors_outside_affected_set is always present: a real integer count of files, only when the project syntax census completed; null when unavailable or incomplete, including oversized/skipped files. Warnings identify skipped files. Outside-set syntax errors do not affect the verdict. coverage_gaps is always present: null whenever the affected-set check did not complete (including early errors); [] only for a completed check with no gaps.
+- I3 — **approved (Atef, Addendum 6)**: syntax_errors_outside_affected_set is always present: a real integer count of files, only when the project syntax census completed; null when unavailable or incomplete, including oversized/skipped files. Warnings identify skipped files. Outside-set syntax errors do not affect the verdict. coverage_gaps is always present: null whenever the affected-set check did not complete (including early errors); [] only for a completed check with no gaps. **Addendum 7/D2 amendment**: coverage_gaps is null whenever any project file was skipped for an oversized, path-containment, or no-parser-on-a-supported-extension reason; configured exclusions and no-parser skips on unsupported extensions are listed in skipped_files only and do NOT null it. (A no-parser skip on a supported extension cannot arise: grammar-initialization failure short-circuits before the parse loop and getParserForFile is static extension matching.)
 - I4 — **approved (Atef, Addendum 6)**: syntax_check is always present: checked only when changed-file checking completed, not_applicable for pattern/manifest branches, null when it could not complete. Stored parsed-file records carry enumerable syntaxCheck and syntaxErrors: checked pairs with an array ([] only when checked and clean); not_applicable pairs with null, present rather than omitted. Diagnostics follow the symbol-producing parse under Addendum 4.
 
 canonicalParsedFile and SQLite MUST preserve these real fields. Increment the existing RESOLUTION_VERSION from 13 to 14 so old rows rebuild; absent metadata MUST NOT mean clean. Only verify-change interprets syntax metadata. Other consumers' serialization may change ONLY by adding syntaxCheck/syntaxErrors on parsed-file records; buildGraph, health, simulate and other CLI/MCP output remain byte-identical except the new verdict fields.
@@ -180,3 +181,7 @@ Approval order MUST remain: verifier reproduction → Atef approves this contrac
 - Addendum 5 (Atef, 9 Nov 01:01): persist enumerable syntax metadata through canonicalization and the versioned SQLite cache; changed-file errors remain error, affected-file errors impose a medium floor, and outside-set errors are counted without affecting the verdict. Confirm pattern/manifest not_applicable and retain the limitation. Manager interpretations I1–I4 in §3 include the subsequent approved null rules and were approved in Addendum 6.
 
 - Addendum 6 (Atef, 9 Nov 01:50): approve I1–I4 and per-check completeness. Completeness requires partial:false AND coverage_gaps:[] (not null). An oversized non-changed file inside affected_files makes coverage_gaps null; syntax_check retains its independently completed result and the outside census follows I3. RESOLUTION_VERSION 13→14 invalidates cached metadata only; resolution behaviour is unchanged.
+
+- Addendum 7 (Atef, 9 Nov 09:38): implement now. coverage_gaps null when any file was skipped, plus skipped_files:[{file, reason}] from the loader's skip info so the null is explicable. Tests run through the real built CLI and a fresh MCP load with no prepared graph; the prepared graph is removed from the existing test. Item (c) (unparsed files as marked graph nodes) is queued for a contract-first PR after v1.29.0; item (b) (second parse path) is rejected.
+
+- Addendum 8 (Atef, 9 Nov 09:41): D1 — the loader records `{file, reason}` at its four skip branches, returned beside errorFiles; graph/health/simulate outputs stay byte-identical (the only permitted golden diff is the new metadata on parseProject's return). D2 — coverage_gaps is null for oversized, containment, and no-parser skips on a SUPPORTED extension; configured exclusions and no-parser skips on unsupported extensions are listed in skipped_files only and do NOT null it. The writer determined that a no-parser skip cannot fire for a supported extension: grammar-initialization failure returns before the parse loop (src/parser/index.ts init guard) and getParserForFile (src/parser/detect.ts:44) is static extension/filename matching over registered parsers. No failure path; no stop required.

@@ -12,6 +12,8 @@ risk_level adds "error". Any failed required structural analysis, including inva
 
 Syntax diagnostics now persist through canonicalization and the versioned parse cache. New structural coverage_gaps, syntax_errors_outside_affected_set and syntax_check fields distinguish affected-file syntax gaps, outside-set errors and changed-file checking. Uncomputed checks/counts are null; pattern/manifest checks are not_applicable. Changed-file syntax errors remain error; other affected syntax errors impose a medium floor without lowering high; outside-set errors do not change the verdict.
 
+A new structural skipped_files field lists `{file, reason}` records from the parse loader's four skip branches (oversized, path containment, configured exclusion, no parser); it is null whenever the project census did not run and is never copied into unrelated_context. coverage_gaps is null whenever any project file was skipped for an oversized, path-containment, or no-parser-on-a-supported-extension reason, so an unparsed dependent can no longer yield a false coverage_gaps:[]. Configured exclusions — new `--exclude` option on `depwire verify-change` and an optional `exclude` argument on the MCP verify_change tool — and no-parser skips on unsupported extensions are listed in skipped_files only and do not null coverage_gaps. parseProject's return additionally carries skippedFiles beside errorFiles; graph, health and simulate outputs are unchanged.
+
 RESOLUTION_VERSION 13→14 is cache invalidation only; resolution behaviour is unchanged.
 
 All notable changes to Depwire will be documented in this file.
