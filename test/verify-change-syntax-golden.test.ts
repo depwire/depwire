@@ -28,10 +28,26 @@ const cases = [
  ['pattern','a.mojo','fn alpha() -> Int:\n    return 1\n'],
 ];
 /** Platform-independent golden bytes: the run-time temp root becomes <ROOT>
- * and any remaining backslashes (Windows path separators) become '/', so the
- * same golden passes on every OS and TMPDIR. */
+ * and Windows path separators become '/', so the same golden passes on every
+ * OS and TMPDIR. Serialized JSON escapes every backslash, so a Windows
+ * separator is the two-character pair \\ inside bytes — convert that pair
+ * (never a lone '\', which may belong to another JSON escape such as \n) and
+ * slash-normalise the run-time root the same way before substituting. */
 const normalise = (bytes: string, root: string) =>
-  bytes.split(root).join('<ROOT>').replaceAll('\\', '/');
+  bytes.replaceAll('\\\\', '/').split(root.replaceAll('\\', '/')).join('<ROOT>');
+it('normalise scrubs Windows-form temp roots (PR #82 failure B regression guard)', () => {
+  // Simulated Windows run: the run-time root uses backslash separators and the
+  // embedded paths are JSON-serialized, which escapes each separator to \\.
+  const winRoot = 'C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\vc-syntax-golden-Vmnt2r';
+  const bytes = JSON.stringify({ projectRoot: winRoot + '\\typescript', file: 'a.ts' });
+  expect(bytes).toContain('\\\\'); // escaped separator, as real Windows bytes contain
+  expect(normalise(bytes, winRoot)).toBe('{"projectRoot":"<ROOT>/typescript","file":"a.ts"}');
+  // A lone backslash belonging to another JSON escape (e.g. \n in content) survives.
+  const withNewline = JSON.stringify({ projectRoot: winRoot, note: 'line1\nline2' });
+  expect(normalise(withNewline, winRoot)).toBe('{"projectRoot":"<ROOT>","note":"line1\\nline2"}');
+  // POSIX form is unaffected.
+  expect(normalise('{"p":"/tmp/vc-x/a.ts"}', '/tmp/vc-x')).toBe('{"p":"<ROOT>/a.ts"}');
+});
 it('all source-language consumers plus manifest and pattern consumers match pre-edit byte goldens', async () => {
   vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('2026-11-09T00:00:00.000Z');
   const path = new URL('./fixtures/verify-change-syntax-consumers.json', import.meta.url);
