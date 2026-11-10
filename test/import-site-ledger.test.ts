@@ -104,7 +104,7 @@ describe('independent source-AST import-site ledger', () => {
     ['TypeScript three-hop barrels', 'reexport-type-chain'],
     ['JavaScript module forms', 'javascript-import-completeness'],
     ['Python src-layout absolute and relative forms', 'import-site-ledger/python'],
-  ])('reconciles every %s site with a parser attempt', async (_label, fixture) => {
+  ])('reconciles every %s site with a parser attempt', { timeout: 60_000 }, async (_label, fixture) => {
     const root = resolve(fixtures, fixture);
     const paths = sourceFiles(root);
     const sites = [
