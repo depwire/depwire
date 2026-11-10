@@ -216,7 +216,7 @@ export function generateWhatIfHtml(
   </div>
 
   <script>window.__depwireWhatIf = true;</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="/vendor/d3.min.js"></script>
   <script src="/arc.js"></script>
   <script>
     const currentData = ${currentDataJson};

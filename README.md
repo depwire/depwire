@@ -111,7 +111,7 @@ Depwire builds a dependency graph from supported source constructs using tree-si
 
 How it works:
 
-- **Local** — The Depwire CLI analyzes supported source files locally and collects no usage telemetry. It makes network requests only when you ask it to: connecting a GitHub URL clones or pulls that repository; dependency checks, which run by default in security scans and security-enabled structural diffs, invoke external audit tools and may send dependency metadata to package registries and advisory services (npm advisory enrichment also contacts GitHub); and the visualization, What If, and temporal browser pages download D3 from external hosts. The CLI never sends your source code or analysis to Depwire. MCP returns requested graph context and generated documentation to your MCP client; what that client forwards is governed by that client. Depwire Cloud is a separate hosted service that clones the repositories you connect.
+- **Local** — The Depwire CLI analyzes supported source files locally and collects no usage telemetry. It makes network requests only when you ask it to: connecting a GitHub URL clones or pulls that repository; and dependency checks, which run by default in security scans and security-enabled structural diffs, invoke external audit tools and may send dependency metadata to package registries and advisory services (npm advisory enrichment also contacts GitHub). The CLI never sends your source code or analysis to Depwire. MCP returns requested graph context and generated documentation to your MCP client; what that client forwards is governed by that client. Depwire Cloud is a separate hosted service that clones the repositories you connect.
 - **Security scanner** — runs local code checks and applicable dependency audits by default; no Depwire API key is required.
 - **Token-efficient** — Depwire serves pre-computed graph data so agents can request focused dependency context instead of broad file dumps.
 - **Deterministic** — tree-sitter provides consistent structural parsing without relying on model inference.
@@ -626,7 +626,7 @@ This repository ships a `.pre-commit-hooks.yaml`, so Depwire can be used as a re
 ```yaml
 repos:
   - repo: https://github.com/depwire/depwire
-    rev: v1.28.3
+    rev: v1.29.0
     hooks:
       - id: depwire
         args: ["parse", ".", "--stats"]
@@ -715,7 +715,7 @@ Subscribe at [app.depwire.dev/subscribe](https://app.depwire.dev/subscribe).
 The parser reads source files without modifying or executing them. CLI commands can write derived artifacts such as graph output, the parse cache, and `.depwire/AGENTS.md`; coordination tools write their own runtime state.
 
 - Parses supported grammars with tree-sitter; some languages and Angular templates use pattern-based parsers
-- The local visualization servers bind to 127.0.0.1. Browser pages still load external D3 assets.
+- The local visualization servers bind to 127.0.0.1. The browser pages serve D3 from the local server and make no external requests.
 - Network behaviour and data handling: see **Local** under Privacy above.
 - connect_repo rejects listed sensitive paths after canonical path validation; this is not a blanket sandbox for every CLI command.
 

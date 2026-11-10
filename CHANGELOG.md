@@ -1,22 +1,85 @@
 # Changelog
 
-## v1.29.0 (Unreleased) — verify-change corrective contract migration
+## [1.29.0] - 2026-11-10
 
-Local CLI/MCP verify-change now uses a structural-only safety verdict. Health and security fields are informational and are not verdict or exit-code gates. The unused --health-threshold option has been removed. --fail-on-warnings retains its risk-based behavior and name; its help text now describes that behavior.
+### Changed — verify_change / `depwire verify-change` (behaviour and output)
+Governed by recon/VERIFY-CHANGE-VERDICT-CONTRACT.md, merged in #82.
+- The verdict is now defined: `safe` is true only when risk_level is `low`;
+  `low` requires valid input, a fully resolved post-change graph, a successful
+  topology comparison, and no broken imports. Edits and unified diffs that
+  cannot be fully compared stay `medium` (cyclicGroupChanges.status
+  `not_comparable`).
+- New risk_level `error`: any failed analysis — parse failure of the changed
+  file, deletion-simulation failure, malformed diff — returns `error`,
+  `safe: false`, exit code 1, with `error_reason`. Previously some of these
+  paths returned `safe: true` with fabricated values.
+- Health and security are informational and never affect the verdict or exit
+  code. `--health-threshold` is removed. `--fail-on-warnings` unchanged: exit 1 on
+  medium, 2 on high.
+- Output fields: numbers that were not computed are `null`, never `0`.
+  New fields: `health_status` / `health_reason`, `security_status` /
+  `security_reason` (`computed` | `unavailable` | `not_applicable` | `error`),
+  `partial` (true only when an informational section is `error`),
+  `coverage_gaps` (affected files with syntax errors; `null` when the affected
+  set could not be fully checked), `skipped_files` ({file, reason}),
+  `syntax_check` (`checked` | `not_applicable` | null). Consumers reading
+  `health_score_delta` as a number must handle `null`.
+- Before/after health use one scorer; verify-change no longer writes to
+  `.depwire/health-history.json`.
+- Local CLI/MCP verify-change now uses a structural-only safety verdict.
+- JSON/MCP health_score_before, health_score_after and health_score_delta, including their unrelated_context copies, change from number to number | null.
+- Computed comparisons use the same workspace-aware scorer for both states; a diff without a faithful scored after-state reports unavailable health.
+- security_findings changes from array to array | null, including its unrelated_context copy.
+- New security_status, security_reason, and partial fields explain scan availability and informational failures, with identical unrelated_context copies.
+- health_status and security_status include "error": a crashed health scorer yields all health scores null, and a crashed security scan yields null findings, never [].
+- Both provide nonempty reasons and set partial:true without changing the structural verdict or exit code.
+- partial is true iff either informational status is "error"; structural coverage limits do not set it.
+- Analysis errors exit 1 regardless of --fail-on-warnings.
+- Clients must handle nullable health and security fields and expanded status/risk enums.
+- Structurally low results previously raised to medium solely by health regression can now return safe:true and exit 0 with --fail-on-warnings.
+- This correction applies to local CLI/MCP, not Cloud's separate verify_change implementation or Action's health-report pipeline.
 
-JSON/MCP health_score_before, health_score_after and health_score_delta, including their unrelated_context copies, change from number to number | null. Uncomputed scores and deltas are null, never fabricated zero or NaN; health_status and health_reason explain availability. Computed comparisons use the same workspace-aware scorer for both states; a diff without a faithful scored after-state reports unavailable health. verify-change no longer writes health history, including original before scores.
+### Changed — parsers
+- All tree-sitter parsers now report syntax state (`syntaxCheck`,
+  `syntaxErrors`) on parsed records; `verify_change` acts on it, other tools
+  ignore it. Pattern-based parsers (Mojo, Dart, R, HTML templates, manifests)
+  report `not_applicable`. Tree-sitter error recovery can flag valid syntax
+  the grammar does not yet support; `error_reason` names the location.
+- Project loader records skipped files with reasons (oversized, containment,
+  exclusion, no parser).
+- RESOLUTION_VERSION 13 → 14. Cache invalidation only (new fields); resolution
+  logic is unchanged. Existing caches rebuild on first run.
+- Syntax diagnostics now persist through canonicalization and the versioned parse cache.
+- New structural coverage_gaps, syntax_errors_outside_affected_set and syntax_check fields distinguish affected-file syntax gaps, outside-set errors and changed-file checking.
+- Changed-file syntax errors remain error; other affected syntax errors impose a medium floor without lowering high; outside-set errors do not change the verdict.
+- A new structural skipped_files field lists `{file, reason}` records from the parse loader's four skip branches (oversized, path containment, configured exclusion, no parser); it is null whenever the project census did not run and is never copied into unrelated_context.
+- coverage_gaps is null whenever any project file was skipped for an oversized, path-containment, or no-parser-on-a-supported-extension reason, so an unparsed dependent can no longer yield a false coverage_gaps:[].
+- Configured exclusions — new `--exclude` option on `depwire verify-change` and an optional `exclude` argument on the MCP verify_change tool — and no-parser skips on unsupported extensions are listed in skipped_files only and do not null coverage_gaps.
+- parseProject's return additionally carries skippedFiles beside errorFiles; graph, health and simulate outputs are unchanged.
 
-security_findings changes from array to array | null, including its unrelated_context copy. New security_status, security_reason, and partial fields explain scan availability and informational failures, with identical unrelated_context copies. health_status and security_status include "error": a crashed health scorer yields all health scores null, and a crashed security scan yields null findings, never []. Both provide nonempty reasons and set partial:true without changing the structural verdict or exit code. partial is true iff either informational status is "error"; structural coverage limits do not set it.
+### Changed — visualization (#69)
+- D3 is bundled and served locally for the What If, visualization and temporal
+  pages. The CLI makes no CDN request. Pages render offline.
+- D3 7.9.2 bundled (sha256 912111098ea99503a6f4967361d2bbdc9dbf58cf9c678c8e27e5b02d1a07f0c1)
 
-risk_level adds "error". Any failed required structural analysis, including invalid input, malformed/unparseable diffs, parser/topology failures and simulation failures, returns safe:false, risk_level:"error" and a non-empty error_reason; successful-analysis results use error_reason:null. Analysis errors exit 1 regardless of --fail-on-warnings. Clients must handle nullable health and security fields and expanded status/risk enums. Structurally low results previously raised to medium solely by health regression can now return safe:true and exit 0 with --fail-on-warnings. Unsupported topology comparisons remain unsafe and at least medium unless analysis fails, which is error. This correction applies to local CLI/MCP, not Cloud's separate verify_change implementation or Action's health-report pipeline.
+### Changed — packaging
+- `prepare` runs `scripts/prepare.mjs` directly (no `node -e`). No behaviour
+  change.
+- CI matrix: Node 20, 22, 24 on Linux and Windows. Node 20 is end-of-life;
+  the SQLite cache may be unavailable on Node 20 Windows (full reparse each
+  run). Node 22 or later recommended.
+- Release checklist records the Workbench compatibility class per release.
+- Node 20 (end of life 2026-04-30) is no longer a cache-supported runtime: better-sqlite3 12.10.0 removed its Node 20 prebuilt binaries, so on Node 20 the addon may fail to load and the parse cache is unavailable — depwire falls back to full parsing with identical results, logging the load failure and its error detail exactly once per process run instead of silently swallowing it.
+- The cache-asserting tests (including the cache format migration suite) are gated on an explicit Node >=22 allowlist with a visible skip on Node 20 — never on runtime availability detection — and CI now also runs Node 24 on Linux and Windows.
+- Node 22 or newer is recommended; a planned next-major change raises the engines floor to >=22 and removes the Node 20 gate and CI job (not implemented in this release; `engines` remains >=20.0.0).
 
-Syntax diagnostics now persist through canonicalization and the versioned parse cache. New structural coverage_gaps, syntax_errors_outside_affected_set and syntax_check fields distinguish affected-file syntax gaps, outside-set errors and changed-file checking. Uncomputed checks/counts are null; pattern/manifest checks are not_applicable. Changed-file syntax errors remain error; other affected syntax errors impose a medium floor without lowering high; outside-set errors do not change the verdict.
+### Not changed
+- Issue #52 (Express CommonJS) is partially resolved by 1.25.0/1.26.0; the
+  remaining gap (callback-argument and `.bind` references, package main
+  export as entry point) is re-scoped and tracked on the issue.
 
-A new structural skipped_files field lists `{file, reason}` records from the parse loader's four skip branches (oversized, path containment, configured exclusion, no parser); it is null whenever the project census did not run and is never copied into unrelated_context. coverage_gaps is null whenever any project file was skipped for an oversized, path-containment, or no-parser-on-a-supported-extension reason, so an unparsed dependent can no longer yield a false coverage_gaps:[]. Configured exclusions — new `--exclude` option on `depwire verify-change` and an optional `exclude` argument on the MCP verify_change tool — and no-parser skips on unsupported extensions are listed in skipped_files only and do not null coverage_gaps. parseProject's return additionally carries skippedFiles beside errorFiles; graph, health and simulate outputs are unchanged.
-
-RESOLUTION_VERSION 13→14 is cache invalidation only; resolution behaviour is unchanged.
-
-Node 20 (end of life 2026-04-30) is no longer a cache-supported runtime: better-sqlite3 12.10.0 removed its Node 20 prebuilt binaries, so on Node 20 the addon may fail to load and the parse cache is unavailable — depwire falls back to full parsing with identical results, logging the load failure and its error detail exactly once per process run instead of silently swallowing it. The cache-asserting tests (including the cache format migration suite) are gated on an explicit Node >=22 allowlist with a visible skip on Node 20 — never on runtime availability detection — and CI now also runs Node 24 on Linux and Windows. Node 22 or newer is recommended; a planned next-major change raises the engines floor to >=22 and removes the Node 20 gate and CI job (not implemented in this release; `engines` remains >=20.0.0).
+### Security
+- No new advisories. GHSA-h5xc-3hqf-qqm2 (symlink bypass) was fixed in 1.28.3.
 
 All notable changes to Depwire will be documented in this file.
 

@@ -72,6 +72,12 @@ export async function startTemporalServer(
     res.type('text/css').send(css);
   });
 
+  app.get('/vendor/d3.min.js', (_req, res) => {
+    const jsPath = resolve(publicDir, 'vendor', 'd3.min.js');
+    if (!jsPath.startsWith(publicDir)) return res.status(403).send('Forbidden');
+    res.type('application/javascript').send(readFileSync(jsPath));
+  });
+
   const server = app.listen(availablePort, '127.0.0.1', () => {
     const url = `http://127.0.0.1:${availablePort}`;
     console.log(`\n✓ Temporal visualization server running at ${url}`);

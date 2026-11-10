@@ -1,1 +1,2 @@
 LICENSE linguist-documentation=false linguist-detectable
+src/viz/public/vendor/* -text

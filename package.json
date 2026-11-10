@@ -1,6 +1,6 @@
 {
   "name": "depwire-cli",
-  "version": "1.28.3",
+  "version": "1.29.0",
   "description": "Dependency graph + 24 MCP tools for AI coding assistants. Impact analysis, health scoring, security scanner, agent coordination.",
   "type": "module",
   "bin": {
@@ -15,7 +15,7 @@
   "scripts": {
     "website:build": "node website/build.mjs",
     "build": "tsup src/index.ts src/mcpb-entry.ts src/sdk.ts --format esm --dts --clean && tsup src/graph.ts src/tools.ts --format esm --dts --no-splitting && npm run copy-static",
-    "prepare": "node -e \"require('fs').existsSync('scripts/prepare.mjs')&&require('child_process').execFileSync(process.execPath,['scripts/prepare.mjs'],{stdio:'inherit'})\"",
+    "prepare": "node scripts/prepare.mjs",
     "copy-static": "node scripts/copy-static.mjs",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
@@ -104,6 +104,7 @@
     "@types/express": "5.0.6",
     "@types/node": "25.3.0",
     "@types/ws": "8.18.1",
+    "playwright-core": "1.65.0",
     "sharp": "0.35.5",
     "tree-sitter-c-sharp": "^0.23.5",
     "tree-sitter-cpp": "^0.23.4",

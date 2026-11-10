@@ -33,6 +33,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Playwright Chromium (viz offline test)
+        run: npx playwright-core install --with-deps chromium
+
       - name: Test
         run: npm test -- --maxWorkers=2 --testTimeout=15000
 
