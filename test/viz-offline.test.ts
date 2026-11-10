@@ -3,7 +3,8 @@ import { build } from 'esbuild';
 import { chromium, type Browser } from 'playwright-core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -89,8 +90,10 @@ function symlinkModules() {
 
 afterAll(async () => {
   await browser?.close();
-  child?.kill();
-  rmSync(root, { recursive: true, force: true });
+  if (child?.kill()) await new Promise<void>(resolve => child.once('exit', resolve));
+  // Windows can hold profile/temp handles briefly after the browser exits; retry, but a
+  // removal that still fails is a real failure — it is not swallowed or skipped.
+  await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 });
 
 async function renderOffline(url: string, selector: string) {
