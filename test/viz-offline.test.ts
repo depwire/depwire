@@ -45,8 +45,13 @@ for (let i = 0; i < 100 && !temporalUrl; i++) await new Promise(r => setTimeout(
 log(JSON.stringify({ index: index.url, whatif: whatifUrl, temporal: temporalUrl }));
 `;
 
-function chromeLaunch() {
-  return chromium.launch({ channel: 'chrome' }).catch(() => chromium.launch());
+async function launchBrowser() {
+  // No skip path: a missing browser must fail this suite. CI runs `npx playwright-core install chromium` first.
+  try {
+    return await chromium.launch();
+  } catch (error) {
+    throw new Error(`viz-offline requires the Playwright Chromium browser (run: npx playwright-core install chromium): ${(error as Error).message.split('\n')[0]}`);
+  }
 }
 
 beforeAll(async () => {
@@ -72,7 +77,6 @@ beforeAll(async () => {
     child.stdout!.on('data', d => { out += d; try { res(JSON.parse(out.trim())); } catch { /* wait for full line */ } });
     child.on('exit', code => rej(new Error(`harness exited ${code}: ${err}`)));
   });
-  browser = await chromeLaunch();
 }, 120_000);
 
 function symlinkModules() {
@@ -90,7 +94,8 @@ afterAll(async () => {
 });
 
 async function renderOffline(url: string, selector: string) {
-  const context = await browser!.newContext();
+  browser ??= await launchBrowser();
+  const context = await browser.newContext();
   const page = await context.newPage();
   const external: string[] = [];
   const local: Array<{ url: string; status: number }> = [];
