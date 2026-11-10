@@ -626,7 +626,7 @@ This repository ships a `.pre-commit-hooks.yaml`, so Depwire can be used as a re
 ```yaml
 repos:
   - repo: https://github.com/depwire/depwire
-    rev: v1.28.3
+    rev: v1.29.0
     hooks:
       - id: depwire
         args: ["parse", ".", "--stats"]
